@@ -127,6 +127,38 @@
           "tags": ["models", "new", "profiles"]
         }
       ]
+    },
+    {
+      "id": "social-media",
+      "name": "Social Media Strategy",
+      "icon": "📱",
+      "description": "Instagram strategy, content planning, PR angles, and social media best practices for fashion tech",
+      "documents": [
+        {
+          "title": "Instagram Grid Aesthetics for Creative Portfolios",
+          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/Instagram_Grid_Aesthetics_Creative_Portfolios.md",
+          "summary": "Visual cohesion strategies, grid design principles (3x3, 6x6, 9x9), carousel vs single post strategies, fashion editorial grid case studies, and tools for maintaining aesthetic consistency.",
+          "tags": ["instagram", "grid", "aesthetics", "visual planning"]
+        },
+        {
+          "title": "Content Calendar & Posting Strategy",
+          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/Content_Calendar_Posting_Strategy_Fashion_Tech.md",
+          "summary": "Optimal posting times for fashion/creative audiences, posting frequency recommendations, content pillars structure, weekly/monthly planning frameworks, seasonal strategies, and batch creation systems.",
+          "tags": ["content calendar", "posting strategy", "planning", "scheduling"]
+        },
+        {
+          "title": "PR Strategy & Media Angles for Fashion Tech",
+          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/PR_Strategy_Fashion_Tech_AI_Tools.md",
+          "summary": "Positioning strategies for fashion tech innovation, press kit creation, pitch angles for fashion publications (Vogue, WWD, BoF), AI ethics storytelling, founder story development, and journalist relationship building.",
+          "tags": ["PR", "media", "press", "fashion tech", "positioning"]
+        },
+        {
+          "title": "Caption Writing & Storytelling for Fashion Tech",
+          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/Caption_Writing_Storytelling_Fashion_Tech_Content.md",
+          "summary": "30+ hook formulas, technical vs visual storytelling balance, hashtag research strategies, 50+ CTA examples, educational content formatting, behind-the-scenes frameworks, and voice/tone development.",
+          "tags": ["captions", "copywriting", "storytelling", "engagement", "hooks"]
+        }
+      ]
     }
   ]
 }
