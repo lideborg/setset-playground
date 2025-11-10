@@ -1,0 +1,132 @@
+{
+  "categories": [
+    {
+      "id": "aesthetics",
+      "name": "Aesthetics Research",
+      "icon": "🎨",
+      "description": "Visual analysis of luxury fashion brands and editorial photography styles",
+      "documents": [
+        {
+          "title": "French Luxury Aesthetics",
+          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/FRENCH_LUXURY_AESTHETICS.md",
+          "summary": "Deep dive into French luxury brands: Chanel, Saint Laurent, Dior, Hermès, Celine. Analyzes lighting techniques (Rembrandt, high-contrast B&W), composition, color palettes, and mood across 2020-2024 photography campaigns.",
+          "tags": ["luxury", "french", "editorial"]
+        },
+        {
+          "title": "Italian Luxury Aesthetics",
+          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/ITALIAN_LUXURY_AESTHETICS.md",
+          "summary": "Comprehensive analysis of Italian luxury: Prada, Gucci, Bottega Veneta, Valentino. Documents signature colors, photographer collaborations, and style evolution.",
+          "tags": ["luxury", "italian", "editorial"]
+        },
+        {
+          "title": "Avant-Garde Aesthetics",
+          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/AVANT_GARDE_AESTHETICS.md",
+          "summary": "Exploration of dark, experimental aesthetics: Maison Margiela, Comme des Garçons, Yohji Yamamoto, Rick Owens. Theatrical, brutalist, and moody photography techniques.",
+          "tags": ["avant-garde", "editorial", "dark"]
+        },
+        {
+          "title": "Luxury Minimalist Aesthetics",
+          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/LUXURY_MINIMALIST_AESTHETICS.md",
+          "summary": "Quiet luxury and minimalism: Bottega Veneta, Jil Sander, Lemaire, The Row. Documentary realism, architectural precision, and understated elegance.",
+          "tags": ["minimalist", "luxury", "quiet luxury"]
+        },
+        {
+          "title": "Beauty & Skincare Aesthetics",
+          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/BEAUTY_SKINCARE_AESTHETICS.md",
+          "summary": "Five distinct skin rendering philosophies: Glossier (dewy), Charlotte Tilbury (glowy), Fenty Beauty (authentic), La Mer (luminous), Aesop (natural). Macro beauty specifications and lighting techniques.",
+          "tags": ["beauty", "skincare", "macro"]
+        },
+        {
+          "title": "Additional Luxury Brands",
+          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/ADDITIONAL_LUXURY_BRANDS.md",
+          "summary": "Extended brand analysis for future expansion covering additional luxury houses and contemporary designers.",
+          "tags": ["luxury", "reference"]
+        }
+      ]
+    },
+    {
+      "id": "system-guides",
+      "name": "System & Methodology",
+      "icon": "⚙️",
+      "description": "Technical frameworks and guides for prompt engineering and generation systems",
+      "documents": [
+        {
+          "title": "Prompt Building Guide",
+          "file": "../SetCast/research/02_SYSTEM_GUIDES/PROMPT_BUILDING_GUIDE.md",
+          "summary": "Core 9-component editorial prompt architecture: shot type, subject description, body framing, background, lighting, color grading, expression, styling, and technical specs.",
+          "tags": ["prompt engineering", "methodology", "core"]
+        },
+        {
+          "title": "Variation Strategy Guide",
+          "file": "../SetCast/research/02_SYSTEM_GUIDES/VARIATION_STRATEGY_GUIDE.md",
+          "summary": "Multi-dimensional variation system across 6 dimensions: environment, lighting, shot type, pose, camera, and mood. Blueprint for 20-prompt structure with 5 lighting/mood categories.",
+          "tags": ["variation", "methodology", "strategy"]
+        },
+        {
+          "title": "Variable Prompt System",
+          "file": "../SetCast/research/02_SYSTEM_GUIDES/VARIABLE_PROMPT_SYSTEM.md",
+          "summary": "Component-based system for maximum composition variety: 26+ poses, 18+ backgrounds, 22+ lighting setups, 9 camera/lens combinations, 30+ clothing colors.",
+          "tags": ["variables", "system", "components"]
+        },
+        {
+          "title": "Editorial Minimal System",
+          "file": "../SetCast/research/02_SYSTEM_GUIDES/EDITORIAL_MINIMAL_SYSTEM.md",
+          "summary": "Ultra-clean editorial photography system with 15+ fashion poses and super minimal background rules for high-end editorial aesthetic.",
+          "tags": ["editorial", "minimal", "poses"]
+        },
+        {
+          "title": "Brand Renaming Strategy",
+          "file": "../SetCast/research/02_SYSTEM_GUIDES/BRAND_RENAMING_STRATEGY.md",
+          "summary": "Generic aesthetic profiles to avoid brand/logo generation: 7 aesthetic profile remappings (The Row → Quiet Luxury, Rick Owens → Dark Avant-Garde, etc.).",
+          "tags": ["branding", "strategy", "aesthetics"]
+        },
+        {
+          "title": "Final Updates Summary",
+          "file": "../SetCast/research/02_SYSTEM_GUIDES/FINAL_UPDATES_SUMMARY.md",
+          "summary": "Implementation tracking and change records documenting system updates and improvements.",
+          "tags": ["changelog", "updates"]
+        }
+      ]
+    },
+    {
+      "id": "location-planning",
+      "name": "Location Planning",
+      "icon": "📍",
+      "description": "Strategic approaches to location assignment and environmental variety",
+      "documents": [
+        {
+          "title": "Location Mapping System",
+          "file": "../SetCast/research/03_LOCATION_PLANNING/LOCATION_MAPPING_SYSTEM.md",
+          "summary": "Similar-but-different location assignment strategy ensuring variety while maintaining cohesion across editorial shoots.",
+          "tags": ["locations", "strategy", "planning"]
+        },
+        {
+          "title": "Current Location Comparison",
+          "file": "../SetCast/research/03_LOCATION_PLANNING/CURRENT_LOCATION_COMPARISON.md",
+          "summary": "Analysis of location variation across models, documenting distribution and ensuring diverse environmental representation.",
+          "tags": ["locations", "analysis"]
+        }
+      ]
+    },
+    {
+      "id": "talent-models",
+      "name": "Talent & Casting",
+      "icon": "👥",
+      "description": "Model profiles, casting standards, and talent management",
+      "documents": [
+        {
+          "title": "Talent Roster",
+          "file": "../SetCast/research/04_TALENT_MODELS/TALENT_ROSTER.md",
+          "summary": "Comprehensive profiles of 25 diverse talent models with detailed specifications: gender, age, ethnicity, Fitzpatrick skin tone, physical descriptions, and aesthetic categories.",
+          "tags": ["casting", "models", "diversity"]
+        },
+        {
+          "title": "New Models Summary",
+          "file": "../SetCast/research/04_TALENT_MODELS/NEW_MODELS_SUMMARY.md",
+          "summary": "Recent model additions: Kai Thompson, Riley Morgan, Jordan Lee profiles with full casting details.",
+          "tags": ["models", "new", "profiles"]
+        }
+      ]
+    }
+  ]
+}
