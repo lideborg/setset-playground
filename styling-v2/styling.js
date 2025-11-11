@@ -189,6 +189,9 @@ async function handleUpload(event, category) {
     }
 
     const startTime = performance.now();
+    const timestamp = new Date().toLocaleTimeString();
+
+    console.log(`\n📤 [${timestamp}] Analyzing ${category} garment...`);
 
     try {
         const analysis = await analyzeGarment(file);
@@ -196,9 +199,12 @@ async function handleUpload(event, category) {
 
         // Time tracking log with duration
         const endTime = performance.now();
-        const duration = ((endTime - startTime) / 1000).toFixed(2);
-        const timestamp = new Date().toLocaleTimeString();
-        console.log(`✓ [${timestamp}] Garment analyzed (${category}) in ${duration}s:`, analysis);
+        const duration = ((endTime - startTime) / 1000).toFixed(1);
+        console.log(`✅ [${timestamp}] ${getCategoryName(category)} analyzed in ${duration}s:`);
+        console.log(`   Type: ${analysis.garment_type}`);
+        console.log(`   Color: ${analysis.color}`);
+        console.log(`   Material: ${analysis.material}`);
+        console.log(`   Style: ${analysis.style}\n`);
 
         // Helper to capitalize first letter only
         const capitalizeFirst = (str) => {
@@ -225,6 +231,9 @@ async function handleUpload(event, category) {
         `;
         details.classList.add('show');
     } catch (error) {
+        const endTime = performance.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(1);
+        console.error(`❌ [${timestamp}] Analysis failed for ${category} after ${duration}s:`, error.message);
         showError('Failed to analyze image: ' + error.message);
     } finally {
         // Hide analyzing loader
@@ -375,10 +384,16 @@ function buildPrompt() {
 // Generate styled look - SEQUENTIAL VERSION
 // Generate styled look - INTERACTIVE MULTI-STEP VERSION
 async function generateStyled() {
+    console.log('\n🎬 ============================================');
+    console.log('🎬 STARTING INTERACTIVE SEQUENTIAL GENERATION');
+    console.log('🎬 ============================================\n');
+
     if (!state.selectedModel) {
         showError('Please select a model first');
         return;
     }
+
+    console.log(`👤 Model Selected: ${state.selectedModel.name}`);
 
     // Hide previous results
     document.getElementById('resultsSection').classList.remove('show');
@@ -388,9 +403,10 @@ async function generateStyled() {
     const categoryOrder = ['shortsleeve', 'longsleeve', 'bottom', 'outerwear', 'shoes', 'head', 'face', 'accessories'];
     const uploadedItems = [];
 
+    console.log('\n📦 Checking uploaded items...');
     categoryOrder.forEach(category => {
         const data = state.items[category];
-        console.log(`🔍 Checking ${category}:`, { hasFile: !!data.file, hasAnalysis: !!data.analysis, data });
+        console.log(`   🔍 ${category}: ${data.file ? '✓ file' : '✗ no file'} | ${data.analysis ? '✓ analysis' : '✗ no analysis'}`);
         if (data.file && data.analysis) {
             uploadedItems.push({
                 category,
@@ -398,16 +414,17 @@ async function generateStyled() {
                 analysis: data.analysis,
                 name: getCategoryName(category)
             });
-            console.log(`✅ Added ${category} to generation queue`);
+            console.log(`      ✅ Added to queue: ${getCategoryName(category)} (${data.analysis.color} ${data.analysis.garment_type})`);
         } else {
             if (data.file && !data.analysis) {
-                console.warn(`⚠️ ${category} has file but NO ANALYSIS - skipping!`);
+                console.warn(`      ⚠️  SKIPPED - Missing analysis!`);
             }
         }
     });
 
-    console.log('📋 Final upload order:', uploadedItems.map(item => item.name).join(' → '));
-    console.log('📋 Total items to generate:', uploadedItems.length);
+    console.log('\n📋 Generation Queue:');
+    console.log(`   ${uploadedItems.map((item, i) => `${i + 1}. ${item.name}`).join('\n   ')}`);
+    console.log(`   Total steps: ${uploadedItems.length}\n`);
 
     if (uploadedItems.length === 0) {
         showError('Please upload at least one garment image');
@@ -421,6 +438,7 @@ async function generateStyled() {
     state.allStepResults = [];
 
     // Convert model image to base64
+    console.log('🖼️  Loading model base image...');
     const modelImageResponse = await fetch(state.selectedModel.image);
     const modelImageBlob = await modelImageResponse.blob();
     state.currentBaseImage = await new Promise((resolve) => {
@@ -428,6 +446,7 @@ async function generateStyled() {
         reader.onload = () => resolve(reader.result);
         reader.readAsDataURL(modelImageBlob);
     });
+    console.log('   ✓ Model image loaded\n');
 
     // Show process description
     const processDesc = document.getElementById('processDescription');
@@ -444,6 +463,7 @@ async function generateStyled() {
     initializeProgressSteps(uploadedItems);
 
     // Generate first step
+    console.log('🚀 Starting Step 1...\n');
     await generateCurrentStep();
 }
 
@@ -451,6 +471,15 @@ async function generateStyled() {
 async function generateCurrentStep() {
     const item = state.uploadedItemsList[state.currentStep];
     const aspectRatio = document.getElementById('aspectRatio').value;
+    const stepNum = state.currentStep + 1;
+    const totalSteps = state.uploadedItemsList.length;
+
+    console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    console.log(`📍 STEP ${stepNum}/${totalSteps}: ${item.name.toUpperCase()}`);
+    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    console.log(`   Item: ${item.analysis.color} ${item.analysis.garment_type}`);
+    console.log(`   Material: ${item.analysis.material}`);
+    console.log(`   Style: ${item.analysis.style}\n`);
 
     // Update progress
     updateProgressStep(state.currentStep, 'generating');
@@ -458,12 +487,18 @@ async function generateCurrentStep() {
     // Build prompt for this step
     let stepPrompt;
     if (state.currentStep === 0) {
+        console.log('🎯 Building first step prompt (model + garment)...');
         stepPrompt = buildFirstStepPrompt(item);
     } else {
+        console.log('🎯 Building prompt using previous step\'s image...');
         // Use analysis from previous step to maintain exact consistency
         const previousStepAnalysis = state.allStepResults[state.currentStep - 1]?.analysis || 'a model in a white photo studio';
         stepPrompt = `Take this EXACT image of ${previousStepAnalysis} and add these EXACT ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Maintain the exact same white studio background, pose, lighting, and framing. Full body shot visible from head to toe.`;
     }
+
+    console.log(`   📝 Prompt: "${stepPrompt.substring(0, 120)}..."\n`);
+
+    const startTime = performance.now();
 
     try {
         // Convert garment image to base64
@@ -473,8 +508,9 @@ async function generateCurrentStep() {
         const baseImage = state.selectedImageForNextStep || state.currentBaseImage;
         const imageUrls = [baseImage, garmentBase64];
 
-        console.log(`📤 Step ${state.currentStep + 1}: Generating 4 variations`);
-        console.log(`   Prompt: ${stepPrompt.substring(0, 100)}...`);
+        console.log(`🎨 Calling Flux API to generate 4 variations...`);
+        console.log(`   Aspect ratio: ${aspectRatio}`);
+        console.log(`   Base image: ${state.currentStep === 0 ? 'Model photo' : 'Previous step result'}`);
 
         // Call API for 4 images
         const response = await fetch('http://localhost:3001/api/generate-styled', {
@@ -494,6 +530,11 @@ async function generateCurrentStep() {
         }
 
         const result = await response.json();
+        const endTime = performance.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(1);
+
+        console.log(`   ✅ Generated 4 variations in ${duration}s`);
+        console.log(`   🖼️  Images ready for selection\n`);
 
         // Update progress
         updateProgressStep(state.currentStep, 'completed', result.images[0]);
@@ -502,6 +543,9 @@ async function generateCurrentStep() {
         showStepResults(result.images, item);
 
     } catch (error) {
+        const endTime = performance.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(1);
+        console.error(`   ❌ Generation failed after ${duration}s:`, error.message);
         showError('Generation failed: ' + error.message);
         console.error(error);
     }
@@ -561,6 +605,17 @@ function selectStepImage(imageUrl) {
 
     // Enable continue button
     document.getElementById('continueBtn').disabled = false;
+
+    const stepNum = state.currentStep + 1;
+    const totalSteps = state.uploadedItemsList.length;
+    const imageIndex = Array.from(document.querySelectorAll('.result-image')).indexOf(clickedImage) + 1;
+
+    console.log(`\n✓ Step ${stepNum}/${totalSteps}: Selected variation #${imageIndex}`);
+    if (stepNum < totalSteps) {
+        console.log(`   Ready to continue to Step ${stepNum + 1}...\n`);
+    } else {
+        console.log(`   Ready to finish and view all results!\n`);
+    }
 }
 
 // Continue to next step
@@ -570,8 +625,13 @@ async function continueToNextStep() {
         return;
     }
 
+    const currentStepNum = state.currentStep + 1;
+    const totalSteps = state.uploadedItemsList.length;
+
+    console.log(`\n⏩ Continuing from Step ${currentStepNum}/${totalSteps}...`);
+
     // Analyze the selected image for next step
-    console.log('🔍 Analyzing selected image...');
+    console.log('🔍 Analyzing selected image for consistency...');
     const imageAnalysis = await analyzeGeneratedImage(state.selectedImageForNextStep);
 
     // Store this step's result with analysis
@@ -582,25 +642,36 @@ async function continueToNextStep() {
         analysis: imageAnalysis
     });
 
-    console.log('✓ Analysis complete:', imageAnalysis);
+    console.log(`   ✓ Analysis complete: "${imageAnalysis.substring(0, 100)}..."\n`);
 
     // Move to next step
     state.currentStep++;
 
     // Check if we're done
     if (state.currentStep >= state.uploadedItemsList.length) {
+        console.log('🎉 ============================================');
+        console.log('🎉 ALL STEPS COMPLETE!');
+        console.log('🎉 ============================================\n');
+        console.log(`   Total steps: ${state.allStepResults.length}`);
+        console.log(`   Items used: ${state.allStepResults.map(r => r.item.name).join(', ')}\n`);
         showFinalResults();
         return;
     }
 
     // Generate next step
     document.getElementById('resultsSection').classList.remove('show');
+    const nextStepNum = state.currentStep + 1;
+    console.log(`🚀 Starting Step ${nextStepNum}/${totalSteps}...\n`);
     await generateCurrentStep();
 }
 
 // Analyze generated image to maintain consistency
 async function analyzeGeneratedImage(imageUrl) {
+    const startTime = performance.now();
+
     try {
+        console.log('   📸 Sending image to GPT-4V for analysis...');
+
         const response = await fetch('http://localhost:3001/api/analyze-image', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -610,14 +681,22 @@ async function analyzeGeneratedImage(imageUrl) {
             })
         });
 
+        const endTime = performance.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(1);
+
         if (!response.ok) {
+            console.warn(`   ⚠️  Analysis API returned error (${duration}s), using fallback`);
             return 'a model in a white photo studio';
         }
 
         const result = await response.json();
+        console.log(`   ✓ GPT-4V analysis complete (${duration}s)`);
         return result.description || 'a model in a white photo studio';
     } catch (error) {
-        console.error('Analysis failed:', error);
+        const endTime = performance.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(1);
+        console.error(`   ❌ Analysis failed after ${duration}s:`, error.message);
+        console.log('   Using fallback description');
         return 'a model in a white photo studio';
     }
 }
