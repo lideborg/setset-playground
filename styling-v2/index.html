@@ -266,9 +266,6 @@
         }
 
         .generation-settings {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
             margin-bottom: 20px;
         }
 
@@ -967,15 +964,6 @@
     <div class="generate-section">
         <div class="generation-settings">
             <div class="setting-group">
-                <label class="setting-label">Number of Images</label>
-                <select class="setting-select" id="numImages">
-                    <option value="1" selected>1 image</option>
-                    <option value="2">2 images</option>
-                    <option value="3">3 images</option>
-                    <option value="4">4 images</option>
-                </select>
-            </div>
-            <div class="setting-group">
                 <label class="setting-label">Aspect Ratio</label>
                 <select class="setting-select" id="aspectRatio">
                     <option value="3:4" selected>3:4 (Portrait)</option>
@@ -986,7 +974,7 @@
                 </select>
             </div>
         </div>
-        <button class="generate-btn" id="generateBtn" onclick="generateStyled()" disabled>Generate Styled Look</button>
+        <button class="generate-btn" id="generateBtn" onclick="generateStyled()" disabled>Generate Sequential Look</button>
         <div class="prompt-preview" id="promptPreview"></div>
     </div>
 

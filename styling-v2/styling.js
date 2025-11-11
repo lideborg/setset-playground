@@ -366,111 +366,245 @@ function buildPrompt() {
 }
 
 // Generate styled look
+// Generate styled look - SEQUENTIAL VERSION
 async function generateStyled() {
     if (!state.selectedModel) {
         showError('Please select a model first');
         return;
     }
 
-    const basePrompt = buildPrompt();
-
-    // Show prompt preview
-    const preview = document.getElementById('promptPreview');
-    preview.textContent = `Base Prompt: ${basePrompt}\n\nEnhancing with LLM...`;
-    preview.classList.add('show');
-
-    showLoading(true);
+    // Hide previous results
     document.getElementById('resultsSection').classList.remove('show');
 
-    const totalStartTime = performance.now();
+    // Build list of uploaded items in order
+    const categoryOrder = ['face', 'head', 'outerwear', 'longsleeve', 'shortsleeve', 'bottom', 'shoes', 'accessories'];
+    const uploadedItems = [];
+
+    categoryOrder.forEach(category => {
+        const data = state.items[category];
+        if (data.file && data.analysis) {
+            uploadedItems.push({
+                category,
+                file: data.file,
+                analysis: data.analysis,
+                name: getCategoryName(category)
+            });
+        }
+    });
+
+    if (uploadedItems.length === 0) {
+        showError('Please upload at least one garment image');
+        return;
+    }
+
+    // Show process description
+    const processDesc = document.getElementById('processDescription');
+    processDesc.innerHTML = `
+        <strong>Sequential Generation Process:</strong><br>
+        Building your look in ${uploadedItems.length} steps for maximum fidelity. Each garment is added one at a time,
+        using the previous result as the base. This ensures each item is accurately represented.
+    `;
+
+    // Show progress section
+    const progressSection = document.getElementById('progressSection');
+    progressSection.classList.add('show');
+
+    // Initialize progress steps
+    initializeProgressSteps(uploadedItems);
+
+    // Convert model image to base64
+    const modelImageResponse = await fetch(state.selectedModel.image);
+    const modelImageBlob = await modelImageResponse.blob();
+    let currentImage = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(modelImageBlob);
+    });
+
+    const aspectRatio = document.getElementById('aspectRatio').value;
+    const generatedImages = [];
+    let previousPrompt = '';
 
     try {
-        // Convert model image to base64
-        console.log(`📷 Converting model image to base64...`);
-        const modelConvertStart = performance.now();
-        const modelImageResponse = await fetch(state.selectedModel.image);
-        const modelImageBlob = await modelImageResponse.blob();
-        const modelImageBase64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(modelImageBlob);
-        });
-        const modelConvertDuration = ((performance.now() - modelConvertStart) / 1000).toFixed(2);
-        console.log(`✓ Model image converted in ${modelConvertDuration}s`);
+        // Generate sequentially
+        for (let i = 0; i < uploadedItems.length; i++) {
+            const item = uploadedItems[i];
 
-        // Get all image URLs starting with model
-        const imageUrls = [modelImageBase64];
+            // Update progress
+            updateProgressStep(i, 'generating');
 
-        // Add uploaded garment images
-        for (const [category, data] of Object.entries(state.items)) {
-            if (data.file) {
-                const base64 = await fileToBase64(data.file);
-                imageUrls.push(base64);
+            // Build prompt for this step
+            let stepPrompt;
+            if (i === 0) {
+                // First step: use base prompt with style-only items
+                stepPrompt = buildFirstStepPrompt(item);
+            } else {
+                // Subsequent steps: add this item to previous image
+                stepPrompt = `Take this exact image and add these exact ${item.analysis.color} ${item.analysis.garment_type} to the model.`;
             }
+
+            // Convert garment image to base64
+            const garmentBase64 = await fileToBase64(item.file);
+
+            // Call API
+            const imageUrls = [currentImage, garmentBase64];
+            const response = await fetch('http://localhost:3001/api/generate-styled', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: stepPrompt,
+                    imageUrls: imageUrls,
+                    items: state.items,
+                    numImages: 1,
+                    aspectRatio: aspectRatio
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Step ${i + 1} generation failed`);
+            }
+
+            const result = await response.json();
+            const generatedImageUrl = result.images[0];
+
+            // Store the generated image
+            generatedImages.push({
+                url: generatedImageUrl,
+                step: i + 1,
+                item: item,
+                prompt: result.enhancedPrompt
+            });
+
+            // Update progress with generated image
+            updateProgressStep(i, 'completed', generatedImageUrl);
+
+            // Use this generated image for the next step
+            currentImage = generatedImageUrl;
+            previousPrompt = result.enhancedPrompt;
+
+            console.log(`✓ Step ${i + 1}/${uploadedItems.length} complete: Added ${item.name}`);
         }
 
-        console.log(`📤 Sending ${imageUrls.length} images to API (1 model + ${imageUrls.length - 1} garments)`);
+        // Store all images for lightbox
+        lightboxImages = generatedImages.map(img => img.url);
+        state.lastGeneratedPrompt = previousPrompt;
 
-        // Time tracking log - sending to API
-        const apiStartTime = performance.now();
-        const sendTimestamp = new Date().toLocaleTimeString();
-        console.log(`✓ [${sendTimestamp}] Sending to API for prompt enhancement and generation...`);
-
-        // Get generation settings
-        const numImages = parseInt(document.getElementById('numImages').value);
-        const aspectRatio = document.getElementById('aspectRatio').value;
-
-        // Call API
-        const response = await fetch('http://localhost:3001/api/generate-styled', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                prompt: basePrompt,
-                imageUrls: imageUrls,
-                items: state.items,
-                numImages: numImages,
-                aspectRatio: aspectRatio
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Generation failed');
-        }
-
-        const result = await response.json();
-
-        // Time tracking logs with durations
-        const apiDuration = ((performance.now() - apiStartTime) / 1000).toFixed(2);
-        const totalDuration = ((performance.now() - totalStartTime) / 1000).toFixed(2);
-
-        const enhancedTimestamp = new Date().toLocaleTimeString();
-        console.log(`✓ [${enhancedTimestamp}] Prompt enhanced and sent to Nano Banana`);
-        console.log(`   Enhanced prompt:`, result.enhancedPrompt);
-
-        const finalTimestamp = new Date().toLocaleTimeString();
-        console.log(`✓ [${finalTimestamp}] Generation complete in ${apiDuration}s (total: ${totalDuration}s)`);
-        console.log(`   Generated ${result.images.length} images:`, result.images);
-
-        // Update preview with enhanced prompt
-        preview.textContent = `Enhanced Prompt: ${result.enhancedPrompt}`;
-
-        // Store enhanced prompt and images for lightbox
-        state.lastGeneratedPrompt = result.enhancedPrompt;
-        lightboxImages = result.images;
-
-        // Show results - multiple images with click handlers
-        const resultsSection = document.getElementById('resultsSection');
-        const resultsContainer = resultsSection.querySelector('.results-grid') || createResultsGrid();
-        resultsContainer.innerHTML = result.images.map((url, index) => `
-            <img src="${url}" class="result-image" onclick="openLightbox('${url}')">
-        `).join('');
-        resultsSection.classList.add('show');
+        // Show all results
+        showSequentialResults(generatedImages);
 
     } catch (error) {
         showError('Generation failed: ' + error.message);
-    } finally {
-        showLoading(false);
+        console.error(error);
     }
+}
+
+// Helper: Get category display name
+function getCategoryName(category) {
+    const names = {
+        face: 'Face Accessories',
+        head: 'Headwear',
+        outerwear: 'Outerwear',
+        longsleeve: 'Long Sleeve',
+        shortsleeve: 'Short Sleeve',
+        bottom: 'Bottom',
+        shoes: 'Shoes',
+        accessories: 'Accessories'
+    };
+    return names[category] || category;
+}
+
+// Helper: Build first step prompt
+function buildFirstStepPrompt(firstItem) {
+    // Get style-only items for first step
+    const styleOnlyItems = [];
+    const allCategories = ['outerwear', 'longsleeve', 'shortsleeve', 'bottom', 'shoes', 'head', 'face', 'accessories'];
+
+    allCategories.forEach(category => {
+        const data = state.items[category];
+        if (!data.file && data.style && data.style !== '') {
+            if (category === 'face' || category === 'accessories') {
+                styleOnlyItems.push(data.style);
+            } else {
+                const names = {
+                    head: 'hat',
+                    outerwear: 'jacket',
+                    longsleeve: 'shirt',
+                    shortsleeve: 'shirt',
+                    bottom: 'pants',
+                    shoes: 'shoes'
+                };
+                styleOnlyItems.push(`${data.style} ${names[category] || category}`);
+            }
+        }
+    });
+
+    let prompt = '';
+    if (state.selectedModel && modelDescriptions[state.selectedModel.id]) {
+        const modelDesc = modelDescriptions[state.selectedModel.id].overall_description;
+        const shortDesc = modelDesc.split(',')[0] || modelDesc.substring(0, 50);
+        prompt = `Editorial fashion photo of ${shortDesc}`;
+    } else {
+        prompt = `Editorial fashion photo of this model`;
+    }
+
+    prompt += ` wearing these exact ${firstItem.analysis.color} ${firstItem.analysis.garment_type}`;
+
+    if (styleOnlyItems.length > 0) {
+        prompt += `, styled with ${styleOnlyItems.join(', ')}`;
+    }
+
+    prompt += `. Clean minimal background, professional studio lighting.`;
+
+    return prompt;
+}
+
+// Initialize progress steps UI
+function initializeProgressSteps(uploadedItems) {
+    const stepsContainer = document.getElementById('progressSteps');
+    stepsContainer.innerHTML = uploadedItems.map((item, index) => `
+        <div class="progress-step" id="step-${index}">
+            <div class="step-number">${index + 1}</div>
+            <img src="${URL.createObjectURL(item.file)}" class="step-image" alt="${item.name}">
+            <div class="step-info">
+                <div class="step-title">${item.name}</div>
+                <div class="step-detail">${item.analysis.color} ${item.analysis.garment_type}</div>
+            </div>
+            <div class="step-status" id="step-status-${index}">Waiting</div>
+        </div>
+    `).join('');
+}
+
+// Update progress step status
+function updateProgressStep(stepIndex, status, imageUrl = null) {
+    const stepElement = document.getElementById(`step-${stepIndex}`);
+    const stepNumber = stepElement.querySelector('.step-number');
+    const stepStatus = document.getElementById(`step-status-${stepIndex}`);
+
+    if (status === 'generating') {
+        stepNumber.classList.add('active');
+        stepStatus.textContent = 'Generating...';
+        stepStatus.classList.add('generating');
+    } else if (status === 'completed') {
+        stepNumber.classList.remove('active');
+        stepNumber.classList.add('completed');
+        stepStatus.textContent = 'Complete';
+        stepStatus.classList.remove('generating');
+    }
+}
+
+// Show sequential results
+function showSequentialResults(generatedImages) {
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsContainer = resultsSection.querySelector('.results-grid') || createResultsGrid();
+
+    resultsContainer.innerHTML = generatedImages.map((img, index) => `
+        <div style="text-align: center;">
+            <img src="${img.url}" class="result-image" onclick="openLightbox('${img.url}')">
+            <div style="margin-top: 8px; font-size: 12px; color: #737373;">Step ${img.step}: ${img.item.name}</div>
+        </div>
+    `).join('');
+
+    resultsSection.classList.add('show');
 }
 
 // Helper: File to Base64
