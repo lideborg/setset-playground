@@ -384,12 +384,13 @@ async function generateStyled() {
     document.getElementById('resultsSection').classList.remove('show');
 
     // Build list of uploaded items in PRIORITY order
-    // START WITH BIGGEST/MOST VISIBLE ITEMS FIRST
-    const categoryOrder = ['outerwear', 'longsleeve', 'shortsleeve', 'bottom', 'shoes', 'face', 'head', 'accessories'];
+    // Order: Short sleeve → Long sleeve → Bottom → Outerwear → Shoes → Head → Face/Neck → Accessories
+    const categoryOrder = ['shortsleeve', 'longsleeve', 'bottom', 'outerwear', 'shoes', 'head', 'face', 'accessories'];
     const uploadedItems = [];
 
     categoryOrder.forEach(category => {
         const data = state.items[category];
+        console.log(`🔍 Checking ${category}:`, { hasFile: !!data.file, hasAnalysis: !!data.analysis, data });
         if (data.file && data.analysis) {
             uploadedItems.push({
                 category,
@@ -397,10 +398,16 @@ async function generateStyled() {
                 analysis: data.analysis,
                 name: getCategoryName(category)
             });
+            console.log(`✅ Added ${category} to generation queue`);
+        } else {
+            if (data.file && !data.analysis) {
+                console.warn(`⚠️ ${category} has file but NO ANALYSIS - skipping!`);
+            }
         }
     });
 
-    console.log('📋 Upload order:', uploadedItems.map(item => item.name).join(' → '));
+    console.log('📋 Final upload order:', uploadedItems.map(item => item.name).join(' → '));
+    console.log('📋 Total items to generate:', uploadedItems.length);
 
     if (uploadedItems.length === 0) {
         showError('Please upload at least one garment image');
