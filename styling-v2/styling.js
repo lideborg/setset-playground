@@ -508,7 +508,7 @@ async function generateCurrentStep() {
         const baseImage = state.selectedImageForNextStep || state.currentBaseImage;
         const imageUrls = [baseImage, garmentBase64];
 
-        console.log(`🎨 Calling Flux API to generate 4 variations...`);
+        console.log(`🎨 Calling Nanobanana API to generate 4 variations...`);
         console.log(`   Aspect ratio: ${aspectRatio}`);
         console.log(`   Base image: ${state.currentStep === 0 ? 'Model photo' : 'Previous step result'}`);
 
