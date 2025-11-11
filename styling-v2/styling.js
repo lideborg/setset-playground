@@ -17,7 +17,8 @@ const state = {
     uploadedItemsList: [],
     currentBaseImage: null,
     selectedImageForNextStep: null,
-    allStepResults: []
+    allStepResults: [],
+    isGenerating: false
 };
 
 // Load model descriptions
@@ -385,6 +386,13 @@ function buildPrompt() {
 // Generate styled look - SEQUENTIAL VERSION
 // Generate styled look - INTERACTIVE MULTI-STEP VERSION
 async function generateStyled() {
+    // Prevent concurrent execution
+    if (state.isGenerating) {
+        console.warn('⚠️  Generation already in progress');
+        showError('Generation already in progress, please wait...');
+        return;
+    }
+
     console.log('\n🎬 ============================================');
     console.log('🎬 STARTING INTERACTIVE SEQUENTIAL GENERATION');
     console.log('🎬 ============================================\n');
@@ -470,6 +478,14 @@ async function generateStyled() {
 
 // Generate images for current step
 async function generateCurrentStep() {
+    // Prevent concurrent generations
+    if (state.isGenerating) {
+        console.warn('⚠️  Generation already in progress, ignoring duplicate call');
+        return;
+    }
+
+    state.isGenerating = true;
+
     const item = state.uploadedItemsList[state.currentStep];
     const aspectRatio = document.getElementById('aspectRatio').value;
     const stepNum = state.currentStep + 1;
@@ -543,12 +559,18 @@ async function generateCurrentStep() {
         // Show results with selection UI
         showStepResults(result.images, item);
 
+        // Reset generating flag
+        state.isGenerating = false;
+
     } catch (error) {
         const endTime = performance.now();
         const duration = ((endTime - startTime) / 1000).toFixed(1);
         console.error(`   ❌ Generation failed after ${duration}s:`, error.message);
         showError('Generation failed: ' + error.message);
         console.error(error);
+
+        // Reset generating flag
+        state.isGenerating = false;
     }
 }
 
@@ -621,10 +643,20 @@ function selectStepImage(imageUrl) {
 
 // Continue to next step
 async function continueToNextStep() {
+    // Prevent concurrent execution
+    if (state.isGenerating) {
+        console.warn('⚠️  Already processing, please wait...');
+        return;
+    }
+
     if (!state.selectedImageForNextStep) {
         showError('Please select an image first');
         return;
     }
+
+    // Disable button to prevent double-clicks
+    const continueBtn = document.getElementById('continueBtn');
+    continueBtn.disabled = true;
 
     const currentStepNum = state.currentStep + 1;
     const totalSteps = state.uploadedItemsList.length;
