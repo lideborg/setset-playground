@@ -376,8 +376,9 @@ async function generateStyled() {
     // Hide previous results
     document.getElementById('resultsSection').classList.remove('show');
 
-    // Build list of uploaded items in order
-    const categoryOrder = ['face', 'head', 'outerwear', 'longsleeve', 'shortsleeve', 'bottom', 'shoes', 'accessories'];
+    // Build list of uploaded items in PRIORITY order
+    // Start with clothing (bottom → sleeves), then accessories, OUTERWEAR ALWAYS LAST
+    const categoryOrder = ['bottom', 'longsleeve', 'shortsleeve', 'face', 'head', 'shoes', 'accessories', 'outerwear'];
     const uploadedItems = [];
 
     categoryOrder.forEach(category => {
@@ -391,6 +392,8 @@ async function generateStyled() {
             });
         }
     });
+
+    console.log('📋 Upload order:', uploadedItems.map(item => item.name).join(' → '));
 
     if (uploadedItems.length === 0) {
         showError('Please upload at least one garment image');
@@ -448,6 +451,9 @@ async function generateStyled() {
 
             // Call API
             const imageUrls = [currentImage, garmentBase64];
+            console.log(`📤 Step ${i + 1}: Sending ${imageUrls.length} images to API`);
+            console.log(`   Prompt: ${stepPrompt.substring(0, 100)}...`);
+
             const response = await fetch('http://localhost:3001/api/generate-styled', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -542,9 +548,9 @@ function buildFirstStepPrompt(firstItem) {
     if (state.selectedModel && modelDescriptions[state.selectedModel.id]) {
         const modelDesc = modelDescriptions[state.selectedModel.id].overall_description;
         const shortDesc = modelDesc.split(',')[0] || modelDesc.substring(0, 50);
-        prompt = `Editorial fashion photo of ${shortDesc}`;
+        prompt = `Editorial fashion photo of this exact model (${shortDesc})`;
     } else {
-        prompt = `Editorial fashion photo of this model`;
+        prompt = `Editorial fashion photo of this exact model`;
     }
 
     prompt += ` wearing these exact ${firstItem.analysis.color} ${firstItem.analysis.garment_type}`;
@@ -555,6 +561,7 @@ function buildFirstStepPrompt(firstItem) {
 
     prompt += `. Clean minimal background, professional studio lighting.`;
 
+    console.log('🎯 First step prompt:', prompt);
     return prompt;
 }
 
@@ -569,6 +576,7 @@ function initializeProgressSteps(uploadedItems) {
                 <div class="step-title">${item.name}</div>
                 <div class="step-detail">${item.analysis.color} ${item.analysis.garment_type}</div>
             </div>
+            <img class="step-result-image" id="step-result-${index}" alt="Generated result">
             <div class="step-status" id="step-status-${index}">Waiting</div>
         </div>
     `).join('');
@@ -579,6 +587,7 @@ function updateProgressStep(stepIndex, status, imageUrl = null) {
     const stepElement = document.getElementById(`step-${stepIndex}`);
     const stepNumber = stepElement.querySelector('.step-number');
     const stepStatus = document.getElementById(`step-status-${stepIndex}`);
+    const resultImage = document.getElementById(`step-result-${stepIndex}`);
 
     if (status === 'generating') {
         stepNumber.classList.add('active');
@@ -589,6 +598,12 @@ function updateProgressStep(stepIndex, status, imageUrl = null) {
         stepNumber.classList.add('completed');
         stepStatus.textContent = 'Complete';
         stepStatus.classList.remove('generating');
+
+        // Show generated image
+        if (imageUrl && resultImage) {
+            resultImage.src = imageUrl;
+            resultImage.classList.add('show');
+        }
     }
 }
 
