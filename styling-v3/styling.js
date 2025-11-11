@@ -65,6 +65,7 @@ const models = [
 // Initialize
 function init() {
     renderModelGrid();
+    renderStylingCards();
     updateGenerateButton();
     setupDragAndDrop();
 }
@@ -123,7 +124,7 @@ function renderModelGrid() {
         const firstName = nameParts[0];
         const lastName = nameParts.slice(1).join(' ');
         return `
-            <div class="model-option" onclick="selectModel('${model.id}')">
+            <div class="model-card" onclick="selectModel('${model.id}')">
                 <img src="${model.image}" class="model-thumbnail"
                      onerror="this.style.background='#e5e5e5';">
                 <div class="model-name">${firstName}<br>${lastName}</div>
@@ -137,11 +138,12 @@ function selectModel(modelId) {
     state.selectedModel = models.find(m => m.id === modelId);
 
     // Update UI
-    document.querySelectorAll('.model-option').forEach(option => {
-        option.classList.remove('selected');
+    document.querySelectorAll('.model-card').forEach(card => {
+        card.classList.remove('selected');
     });
-    event.target.closest('.model-option').classList.add('selected');
+    event.target.closest('.model-card').classList.add('selected');
 
+    updateBuildTimeline();
     updateGenerateButton();
 }
 
@@ -245,6 +247,7 @@ async function handleUpload(event, category) {
         }
     }
 
+    updateBuildTimeline();
     updateGenerateButton();
 }
 
@@ -291,6 +294,7 @@ function clearItem(category) {
     // Reset file input
     document.getElementById(`upload-${category}`).value = '';
 
+    updateBuildTimeline();
     updateGenerateButton();
 }
 
