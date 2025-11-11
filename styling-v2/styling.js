@@ -384,7 +384,8 @@ async function generateStyled() {
     document.getElementById('resultsSection').classList.remove('show');
 
     // Build list of uploaded items in PRIORITY order
-    const categoryOrder = ['bottom', 'longsleeve', 'shortsleeve', 'face', 'head', 'shoes', 'accessories', 'outerwear'];
+    // START WITH BIGGEST/MOST VISIBLE ITEMS FIRST
+    const categoryOrder = ['outerwear', 'longsleeve', 'shortsleeve', 'bottom', 'shoes', 'face', 'head', 'accessories'];
     const uploadedItems = [];
 
     categoryOrder.forEach(category => {
@@ -452,7 +453,9 @@ async function generateCurrentStep() {
     if (state.currentStep === 0) {
         stepPrompt = buildFirstStepPrompt(item);
     } else {
-        stepPrompt = `Take this EXACT image and add these EXACT ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Keep full body shot visible from head to toe. Maintain the exact same pose, lighting, and background.`;
+        // Use analysis from previous step to maintain exact consistency
+        const previousStepAnalysis = state.allStepResults[state.currentStep - 1]?.analysis || 'a model in a white photo studio';
+        stepPrompt = `Take this EXACT image of ${previousStepAnalysis} and add these EXACT ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Maintain the exact same white studio background, pose, lighting, and framing. Full body shot visible from head to toe.`;
     }
 
     try {
@@ -560,12 +563,19 @@ async function continueToNextStep() {
         return;
     }
 
-    // Store this step's result
+    // Analyze the selected image for next step
+    console.log('🔍 Analyzing selected image...');
+    const imageAnalysis = await analyzeGeneratedImage(state.selectedImageForNextStep);
+
+    // Store this step's result with analysis
     state.allStepResults.push({
         step: state.currentStep + 1,
         item: state.uploadedItemsList[state.currentStep],
-        selectedImage: state.selectedImageForNextStep
+        selectedImage: state.selectedImageForNextStep,
+        analysis: imageAnalysis
     });
+
+    console.log('✓ Analysis complete:', imageAnalysis);
 
     // Move to next step
     state.currentStep++;
@@ -579,6 +589,30 @@ async function continueToNextStep() {
     // Generate next step
     document.getElementById('resultsSection').classList.remove('show');
     await generateCurrentStep();
+}
+
+// Analyze generated image to maintain consistency
+async function analyzeGeneratedImage(imageUrl) {
+    try {
+        const response = await fetch('http://localhost:3001/api/analyze-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                imageUrl: imageUrl,
+                prompt: 'Describe this fashion photo in detail: What is the model wearing? Describe the background, lighting, and pose. Be specific and concise.'
+            })
+        });
+
+        if (!response.ok) {
+            return 'a model in a white photo studio';
+        }
+
+        const result = await response.json();
+        return result.description || 'a model in a white photo studio';
+    } catch (error) {
+        console.error('Analysis failed:', error);
+        return 'a model in a white photo studio';
+    }
 }
 
 // Show all final results
@@ -651,9 +685,9 @@ function buildFirstStepPrompt(firstItem) {
     if (state.selectedModel && modelDescriptions[state.selectedModel.id]) {
         const modelDesc = modelDescriptions[state.selectedModel.id].overall_description;
         const shortDesc = modelDesc.split(',')[0] || modelDesc.substring(0, 50);
-        prompt = `Full body shot. Editorial fashion photo of this exact model (${shortDesc})`;
+        prompt = `White photorealistic photo studio. Full body shot. Editorial fashion photo of this exact model (${shortDesc})`;
     } else {
-        prompt = `Full body shot. Editorial fashion photo of this exact model`;
+        prompt = `White photorealistic photo studio. Full body shot. Editorial fashion photo of this exact model`;
     }
 
     prompt += ` wearing these exact ${firstItem.analysis.color} ${firstItem.analysis.garment_type}`;
@@ -662,7 +696,7 @@ function buildFirstStepPrompt(firstItem) {
         prompt += `, styled with ${styleOnlyItems.join(', ')}`;
     }
 
-    prompt += `. Full body visible from head to toe. Clean minimal background, professional studio lighting.`;
+    prompt += `. Full body visible from head to toe, soft artistic lighting, white studio background.`;
 
     console.log('🎯 First step prompt:', prompt);
     return prompt;

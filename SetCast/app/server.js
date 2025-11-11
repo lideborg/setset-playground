@@ -1194,6 +1194,35 @@ Be specific and descriptive. Respond with ONLY valid JSON.`;
   }
 });
 
+// Analyze generated image for consistency
+app.post('/api/analyze-image', async (req, res) => {
+  try {
+    const { imageUrl, prompt } = req.body;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: imageUrl } }
+          ]
+        }
+      ],
+      max_tokens: 150
+    });
+
+    const description = response.choices[0].message.content.trim();
+
+    res.json({ description });
+
+  } catch (error) {
+    console.error('Error analyzing image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Generate styled look with Nano Banana
 app.post('/api/generate-styled', async (req, res) => {
   try {
