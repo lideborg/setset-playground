@@ -1126,6 +1126,110 @@ app.post('/api/generate-images', upload.single('image'), async (req, res) => {
   }
 });
 
+// ===== STYLING STUDIO API ENDPOINTS =====
+
+// Analyze garment with GPT-4 Vision
+app.post('/api/analyze-garment', async (req, res) => {
+  try {
+    const { image } = req.body;
+
+    const analysisPrompt = `Analyze this clothing/accessory item and provide ONLY a JSON response with these exact fields:
+
+{
+  "garment_type": "specific type (e.g., 'sweater', 'sunglasses', 'jacket')",
+  "color": "primary color(s)",
+  "material": "material/fabric type",
+  "style": "style descriptor (e.g., 'casual', 'formal', 'oversized')",
+  "details": "notable details or features"
+}
+
+Be specific and descriptive. Respond with ONLY valid JSON.`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: analysisPrompt },
+            { type: 'image_url', image_url: { url: image } }
+          ]
+        }
+      ],
+      max_tokens: 200
+    });
+
+    const analysisText = response.choices[0].message.content.trim();
+
+    // Parse JSON response
+    const analysis = JSON.parse(analysisText);
+
+    res.json(analysis);
+
+  } catch (error) {
+    console.error('Error analyzing garment:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate styled look with Nano Banana
+app.post('/api/generate-styled', async (req, res) => {
+  try {
+    if (!process.env.FAL_KEY) {
+      return res.status(500).json({ error: 'FAL_KEY not configured' });
+    }
+
+    const { prompt, imageUrls, items } = req.body;
+
+    // Enhance prompt with GPT-4
+    const enhancePrompt = `You are an expert fashion photographer and prompt engineer. Enhance this fashion photography prompt to be more detailed and effective for AI image generation. Keep the core references to "this exact person" and "these exact" items, but add professional photography details, lighting, composition, and style refinements.
+
+Original prompt: ${prompt}
+
+Requirements:
+- Maintain all references to exact items
+- Add professional photography terminology
+- Include lighting and composition details
+- Keep it concise (under 150 words)
+- Make it editorial/high-fashion quality
+
+Enhanced prompt:`;
+
+    const enhancedResponse = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: enhancePrompt }],
+      max_tokens: 300
+    });
+
+    const enhancedPrompt = enhancedResponse.choices[0].message.content.trim();
+
+    console.log('Enhanced prompt:', enhancedPrompt);
+
+    // Generate with Nano Banana
+    const result = await fal.subscribe('fal-ai/nano-banana/edit', {
+      input: {
+        prompt: enhancedPrompt,
+        image_urls: imageUrls,
+        num_images: 1,
+        aspect_ratio: '3:4',
+        output_format: 'jpeg',
+        sync_mode: false
+      },
+      logs: true
+    });
+
+    res.json({
+      enhancedPrompt: enhancedPrompt,
+      imageUrl: result.data.images[0].url,
+      description: result.data.description || ''
+    });
+
+  } catch (error) {
+    console.error('Error generating styled look:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`\n🚀 Editorial Prompt Generator running at http://localhost:${PORT}`);
   console.log(`📸 Upload model photos to generate varied editorial prompts\n`);

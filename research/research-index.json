@@ -159,6 +159,20 @@
           "tags": ["captions", "copywriting", "storytelling", "engagement", "hooks"]
         }
       ]
+    },
+    {
+      "id": "tool-docs",
+      "name": "Tool Documentation",
+      "icon": "🔧",
+      "description": "Technical documentation for Setset Playground tools and features",
+      "documents": [
+        {
+          "title": "Styling Studio Documentation",
+          "file": "../SetCast/research/06_TOOL_DOCUMENTATION/STYLING_STUDIO_DOCUMENTATION.md",
+          "summary": "Comprehensive documentation for the Styling Studio photorealistic paper doll generator. Covers architecture, API endpoints, prompt building logic, user flow, and technical specifications for multi-image AI styling.",
+          "tags": ["styling", "documentation", "technical", "nano banana", "multi-image"]
+        }
+      ]
     }
   ]
 }
