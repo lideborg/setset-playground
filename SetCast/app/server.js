@@ -1154,11 +1154,11 @@ app.post('/api/analyze-garment', async (req, res) => {
     }
 
     // Extract mime type and ensure it's supported
-    const mimeMatch = image.match(/^data:(image\/(?:png|jpeg|jpg|gif|webp));base64,/);
+    const mimeMatch = image.match(/^data:(image\/(?:png|jpeg|jpg|gif|webp|avif));base64,/);
     if (!mimeMatch) {
       console.error('Invalid mime type detected:', image.substring(0, 50));
       return res.status(400).json({
-        error: 'Unsupported image format. Please upload PNG, JPEG, GIF, or WebP images only.'
+        error: 'Unsupported image format. Please upload PNG, JPEG, GIF, WebP, or AVIF images only.'
       });
     }
 
@@ -1215,7 +1215,7 @@ Be specific and descriptive. Respond with ONLY valid JSON.`;
     // Provide more helpful error messages
     if (error.code === 'invalid_image_format') {
       return res.status(400).json({
-        error: 'OpenAI rejected the image format. Please ensure you upload PNG, JPEG, GIF, or WebP files only.'
+        error: 'OpenAI rejected the image format. Please ensure you upload PNG, JPEG, GIF, WebP, or AVIF files only.'
       });
     }
 
