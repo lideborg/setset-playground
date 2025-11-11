@@ -2,6 +2,9 @@
 let batchMode = true; // Always enabled - multi-select by default
 let selectedModels = [];
 
+// Track object URLs to prevent memory leaks
+let objectUrls = [];
+
 // State management
 const state = {
     selectedModel: null,
@@ -72,6 +75,17 @@ function init() {
     renderStylingCards();
     updateGenerateButton();
     setupDragAndDrop();
+    setupEventDelegation();
+}
+
+// Setup event delegation for style dropdowns (prevents memory leaks)
+function setupEventDelegation() {
+    document.getElementById('stylingGrid').addEventListener('change', (e) => {
+        if (e.target.matches('.style-dropdown')) {
+            const category = e.target.id.replace('style-', '');
+            updateStyle(category, e.target.value);
+        }
+    });
 }
 
 // Setup drag-and-drop for all upload areas
@@ -323,14 +337,6 @@ function updateStyle(category, style) {
     updateGenerateButton();
 }
 
-// Attach style dropdown listeners
-document.querySelectorAll('.style-dropdown').forEach(dropdown => {
-    dropdown.addEventListener('change', (e) => {
-        const category = e.target.id.replace('style-', '');
-        updateStyle(category, e.target.value);
-    });
-});
-
 // Update generate button state
 function updateGenerateButton() {
     const btn = document.getElementById('generateBtn');
@@ -416,14 +422,19 @@ async function generateStyled() {
         return;
     }
 
-    console.log('\n🎬 ============================================');
-    console.log('🎬 STARTING INTERACTIVE SEQUENTIAL GENERATION');
-    console.log('🎬 ============================================\n');
+    // Set flag immediately to prevent race condition
+    state.isGenerating = true;
 
-    if (!state.selectedModel) {
-        showError('Please select a model first');
-        return;
-    }
+    try {
+        console.log('\n🎬 ============================================');
+        console.log('🎬 STARTING INTERACTIVE SEQUENTIAL GENERATION');
+        console.log('🎬 ============================================\n');
+
+        if (!state.selectedModel) {
+            showError('Please select a model first');
+            state.isGenerating = false;
+            return;
+        }
 
     console.log(`👤 Model Selected: ${state.selectedModel.name}`);
 
@@ -458,46 +469,53 @@ async function generateStyled() {
     console.log(`   ${uploadedItems.map((item, i) => `${i + 1}. ${item.name}`).join('\n   ')}`);
     console.log(`   Total steps: ${uploadedItems.length}\n`);
 
-    if (uploadedItems.length === 0) {
-        showError('Please upload at least one garment image');
-        return;
+        if (uploadedItems.length === 0) {
+            showError('Please upload at least one garment image');
+            state.isGenerating = false;
+            return;
+        }
+
+        // Initialize state for sequential generation
+        state.currentStep = 0;
+        state.uploadedItemsList = uploadedItems;
+        state.selectedImagesForNextStep = []; // Empty array for first step
+        state.allStepResults = [];
+
+        // Convert model image to base64
+        console.log('🖼️  Loading model base image...');
+        const modelImageResponse = await fetch(state.selectedModel.image);
+        const modelImageBlob = await modelImageResponse.blob();
+        state.currentBaseImage = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(modelImageBlob);
+        });
+        console.log('   ✓ Model image loaded\n');
+
+        // Show process description
+        const processDesc = document.getElementById('processDescription');
+        processDesc.innerHTML = `
+            <strong>Exponential Exploration Mode:</strong><br>
+            Building your look in ${uploadedItems.length} steps. Select multiple variations at each step to branch out and explore different directions.
+            Selecting 2 images generates 8 variations next (4 per selection).
+        `;
+
+        // Show progress section
+        const progressSection = document.getElementById('progressSection');
+        progressSection.classList.add('show');
+
+        // Initialize progress steps
+        initializeProgressSteps(uploadedItems);
+
+        // Generate first step
+        console.log('🚀 Starting Step 1...\n');
+        await generateCurrentStep();
+
+    } catch (error) {
+        console.error('❌ Generation failed:', error);
+        showError('Generation failed: ' + error.message);
+        state.isGenerating = false;
     }
-
-    // Initialize state for sequential generation
-    state.currentStep = 0;
-    state.uploadedItemsList = uploadedItems;
-    state.selectedImagesForNextStep = []; // Empty array for first step
-    state.allStepResults = [];
-
-    // Convert model image to base64
-    console.log('🖼️  Loading model base image...');
-    const modelImageResponse = await fetch(state.selectedModel.image);
-    const modelImageBlob = await modelImageResponse.blob();
-    state.currentBaseImage = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(modelImageBlob);
-    });
-    console.log('   ✓ Model image loaded\n');
-
-    // Show process description
-    const processDesc = document.getElementById('processDescription');
-    processDesc.innerHTML = `
-        <strong>Exponential Exploration Mode:</strong><br>
-        Building your look in ${uploadedItems.length} steps. Select multiple variations at each step to branch out and explore different directions.
-        Selecting 2 images generates 8 variations next (4 per selection).
-    `;
-
-    // Show progress section
-    const progressSection = document.getElementById('progressSection');
-    progressSection.classList.add('show');
-
-    // Initialize progress steps
-    initializeProgressSteps(uploadedItems);
-
-    // Generate first step
-    console.log('🚀 Starting Step 1...\n');
-    await generateCurrentStep();
 }
 
 // Generate images for current step - EXPONENTIAL BRANCHING with PARALLEL requests
@@ -653,7 +671,9 @@ function showStepResults(images, item) {
 
 // Handle image selection - MULTI-SELECT for exponential branching
 function selectStepImage(imageUrl) {
-    const clickedImage = document.querySelector(`[data-image-url="${imageUrl}"]`);
+    // Use querySelectorAll + filter to avoid issues with special characters in URLs
+    const allImages = document.querySelectorAll('[data-image-url]');
+    const clickedImage = Array.from(allImages).find(img => img.dataset.imageUrl === imageUrl);
     if (!clickedImage) return;
 
     // Toggle selection
@@ -898,11 +918,17 @@ function buildFirstStepPrompt(firstItem) {
 
 // Initialize progress steps UI
 function initializeProgressSteps(uploadedItems) {
+    // Revoke any previous object URLs to prevent memory leaks
+    cleanupObjectUrls();
+
     const stepsContainer = document.getElementById('progressSteps');
-    stepsContainer.innerHTML = uploadedItems.map((item, index) => `
+    stepsContainer.innerHTML = uploadedItems.map((item, index) => {
+        const objectUrl = URL.createObjectURL(item.file);
+        objectUrls.push(objectUrl); // Track for cleanup
+        return `
         <div class="progress-step" id="step-${index}">
             <div class="step-number">${index + 1}</div>
-            <img src="${URL.createObjectURL(item.file)}" class="step-image" alt="${item.name}">
+            <img src="${objectUrl}" class="step-image" alt="${item.name}">
             <div class="step-info">
                 <div class="step-title">${item.name}</div>
                 <div class="step-detail">${item.analysis.color} ${item.analysis.garment_type}</div>
@@ -910,7 +936,20 @@ function initializeProgressSteps(uploadedItems) {
             <img class="step-result-image" id="step-result-${index}" alt="Generated result">
             <div class="step-status" id="step-status-${index}">Waiting</div>
         </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+// Cleanup object URLs to prevent memory leaks
+function cleanupObjectUrls() {
+    objectUrls.forEach(url => {
+        try {
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            // Ignore errors from already-revoked URLs
+        }
+    });
+    objectUrls = [];
 }
 
 // Update progress step status
