@@ -11,7 +11,13 @@ const state = {
         shoes: { file: null, analysis: null, style: 'minimal' },
         accessories: { file: null, analysis: null, style: '' }
     },
-    lastGeneratedPrompt: null
+    lastGeneratedPrompt: null,
+    // Sequential generation state
+    currentStep: 0,
+    uploadedItemsList: [],
+    currentBaseImage: null,
+    selectedImageForNextStep: null,
+    allStepResults: []
 };
 
 // Load model descriptions
@@ -367,6 +373,7 @@ function buildPrompt() {
 
 // Generate styled look
 // Generate styled look - SEQUENTIAL VERSION
+// Generate styled look - INTERACTIVE MULTI-STEP VERSION
 async function generateStyled() {
     if (!state.selectedModel) {
         showError('Please select a model first');
@@ -377,7 +384,6 @@ async function generateStyled() {
     document.getElementById('resultsSection').classList.remove('show');
 
     // Build list of uploaded items in PRIORITY order
-    // Start with clothing (bottom → sleeves), then accessories, OUTERWEAR ALWAYS LAST
     const categoryOrder = ['bottom', 'longsleeve', 'shortsleeve', 'face', 'head', 'shoes', 'accessories', 'outerwear'];
     const uploadedItems = [];
 
@@ -400,12 +406,26 @@ async function generateStyled() {
         return;
     }
 
+    // Initialize state for sequential generation
+    state.currentStep = 0;
+    state.uploadedItemsList = uploadedItems;
+    state.selectedImageForNextStep = null;
+    state.allStepResults = [];
+
+    // Convert model image to base64
+    const modelImageResponse = await fetch(state.selectedModel.image);
+    const modelImageBlob = await modelImageResponse.blob();
+    state.currentBaseImage = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(modelImageBlob);
+    });
+
     // Show process description
     const processDesc = document.getElementById('processDescription');
     processDesc.innerHTML = `
-        <strong>Sequential Generation Process:</strong><br>
-        Building your look in ${uploadedItems.length} steps for maximum fidelity. Each garment is added one at a time,
-        using the previous result as the base. This ensures each item is accurately represented.
+        <strong>Interactive Sequential Generation:</strong><br>
+        Building your look in ${uploadedItems.length} steps. At each step, you'll see 4 variations and pick your favorite to continue.
     `;
 
     // Show progress section
@@ -415,93 +435,176 @@ async function generateStyled() {
     // Initialize progress steps
     initializeProgressSteps(uploadedItems);
 
-    // Convert model image to base64
-    const modelImageResponse = await fetch(state.selectedModel.image);
-    const modelImageBlob = await modelImageResponse.blob();
-    let currentImage = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(modelImageBlob);
-    });
+    // Generate first step
+    await generateCurrentStep();
+}
 
+// Generate images for current step
+async function generateCurrentStep() {
+    const item = state.uploadedItemsList[state.currentStep];
     const aspectRatio = document.getElementById('aspectRatio').value;
-    const generatedImages = [];
-    let previousPrompt = '';
+
+    // Update progress
+    updateProgressStep(state.currentStep, 'generating');
+
+    // Build prompt for this step
+    let stepPrompt;
+    if (state.currentStep === 0) {
+        stepPrompt = buildFirstStepPrompt(item);
+    } else {
+        stepPrompt = `Take this EXACT image and add these EXACT ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Keep full body shot visible from head to toe. Maintain the exact same pose, lighting, and background.`;
+    }
 
     try {
-        // Generate sequentially
-        for (let i = 0; i < uploadedItems.length; i++) {
-            const item = uploadedItems[i];
+        // Convert garment image to base64
+        const garmentBase64 = await fileToBase64(item.file);
 
-            // Update progress
-            updateProgressStep(i, 'generating');
+        // Use selected image from previous step or initial model image
+        const baseImage = state.selectedImageForNextStep || state.currentBaseImage;
+        const imageUrls = [baseImage, garmentBase64];
 
-            // Build prompt for this step
-            let stepPrompt;
-            if (i === 0) {
-                // First step: use base prompt with style-only items
-                stepPrompt = buildFirstStepPrompt(item);
-            } else {
-                // Subsequent steps: add this item to previous image
-                stepPrompt = `Take this EXACT image and add these EXACT ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Keep full body shot visible from head to toe. Maintain the exact same pose, lighting, and background.`;
-            }
+        console.log(`📤 Step ${state.currentStep + 1}: Generating 4 variations`);
+        console.log(`   Prompt: ${stepPrompt.substring(0, 100)}...`);
 
-            // Convert garment image to base64
-            const garmentBase64 = await fileToBase64(item.file);
+        // Call API for 4 images
+        const response = await fetch('http://localhost:3001/api/generate-styled', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                prompt: stepPrompt,
+                imageUrls: imageUrls,
+                items: state.items,
+                numImages: 4,
+                aspectRatio: aspectRatio
+            })
+        });
 
-            // Call API
-            const imageUrls = [currentImage, garmentBase64];
-            console.log(`📤 Step ${i + 1}: Sending ${imageUrls.length} images to API`);
-            console.log(`   Prompt: ${stepPrompt.substring(0, 100)}...`);
-
-            const response = await fetch('http://localhost:3001/api/generate-styled', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    prompt: stepPrompt,
-                    imageUrls: imageUrls,
-                    items: state.items,
-                    numImages: 1,
-                    aspectRatio: aspectRatio
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`Step ${i + 1} generation failed`);
-            }
-
-            const result = await response.json();
-            const generatedImageUrl = result.images[0];
-
-            // Store the generated image
-            generatedImages.push({
-                url: generatedImageUrl,
-                step: i + 1,
-                item: item,
-                prompt: result.enhancedPrompt
-            });
-
-            // Update progress with generated image
-            updateProgressStep(i, 'completed', generatedImageUrl);
-
-            // Use this generated image for the next step
-            currentImage = generatedImageUrl;
-            previousPrompt = result.enhancedPrompt;
-
-            console.log(`✓ Step ${i + 1}/${uploadedItems.length} complete: Added ${item.name}`);
+        if (!response.ok) {
+            throw new Error(`Step ${state.currentStep + 1} generation failed`);
         }
 
-        // Store all images for lightbox
-        lightboxImages = generatedImages.map(img => img.url);
-        state.lastGeneratedPrompt = previousPrompt;
+        const result = await response.json();
 
-        // Show all results
-        showSequentialResults(generatedImages);
+        // Update progress
+        updateProgressStep(state.currentStep, 'completed', result.images[0]);
+
+        // Show results with selection UI
+        showStepResults(result.images, item);
 
     } catch (error) {
         showError('Generation failed: ' + error.message);
         console.error(error);
     }
+}
+
+// Show results for current step with selection UI
+function showStepResults(images, item) {
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsSubtitle = document.getElementById('resultsSubtitle');
+    const stepActions = document.getElementById('stepActions');
+
+    const stepNum = state.currentStep + 1;
+    const totalSteps = state.uploadedItemsList.length;
+
+    resultsTitle.textContent = `Step ${stepNum} of ${totalSteps}: ${item.name}`;
+    resultsSubtitle.textContent = 'Click an image to select it, then continue to the next step';
+
+    const resultsContainer = resultsSection.querySelector('.results-grid') || createResultsGrid();
+    resultsContainer.innerHTML = images.map((url, index) => `
+        <div style="text-align: center;">
+            <img src="${url}"
+                 class="result-image"
+                 data-image-url="${url}"
+                 onclick="selectStepImage('${url}')">
+        </div>
+    `).join('');
+
+    resultsSection.classList.add('show');
+    stepActions.classList.add('show');
+
+    // Update continue button text
+    const continueBtn = document.getElementById('continueBtn');
+    if (state.currentStep < state.uploadedItemsList.length - 1) {
+        continueBtn.textContent = 'Continue to Next Step';
+    } else {
+        continueBtn.textContent = 'Finish & Show All Results';
+    }
+    continueBtn.disabled = true; // Will enable when image is selected
+}
+
+// Handle image selection
+function selectStepImage(imageUrl) {
+    // Remove selection from all images
+    document.querySelectorAll('.result-image').forEach(img => {
+        img.classList.remove('selected');
+    });
+
+    // Select clicked image
+    const clickedImage = document.querySelector(`[data-image-url="${imageUrl}"]`);
+    if (clickedImage) {
+        clickedImage.classList.add('selected');
+    }
+
+    // Store selected image
+    state.selectedImageForNextStep = imageUrl;
+
+    // Enable continue button
+    document.getElementById('continueBtn').disabled = false;
+}
+
+// Continue to next step
+async function continueToNextStep() {
+    if (!state.selectedImageForNextStep) {
+        showError('Please select an image first');
+        return;
+    }
+
+    // Store this step's result
+    state.allStepResults.push({
+        step: state.currentStep + 1,
+        item: state.uploadedItemsList[state.currentStep],
+        selectedImage: state.selectedImageForNextStep
+    });
+
+    // Move to next step
+    state.currentStep++;
+
+    // Check if we're done
+    if (state.currentStep >= state.uploadedItemsList.length) {
+        showFinalResults();
+        return;
+    }
+
+    // Generate next step
+    document.getElementById('resultsSection').classList.remove('show');
+    await generateCurrentStep();
+}
+
+// Show all final results
+function showFinalResults() {
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsSubtitle = document.getElementById('resultsSubtitle');
+    const stepActions = document.getElementById('stepActions');
+
+    resultsTitle.textContent = 'Final Results - All Steps';
+    resultsSubtitle.textContent = 'Here\'s how your look evolved through each step';
+
+    const resultsContainer = resultsSection.querySelector('.results-grid') || createResultsGrid();
+    resultsContainer.innerHTML = state.allStepResults.map((result, index) => `
+        <div style="text-align: center;">
+            <img src="${result.selectedImage}" class="result-image" onclick="openLightbox('${result.selectedImage}')">
+            <div style="margin-top: 8px; font-size: 12px; color: #737373;">Step ${result.step}: ${result.item.name}</div>
+        </div>
+    `).join('');
+
+    stepActions.classList.remove('show');
+
+    // Store for lightbox
+    lightboxImages = state.allStepResults.map(r => r.selectedImage);
+
+    resultsSection.classList.add('show');
 }
 
 // Helper: Get category display name
