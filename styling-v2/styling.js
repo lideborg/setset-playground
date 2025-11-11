@@ -443,7 +443,7 @@ async function generateStyled() {
                 stepPrompt = buildFirstStepPrompt(item);
             } else {
                 // Subsequent steps: add this item to previous image
-                stepPrompt = `Take this exact image and add these exact ${item.analysis.color} ${item.analysis.garment_type} to the model.`;
+                stepPrompt = `Take this EXACT image and add these EXACT ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Keep full body shot visible from head to toe. Maintain the exact same pose, lighting, and background.`;
             }
 
             // Convert garment image to base64
@@ -548,9 +548,9 @@ function buildFirstStepPrompt(firstItem) {
     if (state.selectedModel && modelDescriptions[state.selectedModel.id]) {
         const modelDesc = modelDescriptions[state.selectedModel.id].overall_description;
         const shortDesc = modelDesc.split(',')[0] || modelDesc.substring(0, 50);
-        prompt = `Editorial fashion photo of this exact model (${shortDesc})`;
+        prompt = `Full body shot. Editorial fashion photo of this exact model (${shortDesc})`;
     } else {
-        prompt = `Editorial fashion photo of this exact model`;
+        prompt = `Full body shot. Editorial fashion photo of this exact model`;
     }
 
     prompt += ` wearing these exact ${firstItem.analysis.color} ${firstItem.analysis.garment_type}`;
@@ -559,7 +559,7 @@ function buildFirstStepPrompt(firstItem) {
         prompt += `, styled with ${styleOnlyItems.join(', ')}`;
     }
 
-    prompt += `. Clean minimal background, professional studio lighting.`;
+    prompt += `. Full body visible from head to toe. Clean minimal background, professional studio lighting.`;
 
     console.log('🎯 First step prompt:', prompt);
     return prompt;
