@@ -258,7 +258,8 @@ async function analyzeGarment(file) {
     });
 
     if (!response.ok) {
-        throw new Error('Analysis failed');
+        const errorData = await response.json().catch(() => ({ error: 'Analysis failed' }));
+        throw new Error(errorData.error || 'Analysis failed');
     }
 
     return await response.json();

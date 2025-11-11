@@ -1146,7 +1146,28 @@ app.post('/api/generate-images', upload.single('image'), async (req, res) => {
 // Analyze garment with GPT-4 Vision
 app.post('/api/analyze-garment', async (req, res) => {
   try {
-    const { image } = req.body;
+    let { image } = req.body;
+
+    // Validate and ensure proper format
+    if (!image || !image.startsWith('data:')) {
+      return res.status(400).json({ error: 'Invalid image format - must be data URL' });
+    }
+
+    // Extract mime type and ensure it's supported
+    const mimeMatch = image.match(/^data:(image\/(?:png|jpeg|jpg|gif|webp));base64,/);
+    if (!mimeMatch) {
+      console.error('Invalid mime type detected:', image.substring(0, 50));
+      return res.status(400).json({
+        error: 'Unsupported image format. Please upload PNG, JPEG, GIF, or WebP images only.'
+      });
+    }
+
+    // Normalize JPEG mime types (OpenAI accepts image/jpeg)
+    if (mimeMatch[1] === 'image/jpg') {
+      image = image.replace('data:image/jpg;', 'data:image/jpeg;');
+    }
+
+    console.log('✓ Analyzing garment with format:', mimeMatch[1]);
 
     const analysisPrompt = `Analyze this clothing/accessory item and provide ONLY a JSON response with these exact fields:
 
@@ -1189,7 +1210,15 @@ Be specific and descriptive. Respond with ONLY valid JSON.`;
     res.json(analysis);
 
   } catch (error) {
-    console.error('Error analyzing garment:', error);
+    console.error('❌ Error analyzing garment:', error.message);
+
+    // Provide more helpful error messages
+    if (error.code === 'invalid_image_format') {
+      return res.status(400).json({
+        error: 'OpenAI rejected the image format. Please ensure you upload PNG, JPEG, GIF, or WebP files only.'
+      });
+    }
+
     res.status(500).json({ error: error.message });
   }
 });
