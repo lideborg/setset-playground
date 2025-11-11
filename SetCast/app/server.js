@@ -36,8 +36,23 @@ const upload = multer({
   }
 });
 
-// Middleware
-app.use(express.json());
+// CORS middleware - must be first
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:8000');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+// Middleware - increase limit for base64 images
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 app.use(express.static(__dirname));
 
@@ -1159,10 +1174,17 @@ Be specific and descriptive. Respond with ONLY valid JSON.`;
       max_tokens: 200
     });
 
-    const analysisText = response.choices[0].message.content.trim();
+    let analysisText = response.choices[0].message.content.trim();
+
+    // Strip markdown code blocks if present
+    if (analysisText.startsWith('```json')) {
+      analysisText = analysisText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    } else if (analysisText.startsWith('```')) {
+      analysisText = analysisText.replace(/```\n?/g, '');
+    }
 
     // Parse JSON response
-    const analysis = JSON.parse(analysisText);
+    const analysis = JSON.parse(analysisText.trim());
 
     res.json(analysis);
 
@@ -1179,7 +1201,7 @@ app.post('/api/generate-styled', async (req, res) => {
       return res.status(500).json({ error: 'FAL_KEY not configured' });
     }
 
-    const { prompt, imageUrls, items } = req.body;
+    const { prompt, imageUrls, items, numImages = 1, aspectRatio = '3:4' } = req.body;
 
     // Enhance prompt with GPT-4
     const enhancePrompt = `You are an expert fashion photographer and prompt engineer. Enhance this fashion photography prompt to be more detailed and effective for AI image generation. Keep the core references to "this exact person" and "these exact" items, but add professional photography details, lighting, composition, and style refinements.
@@ -1210,8 +1232,8 @@ Enhanced prompt:`;
       input: {
         prompt: enhancedPrompt,
         image_urls: imageUrls,
-        num_images: 1,
-        aspect_ratio: '3:4',
+        num_images: numImages,
+        aspect_ratio: aspectRatio,
         output_format: 'jpeg',
         sync_mode: false
       },
@@ -1220,7 +1242,7 @@ Enhanced prompt:`;
 
     res.json({
       enhancedPrompt: enhancedPrompt,
-      imageUrl: result.data.images[0].url,
+      images: result.data.images.map(img => img.url),
       description: result.data.description || ''
     });
 

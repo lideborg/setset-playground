@@ -14,13 +14,17 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #fafafa;
-            padding: 40px 24px;
             color: #1a1a1a;
         }
 
-        .header {
+        .site-container {
             max-width: 1200px;
-            margin: 0 auto 32px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .header {
+            margin-bottom: 32px;
         }
 
         h1 {
@@ -37,8 +41,7 @@
 
         /* Model Selector */
         .model-selector {
-            max-width: 1200px;
-            margin: 0 auto 40px;
+            margin-bottom: 40px;
             background: white;
             border: 1px solid #e5e5e5;
             padding: 24px;
@@ -52,7 +55,7 @@
 
         .model-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-template-columns: repeat(6, 1fr);
             gap: 16px;
         }
 
@@ -88,10 +91,8 @@
 
         /* Styling Cards */
         .styling-container {
-            max-width: 1200px;
-            margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 20px;
             margin-bottom: 32px;
         }
@@ -129,6 +130,12 @@
             cursor: pointer;
             transition: all 0.15s;
             background: #fafafa;
+            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
 
         .upload-area:hover {
@@ -139,6 +146,34 @@
         .upload-area.has-image {
             padding: 0;
             border: 1px solid #e5e5e5;
+        }
+
+        .upload-area.analyzing {
+            background: #e8e8e8;
+        }
+
+        .upload-area.analyzing::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1a1a1a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 10;
+            margin-bottom: 40px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .upload-area.dragging {
+            border-color: #1a1a1a;
+            background: #f0f0f0;
+            transform: scale(1.02);
         }
 
         .upload-icon {
@@ -153,12 +188,34 @@
 
         .preview-image {
             width: 100%;
-            max-height: 200px;
-            object-fit: contain;
+            height: 100%;
+            object-fit: cover;
             display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .preview-image.show {
+            display: block;
+        }
+
+        .preview-image.analyzing {
+            opacity: 0.3;
+            filter: grayscale(50%);
+        }
+
+        .analyzing-loader {
+            display: none;
+            font-size: 13px;
+            color: #1a1a1a;
+            font-weight: 500;
+            position: absolute;
+            z-index: 10;
+            margin-top: 40px;
+        }
+
+        .analyzing-loader.show {
             display: block;
         }
 
@@ -202,11 +259,37 @@
 
         /* Generate Section */
         .generate-section {
-            max-width: 1200px;
-            margin: 0 auto 32px;
+            margin-bottom: 32px;
             background: white;
             border: 1px solid #e5e5e5;
             padding: 24px;
+        }
+
+        .generation-settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .setting-select {
+            padding: 10px 12px;
+            border: 1px solid #e5e5e5;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
         }
 
         .generate-btn {
@@ -231,27 +314,59 @@
             cursor: not-allowed;
         }
 
-        .prompt-preview {
+        .prompt-section {
+            margin-top: 16px;
+            border: 1px solid #e5e5e5;
+            display: none;
+        }
+
+        .prompt-section.show {
+            display: block;
+        }
+
+        .prompt-header {
+            padding: 12px 16px;
+            background: #f5f5f5;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .prompt-header:hover {
+            background: #ececec;
+        }
+
+        .prompt-header-text {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .prompt-toggle {
+            font-size: 12px;
+            color: #737373;
+        }
+
+        .prompt-content {
             background: #fafafa;
             padding: 16px;
-            border: 1px solid #e5e5e5;
             font-family: 'SF Mono', monospace;
             font-size: 12px;
             line-height: 1.8;
             color: #737373;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
         }
 
-        .prompt-preview.show {
-            display: block;
+        .prompt-content.expanded {
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         /* Results Section */
         .results-section {
-            max-width: 1200px;
-            margin: 0 auto;
             background: white;
             border: 1px solid #e5e5e5;
             padding: 24px;
@@ -262,17 +377,239 @@
             display: block;
         }
 
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
         .result-image {
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
+            height: auto;
             display: block;
+            border: 1px solid #e5e5e5;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .result-image:hover {
+            opacity: 0.8;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.show {
+            display: flex;
+        }
+
+        .lightbox-content {
+            width: 90%;
+            height: 90%;
+            background: white;
+            display: flex;
+            position: relative;
+        }
+
+        .lightbox-left {
+            flex: 1;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .lightbox-right {
+            width: 400px;
+            background: white;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lightbox-content-wrapper {
+            flex: 1;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .lightbox-close:hover {
+            background: #f0f0f0;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0.7;
+            transition: opacity 0.15s;
+        }
+
+        .lightbox-nav:hover {
+            opacity: 1;
+        }
+
+        .lightbox-nav.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .lightbox-nav-prev {
+            left: 20px;
+        }
+
+        .lightbox-nav-next {
+            right: 420px;
+        }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 8px 16px;
+            font-size: 12px;
+            color: #737373;
+            z-index: 10;
+        }
+
+        .lightbox-section {
+            margin-bottom: 32px;
+        }
+
+        .lightbox-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .lightbox-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .lightbox-item:last-child {
+            border-bottom: none;
+        }
+
+        .lightbox-item-image {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            background: #f5f5f5;
+            border: 1px solid #e5e5e5;
+        }
+
+        .lightbox-item-details {
+            flex: 1;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .lightbox-item-label {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .lightbox-item-value {
+            color: #737373;
+        }
+
+        .lightbox-copy-prompt {
+            width: 100%;
+            padding: 12px 24px;
+            background: white;
+            color: #1a1a1a;
+            border: 1px solid #1a1a1a;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        .lightbox-copy-prompt:hover {
+            background: #fafafa;
+        }
+
+        .lightbox-copy-prompt.copied {
+            background: #1a1a1a;
+            color: white;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .lightbox-download {
+            width: 100%;
+            padding: 12px 24px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .lightbox-download:hover {
+            background: #333;
         }
 
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 40px 24px;
             color: #737373;
+            background: white;
+            border: 1px solid #e5e5e5;
+            margin-bottom: 32px;
         }
 
         .spinner {
@@ -293,7 +630,7 @@
         .error {
             background: #fef2f2;
             border: 1px solid #fecaca;
-            padding: 16px;
+            padding: 16px 24px;
             color: #991b1b;
             margin-bottom: 24px;
             font-size: 14px;
@@ -306,15 +643,16 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Styling Studio</h1>
-        <p class="subtitle">Create photorealistic styled looks for your models</p>
-    </div>
+    <div class="site-container">
+        <div class="header">
+            <h1>Styling Studio</h1>
+            <p class="subtitle">Create photorealistic styled looks for your models</p>
+        </div>
 
-    <div class="error" id="error"></div>
+        <div class="error" id="error"></div>
 
-    <!-- Model Selector -->
-    <div class="model-selector">
+        <!-- Model Selector -->
+        <div class="model-selector">
         <h2>1. Select Model</h2>
         <div class="model-grid" id="modelGrid"></div>
     </div>
@@ -330,6 +668,7 @@
             <div class="upload-area" onclick="triggerUpload('head')">
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Upload hat, cap, or beanie</div>
+                <div class="analyzing-loader" id="loader-head">Analyzing...</div>
                 <img class="preview-image" id="preview-head">
             </div>
             <input type="file" id="upload-head" accept="image/*" style="display: none;" onchange="handleUpload(event, 'head')">
@@ -355,15 +694,18 @@
             <div class="upload-area" onclick="triggerUpload('face')">
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Upload sunglasses, jewelry, etc.</div>
+                <div class="analyzing-loader" id="loader-face">Analyzing...</div>
                 <img class="preview-image" id="preview-face">
             </div>
             <input type="file" id="upload-face" accept="image/*" style="display: none;" onchange="handleUpload(event, 'face')">
             <select class="style-dropdown" id="style-face">
-                <option value="">Style: Not wearing</option>
-                <option value="minimal">Minimal</option>
-                <option value="statement">Statement</option>
-                <option value="luxury">Luxury</option>
-                <option value="vintage">Vintage</option>
+                <option value="">Item: Not wearing</option>
+                <option value="sunglasses">Sunglasses</option>
+                <option value="eyeglasses">Eyeglasses</option>
+                <option value="earrings">Earrings</option>
+                <option value="necklace">Necklace</option>
+                <option value="scarf">Scarf</option>
+                <option value="choker">Choker</option>
             </select>
             <button class="clear-btn" onclick="clearItem('face')">Clear</button>
             <div class="item-details" id="details-face"></div>
@@ -378,6 +720,7 @@
             <div class="upload-area" onclick="triggerUpload('outerwear')">
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Upload jacket, coat, blazer</div>
+                <div class="analyzing-loader" id="loader-outerwear">Analyzing...</div>
                 <img class="preview-image" id="preview-outerwear">
             </div>
             <input type="file" id="upload-outerwear" accept="image/*" style="display: none;" onchange="handleUpload(event, 'outerwear')">
@@ -403,6 +746,7 @@
             <div class="upload-area" onclick="triggerUpload('longsleeve')">
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Upload sweater, long sleeve shirt</div>
+                <div class="analyzing-loader" id="loader-longsleeve">Analyzing...</div>
                 <img class="preview-image" id="preview-longsleeve">
             </div>
             <input type="file" id="upload-longsleeve" accept="image/*" style="display: none;" onchange="handleUpload(event, 'longsleeve')">
@@ -427,6 +771,7 @@
             <div class="upload-area" onclick="triggerUpload('shortsleeve')">
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Upload t-shirt, tank top</div>
+                <div class="analyzing-loader" id="loader-shortsleeve">Analyzing...</div>
                 <img class="preview-image" id="preview-shortsleeve">
             </div>
             <input type="file" id="upload-shortsleeve" accept="image/*" style="display: none;" onchange="handleUpload(event, 'shortsleeve')">
@@ -452,6 +797,7 @@
             <div class="upload-area" onclick="triggerUpload('bottom')">
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Upload pants, shorts, skirt</div>
+                <div class="analyzing-loader" id="loader-bottom">Analyzing...</div>
                 <img class="preview-image" id="preview-bottom">
             </div>
             <input type="file" id="upload-bottom" accept="image/*" style="display: none;" onchange="handleUpload(event, 'bottom')">
@@ -476,6 +822,7 @@
             <div class="upload-area" onclick="triggerUpload('shoes')">
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Upload sneakers, boots, heels</div>
+                <div class="analyzing-loader" id="loader-shoes">Analyzing...</div>
                 <img class="preview-image" id="preview-shoes">
             </div>
             <input type="file" id="upload-shoes" accept="image/*" style="display: none;" onchange="handleUpload(event, 'shoes')">
@@ -490,10 +837,57 @@
             <button class="clear-btn" onclick="clearItem('shoes')">Clear</button>
             <div class="item-details" id="details-shoes"></div>
         </div>
+
+        <!-- Accessories -->
+        <div class="style-card" data-category="accessories">
+            <div class="card-header">
+                <span class="card-icon">👜</span>
+                <span class="card-title">Accessories</span>
+            </div>
+            <div class="upload-area" onclick="triggerUpload('accessories')">
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">Upload bag, handbag, backpack</div>
+                <div class="analyzing-loader" id="loader-accessories">Analyzing...</div>
+                <img class="preview-image" id="preview-accessories">
+            </div>
+            <input type="file" id="upload-accessories" accept="image/*" style="display: none;" onchange="handleUpload(event, 'accessories')">
+            <select class="style-dropdown" id="style-accessories">
+                <option value="">Item: Not carrying</option>
+                <option value="handbag">Handbag</option>
+                <option value="tote bag">Tote Bag</option>
+                <option value="crossbody bag">Crossbody Bag</option>
+                <option value="backpack">Backpack</option>
+                <option value="clutch">Clutch</option>
+                <option value="messenger bag">Messenger Bag</option>
+            </select>
+            <button class="clear-btn" onclick="clearItem('accessories')">Clear</button>
+            <div class="item-details" id="details-accessories"></div>
+        </div>
     </div>
 
     <!-- Generate Section -->
     <div class="generate-section">
+        <div class="generation-settings">
+            <div class="setting-group">
+                <label class="setting-label">Number of Images</label>
+                <select class="setting-select" id="numImages">
+                    <option value="1" selected>1 image</option>
+                    <option value="2">2 images</option>
+                    <option value="3">3 images</option>
+                    <option value="4">4 images</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label class="setting-label">Aspect Ratio</label>
+                <select class="setting-select" id="aspectRatio">
+                    <option value="3:4" selected>3:4 (Portrait)</option>
+                    <option value="1:1">1:1 (Square)</option>
+                    <option value="4:3">4:3 (Landscape)</option>
+                    <option value="16:9">16:9 (Wide)</option>
+                    <option value="9:16">9:16 (Vertical)</option>
+                </select>
+            </div>
+        </div>
         <button class="generate-btn" id="generateBtn" onclick="generateStyled()" disabled>Generate Styled Look</button>
         <div class="prompt-preview" id="promptPreview"></div>
     </div>
@@ -506,8 +900,39 @@
 
     <!-- Results -->
     <div class="results-section" id="resultsSection">
-        <h2 style="margin-bottom: 20px;">Generated Look</h2>
-        <img class="result-image" id="resultImage">
+        <h2 style="margin-bottom: 20px;">Generated Looks</h2>
+    </div>
+    </div> <!-- End site-container -->
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+            <button class="lightbox-nav lightbox-nav-prev" id="lightboxPrev" onclick="navigateLightbox(-1)">‹</button>
+            <button class="lightbox-nav lightbox-nav-next" id="lightboxNext" onclick="navigateLightbox(1)">›</button>
+
+            <div class="lightbox-left">
+                <img class="lightbox-image" id="lightboxImage" src="" alt="Generated Look">
+                <div class="lightbox-counter" id="lightboxCounter"></div>
+            </div>
+
+            <div class="lightbox-right">
+                <div class="lightbox-content-wrapper">
+                    <div class="lightbox-section">
+                        <h3 class="lightbox-section-title">Model</h3>
+                        <div id="lightboxModel"></div>
+                    </div>
+
+                    <div class="lightbox-section">
+                        <h3 class="lightbox-section-title">Styling Details</h3>
+                        <div id="lightboxItems"></div>
+                    </div>
+                </div>
+
+                <button class="lightbox-copy-prompt" id="copyPromptBtn" onclick="copyPrompt()">Prompt</button>
+                <button class="lightbox-download" onclick="downloadImage()">Download Image</button>
+            </div>
+        </div>
     </div>
 
     <script src="styling.js"></script>
