@@ -1153,12 +1153,13 @@ app.post('/api/analyze-garment', async (req, res) => {
       return res.status(400).json({ error: 'Invalid image format - must be data URL' });
     }
 
-    // Extract mime type and ensure it's supported
-    const mimeMatch = image.match(/^data:(image\/(?:png|jpeg|jpg|gif|webp|avif));base64,/);
+    // Extract mime type and ensure it's supported by OpenAI Vision API
+    // Note: AVIF is not supported by OpenAI, even though browsers support it
+    const mimeMatch = image.match(/^data:(image\/(?:png|jpeg|jpg|gif|webp));base64,/);
     if (!mimeMatch) {
       console.error('Invalid mime type detected:', image.substring(0, 50));
       return res.status(400).json({
-        error: 'Unsupported image format. Please upload PNG, JPEG, GIF, WebP, or AVIF images only.'
+        error: 'OpenAI rejected the image format. Please ensure you upload PNG, JPEG, GIF, or WebP files only.'
       });
     }
 

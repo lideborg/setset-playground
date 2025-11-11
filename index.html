@@ -51,14 +51,66 @@
             padding: 16px 0;
         }
 
+        .nav-group {
+            margin-bottom: 8px;
+        }
+
+        .nav-group-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 20px;
+            color: #a3a3a3;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .nav-group-header:hover {
+            color: #737373;
+        }
+
+        .nav-group-icon {
+            margin-right: 6px;
+            font-size: 9px;
+            color: #d4d4d4;
+            transition: transform 0.2s;
+        }
+
+        .nav-group:not(.collapsed) .nav-group-icon {
+            transform: rotate(90deg);
+        }
+
+        .nav-group-arrow {
+            margin-left: auto;
+            font-size: 8px;
+            transition: transform 0.2s;
+        }
+
+        .nav-group.collapsed .nav-group-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .nav-group-items {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .nav-group.collapsed .nav-group-items {
+            max-height: 0;
+        }
+
         .nav-item {
             display: flex;
             align-items: center;
-            padding: 10px 20px;
+            padding: 8px 20px 8px 32px;
             color: #737373;
             text-decoration: none;
             transition: all 0.15s;
-            font-size: 14px;
+            font-size: 12px;
             cursor: pointer;
             border-left: 2px solid transparent;
         }
@@ -73,11 +125,6 @@
             color: #1a1a1a;
             font-weight: 500;
             border-left-color: #1a1a1a;
-        }
-
-        .nav-icon {
-            margin-right: 10px;
-            font-size: 16px;
         }
 
         /* Main Content */
@@ -126,34 +173,66 @@
         </div>
 
         <nav class="sidebar-nav">
-            <a class="nav-item" data-tool="looks">
-                <span class="nav-icon">👤</span>
-                <span>Looks</span>
-            </a>
-            <a class="nav-item" data-tool="styling">
-                <span class="nav-icon">👔</span>
-                <span>Styling</span>
-            </a>
-            <a class="nav-item" data-tool="styling-v2">
-                <span class="nav-icon">✨</span>
-                <span>Styling v2</span>
-            </a>
-            <a class="nav-item" data-tool="styling-v3">
-                <span class="nav-icon">💎</span>
-                <span>Styling v3</span>
-            </a>
-            <a class="nav-item" data-tool="setcast-v1">
-                <span class="nav-icon">📸</span>
-                <span>SetCast v1</span>
-            </a>
-            <a class="nav-item" data-tool="setcast-v2">
-                <span class="nav-icon">🎨</span>
-                <span>SetCast v2</span>
-            </a>
-            <a class="nav-item" data-tool="research">
-                <span class="nav-icon">📚</span>
-                <span>Research</span>
-            </a>
+            <div class="nav-group collapsed">
+                <div class="nav-group-header" onclick="toggleGroup(this)">
+                    <span class="nav-group-icon">▸</span>
+                    <span>Looks</span>
+                    <span class="nav-group-arrow">▾</span>
+                </div>
+                <div class="nav-group-items">
+                    <a class="nav-item" data-tool="looks">
+                        <span>Looks</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-group collapsed">
+                <div class="nav-group-header" onclick="toggleGroup(this)">
+                    <span class="nav-group-icon">▸</span>
+                    <span>Styling</span>
+                    <span class="nav-group-arrow">▾</span>
+                </div>
+                <div class="nav-group-items">
+                    <a class="nav-item" data-tool="styling">
+                        <span>Styling v1</span>
+                    </a>
+                    <a class="nav-item" data-tool="styling-v2">
+                        <span>Styling v2</span>
+                    </a>
+                    <a class="nav-item" data-tool="styling-v3">
+                        <span>Styling v3</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-group collapsed">
+                <div class="nav-group-header" onclick="toggleGroup(this)">
+                    <span class="nav-group-icon">▸</span>
+                    <span>SetCast</span>
+                    <span class="nav-group-arrow">▾</span>
+                </div>
+                <div class="nav-group-items">
+                    <a class="nav-item" data-tool="setcast-v1">
+                        <span>SetCast v1</span>
+                    </a>
+                    <a class="nav-item" data-tool="setcast-v2">
+                        <span>SetCast v2</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-group collapsed">
+                <div class="nav-group-header" onclick="toggleGroup(this)">
+                    <span class="nav-group-icon">▸</span>
+                    <span>Research</span>
+                    <span class="nav-group-arrow">▾</span>
+                </div>
+                <div class="nav-group-items">
+                    <a class="nav-item" data-tool="research">
+                        <span>Research Docs</span>
+                    </a>
+                </div>
+            </div>
         </nav>
     </aside>
 
@@ -172,11 +251,16 @@
             'looks': '/looks/index.html',
             'styling': '/styling/index.html',
             'styling-v2': '/styling-v2/index.html',
-            'styling-v3': '/styling-v3/index.html',
+            'styling-v3': '/styling-v3/index.html?v=13&t=' + Date.now(), // Cache bust
             'setcast-v1': 'http://localhost:3001',
             'setcast-v2': '/setset-playground/editorial-prompt-generator/app/public/index.html',
             'research': '/research/index.html'
         };
+
+        function toggleGroup(header) {
+            const group = header.parentElement;
+            group.classList.toggle('collapsed');
+        }
 
         function loadTool(toolName) {
             const url = tools[toolName];

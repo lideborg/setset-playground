@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Styling Studio v3 - Editorial</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Styling Studio v3</title>
     <style>
         /* ===== EDITORIAL DESIGN SYSTEM ===== */
 
@@ -33,7 +30,6 @@
             --gold-muted: #C4A137;
 
             /* Typography */
-            --font-serif: 'Bodoni Moda', serif;
             --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 
             /* Spacing (4px grid) */
@@ -60,28 +56,32 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ===== EDITORIAL TYPOGRAPHY ===== */
+        /* ===== MINIMAL TYPOGRAPHY ===== */
 
         h1, h2, h3 {
-            font-family: var(--font-serif);
-            font-weight: 400;
-            letter-spacing: 0.02em;
-            line-height: 1.2;
+            font-family: var(--font-sans);
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
         }
 
         h1 {
-            font-size: 56px;
+            font-size: 42px;
             margin-bottom: var(--space-md);
+            font-weight: 600;
         }
 
         h2 {
-            font-size: 32px;
+            font-size: 24px;
             margin-bottom: var(--space-sm);
         }
 
         h3 {
-            font-size: 20px;
+            font-size: 16px;
             margin-bottom: var(--space-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
         }
 
         .section-label {
@@ -114,16 +114,17 @@
 
         .hero {
             text-align: center;
-            margin-bottom: var(--space-xxxl);
-            padding: var(--space-xxl) 0;
+            margin-bottom: var(--space-xxl);
+            padding: var(--space-xl) 0;
             border-bottom: 1px solid var(--gainsboro);
         }
 
         .hero-subtitle {
             color: var(--slate);
-            font-size: 16px;
-            max-width: 600px;
+            font-size: 14px;
+            max-width: 500px;
             margin: 0 auto;
+            line-height: 1.6;
         }
 
         /* ===== BUILD TIMELINE ===== */
@@ -353,7 +354,7 @@
             transition: all var(--transition-base);
             background: var(--off-white);
             position: relative;
-            min-height: 200px;
+            aspect-ratio: 3/4;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -374,18 +375,28 @@
             font-size: 32px;
             color: var(--silver);
             margin-bottom: var(--space-xs);
+            transition: opacity var(--transition-fast);
         }
 
         .upload-text {
             font-size: 13px;
             color: var(--slate);
+            transition: opacity var(--transition-fast);
+        }
+
+        .upload-area.has-image .upload-icon,
+        .upload-area.has-image .upload-text {
+            display: none;
         }
 
         .preview-image {
-            width: 100%;
-            height: auto;
             display: none;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .preview-image.show {
@@ -394,7 +405,9 @@
 
         .upload-area.has-image {
             padding: 0;
-            border: none;
+            border: 1px solid var(--gainsboro);
+            background: var(--off-white);
+            aspect-ratio: 3/4;
         }
 
         .analyzing-loader {
@@ -683,6 +696,40 @@
             display: block;
         }
 
+        .step-actions {
+            display: none;
+            margin-bottom: var(--space-lg);
+            text-align: center;
+        }
+
+        .step-actions.show {
+            display: block;
+        }
+
+        .continue-btn {
+            padding: var(--space-md) var(--space-xl);
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            font-family: var(--font-sans);
+        }
+
+        .continue-btn:hover:not(:disabled) {
+            background: var(--carbon);
+        }
+
+        .continue-btn:disabled {
+            background: var(--ash-grey);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         .results-header {
             display: flex;
             justify-content: space-between;
@@ -719,34 +766,18 @@
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: var(--space-lg);
         }
 
         .result-container {
             position: relative;
-            border: 3px solid transparent;
+            border: 2px solid transparent;
             transition: all var(--transition-base);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.4s ease forwards;
-        }
-
-        .result-container:nth-child(1) { animation-delay: 0.1s; }
-        .result-container:nth-child(2) { animation-delay: 0.2s; }
-        .result-container:nth-child(3) { animation-delay: 0.3s; }
-        .result-container:nth-child(4) { animation-delay: 0.4s; }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .result-container:hover {
-            border-color: var(--ash-grey);
-            transform: scale(1.01);
+            border-color: var(--gainsboro);
         }
 
         .result-container.selected {
@@ -774,12 +805,12 @@
             width: 100%;
             height: auto;
             display: block;
-            filter: blur(10px);
-            transition: filter var(--transition-base);
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
+            cursor: pointer;
         }
 
-        .result-image.loaded {
-            filter: blur(0);
+        .result-image.selected {
+            border: 3px solid var(--jet);
         }
 
         .result-overlay {
@@ -905,6 +936,92 @@
             font-weight: 500;
         }
 
+        /* ===== PROGRESS STEPS ===== */
+
+        .progress-step {
+            display: grid;
+            grid-template-columns: 40px 120px 1fr 120px auto;
+            gap: var(--space-md);
+            align-items: center;
+            padding: var(--space-md);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            margin-bottom: var(--space-md);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all var(--transition-base);
+        }
+
+        .step-number.active {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .step-number.completed {
+            background: #059669;
+            color: var(--white);
+        }
+
+        .step-image {
+            width: 120px;
+            height: 160px;
+            object-fit: cover;
+            border: 1px solid var(--gainsboro);
+        }
+
+        .step-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .step-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .step-detail {
+            font-size: 12px;
+            color: var(--slate);
+        }
+
+        .step-result-image {
+            width: 120px;
+            height: 160px;
+            object-fit: cover;
+            border: 1px solid var(--gainsboro);
+            display: none;
+        }
+
+        .step-result-image.show {
+            display: block;
+        }
+
+        .step-status {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 80px;
+        }
+
+        .step-status.generating {
+            color: var(--jet);
+        }
+
         /* ===== COMPARISON MODE ===== */
 
         .comparison-view {
@@ -995,6 +1112,157 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* ===== LIGHTBOX ===== */
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            padding: var(--space-lg);
+        }
+
+        .lightbox.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-xl);
+            max-width: 1400px;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .lightbox-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border: 1px solid var(--gainsboro);
+        }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: var(--space-md);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--white);
+            padding: var(--space-xs) var(--space-md);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .lightbox-right {
+            background: var(--white);
+            padding: var(--space-xl);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lightbox-content-wrapper {
+            flex: 1;
+        }
+
+        .lightbox-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .lightbox-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--slate);
+            margin-bottom: var(--space-md);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            background: var(--white);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all var(--transition-fast);
+        }
+
+        .lightbox-close:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--white);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            z-index: 10;
+        }
+
+        .lightbox-nav:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .lightbox-nav-prev {
+            left: var(--space-lg);
+        }
+
+        .lightbox-nav-next {
+            right: var(--space-lg);
+        }
+
+        .lightbox-download,
+        .lightbox-copy-prompt {
+            width: 100%;
+            padding: var(--space-md);
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: var(--space-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .lightbox-download:hover,
+        .lightbox-copy-prompt:hover {
+            background: var(--carbon);
         }
 
         /* ===== ERROR & NOTIFICATIONS ===== */
@@ -1094,14 +1362,7 @@
 
         <!-- Model Selection -->
         <div class="section">
-            <div class="section-label">Step 1: Select Model</div>
-
-            <div class="batch-selector">
-                <input type="checkbox" id="batchModeToggle" onchange="toggleBatchMode()">
-                <label for="batchModeToggle" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Batch Mode (Select Multiple)</label>
-                <span class="batch-count" id="batchCount" style="display: none;">0 models selected</span>
-            </div>
-
+            <div class="section-label">Step 1: Select Model(s)</div>
             <div class="model-grid" id="modelGrid"></div>
         </div>
 
@@ -1146,11 +1407,6 @@
                                     <option value="8">8 Variations</option>
                                     <option value="12">12 Variations</option>
                                 </select>
-                            </div>
-
-                            <div class="setting-group">
-                                <label class="setting-label">Style Intensity</label>
-                                <input type="range" min="0" max="100" value="75" style="width: 100%;">
                             </div>
                         </div>
                     </div>
@@ -1231,8 +1487,63 @@
             </div>
         </div>
 
+        <!-- Progress Section -->
+        <div class="progress-section" id="progressSection">
+            <div class="process-description" id="processDescription"></div>
+            <div class="progress-steps" id="progressSteps"></div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing items and generating your styled look...</p>
+        </div>
+
+        <!-- Step Results (for sequential generation) -->
+        <div class="results-section" id="stepResultsSection">
+            <h2 style="margin-bottom: 8px;" id="resultsTitle">Results</h2>
+            <p style="color: #737373; font-size: 13px; margin-bottom: 20px;" id="resultsSubtitle">Select images to continue</p>
+            <div class="results-grid" id="stepResultsGrid"></div>
+            <div class="step-actions" id="stepActions">
+                <button class="continue-btn" id="continueBtn" onclick="continueToNextStep()" disabled>
+                    Continue to Next Step
+                </button>
+            </div>
+        </div>
+
         <!-- Error Message -->
         <div class="error" id="error"></div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+            <button class="lightbox-nav lightbox-nav-prev" id="lightboxPrev" onclick="navigateLightbox(-1)">‹</button>
+            <button class="lightbox-nav lightbox-nav-next" id="lightboxNext" onclick="navigateLightbox(1)">›</button>
+
+            <div class="lightbox-left">
+                <img class="lightbox-image" id="lightboxImage" src="" alt="Generated Look">
+                <div class="lightbox-counter" id="lightboxCounter"></div>
+            </div>
+
+            <div class="lightbox-right">
+                <div class="lightbox-content-wrapper">
+                    <div class="lightbox-section">
+                        <h3 class="lightbox-section-title">Model</h3>
+                        <div id="lightboxModel"></div>
+                    </div>
+
+                    <div class="lightbox-section">
+                        <h3 class="lightbox-section-title">Styling Details</h3>
+                        <div id="lightboxItems"></div>
+                    </div>
+                </div>
+
+                <button class="lightbox-copy-prompt" id="copyPromptBtn" onclick="copyPrompt()">Prompt</button>
+                <button class="lightbox-download" onclick="downloadImage()">Download Image</button>
+            </div>
+        </div>
     </div>
 
     <!-- Hidden file inputs -->
@@ -1245,6 +1556,6 @@
     <input type="file" id="upload-shoes" accept="image/*" onchange="handleUpload(event, 'shoes')" style="display: none;">
     <input type="file" id="upload-accessories" accept="image/*" onchange="handleUpload(event, 'accessories')" style="display: none;">
 
-    <script src="styling.js"></script>
+    <script src="styling.js?v=13"></script>
 </body>
 </html>

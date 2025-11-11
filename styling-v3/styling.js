@@ -1,3 +1,7 @@
+// Batch Mode Variables (must be declared before functions use them)
+let batchMode = true; // Always enabled - multi-select by default
+let selectedModels = [];
+
 // State management
 const state = {
     selectedModel: null,
@@ -6,7 +10,7 @@ const state = {
         face: { file: null, analysis: null, style: '' },
         outerwear: { file: null, analysis: null, style: '' },
         longsleeve: { file: null, analysis: null, style: 'minimal' },
-        shortsleeve: { file: null, analysis: null, style: '' },
+        shortsleeve: { file: null, analysis: null, style: 'minimal' },
         bottom: { file: null, analysis: null, style: 'minimal' },
         shoes: { file: null, analysis: null, style: 'minimal' },
         accessories: { file: null, analysis: null, style: '' }
@@ -16,7 +20,7 @@ const state = {
     currentStep: 0,
     uploadedItemsList: [],
     currentBaseImage: null,
-    selectedImageForNextStep: null,
+    selectedImagesForNextStep: [], // Changed to array for exponential branching
     allStepResults: [],
     isGenerating: false
 };
@@ -124,7 +128,7 @@ function renderModelGrid() {
         const firstName = nameParts[0];
         const lastName = nameParts.slice(1).join(' ');
         return `
-            <div class="model-card" onclick="selectModel('${model.id}')">
+            <div class="model-card" onclick="selectModel(event, '${model.id}')">
                 <img src="${model.image}" class="model-thumbnail"
                      onerror="this.style.background='#e5e5e5';">
                 <div class="model-name">${firstName}<br>${lastName}</div>
@@ -134,17 +138,30 @@ function renderModelGrid() {
 }
 
 // Select model
-function selectModel(modelId) {
-    state.selectedModel = models.find(m => m.id === modelId);
+function selectModel(event, modelId) {
+    event.preventDefault();
+    event.stopPropagation();
 
-    // Update UI
-    document.querySelectorAll('.model-card').forEach(card => {
+    const model = models.find(m => m.id === modelId);
+    const index = selectedModels.findIndex(m => m.id === modelId);
+    const card = event.target.closest('.model-card');
+
+    if (index > -1) {
+        // Deselect
+        selectedModels.splice(index, 1);
         card.classList.remove('selected');
-    });
-    event.target.closest('.model-card').classList.add('selected');
+    } else {
+        // Select
+        selectedModels.push(model);
+        card.classList.add('selected');
+    }
 
-    updateBuildTimeline();
+    // If at least one model selected, use first as primary
+    state.selectedModel = selectedModels[0] || null;
+
     updateGenerateButton();
+
+    console.log(`${selectedModels.length} model(s) selected`);
 }
 
 // Trigger file upload
@@ -165,11 +182,13 @@ async function handleUpload(event, category) {
     reader.onload = (e) => {
         const preview = document.getElementById(`preview-${category}`);
         const uploadArea = preview.parentElement;
+        const styleCard = uploadArea.closest('.style-card');
         const dropdown = document.getElementById(`style-${category}`);
 
         preview.src = e.target.result;
         preview.classList.add('show');
         uploadArea.classList.add('has-image');
+        styleCard.classList.add('has-image'); // Add has-image to parent card to show clear button
         uploadArea.querySelector('.upload-icon').style.display = 'none';
         uploadArea.querySelector('.upload-text').style.display = 'none';
 
@@ -278,12 +297,12 @@ function clearItem(category) {
     const uploadArea = preview.parentElement;
     const details = document.getElementById(`details-${category}`);
     const dropdown = document.getElementById(`style-${category}`);
+    const styleCard = uploadArea.closest('.style-card');
 
     preview.classList.remove('show');
     preview.src = '';
     uploadArea.classList.remove('has-image');
-    uploadArea.querySelector('.upload-icon').style.display = 'block';
-    uploadArea.querySelector('.upload-text').style.display = 'block';
+    styleCard.classList.remove('has-image');
     details.classList.remove('show');
 
     // Show dropdown again when cleared
@@ -447,7 +466,7 @@ async function generateStyled() {
     // Initialize state for sequential generation
     state.currentStep = 0;
     state.uploadedItemsList = uploadedItems;
-    state.selectedImageForNextStep = null;
+    state.selectedImagesForNextStep = []; // Empty array for first step
     state.allStepResults = [];
 
     // Convert model image to base64
@@ -464,8 +483,9 @@ async function generateStyled() {
     // Show process description
     const processDesc = document.getElementById('processDescription');
     processDesc.innerHTML = `
-        <strong>Interactive Sequential Generation:</strong><br>
-        Building your look in ${uploadedItems.length} steps. At each step, you'll see 4 variations and pick your favorite to continue.
+        <strong>Exponential Exploration Mode:</strong><br>
+        Building your look in ${uploadedItems.length} steps. Select multiple variations at each step to branch out and explore different directions.
+        Selecting 2 images generates 8 variations next (4 per selection).
     `;
 
     // Show progress section
@@ -480,7 +500,7 @@ async function generateStyled() {
     await generateCurrentStep();
 }
 
-// Generate images for current step
+// Generate images for current step - EXPONENTIAL BRANCHING with PARALLEL requests
 async function generateCurrentStep() {
     // Prevent concurrent generations
     if (state.isGenerating) {
@@ -505,63 +525,80 @@ async function generateCurrentStep() {
     // Update progress
     updateProgressStep(state.currentStep, 'generating');
 
-    // Build prompt for this step
-    let stepPrompt;
-    if (state.currentStep === 0) {
-        console.log('🎯 Building first step prompt (model + garment)...');
-        stepPrompt = buildFirstStepPrompt(item);
-    } else {
-        console.log('🎯 Building prompt using previous step\'s image...');
-        // Use analysis from previous step to maintain exact consistency
-        const previousStepAnalysis = state.allStepResults[state.currentStep - 1]?.analysis || 'a model in a white photo studio';
-        stepPrompt = `Take this EXACT image of ${previousStepAnalysis} and add these EXACT ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Maintain the exact same white studio background, pose, lighting, and framing. Full body shot visible from head to toe.`;
-    }
-
-    console.log(`   📝 Prompt: "${stepPrompt.substring(0, 120)}..."\n`);
-
     const startTime = performance.now();
 
     try {
         // Convert garment image to base64
         const garmentBase64 = await fileToBase64(item.file);
 
-        // Use selected image from previous step or initial model image
-        const baseImage = state.selectedImageForNextStep || state.currentBaseImage;
-        const imageUrls = [baseImage, garmentBase64];
-
-        console.log(`🎨 Calling Nanobanana API to generate 4 variations...`);
-        console.log(`   Aspect ratio: ${aspectRatio}`);
-        console.log(`   Base image: ${state.currentStep === 0 ? 'Model photo' : 'Previous step result'}`);
-
-        // Call API for 4 images
-        const response = await fetch('http://localhost:3001/api/generate-styled', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                prompt: stepPrompt,
-                imageUrls: imageUrls,
-                items: state.items,
-                numImages: 4,
-                aspectRatio: aspectRatio
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Step ${state.currentStep + 1} generation failed`);
+        // Determine base images for this step
+        let baseImages = [];
+        if (state.currentStep === 0) {
+            // First step: use model image
+            baseImages = [state.currentBaseImage];
+            console.log('🎯 First step: Generating 4 variations from model image');
+        } else {
+            // Subsequent steps: use selected images from previous step
+            baseImages = state.selectedImagesForNextStep.length > 0
+                ? state.selectedImagesForNextStep
+                : [state.currentBaseImage];
+            console.log(`🎯 Generating 4 variations for each of ${baseImages.length} selected image(s) = ${baseImages.length * 4} total`);
         }
 
-        const result = await response.json();
+        console.log(`   Aspect ratio: ${aspectRatio}`);
+        console.log(`   Making ${baseImages.length} parallel API call(s)...\n`);
+
+        // Make parallel API calls - one for each base image
+        const generationPromises = baseImages.map(async (baseImage, index) => {
+            // Build prompt for this generation
+            let stepPrompt;
+            if (state.currentStep === 0) {
+                stepPrompt = buildFirstStepPrompt(item);
+            } else {
+                // Simple prompt for consistency
+                stepPrompt = `Add these exact ${item.analysis.color} ${item.analysis.garment_type} to this exact model. Maintain exact pose, lighting, and white studio background. Full body shot from head to toe.`;
+            }
+
+            console.log(`   🔄 API Call ${index + 1}/${baseImages.length} starting...`);
+
+            const response = await fetch('http://localhost:3001/api/generate-styled', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: stepPrompt,
+                    imageUrls: [baseImage, garmentBase64],
+                    items: state.items,
+                    numImages: 4,
+                    aspectRatio: aspectRatio
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Generation ${index + 1} failed`);
+            }
+
+            const result = await response.json();
+            console.log(`   ✅ API Call ${index + 1}/${baseImages.length} complete (4 variations)`);
+            return result.images;
+        });
+
+        // Wait for all parallel generations to complete
+        const allResults = await Promise.all(generationPromises);
+
+        // Flatten results: [[img1,img2,img3,img4], [img5,img6,img7,img8]] → [img1,img2,img3,img4,img5,img6,img7,img8]
+        const allImages = allResults.flat();
+
         const endTime = performance.now();
         const duration = ((endTime - startTime) / 1000).toFixed(1);
 
-        console.log(`   ✅ Generated 4 variations in ${duration}s`);
+        console.log(`\n   ✅ Generated ${allImages.length} total variations in ${duration}s`);
         console.log(`   🖼️  Images ready for selection\n`);
 
         // Update progress
-        updateProgressStep(state.currentStep, 'completed', result.images[0]);
+        updateProgressStep(state.currentStep, 'completed', allImages[0]);
 
         // Show results with selection UI
-        showStepResults(result.images, item);
+        showStepResults(allImages, item);
 
         // Reset generating flag
         state.isGenerating = false;
@@ -580,18 +617,18 @@ async function generateCurrentStep() {
 
 // Show results for current step with selection UI
 function showStepResults(images, item) {
-    const resultsSection = document.getElementById('resultsSection');
+    const resultsSection = document.getElementById('stepResultsSection');
     const resultsTitle = document.getElementById('resultsTitle');
     const resultsSubtitle = document.getElementById('resultsSubtitle');
     const stepActions = document.getElementById('stepActions');
+    const resultsContainer = document.getElementById('stepResultsGrid');
 
     const stepNum = state.currentStep + 1;
     const totalSteps = state.uploadedItemsList.length;
 
     resultsTitle.textContent = `Step ${stepNum} of ${totalSteps}: ${item.name}`;
-    resultsSubtitle.textContent = 'Click an image to select it, then continue to the next step';
+    resultsSubtitle.textContent = 'Select multiple images to explore different directions. Each selection generates 4 new variations.';
 
-    const resultsContainer = resultsSection.querySelector('.results-grid') || createResultsGrid();
     resultsContainer.innerHTML = images.map((url, index) => `
         <div style="text-align: center;">
             <img src="${url}"
@@ -614,38 +651,58 @@ function showStepResults(images, item) {
     continueBtn.disabled = true; // Will enable when image is selected
 }
 
-// Handle image selection
+// Handle image selection - MULTI-SELECT for exponential branching
 function selectStepImage(imageUrl) {
-    // Remove selection from all images
-    document.querySelectorAll('.result-image').forEach(img => {
-        img.classList.remove('selected');
-    });
-
-    // Select clicked image
     const clickedImage = document.querySelector(`[data-image-url="${imageUrl}"]`);
-    if (clickedImage) {
+    if (!clickedImage) return;
+
+    // Toggle selection
+    const isSelected = clickedImage.classList.contains('selected');
+
+    if (isSelected) {
+        // Deselect
+        clickedImage.classList.remove('selected');
+        const index = state.selectedImagesForNextStep.indexOf(imageUrl);
+        if (index > -1) {
+            state.selectedImagesForNextStep.splice(index, 1);
+        }
+    } else {
+        // Select
         clickedImage.classList.add('selected');
+        state.selectedImagesForNextStep.push(imageUrl);
     }
 
-    // Store selected image
-    state.selectedImageForNextStep = imageUrl;
+    // Enable/disable continue button based on selection
+    const continueBtn = document.getElementById('continueBtn');
+    continueBtn.disabled = state.selectedImagesForNextStep.length === 0;
 
-    // Enable continue button
-    document.getElementById('continueBtn').disabled = false;
-
+    // Update button text with count
     const stepNum = state.currentStep + 1;
     const totalSteps = state.uploadedItemsList.length;
-    const imageIndex = Array.from(document.querySelectorAll('.result-image')).indexOf(clickedImage) + 1;
+    const selectedCount = state.selectedImagesForNextStep.length;
 
-    console.log(`\n✓ Step ${stepNum}/${totalSteps}: Selected variation #${imageIndex}`);
-    if (stepNum < totalSteps) {
-        console.log(`   Ready to continue to Step ${stepNum + 1}...\n`);
+    if (selectedCount > 0) {
+        if (stepNum < totalSteps) {
+            const nextStepCount = selectedCount * 4;
+            continueBtn.textContent = `Continue (${selectedCount} selected → ${nextStepCount} variations)`;
+        } else {
+            continueBtn.textContent = `Finish (${selectedCount} selected)`;
+        }
     } else {
-        console.log(`   Ready to finish and view all results!\n`);
+        if (stepNum < totalSteps) {
+            continueBtn.textContent = 'Continue to Next Step';
+        } else {
+            continueBtn.textContent = 'Finish & Show All Results';
+        }
+    }
+
+    console.log(`\n✓ Step ${stepNum}/${totalSteps}: ${selectedCount} image(s) selected`);
+    if (selectedCount > 0 && stepNum < totalSteps) {
+        console.log(`   Next step will generate ${selectedCount * 4} variations (4 per selected image)\n`);
     }
 }
 
-// Continue to next step
+// Continue to next step - with multi-selection support
 async function continueToNextStep() {
     // Prevent concurrent execution
     if (state.isGenerating) {
@@ -653,8 +710,8 @@ async function continueToNextStep() {
         return;
     }
 
-    if (!state.selectedImageForNextStep) {
-        showError('Please select an image first');
+    if (state.selectedImagesForNextStep.length === 0) {
+        showError('Please select at least one image first');
         return;
     }
 
@@ -664,22 +721,20 @@ async function continueToNextStep() {
 
     const currentStepNum = state.currentStep + 1;
     const totalSteps = state.uploadedItemsList.length;
+    const selectedCount = state.selectedImagesForNextStep.length;
 
     console.log(`\n⏩ Continuing from Step ${currentStepNum}/${totalSteps}...`);
+    console.log(`   ${selectedCount} image(s) selected for next step`);
 
-    // Analyze the selected image for next step
-    console.log('🔍 Analyzing selected image for consistency...');
-    const imageAnalysis = await analyzeGeneratedImage(state.selectedImageForNextStep);
-
-    // Store this step's result with analysis
+    // Store this step's results
     state.allStepResults.push({
         step: state.currentStep + 1,
         item: state.uploadedItemsList[state.currentStep],
-        selectedImage: state.selectedImageForNextStep,
-        analysis: imageAnalysis
+        selectedImages: [...state.selectedImagesForNextStep], // Copy array
+        count: selectedCount
     });
 
-    console.log(`   ✓ Analysis complete: "${imageAnalysis.substring(0, 100)}..."\n`);
+    console.log(`   ✓ Saved selections for step ${currentStepNum}\n`);
 
     // Move to next step
     state.currentStep++;
@@ -738,7 +793,7 @@ async function analyzeGeneratedImage(imageUrl) {
     }
 }
 
-// Show all final results
+// Show all final results - displays all selected images from all steps
 function showFinalResults() {
     const resultsSection = document.getElementById('resultsSection');
     const resultsTitle = document.getElementById('resultsTitle');
@@ -746,20 +801,36 @@ function showFinalResults() {
     const stepActions = document.getElementById('stepActions');
 
     resultsTitle.textContent = 'Final Results - All Steps';
-    resultsSubtitle.textContent = 'Here\'s how your look evolved through each step';
+
+    // Calculate total images across all steps
+    const totalImages = state.allStepResults.reduce((sum, result) => sum + result.selectedImages.length, 0);
+    resultsSubtitle.textContent = `${totalImages} selected images from ${state.allStepResults.length} steps`;
 
     const resultsContainer = resultsSection.querySelector('.results-grid') || createResultsGrid();
-    resultsContainer.innerHTML = state.allStepResults.map((result, index) => `
+
+    // Flatten all selected images from all steps with step info
+    const allFinalImages = [];
+    state.allStepResults.forEach(result => {
+        result.selectedImages.forEach(imageUrl => {
+            allFinalImages.push({
+                url: imageUrl,
+                step: result.step,
+                itemName: result.item.name
+            });
+        });
+    });
+
+    resultsContainer.innerHTML = allFinalImages.map((img, index) => `
         <div style="text-align: center;">
-            <img src="${result.selectedImage}" class="result-image" onclick="openLightbox('${result.selectedImage}')">
-            <div style="margin-top: 8px; font-size: 12px; color: #737373;">Step ${result.step}: ${result.item.name}</div>
+            <img src="${img.url}" class="result-image" onclick="openLightbox('${img.url}')">
+            <div style="margin-top: 8px; font-size: 12px; color: #737373;">Step ${img.step}: ${img.itemName}</div>
         </div>
     `).join('');
 
     stepActions.classList.remove('show');
 
     // Store for lightbox
-    lightboxImages = state.allStepResults.map(r => r.selectedImage);
+    lightboxImages = allFinalImages.map(img => img.url);
 
     resultsSection.classList.add('show');
 }
@@ -882,13 +953,43 @@ function showSequentialResults(generatedImages) {
     resultsSection.classList.add('show');
 }
 
-// Helper: File to Base64
+// Helper: File to Base64 (converts AVIF to JPEG for OpenAI compatibility)
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+        // If the file is AVIF, convert it to JPEG first
+        if (file.type === 'image/avif') {
+            console.log('⚡ Converting AVIF to JPEG for OpenAI compatibility...');
+
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                img.onload = () => {
+                    // Create canvas and convert to JPEG
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    // Convert to JPEG base64 with high quality
+                    const jpegBase64 = canvas.toDataURL('image/jpeg', 0.95);
+                    console.log('✓ AVIF converted to JPEG');
+                    resolve(jpegBase64);
+                };
+                img.onerror = () => reject(new Error('Failed to load AVIF image'));
+                img.src = e.target.result;
+            };
+
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        } else {
+            // For other formats, read directly
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        }
     });
 }
 
@@ -1072,7 +1173,7 @@ function downloadImage() {
 // Close lightbox on ESC key, navigate with arrow keys
 document.addEventListener('keydown', (e) => {
     const lightbox = document.getElementById('lightbox');
-    if (!lightbox.classList.contains('show')) return;
+    if (!lightbox || !lightbox.classList.contains('show')) return;
 
     if (e.key === 'Escape') {
         closeLightbox();
@@ -1129,10 +1230,7 @@ init();
 
 // ===== V3 NEW FEATURES =====
 
-// Batch Mode Functions
-let batchMode = false;
-let selectedModels = [];
-
+// Batch Mode Functions (variables declared at top of file)
 function toggleBatchMode() {
     batchMode = document.getElementById('batchModeToggle').checked;
     selectedModels = [];
@@ -1233,11 +1331,10 @@ function renderPresets() {
 // Build Timeline Functions
 function updateBuildTimeline() {
     const timeline = document.getElementById('buildTimeline');
-    let html = '<div class="timeline-item"><div class="timeline-label">START</div></div>';
+    let html = '';
 
     // Add model
     if (state.selectedModel) {
-        html += '<div class="timeline-connector">→</div>';
         html += '<div class="timeline-item">' +
                   '<div class="timeline-thumb">' +
                     '<img src="' + state.selectedModel.image + '">' +
@@ -1264,9 +1361,6 @@ function updateBuildTimeline() {
             }
         }
     });
-
-    html += '<div class="timeline-connector">=</div>';
-    html += '<div class="timeline-item"><div class="timeline-label">RESULT</div></div>';
 
     timeline.innerHTML = html;
 }
@@ -1386,7 +1480,52 @@ function renderStylingCards() {
 
     grid.innerHTML = categories.map(function(category) {
         const data = state.items[category];
-        const hasStyleDropdown = !['face', 'accessories'].includes(category);
+
+        // Build dropdown based on category
+        let dropdownHTML = '';
+        if (category === 'head') {
+            // Head: optional headwear
+            dropdownHTML = '<select class="style-dropdown" id="style-' + category + '" onchange="updateStyle(\'' + category + '\', this.value)">' +
+                '<option value="">No Hat</option>' +
+                '<option value="beanie"' + (data.style === 'beanie' ? ' selected' : '') + '>Beanie</option>' +
+                '<option value="baseball cap"' + (data.style === 'baseball cap' ? ' selected' : '') + '>Baseball Cap</option>' +
+                '<option value="bucket hat"' + (data.style === 'bucket hat' ? ' selected' : '') + '>Bucket Hat</option>' +
+                '<option value="fedora"' + (data.style === 'fedora' ? ' selected' : '') + '>Fedora</option>' +
+            '</select>';
+        } else if (category === 'face') {
+            // Face & Neck: specific accessories
+            dropdownHTML = '<select class="style-dropdown" id="style-' + category + '" onchange="updateStyle(\'' + category + '\', this.value)">' +
+                '<option value="">No Accessories</option>' +
+                '<option value="sunglasses"' + (data.style === 'sunglasses' ? ' selected' : '') + '>Sunglasses</option>' +
+                '<option value="scarf"' + (data.style === 'scarf' ? ' selected' : '') + '>Scarf</option>' +
+                '<option value="jewelry"' + (data.style === 'jewelry' ? ' selected' : '') + '>Jewelry</option>' +
+                '<option value="necklace"' + (data.style === 'necklace' ? ' selected' : '') + '>Necklace</option>' +
+            '</select>';
+        } else if (category === 'accessories') {
+            // Accessories: things to hold
+            dropdownHTML = '<select class="style-dropdown" id="style-' + category + '" onchange="updateStyle(\'' + category + '\', this.value)">' +
+                '<option value="">No Accessories</option>' +
+                '<option value="bag"' + (data.style === 'bag' ? ' selected' : '') + '>Bag/Purse</option>' +
+                '<option value="coffee"' + (data.style === 'coffee' ? ' selected' : '') + '>Coffee Cup</option>' +
+                '<option value="phone"' + (data.style === 'phone' ? ' selected' : '') + '>Phone</option>' +
+                '<option value="briefcase"' + (data.style === 'briefcase' ? ' selected' : '') + '>Briefcase</option>' +
+            '</select>';
+        } else if (category === 'shortsleeve') {
+            // Short sleeve: minimal by default
+            dropdownHTML = '<select class="style-dropdown" id="style-' + category + '" onchange="updateStyle(\'' + category + '\', this.value)">' +
+                '<option value="minimal"' + (data.style === 'minimal' || !data.style ? ' selected' : '') + '>Minimal</option>' +
+                '<option value="street"' + (data.style === 'street' ? ' selected' : '') + '>Street</option>' +
+                '<option value="luxury"' + (data.style === 'luxury' ? ' selected' : '') + '>Luxury</option>' +
+            '</select>';
+        } else {
+            // Other clothing items: style options
+            dropdownHTML = '<select class="style-dropdown" id="style-' + category + '" onchange="updateStyle(\'' + category + '\', this.value)">' +
+                '<option value="">Default Style</option>' +
+                '<option value="minimal"' + (data.style === 'minimal' ? ' selected' : '') + '>Minimal</option>' +
+                '<option value="street"' + (data.style === 'street' ? ' selected' : '') + '>Street</option>' +
+                '<option value="luxury"' + (data.style === 'luxury' ? ' selected' : '') + '>Luxury</option>' +
+            '</select>';
+        }
 
         return '<div class="style-card ' + (data.file ? 'has-image' : '') + '" data-category="' + category + '">' +
                 '<div class="card-header">' +
@@ -1400,14 +1539,7 @@ function renderStylingCards() {
                     '<div id="loader-' + category + '" class="analyzing-loader"></div>' +
                 '</div>' +
                 '<div id="details-' + category + '" class="item-details"></div>' +
-                (hasStyleDropdown ?
-                    '<select class="style-dropdown" id="style-' + category + '" onchange="updateStyle(\'' + category + '\', this.value)">' +
-                        '<option value="">Default Style</option>' +
-                        '<option value="minimal"' + (data.style === 'minimal' ? ' selected' : '') + '>Minimal</option>' +
-                        '<option value="street"' + (data.style === 'street' ? ' selected' : '') + '>Street</option>' +
-                        '<option value="luxury"' + (data.style === 'luxury' ? ' selected' : '') + '>Luxury</option>' +
-                    '</select>'
-                    : '') +
+                dropdownHTML +
             '</div>';
     }).join('');
 
