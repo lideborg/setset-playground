@@ -1311,6 +1311,40 @@ Enhanced prompt:`;
   }
 });
 
+// Camera Angles - Nano Banana transformation
+app.post('/api/nano-banana', async (req, res) => {
+  try {
+    if (!process.env.FAL_KEY) {
+      return res.status(500).json({ error: 'FAL_KEY not configured' });
+    }
+
+    const { imageUrl, prompt, strength = 0.75 } = req.body;
+
+    console.log('🎨 Nano Banana transformation:', prompt);
+
+    // Call nano-banana API
+    const result = await fal.subscribe('fal-ai/nano-banana/edit', {
+      input: {
+        prompt: prompt,
+        image_urls: [imageUrl],
+        num_images: 1,
+        output_format: 'jpeg',
+        sync_mode: false,
+        strength: strength // How much to transform (0.5-1.0)
+      },
+      logs: true
+    });
+
+    res.json({
+      image: result.data.images[0].url
+    });
+
+  } catch (error) {
+    console.error('Error with nano-banana transformation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`\n🚀 Editorial Prompt Generator running at http://localhost:${PORT}`);
   console.log(`📸 Upload model photos to generate varied editorial prompts\n`);
