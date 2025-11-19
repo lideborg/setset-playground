@@ -106,7 +106,21 @@ async function handleFiles(files) {
     }
 
     updateImageSelectors();
+    autoPopulateImages(); // Auto-populate images into boxes
     updateGenerateButton();
+}
+
+// Auto-populate images into angle boxes
+function autoPopulateImages() {
+    state.uploadedImages.forEach((img, index) => {
+        if (index < 6) { // Only populate first 6 boxes
+            state.angleCards[index].selectedImage = index;
+            const selector = document.getElementById(`image-${index}`);
+            if (selector) {
+                selector.value = index;
+            }
+        }
+    });
 }
 
 // Analyze image with GPT-4 Vision
@@ -307,25 +321,42 @@ function buildPrompt(imageAnalysis, cameraAngle) {
 
 // Call nano-banana API (fal.ai)
 async function callNanoBananaAPI(imageFile, prompt) {
-    const base64 = await fileToBase64(imageFile);
+    try {
+        const base64 = await fileToBase64(imageFile);
 
-    const response = await fetch('http://localhost:3001/api/nano-banana', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            imageUrl: base64,
-            prompt: prompt,
-            strength: 0.75 // How much to transform (0.5-1.0, higher = more transformation)
-        })
-    });
+        console.log('   🔄 Calling nano-banana API...');
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'API call failed' }));
-        throw new Error(error.error || 'Failed to generate transformation');
+        const response = await fetch('http://localhost:3001/api/nano-banana', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                imageUrl: base64,
+                prompt: prompt,
+                strength: 0.75 // How much to transform (0.5-1.0, higher = more transformation)
+            })
+        });
+
+        console.log('   📡 Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('   ❌ API Error:', errorText);
+            let errorData;
+            try {
+                errorData = JSON.parse(errorText);
+            } catch {
+                errorData = { error: errorText || 'API call failed' };
+            }
+            throw new Error(errorData.error || `API returned ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('   ✅ Got result:', result.image ? 'Image URL received' : 'No image in response');
+        return result.image;
+    } catch (error) {
+        console.error('   ❌ callNanoBananaAPI error:', error);
+        throw error;
     }
-
-    const result = await response.json();
-    return result.image;
 }
 
 // Initialize on load
