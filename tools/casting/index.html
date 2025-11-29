@@ -186,11 +186,39 @@
             flex: 1;
         }
 
+        .products-column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xs);
+        }
+
         .products-column-title {
             font-size: var(--text-sm);
             font-weight: 600;
             color: var(--slate);
-            margin-bottom: var(--space-xs);
+        }
+
+        .products-column-actions {
+            display: flex;
+            gap: var(--space-2xs);
+        }
+
+        .btn-mini {
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-mini:hover {
+            background: var(--off-white);
+            border-color: var(--ash-grey);
+            color: var(--jet);
         }
 
         .folder-drop-zone {
@@ -465,7 +493,13 @@
             </p>
             <div class="products-row">
                 <div class="products-column">
-                    <div class="products-column-title">Hero Product</div>
+                    <div class="products-column-header">
+                        <div class="products-column-title">Hero Product</div>
+                        <div class="products-column-actions" id="heroActions" style="display: none;">
+                            <button class="btn-mini" onclick="selectAll('hero')">Select All</button>
+                            <button class="btn-mini" onclick="deselectAll('hero')">Deselect All</button>
+                        </div>
+                    </div>
                     <div class="folder-drop-zone" id="heroDropZone" data-type="hero">
                         <div class="drop-placeholder" id="heroPlaceholder">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -478,7 +512,13 @@
                     <input type="file" id="heroInput" accept="image/*" multiple webkitdirectory>
                 </div>
                 <div class="products-column">
-                    <div class="products-column-title">Looks (Accessories)</div>
+                    <div class="products-column-header">
+                        <div class="products-column-title">Looks (Accessories)</div>
+                        <div class="products-column-actions" id="looksActions" style="display: none;">
+                            <button class="btn-mini" onclick="selectAll('looks')">Select All</button>
+                            <button class="btn-mini" onclick="deselectAll('looks')">Deselect All</button>
+                        </div>
+                    </div>
                     <div class="folder-drop-zone" id="looksDropZone" data-type="looks">
                         <div class="drop-placeholder" id="looksPlaceholder">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -838,7 +878,7 @@
             files.forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const imageData = { file, url: e.target.result, selected: true, name: file.name };
+                    const imageData = { file, url: e.target.result, selected: false, name: file.name };
                     images.push(imageData);
                     renderProductGrid(type);
                     updateCalculator();
@@ -848,7 +888,26 @@
 
             placeholder.style.display = 'none';
             dropZone.classList.add('has-images');
+
+            // Show select/deselect buttons
+            const actionsEl = document.getElementById(`${type}Actions`);
+            if (actionsEl) actionsEl.style.display = 'flex';
         }
+
+        // Select/Deselect all functions
+        window.selectAll = function(type) {
+            const images = type === 'hero' ? state.heroImages : state.looksImages;
+            images.forEach(img => img.selected = true);
+            renderProductGrid(type);
+            updateCalculator();
+        };
+
+        window.deselectAll = function(type) {
+            const images = type === 'hero' ? state.heroImages : state.looksImages;
+            images.forEach(img => img.selected = false);
+            renderProductGrid(type);
+            updateCalculator();
+        };
 
         function renderProductGrid(type) {
             const images = type === 'hero' ? state.heroImages : state.looksImages;
