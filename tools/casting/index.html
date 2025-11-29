@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casting</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1200px;
+        }
+
+        /* Step Sections */
+        .step-section {
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .step-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        /* Model Upload */
+        .model-upload-area {
+            display: flex;
+            gap: var(--space-md);
+            align-items: flex-start;
+        }
+
+        .model-preview {
+            width: 200px;
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .model-preview:hover {
+            border-color: var(--jet);
+        }
+
+        .model-preview.has-image {
+            border-style: solid;
+            border-color: var(--jet);
+        }
+
+        .model-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .model-preview-placeholder {
+            text-align: center;
+            color: var(--ash-grey);
+            padding: var(--space-md);
+        }
+
+        .model-preview-placeholder svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: var(--space-xs);
+            opacity: 0.5;
+        }
+
+        /* Poses Grid */
+        .poses-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .pose-category {
+            margin-bottom: var(--space-sm);
+        }
+
+        .pose-category-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-xs);
+        }
+
+        .poses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: var(--space-xs);
+        }
+
+        .pose-card {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .pose-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .pose-card.selected {
+            border-color: var(--jet);
+        }
+
+        .pose-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pose-card .pose-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: var(--space-2xs) var(--space-xs);
+            text-align: center;
+        }
+
+        .pose-card .pose-check {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .pose-card.selected .pose-check {
+            display: flex;
+        }
+
+        /* Products Upload */
+        .products-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        .products-column {
+            flex: 1;
+        }
+
+        .products-column-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .folder-drop-zone {
+            min-height: 200px;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .folder-drop-zone.drag-over {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .folder-drop-zone.has-images {
+            border-style: solid;
+            border-color: var(--gainsboro);
+        }
+
+        .drop-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+            color: var(--ash-grey);
+            text-align: center;
+        }
+
+        .drop-placeholder svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: var(--space-xs);
+            opacity: 0.5;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: var(--space-xs);
+        }
+
+        .product-thumb {
+            aspect-ratio: 1;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .product-thumb:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .product-thumb.selected {
+            border-color: var(--jet);
+        }
+
+        .product-thumb.deselected {
+            opacity: 0.4;
+        }
+
+        .product-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-thumb .product-check {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .product-thumb.selected .product-check {
+            display: flex;
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .analysis-results {
+            display: none;
+        }
+
+        .analysis-results.visible {
+            display: block;
+        }
+
+        .analysis-item {
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .analysis-item:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+        }
+
+        .analysis-content {
+            flex: 1;
+        }
+
+        .analysis-category {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .analysis-description {
+            font-size: var(--text-sm);
+            color: var(--jet);
+            margin-top: var(--space-2xs);
+        }
+
+        /* Generate Section */
+        .generate-section {
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+            text-align: center;
+        }
+
+        /* Results */
+        .results-section {
+            margin-top: var(--space-lg);
+        }
+
+        /* Error */
+        .error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: var(--space-sm);
+            color: #991b1b;
+            margin-bottom: var(--space-md);
+            font-size: var(--text-base);
+            text-align: center;
+            border-radius: var(--radius-md);
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Casting</h1>
+            <p class="hero-subtitle">Create styled looks from product folders</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <!-- Step 1: Model -->
+        <div class="step-section">
+            <div class="step-header">
+                <span class="step-number">1</span>
+                <span class="step-title">Upload Model Reference</span>
+            </div>
+            <div class="model-upload-area">
+                <div class="model-preview" id="modelPreview">
+                    <div class="model-preview-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <div>Click or drop<br>model image</div>
+                    </div>
+                </div>
+                <input type="file" id="modelInput" accept="image/*">
+            </div>
+        </div>
+
+        <!-- Step 2: Poses -->
+        <div class="step-section">
+            <div class="step-header">
+                <span class="step-number">2</span>
+                <span class="step-title">Select Poses</span>
+            </div>
+            <div class="poses-container" id="posesContainer"></div>
+        </div>
+
+        <!-- Step 3: Products -->
+        <div class="step-section">
+            <div class="step-header">
+                <span class="step-number">3</span>
+                <span class="step-title">Upload Product Folder</span>
+            </div>
+            <p style="font-size: var(--text-sm); color: var(--slate); margin-bottom: var(--space-md);">
+                Drop a folder with <strong>Hero_Product</strong> and <strong>Looks</strong> subfolders, or drop images directly into each box.
+            </p>
+            <div class="products-row">
+                <div class="products-column">
+                    <div class="products-column-title">Hero Product</div>
+                    <div class="folder-drop-zone" id="heroDropZone" data-type="hero">
+                        <div class="drop-placeholder" id="heroPlaceholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <div>Drop hero product images<br>or folder here</div>
+                        </div>
+                        <div class="products-grid" id="heroGrid"></div>
+                    </div>
+                    <input type="file" id="heroInput" accept="image/*" multiple webkitdirectory>
+                </div>
+                <div class="products-column">
+                    <div class="products-column-title">Looks (Accessories)</div>
+                    <div class="folder-drop-zone" id="looksDropZone" data-type="looks">
+                        <div class="drop-placeholder" id="looksPlaceholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                            <div>Drop accessory images<br>or folder here</div>
+                        </div>
+                        <div class="products-grid" id="looksGrid"></div>
+                    </div>
+                    <input type="file" id="looksInput" accept="image/*" multiple webkitdirectory>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Analyze -->
+        <div class="step-section">
+            <div class="step-header">
+                <span class="step-number">4</span>
+                <span class="step-title">Analyze Products</span>
+            </div>
+            <div class="analysis-section">
+                <button class="btn btn--primary" id="analyzeBtn" disabled>Analyze Selected Products</button>
+                <div class="analysis-results" id="analysisResults">
+                    <h4 style="margin: var(--space-md) 0 var(--space-sm);">Analysis Results</h4>
+                    <div id="analysisContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Generate -->
+        <div class="step-section" style="border-bottom: none;">
+            <div class="step-header">
+                <span class="step-number">5</span>
+                <span class="step-title">Generate Images</span>
+            </div>
+            <div class="generate-section">
+                <!-- Settings Row -->
+                <div class="settings-row" style="margin-bottom: var(--space-md);">
+                    <div class="setting-group">
+                        <label class="setting-label">Model</label>
+                        <div class="btn-group" id="model-buttons">
+                            <button class="btn btn--toggle active" data-model="nanobanana">Nano Banana</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label class="setting-label">Resolution</label>
+                        <div class="btn-group" id="resolution-buttons">
+                            <button class="btn btn--toggle active" data-value="1K">1K</button>
+                            <button class="btn btn--toggle" data-value="2K">2K</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label class="setting-label">Seeds</label>
+                        <div class="slider-box">
+                            <input type="range" class="slider" id="seeds-slider" min="1" max="4" value="1">
+                            <span class="slider-value" id="seeds-value">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calc-display" id="calc-display">Select model, poses, and products to generate</div>
+                <button class="btn btn--primary btn--lg btn--block" id="generateBtn" disabled>
+                    Generate Images <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <p class="results-subtitle">Click to view details</p>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <button class="lightbox-nav prev" id="lightbox-prev">&larr;</button>
+            <button class="lightbox-nav next" id="lightbox-next">&rarr;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Pose</h3>
+                    <p class="lightbox-model-text" id="lightbox-pose"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Analyzing...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="poses.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+
+    <script>
+        // State
+        const state = {
+            modelImage: null,
+            selectedPoses: [],
+            heroImages: [],
+            looksImages: [],
+            analysisResults: [],
+            resolution: '1K',
+            seeds: 1,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            modelPreview: document.getElementById('modelPreview'),
+            modelInput: document.getElementById('modelInput'),
+            posesContainer: document.getElementById('posesContainer'),
+            heroDropZone: document.getElementById('heroDropZone'),
+            looksDropZone: document.getElementById('looksDropZone'),
+            heroGrid: document.getElementById('heroGrid'),
+            looksGrid: document.getElementById('looksGrid'),
+            heroPlaceholder: document.getElementById('heroPlaceholder'),
+            looksPlaceholder: document.getElementById('looksPlaceholder'),
+            heroInput: document.getElementById('heroInput'),
+            looksInput: document.getElementById('looksInput'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            analysisResults: document.getElementById('analysisResults'),
+            analysisContent: document.getElementById('analysisContent'),
+            generateBtn: document.getElementById('generateBtn'),
+            calcDisplay: document.getElementById('calc-display'),
+            costValue: document.getElementById('cost-value'),
+            seedsSlider: document.getElementById('seeds-slider'),
+            seedsValue: document.getElementById('seeds-value'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            errorDiv: document.getElementById('error'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxPose: document.getElementById('lightbox-pose'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            loading: document.getElementById('loading'),
+            loadingText: document.getElementById('loading-text')
+        };
+
+        // Initialize poses grid
+        function initializePoses() {
+            const pdpPoses = POSES.filter(p => p.category === 'pdp' || p.category === 'detail');
+            const lifestylePoses = POSES.filter(p => p.category === 'lifestyle');
+
+            const pdpHtml = `
+                <div class="pose-category">
+                    <div class="pose-category-title">PDP / E-Commerce</div>
+                    <div class="poses-grid">
+                        ${pdpPoses.map(pose => createPoseCard(pose)).join('')}
+                    </div>
+                </div>
+            `;
+
+            const lifestyleHtml = `
+                <div class="pose-category">
+                    <div class="pose-category-title">Lifestyle / Editorial</div>
+                    <div class="poses-grid">
+                        ${lifestylePoses.map(pose => createPoseCard(pose)).join('')}
+                    </div>
+                </div>
+            `;
+
+            elements.posesContainer.innerHTML = pdpHtml + lifestyleHtml;
+
+            // Add click handlers
+            elements.posesContainer.querySelectorAll('.pose-card').forEach(card => {
+                card.addEventListener('click', () => togglePose(card.dataset.id));
+                card.addEventListener('mouseenter', () => {
+                    const pose = POSES.find(p => p.id === card.dataset.id);
+                    if (pose && pose.hoverImage) {
+                        card.querySelector('img').src = pose.hoverImage;
+                    }
+                });
+                card.addEventListener('mouseleave', () => {
+                    const pose = POSES.find(p => p.id === card.dataset.id);
+                    if (pose && pose.defaultImage) {
+                        card.querySelector('img').src = pose.defaultImage;
+                    }
+                });
+            });
+        }
+
+        function createPoseCard(pose) {
+            return `
+                <div class="pose-card" data-id="${pose.id}">
+                    <img src="${pose.defaultImage}" alt="${pose.name}">
+                    <span class="pose-name">${pose.name}</span>
+                    <span class="pose-check">✓</span>
+                </div>
+            `;
+        }
+
+        function togglePose(poseId) {
+            const card = elements.posesContainer.querySelector(`[data-id="${poseId}"]`);
+            const index = state.selectedPoses.indexOf(poseId);
+
+            if (index > -1) {
+                state.selectedPoses.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                state.selectedPoses.push(poseId);
+                card.classList.add('selected');
+            }
+
+            updateCalculator();
+        }
+
+        // Model upload
+        elements.modelPreview.addEventListener('click', () => elements.modelInput.click());
+        elements.modelInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleModelUpload(e.target.files[0]);
+            }
+        });
+
+        function handleModelUpload(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                state.modelImage = { file, url: e.target.result };
+                elements.modelPreview.innerHTML = `<img src="${e.target.result}" alt="Model">`;
+                elements.modelPreview.classList.add('has-image');
+                updateCalculator();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Drag and drop for model
+        elements.modelPreview.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.modelPreview.style.borderColor = 'var(--jet)';
+        });
+        elements.modelPreview.addEventListener('dragleave', () => {
+            elements.modelPreview.style.borderColor = '';
+        });
+        elements.modelPreview.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.modelPreview.style.borderColor = '';
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) {
+                handleModelUpload(files[0]);
+            }
+        });
+
+        // Products drag and drop
+        function setupDropZone(dropZone, grid, placeholder, type) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+            dropZone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+
+                const items = e.dataTransfer.items;
+                const files = [];
+
+                // Handle folder drops
+                for (const item of items) {
+                    if (item.webkitGetAsEntry) {
+                        const entry = item.webkitGetAsEntry();
+                        if (entry) {
+                            await traverseFileTree(entry, files, type);
+                        }
+                    }
+                }
+
+                // If no folder entries, use regular files
+                if (files.length === 0) {
+                    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    files.push(...droppedFiles);
+                }
+
+                if (files.length > 0) {
+                    handleProductFiles(files, type);
+                }
+            });
+
+            dropZone.addEventListener('click', (e) => {
+                if (e.target === dropZone || e.target === placeholder || placeholder.contains(e.target)) {
+                    const input = type === 'hero' ? elements.heroInput : elements.looksInput;
+                    input.click();
+                }
+            });
+        }
+
+        async function traverseFileTree(entry, files, expectedType) {
+            if (entry.isFile) {
+                const file = await new Promise(resolve => entry.file(resolve));
+                if (file.type.startsWith('image/')) {
+                    files.push(file);
+                }
+            } else if (entry.isDirectory) {
+                const dirName = entry.name.toLowerCase();
+                const reader = entry.createReader();
+                const entries = await new Promise(resolve => reader.readEntries(resolve));
+
+                // Check if this is a Hero_Product or Looks folder
+                if (dirName.includes('hero') && expectedType === 'hero') {
+                    for (const childEntry of entries) {
+                        await traverseFileTree(childEntry, files, expectedType);
+                    }
+                } else if (dirName.includes('look') && expectedType === 'looks') {
+                    for (const childEntry of entries) {
+                        await traverseFileTree(childEntry, files, expectedType);
+                    }
+                } else {
+                    // For other directories, check children
+                    for (const childEntry of entries) {
+                        await traverseFileTree(childEntry, files, expectedType);
+                    }
+                }
+            }
+        }
+
+        function handleProductFiles(files, type) {
+            const images = type === 'hero' ? state.heroImages : state.looksImages;
+            const grid = type === 'hero' ? elements.heroGrid : elements.looksGrid;
+            const placeholder = type === 'hero' ? elements.heroPlaceholder : elements.looksPlaceholder;
+            const dropZone = type === 'hero' ? elements.heroDropZone : elements.looksDropZone;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageData = { file, url: e.target.result, selected: true, name: file.name };
+                    images.push(imageData);
+                    renderProductGrid(type);
+                    updateCalculator();
+                };
+                reader.readAsDataURL(file);
+            });
+
+            placeholder.style.display = 'none';
+            dropZone.classList.add('has-images');
+        }
+
+        function renderProductGrid(type) {
+            const images = type === 'hero' ? state.heroImages : state.looksImages;
+            const grid = type === 'hero' ? elements.heroGrid : elements.looksGrid;
+
+            grid.innerHTML = images.map((img, idx) => `
+                <div class="product-thumb ${img.selected ? 'selected' : 'deselected'}" data-index="${idx}" data-type="${type}">
+                    <img src="${img.url}" alt="${img.name}">
+                    <span class="product-check">✓</span>
+                </div>
+            `).join('');
+
+            grid.querySelectorAll('.product-thumb').forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    const idx = parseInt(thumb.dataset.index);
+                    const t = thumb.dataset.type;
+                    const imgs = t === 'hero' ? state.heroImages : state.looksImages;
+                    imgs[idx].selected = !imgs[idx].selected;
+                    renderProductGrid(t);
+                    updateCalculator();
+                });
+            });
+        }
+
+        // File inputs
+        elements.heroInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) handleProductFiles(files, 'hero');
+            e.target.value = '';
+        });
+
+        elements.looksInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) handleProductFiles(files, 'looks');
+            e.target.value = '';
+        });
+
+        setupDropZone(elements.heroDropZone, elements.heroGrid, elements.heroPlaceholder, 'hero');
+        setupDropZone(elements.looksDropZone, elements.looksGrid, elements.looksPlaceholder, 'looks');
+
+        // Resolution buttons
+        elements.resolutionButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                elements.resolutionButtons.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.resolution = e.target.dataset.value;
+                updateCalculator();
+            }
+        });
+
+        // Seeds slider
+        elements.seedsSlider.addEventListener('input', (e) => {
+            state.seeds = parseInt(e.target.value);
+            elements.seedsValue.textContent = state.seeds;
+            updateCalculator();
+        });
+
+        // Calculator
+        function updateCalculator() {
+            const hasModel = state.modelImage !== null;
+            const numPoses = state.selectedPoses.length;
+            const selectedHero = state.heroImages.filter(i => i.selected);
+            const selectedLooks = state.looksImages.filter(i => i.selected);
+            const numProducts = selectedHero.length + selectedLooks.length;
+
+            // Enable analyze button
+            elements.analyzeBtn.disabled = numProducts === 0;
+
+            // Calculate total images
+            const totalImages = numPoses * numProducts * state.seeds;
+
+            // Calculate cost (Nano Banana = $0.15 per image, 2K = double)
+            let costPerImage = 0.15;
+            if (state.resolution === '2K') costPerImage *= 2;
+            const totalCost = totalImages * costPerImage;
+
+            elements.calcDisplay.textContent = `${numPoses} poses × ${numProducts} products × ${state.seeds} seeds = ${totalImages} images`;
+            elements.costValue.textContent = formatCost(totalCost);
+
+            elements.generateBtn.disabled = !hasModel || numPoses === 0 || numProducts === 0 || state.analysisResults.length === 0;
+        }
+
+        // Analyze products
+        elements.analyzeBtn.addEventListener('click', analyzeProducts);
+
+        async function analyzeProducts() {
+            const selectedHero = state.heroImages.filter(i => i.selected);
+            const selectedLooks = state.looksImages.filter(i => i.selected);
+            const allSelected = [...selectedHero, ...selectedLooks];
+
+            if (allSelected.length === 0) return;
+
+            elements.loading.classList.add('visible');
+            elements.loadingText.textContent = 'Analyzing products with AI...';
+            state.analysisResults = [];
+
+            try {
+                // Analyze each image with GPT-4 Vision
+                for (const img of allSelected) {
+                    const analysis = await analyzeImage(img);
+                    state.analysisResults.push({
+                        image: img,
+                        ...analysis
+                    });
+                }
+
+                // Display results
+                renderAnalysisResults();
+                elements.analysisResults.classList.add('visible');
+                updateCalculator();
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showError('Failed to analyze products: ' + error.message);
+            } finally {
+                elements.loading.classList.remove('visible');
+            }
+        }
+
+        async function analyzeImage(img) {
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: img.url,
+                        prompt: `Analyze this fashion product image. Identify:
+1. Product category (coat, jacket, bag, shoes, boots, sunglasses, accessories, etc.)
+2. Detailed description for use in AI image generation prompt (color, material, style, key features)
+3. Whether this image shows a model/person wearing the product or just the product alone
+
+Respond in JSON format:
+{
+    "category": "string",
+    "description": "string (detailed description for prompt)",
+    "hasModel": boolean,
+    "promptFragment": "string (how to describe this in an outfit prompt, e.g., 'camel wool belted coat with notched lapels')"
+}`
+                    })
+                });
+
+                if (!response.ok) throw new Error('Analysis API error');
+
+                const data = await response.json();
+                return JSON.parse(data.content);
+            } catch (error) {
+                console.error('Image analysis error:', error);
+                // Fallback analysis
+                return {
+                    category: 'unknown',
+                    description: 'Fashion product',
+                    hasModel: false,
+                    promptFragment: 'fashion item'
+                };
+            }
+        }
+
+        function renderAnalysisResults() {
+            elements.analysisContent.innerHTML = state.analysisResults.map(result => `
+                <div class="analysis-item">
+                    <img src="${result.image.url}" alt="" class="analysis-thumb">
+                    <div class="analysis-content">
+                        <div class="analysis-category">${result.category}</div>
+                        <div class="analysis-description">${result.promptFragment}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Generate images
+        elements.generateBtn.addEventListener('click', generateImages);
+
+        async function generateImages() {
+            if (!state.modelImage || state.selectedPoses.length === 0 || state.analysisResults.length === 0) return;
+
+            elements.errorDiv.classList.remove('show');
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+
+            // Build all generation tasks
+            const tasks = [];
+
+            for (const poseId of state.selectedPoses) {
+                const pose = POSES.find(p => p.id === poseId);
+                const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'];
+
+                // Build product description from analysis
+                const productDescription = buildProductDescription();
+
+                // Get one prompt variation
+                const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
+                const prompt = promptTemplate.replace('[PRODUCT_DESCRIPTION]', productDescription);
+
+                tasks.push({
+                    poseId,
+                    poseName: pose.name,
+                    prompt,
+                    seeds: state.seeds
+                });
+            }
+
+            const totalTasks = tasks.length;
+            let completed = 0;
+
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${totalTasks}`;
+            elements.progressBar.style.width = '0%';
+            elements.generateBtn.disabled = true;
+
+            // Collect all product image URLs
+            const productUrls = state.analysisResults.map(r => r.image.url);
+
+            // Execute all tasks
+            await Promise.all(tasks.map(async (task) => {
+                try {
+                    const imageUrls = [state.modelImage.url, ...productUrls];
+
+                    const params = {
+                        prompt: task.prompt,
+                        image_urls: imageUrls,
+                        num_images: task.seeds,
+                        aspect_ratio: '3:4',
+                        resolution: state.resolution,
+                        output_format: 'png'
+                    };
+
+                    const data = await api.remixImage('nanobanana-edit', params);
+
+                    if (data.images) {
+                        data.images.forEach(img => {
+                            state.results.push({
+                                url: img.url,
+                                prompt: task.prompt,
+                                poseName: task.poseName,
+                                poseId: task.poseId
+                            });
+                        });
+                        renderResults();
+                    }
+                } catch (error) {
+                    console.error('Generation error:', error);
+                }
+
+                completed++;
+                elements.progressCount.textContent = `${completed} / ${totalTasks}`;
+                elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+            }));
+
+            elements.progressSection.classList.remove('visible');
+            elements.resultsSection.classList.add('visible');
+            updateCalculator();
+        }
+
+        function buildProductDescription() {
+            // Combine all analyzed products into a coherent outfit description
+            const parts = [];
+
+            // Group by category
+            const heroProducts = state.analysisResults.filter(r =>
+                state.heroImages.some(h => h.url === r.image.url && h.selected)
+            );
+            const looksProducts = state.analysisResults.filter(r =>
+                state.looksImages.some(l => l.url === r.image.url && l.selected)
+            );
+
+            // Add hero product first (main garment)
+            heroProducts.forEach(p => parts.push(p.promptFragment));
+
+            // Add accessories
+            looksProducts.forEach(p => parts.push(p.promptFragment));
+
+            return parts.join(', ');
+        }
+
+        function renderResults() {
+            elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
+                <div class="result-card" onclick="openLightbox(${idx})">
+                    <img src="${result.url}" alt="Result ${idx + 1}" class="result-image">
+                    <span class="model-tag">${result.poseName}</span>
+                </div>
+            `).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxPose.textContent = result.poseName;
+            elements.lightboxPrompt.textContent = result.prompt;
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
+
+        document.getElementById('lightbox-prev').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-next').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-download').addEventListener('click', async () => {
+            const result = state.results[state.lightboxIndex];
+            downloadFile(result.url, `casting-${result.poseName}-${Date.now()}.png`);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!elements.lightbox.classList.contains('visible')) return;
+            if (e.key === 'Escape') closeLightbox();
+            else if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
+            else if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
+        });
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        function showError(message) {
+            elements.errorDiv.textContent = message;
+            elements.errorDiv.classList.add('show');
+        }
+
+        // Initialize
+        initializePoses();
+        updateCalculator();
+    </script>
+</body>
+</html>

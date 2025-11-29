@@ -174,6 +174,58 @@ IMPORTANT: Return ONLY the prompts. Separate each prompt with TWO blank lines. N
 });
 
 /**
+ * POST /api/analyze
+ * Analyze images using GPT-4 Vision
+ */
+app.post('/api/analyze', async (req, res) => {
+    try {
+        const { image, prompt } = req.body;
+
+        if (!image) {
+            return res.status(400).json({ error: 'No image provided' });
+        }
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: prompt },
+                            {
+                                type: 'image_url',
+                                image_url: {
+                                    url: image,
+                                    detail: 'low'
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens: 500
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return res.status(response.status).json({ error: data.error?.message || 'Analysis failed' });
+        }
+
+        res.json({ content: data.choices[0].message.content });
+    } catch (error) {
+        console.error('Analyze error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/upload
  * Upload image to fal.ai storage
  */
@@ -209,7 +261,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 /**
  * Clean URL routing - redirect tool names to /?tool=name
  */
-const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'angles', 'research'];
+const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'angles', 'research', 'casting'];
 
 app.get('/:tool', (req, res, next) => {
     const tool = req.params.tool;
@@ -232,11 +284,11 @@ app.listen(PORT, () => {
 ╠════════════════════════════════════════════════╣
 ║  Local:   http://localhost:${PORT}                ║
 ║                                                ║
-║  Tools:  /generate, /remix, /looks, /styling   ║
-║          /angles, /research                    ║
+║  Tools:  /generate, /remix, /casting           ║
+║          /research                             ║
 ║                                                ║
 ║  API:    /api/generate, /api/remix             ║
-║          /api/prompts, /api/upload             ║
+║          /api/prompts, /api/analyze            ║
 ╚════════════════════════════════════════════════╝
     `);
 });
