@@ -79,6 +79,62 @@
             border-left-color: var(--jet);
         }
 
+        .nav-section {
+            padding: 16px 20px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ash-grey);
+        }
+
+        .nav-section:first-child {
+            padding-top: 0;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--gainsboro);
+            margin: 12px 20px;
+        }
+
+        .nav-collapsible {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ash-grey);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-collapsible:hover {
+            color: var(--slate);
+        }
+
+        .nav-collapsible .chevron {
+            font-size: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-collapsible.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .nav-group {
+            overflow: hidden;
+            transition: max-height 0.2s ease;
+            max-height: 200px;
+        }
+
+        .nav-group.collapsed {
+            max-height: 0;
+        }
+
         /* Main Content */
         .main-content {
             flex: 1;
@@ -134,12 +190,21 @@
         </div>
 
         <nav class="sidebar-nav">
+            <div class="nav-section">Tools</div>
             <a class="nav-item" data-tool="generate">Generate</a>
             <a class="nav-item" data-tool="remix">Remix</a>
-            <a class="nav-item" data-tool="looks">Looks</a>
-            <a class="nav-item" data-tool="styling">Styling</a>
-            <a class="nav-item" data-tool="angles">Angles</a>
             <a class="nav-item" data-tool="research">Research</a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-collapsible collapsed" id="legacy-toggle">
+                <span>Legacy</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="legacy-group">
+                <a class="nav-item" data-tool="looks">Looks</a>
+                <a class="nav-item" data-tool="styling">Styling</a>
+                <a class="nav-item" data-tool="angles">Angles</a>
+            </div>
         </nav>
 
         <div class="sidebar-footer">
@@ -159,13 +224,15 @@
 
     <script>
         // All tools now live in /tools/
+        const v = Date.now();
         const tools = {
-            'generate': '/tools/generate.html',
-            'remix': '/tools/remix.html',
-            'looks': '/tools/looks.html',
-            'styling': '/tools/styling.html',
-            'angles': '/tools/angles.html',
-            'research': '/tools/research.html'
+            'generate': `/tools/generate.html?v=${v}`,
+            'remix': `/tools/remix.html?v=${v}`,
+            'research': `/tools/research.html?v=${v}`,
+            // Legacy tools
+            'looks': `/tools/legacy/looks.html?v=${v}`,
+            'styling': `/tools/legacy/styling.html?v=${v}`,
+            'angles': `/tools/legacy/angles.html?v=${v}`
         };
 
         // Check URL for direct tool access
@@ -200,6 +267,14 @@
 
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => loadTool(item.dataset.tool));
+        });
+
+        // Legacy collapsible toggle
+        document.getElementById('legacy-toggle').addEventListener('click', () => {
+            const toggle = document.getElementById('legacy-toggle');
+            const group = document.getElementById('legacy-group');
+            toggle.classList.toggle('collapsed');
+            group.classList.toggle('collapsed');
         });
     </script>
 </body>

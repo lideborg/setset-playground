@@ -41,6 +41,12 @@
           "file": "/research/01_AESTHETICS_RESEARCH/ADDITIONAL_LUXURY_BRANDS.md",
           "summary": "Extended brand analysis covering additional luxury houses and contemporary designers.",
           "tags": ["luxury", "reference"]
+        },
+        {
+          "title": "Menswear Luxury Aesthetics",
+          "file": "/research/01_AESTHETICS_RESEARCH/MENSWEAR_LUXURY_AESTHETICS.md",
+          "summary": "Comprehensive guide to men's luxury fashion brands: Loro Piana, Brunello Cucinelli, Tom Ford, Zegna, and more. Styling archetypes, poses, and prompt templates.",
+          "tags": ["menswear", "luxury", "tailoring"]
         }
       ]
     },
@@ -137,6 +143,18 @@
           "file": "/research/02_SYSTEM_GUIDES/BRAND_RENAMING_STRATEGY.md",
           "summary": "Generic aesthetic profiles to avoid brand/logo generation: 7 aesthetic profile remappings.",
           "tags": ["branding", "strategy", "aesthetics"]
+        },
+        {
+          "title": "Negative Prompts Library",
+          "file": "/research/02_SYSTEM_GUIDES/NEGATIVE_PROMPTS_LIBRARY.md",
+          "summary": "Comprehensive collection of negative prompts for AI image generation. Covers anatomy, fashion, skin, lighting, and model-specific syntax.",
+          "tags": ["negative prompts", "quality", "technical"]
+        },
+        {
+          "title": "Seedance Prompting Guide",
+          "file": "/research/02_SYSTEM_GUIDES/SEEDANCE_PROMPTING_GUIDE.md",
+          "summary": "Best practices for Seedance video generation: prompt structure, degree adverbs, camera terminology, cinematic styles, and fashion movement prompts.",
+          "tags": ["seedance", "video", "prompting"]
         }
       ]
     },
@@ -203,6 +221,100 @@
           "file": "/research/06_TOOL_DOCUMENTATION/STYLING_STUDIO_DOCUMENTATION.md",
           "summary": "Documentation for Styling Studio photorealistic paper doll generator. Architecture, API, prompt logic.",
           "tags": ["styling", "documentation", "technical"]
+        }
+      ]
+    },
+    {
+      "id": "reference-frameworks",
+      "name": "Reference Frameworks",
+      "icon": "📖",
+      "description": "Foundational guides for casting, photography, beauty, and inclusive representation",
+      "documents": [
+        {
+          "title": "Fashion Casting Directors Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/Fashion_Casting_Directors_Guide.md",
+          "summary": "Comprehensive casting guidance, talent selection, diversity requirements, professional standards.",
+          "tags": ["casting", "diversity", "professional"]
+        },
+        {
+          "title": "Professional Photography Lighting Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/professional-photography-lighting-guide.md",
+          "summary": "Technical lighting specifications for studio and environmental setups, equipment references.",
+          "tags": ["lighting", "technical", "photography"]
+        },
+        {
+          "title": "Beauty & Makeup Reference Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/BEAUTY_MAKEUP_REFERENCE_GUIDE.md",
+          "summary": "Beauty aesthetics, makeup terminology, rendering styles for close-up shots.",
+          "tags": ["beauty", "makeup", "terminology"]
+        },
+        {
+          "title": "Hair Texture Classification Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/Hair_Texture_Classification_and_Styling_Terminology_Guide.md",
+          "summary": "Hair texture classification systems, styling terminology across all textures.",
+          "tags": ["hair", "texture", "styling"]
+        },
+        {
+          "title": "Age Diversity Fashion Editorial Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/age-diversity-fashion-editorial-guide.md",
+          "summary": "Age-positive fashion frameworks, casting and styling models 40+, 50+, 60+.",
+          "tags": ["age", "diversity", "inclusive"]
+        },
+        {
+          "title": "Inclusive Fashion Terminology Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/inclusive-fashion-terminology-guide.md",
+          "summary": "Inclusive size and fit terminology, gender-neutral fashion language.",
+          "tags": ["inclusive", "terminology", "gender-neutral"]
+        },
+        {
+          "title": "Inclusive Body Type Framework",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/inclusive-body-type-framework.md",
+          "summary": "Body diversity framework, representation guidelines, inclusive casting.",
+          "tags": ["body", "diversity", "inclusive"]
+        },
+        {
+          "title": "AI Lighting Terminology",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/AI_LIGHTING_TERMINOLOGY.md",
+          "summary": "Complete lighting vocabulary for AI image generation: natural light, studio setups, modifiers, cinematic styles, and fashion-specific lighting terms.",
+          "tags": ["lighting", "terminology", "technical"]
+        }
+      ]
+    },
+    {
+      "id": "setset",
+      "name": "Setset",
+      "icon": "🎬",
+      "description": "Technical documentation of the Setset app architecture, code logic, and systems",
+      "documents": [
+        {
+          "title": "Setset Overview",
+          "file": "/research/08_SETSET/README.md",
+          "summary": "Platform architecture, tech stack (Next.js, Supabase, FAL.ai, Seedance), tool descriptions, design philosophy.",
+          "tags": ["architecture", "overview", "setset"]
+        },
+        {
+          "title": "Prompt Architecture",
+          "file": "/research/08_SETSET/prompt-architecture/PROMPT_ARCHITECTURE.md",
+          "summary": "9-component prompt structure, modular system, GPT enhancement, three-variation structure, pose-specific builders.",
+          "tags": ["prompts", "architecture", "modular"]
+        },
+        {
+          "title": "Video Movements",
+          "file": "/research/08_SETSET/video-generation/VIDEO_MOVEMENTS.md",
+          "summary": "11 video movements (Spin, Walk, Hair Touch, etc.), Seedance API integration, cost calculations.",
+          "tags": ["video", "movements", "seedance"]
+        },
+        {
+          "title": "Pose Libraries",
+          "file": "/research/08_SETSET/pose-libraries/POSE_POOLS.md",
+          "summary": "80+ editorial poses across categories: front, 45-degree, lifestyle, gender-specific pools.",
+          "tags": ["poses", "editorial", "library"]
+        },
+        {
+          "title": "Styling Rules",
+          "file": "/research/08_SETSET/styling-system/STYLING_RULES.md",
+          "summary": "Product-category outfit rules, styling libraries, color coordination, safety rules.",
+          "tags": ["styling", "outfits", "rules"]
         }
       ]
     }

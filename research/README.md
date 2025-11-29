@@ -12,8 +12,12 @@
 | [System Guides](#02-system-guides) | 6 files | Technical guides for prompt building and variation |
 | [Location Planning](#03-location-planning) | 2 files | Location strategy and mapping systems |
 | [Talent & Models](#04-talent--models) | 2 files | Comprehensive talent database and documentation |
+| [Social Media Strategy](#05-social-media-strategy) | 4 files | Instagram, content calendar, PR strategy |
+| [Tool Documentation](#06-tool-documentation) | 1 file | Technical docs for Setset tools |
+| [Reference Frameworks](#07-reference-frameworks) | 7 files | Casting, lighting, beauty, hair, diversity guides |
+| [Setset Production](#08-setset) | 4 files | Setset Shoots app architecture & prompt systems |
 
-**Total**: 16 research documents
+**Total**: 32 research documents
 
 ---
 
@@ -199,6 +203,76 @@ Comprehensive talent database with diversity metrics and profile information.
 
 ---
 
+## 07_REFERENCE_FRAMEWORKS
+
+### Purpose
+Foundational reference guides for casting, photography, beauty, and inclusive representation.
+
+### Files
+
+#### Fashion_Casting_Directors_Guide.md
+- **Coverage**: Comprehensive casting guidance and talent selection
+- **Use for**: Understanding professional casting standards, diversity requirements
+
+#### professional-photography-lighting-guide.md
+- **Coverage**: Technical lighting specifications for studio and environmental
+- **Use for**: Detailed lighting setups, equipment references
+
+#### BEAUTY_MAKEUP_REFERENCE_GUIDE.md
+- **Coverage**: Beauty aesthetics, makeup terminology, rendering styles
+- **Use for**: Beauty prompts, skincare terminology, close-up shots
+
+#### Hair_Texture_Classification_and_Styling_Terminology_Guide.md
+- **Coverage**: Hair texture classification systems, styling terminology
+- **Use for**: Accurate hair descriptions across all textures
+
+#### age-diversity-fashion-editorial-guide.md
+- **Coverage**: Age-positive fashion and editorial frameworks
+- **Use for**: Casting and styling models 40+, 50+, 60+
+
+#### inclusive-fashion-terminology-guide.md
+- **Coverage**: Inclusive size and fit terminology, gender-neutral language
+- **Use for**: Respectful, accurate body descriptions
+
+#### inclusive-body-type-framework.md
+- **Coverage**: Body diversity framework, representation guidelines
+- **Use for**: Inclusive casting, diverse body representation
+
+---
+
+## 08_SETSET
+
+### Purpose
+Complete technical documentation of the Setset Shoots production platform - prompt architecture, video generation, pose libraries, and styling systems.
+
+### Files
+
+#### README.md
+- **Overview**: Platform architecture, tech stack, tool descriptions
+- **Use for**: Understanding the complete Setset system
+
+#### prompt-architecture/PROMPT_ARCHITECTURE.md
+- **Coverage**: 9-component prompt structure, modular system, GPT enhancement
+- **Includes**: Three-variation structure, pose-specific builders, parsing logic
+- **Use for**: Understanding how production prompts are generated
+
+#### video-generation/VIDEO_MOVEMENTS.md
+- **Coverage**: 11 video movements with Seedance model
+- **Includes**: Movement prompts, cost calculations, API integration
+- **Use for**: Video prompt writing, understanding motion terminology
+
+#### pose-libraries/POSE_POOLS.md
+- **Coverage**: Complete pose pools (80+ poses across categories)
+- **Includes**: Front, 45-degree, lifestyle, gender-specific pools
+- **Use for**: Pose variation, editorial pose language
+
+#### styling-system/STYLING_RULES.md
+- **Coverage**: Product-category outfit rules, styling libraries
+- **Includes**: What to style per category, color coordination, safety rules
+- **Use for**: Understanding outfit logic, avoiding styling conflicts
+
+---
+
 ## Research Gaps & Future Expansion
 
 ### Identified Gaps
@@ -255,16 +329,18 @@ Comprehensive talent database with diversity metrics and profile information.
 
 ## Statistics
 
-- **Total Research Documents**: 16
+- **Total Research Documents**: 32
 - **Brands Analyzed**: 19 (across luxury, beauty, avant-garde categories)
 - **Aesthetic Profiles**: 7 active (+ 2 researched for future)
 - **Talent Models**: 25 diverse profiles
 - **Variation Dimensions**: 6 systematic dimensions
 - **Prompt Components**: 9 structured elements
-- **Coverage Period**: 2020-2024
+- **Video Movements**: 11 documented movements
+- **Pose Pools**: 80+ editorial poses
+- **Coverage Period**: 2020-2025
 
 ---
 
-**Last Updated**: November 9, 2025
+**Last Updated**: November 29, 2025
 **Status**: Active research portal
 **Maintained by**: SetCast Project
