@@ -332,6 +332,50 @@
             margin-top: var(--space-2xs);
         }
 
+        .analysis-group {
+            margin-bottom: var(--space-md);
+        }
+
+        .analysis-group-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-xs);
+            padding-bottom: var(--space-2xs);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .analysis-item.styling-ref {
+            background: #f0fdf4;
+            border-radius: var(--radius-sm);
+            padding: var(--space-xs);
+        }
+
+        .outfit-summary {
+            margin-top: var(--space-md);
+            padding: var(--space-md);
+            background: var(--white);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .outfit-summary-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--jet);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-xs);
+        }
+
+        .outfit-summary-text {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            line-height: 1.5;
+        }
+
         /* Generate Section */
         .generate-section {
             background: var(--off-white);
@@ -862,29 +906,39 @@
             updateCalculator();
         });
 
-        // Calculator
+        // Calculator - NEW LOGIC: poses × seeds = total images (products merged into ONE outfit)
         function updateCalculator() {
             const hasModel = state.modelImage !== null;
             const numPoses = state.selectedPoses.length;
             const selectedHero = state.heroImages.filter(i => i.selected);
             const selectedLooks = state.looksImages.filter(i => i.selected);
-            const numProducts = selectedHero.length + selectedLooks.length;
+            const numHero = selectedHero.length;
+            const numLooks = selectedLooks.length;
 
-            // Enable analyze button
-            elements.analyzeBtn.disabled = numProducts === 0;
+            // Enable analyze button if we have at least one hero product
+            elements.analyzeBtn.disabled = numHero === 0;
 
-            // Calculate total images
-            const totalImages = numPoses * numProducts * state.seeds;
+            // Calculate total images: poses × seeds (all products merged into one outfit)
+            const totalImages = numPoses * state.seeds;
 
             // Calculate cost (Nano Banana = $0.15 per image, 2K = double)
             let costPerImage = 0.15;
             if (state.resolution === '2K') costPerImage *= 2;
             const totalCost = totalImages * costPerImage;
 
-            elements.calcDisplay.textContent = `${numPoses} poses × ${numProducts} products × ${state.seeds} seeds = ${totalImages} images`;
+            // Build display text
+            let displayText = `${numPoses} poses × ${state.seeds} seeds = ${totalImages} images`;
+            if (numHero > 0 || numLooks > 0) {
+                const outfitParts = [];
+                if (numHero > 0) outfitParts.push(`${numHero} hero`);
+                if (numLooks > 0) outfitParts.push(`${numLooks} accessories`);
+                displayText = `${numPoses} poses × ${state.seeds} seeds = ${totalImages} images (outfit: ${outfitParts.join(' + ')})`;
+            }
+            elements.calcDisplay.textContent = displayText;
             elements.costValue.textContent = formatCost(totalCost);
 
-            elements.generateBtn.disabled = !hasModel || numPoses === 0 || numProducts === 0 || state.analysisResults.length === 0;
+            // Need model, at least one pose, at least one hero product, and analysis done
+            elements.generateBtn.disabled = !hasModel || numPoses === 0 || numHero === 0 || state.analysisResults.length === 0;
         }
 
         // Analyze products
@@ -893,20 +947,34 @@
         async function analyzeProducts() {
             const selectedHero = state.heroImages.filter(i => i.selected);
             const selectedLooks = state.looksImages.filter(i => i.selected);
-            const allSelected = [...selectedHero, ...selectedLooks];
 
-            if (allSelected.length === 0) return;
+            if (selectedHero.length === 0) {
+                showError('Please select at least one hero product');
+                return;
+            }
 
             elements.loading.classList.add('visible');
-            elements.loadingText.textContent = 'Analyzing products with AI...';
             state.analysisResults = [];
 
             try {
-                // Analyze each image with GPT-4 Vision
-                for (const img of allSelected) {
-                    const analysis = await analyzeImage(img);
+                // Analyze hero products first
+                for (let i = 0; i < selectedHero.length; i++) {
+                    elements.loadingText.textContent = `Analyzing hero product ${i + 1}/${selectedHero.length}...`;
+                    const analysis = await analyzeImage(selectedHero[i], true);
                     state.analysisResults.push({
-                        image: img,
+                        image: selectedHero[i],
+                        source: 'hero',
+                        ...analysis
+                    });
+                }
+
+                // Then analyze looks/accessories
+                for (let i = 0; i < selectedLooks.length; i++) {
+                    elements.loadingText.textContent = `Analyzing accessory ${i + 1}/${selectedLooks.length}...`;
+                    const analysis = await analyzeImage(selectedLooks[i], false);
+                    state.analysisResults.push({
+                        image: selectedLooks[i],
+                        source: 'looks',
                         ...analysis
                     });
                 }
@@ -924,24 +992,33 @@
             }
         }
 
-        async function analyzeImage(img) {
+        async function analyzeImage(img, isHero = false) {
             try {
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         image: img.url,
-                        prompt: `Analyze this fashion product image. Identify:
-1. Product category (coat, jacket, bag, shoes, boots, sunglasses, accessories, etc.)
-2. Detailed description for use in AI image generation prompt (color, material, style, key features)
-3. Whether this image shows a model/person wearing the product or just the product alone
+                        prompt: `Analyze this fashion product image carefully. Determine:
 
-Respond in JSON format:
+1. IMAGE TYPE - Is this:
+   - "product_only": Just the product (on hanger, flat lay, mannequin, or product shot)
+   - "styling_reference": A full outfit/look on a model showing how items should be styled together
+   - "accessory": A single accessory item (bag, shoes, sunglasses, jewelry, etc.)
+
+2. PRODUCT CATEGORY: coat, jacket, dress, pants, skirt, bag, shoes, boots, sunglasses, jewelry, scarf, hat, etc.
+
+3. DETAILED DESCRIPTION for AI image generation (color, material, texture, style, silhouette, key details)
+
+4. PROMPT FRAGMENT: How to describe this item when dressing a model (e.g., "camel wool belted wrap coat with wide notched lapels and self-tie belt")
+
+Respond ONLY with valid JSON:
 {
+    "imageType": "product_only" | "styling_reference" | "accessory",
     "category": "string",
-    "description": "string (detailed description for prompt)",
-    "hasModel": boolean,
-    "promptFragment": "string (how to describe this in an outfit prompt, e.g., 'camel wool belted coat with notched lapels')"
+    "description": "string",
+    "promptFragment": "string",
+    "stylingNotes": "string (only if imageType is styling_reference - describe the overall styling aesthetic)"
 }`
                     })
                 });
@@ -949,29 +1026,129 @@ Respond in JSON format:
                 if (!response.ok) throw new Error('Analysis API error');
 
                 const data = await response.json();
-                return JSON.parse(data.content);
+                // Try to extract JSON from the response
+                let content = data.content;
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    content = jsonMatch[0];
+                }
+                return JSON.parse(content);
             } catch (error) {
                 console.error('Image analysis error:', error);
                 // Fallback analysis
                 return {
+                    imageType: isHero ? 'product_only' : 'accessory',
                     category: 'unknown',
                     description: 'Fashion product',
-                    hasModel: false,
-                    promptFragment: 'fashion item'
+                    promptFragment: 'fashion item',
+                    stylingNotes: null
                 };
             }
         }
 
         function renderAnalysisResults() {
-            elements.analysisContent.innerHTML = state.analysisResults.map(result => `
+            // Group by type
+            const heroProducts = state.analysisResults.filter(r => r.source === 'hero' && r.imageType !== 'styling_reference');
+            const accessories = state.analysisResults.filter(r => r.source === 'looks' && r.imageType !== 'styling_reference');
+            const stylingRefs = state.analysisResults.filter(r => r.imageType === 'styling_reference');
+
+            let html = '';
+
+            if (heroProducts.length > 0) {
+                html += `<div class="analysis-group"><div class="analysis-group-title">Hero Product</div>`;
+                html += heroProducts.map(result => createAnalysisItem(result)).join('');
+                html += `</div>`;
+            }
+
+            if (accessories.length > 0) {
+                html += `<div class="analysis-group"><div class="analysis-group-title">Accessories</div>`;
+                html += accessories.map(result => createAnalysisItem(result)).join('');
+                html += `</div>`;
+            }
+
+            if (stylingRefs.length > 0) {
+                html += `<div class="analysis-group"><div class="analysis-group-title">Styling Reference</div>`;
+                html += stylingRefs.map(result => `
+                    <div class="analysis-item styling-ref">
+                        <img src="${result.image.url}" alt="" class="analysis-thumb">
+                        <div class="analysis-content">
+                            <div class="analysis-category">STYLING REFERENCE</div>
+                            <div class="analysis-description">${result.stylingNotes || result.description}</div>
+                        </div>
+                    </div>
+                `).join('');
+                html += `</div>`;
+            }
+
+            // Show combined outfit description
+            const outfitDesc = buildOutfitDescription();
+            if (outfitDesc) {
+                html += `
+                    <div class="outfit-summary">
+                        <div class="outfit-summary-title">Combined Outfit</div>
+                        <div class="outfit-summary-text">${outfitDesc}</div>
+                    </div>
+                `;
+            }
+
+            elements.analysisContent.innerHTML = html;
+        }
+
+        function createAnalysisItem(result) {
+            const typeLabel = result.imageType === 'accessory' ? result.category.toUpperCase() : result.category.toUpperCase();
+            return `
                 <div class="analysis-item">
                     <img src="${result.image.url}" alt="" class="analysis-thumb">
                     <div class="analysis-content">
-                        <div class="analysis-category">${result.category}</div>
+                        <div class="analysis-category">${typeLabel}</div>
                         <div class="analysis-description">${result.promptFragment}</div>
                     </div>
                 </div>
-            `).join('');
+            `;
+        }
+
+        // Build outfit description from analysis results
+        function buildOutfitDescription() {
+            const heroProducts = state.analysisResults.filter(r => r.source === 'hero' && r.imageType !== 'styling_reference');
+            const accessories = state.analysisResults.filter(r => r.source === 'looks' && r.imageType !== 'styling_reference');
+            const stylingRefs = state.analysisResults.filter(r => r.imageType === 'styling_reference');
+
+            const parts = [];
+
+            // Hero product (main garment) - e.g., "wearing a camel wool belted coat"
+            if (heroProducts.length > 0) {
+                const heroDesc = heroProducts.map(p => p.promptFragment).join(' layered with ');
+                parts.push(`wearing ${heroDesc}`);
+            }
+
+            // Accessories - organized by category
+            const bagItems = accessories.filter(a => ['bag', 'handbag', 'tote', 'purse', 'clutch'].some(c => a.category.toLowerCase().includes(c)));
+            const shoeItems = accessories.filter(a => ['shoes', 'boots', 'heels', 'sneakers', 'sandals', 'loafers'].some(c => a.category.toLowerCase().includes(c)));
+            const eyewearItems = accessories.filter(a => ['sunglasses', 'glasses', 'eyewear'].some(c => a.category.toLowerCase().includes(c)));
+            const otherAccessories = accessories.filter(a =>
+                !bagItems.includes(a) && !shoeItems.includes(a) && !eyewearItems.includes(a)
+            );
+
+            if (bagItems.length > 0) {
+                parts.push(`holding ${bagItems.map(b => b.promptFragment).join(' and ')}`);
+            }
+            if (shoeItems.length > 0) {
+                parts.push(`with ${shoeItems.map(s => s.promptFragment).join(' and ')}`);
+            }
+            if (eyewearItems.length > 0) {
+                parts.push(`wearing ${eyewearItems.map(e => e.promptFragment).join(' and ')}`);
+            }
+            if (otherAccessories.length > 0) {
+                parts.push(`accessorized with ${otherAccessories.map(o => o.promptFragment).join(', ')}`);
+            }
+
+            // Styling reference notes
+            if (stylingRefs.length > 0) {
+                const stylingNote = stylingRefs[0].stylingNotes || stylingRefs[0].description;
+                parts.push(`styled in ${stylingNote}`);
+            }
+
+            return parts.join(', ');
         }
 
         // Generate images
@@ -984,19 +1161,19 @@ Respond in JSON format:
             state.results = [];
             elements.resultsGrid.innerHTML = '';
 
-            // Build all generation tasks
+            // Build the combined outfit description (ONE for all poses)
+            const outfitDescription = buildOutfitDescription();
+
+            // Build all generation tasks - one per pose
             const tasks = [];
 
             for (const poseId of state.selectedPoses) {
                 const pose = POSES.find(p => p.id === poseId);
                 const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'];
 
-                // Build product description from analysis
-                const productDescription = buildProductDescription();
-
-                // Get one prompt variation
+                // Get one prompt variation and inject the outfit
                 const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
-                const prompt = promptTemplate.replace('[PRODUCT_DESCRIPTION]', productDescription);
+                const prompt = promptTemplate.replace('[PRODUCT_DESCRIPTION]', outfitDescription);
 
                 tasks.push({
                     poseId,
@@ -1014,13 +1191,16 @@ Respond in JSON format:
             elements.progressBar.style.width = '0%';
             elements.generateBtn.disabled = true;
 
-            // Collect all product image URLs
-            const productUrls = state.analysisResults.map(r => r.image.url);
+            // Collect product image URLs (hero products + accessories, NOT styling refs)
+            const productImages = state.analysisResults
+                .filter(r => r.imageType !== 'styling_reference')
+                .map(r => r.image.url);
 
             // Execute all tasks
             await Promise.all(tasks.map(async (task) => {
                 try {
-                    const imageUrls = [state.modelImage.url, ...productUrls];
+                    // Model image first, then product images
+                    const imageUrls = [state.modelImage.url, ...productImages];
 
                     const params = {
                         prompt: task.prompt,
@@ -1039,7 +1219,8 @@ Respond in JSON format:
                                 url: img.url,
                                 prompt: task.prompt,
                                 poseName: task.poseName,
-                                poseId: task.poseId
+                                poseId: task.poseId,
+                                outfit: outfitDescription
                             });
                         });
                         renderResults();
@@ -1056,27 +1237,6 @@ Respond in JSON format:
             elements.progressSection.classList.remove('visible');
             elements.resultsSection.classList.add('visible');
             updateCalculator();
-        }
-
-        function buildProductDescription() {
-            // Combine all analyzed products into a coherent outfit description
-            const parts = [];
-
-            // Group by category
-            const heroProducts = state.analysisResults.filter(r =>
-                state.heroImages.some(h => h.url === r.image.url && h.selected)
-            );
-            const looksProducts = state.analysisResults.filter(r =>
-                state.looksImages.some(l => l.url === r.image.url && l.selected)
-            );
-
-            // Add hero product first (main garment)
-            heroProducts.forEach(p => parts.push(p.promptFragment));
-
-            // Add accessories
-            looksProducts.forEach(p => parts.push(p.promptFragment));
-
-            return parts.join(', ');
         }
 
         function renderResults() {
