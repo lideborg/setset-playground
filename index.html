@@ -233,6 +233,32 @@
                     </a>
                 </div>
             </div>
+
+            <div class="nav-group collapsed">
+                <div class="nav-group-header" onclick="toggleGroup(this)">
+                    <span class="nav-group-icon">▸</span>
+                    <span>Remix</span>
+                    <span class="nav-group-arrow">▾</span>
+                </div>
+                <div class="nav-group-items">
+                    <a class="nav-item" data-tool="remix">
+                        <span>Remix Tool</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-group collapsed">
+                <div class="nav-group-header" onclick="toggleGroup(this)">
+                    <span class="nav-group-icon">▸</span>
+                    <span>Generate</span>
+                    <span class="nav-group-arrow">▾</span>
+                </div>
+                <div class="nav-group-items">
+                    <a class="nav-item" data-tool="generate">
+                        <span>Generate</span>
+                    </a>
+                </div>
+            </div>
         </nav>
     </aside>
 
@@ -254,7 +280,9 @@
             'styling-v3': '/styling-v3/index.html?v=13&t=' + Date.now(), // Cache bust
             'setcast-v1': 'http://localhost:3001',
             'setcast-v2': '/setset-playground/editorial-prompt-generator/app/public/index.html',
-            'research': '/research/index.html'
+            'research': '/research/index.html',
+            'remix': 'http://localhost:8000/remix.html',
+            'generate': '/generate/index.html'
         };
 
         function toggleGroup(header) {
