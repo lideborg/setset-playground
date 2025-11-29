@@ -277,20 +277,35 @@
             'looks': '/looks/index.html',
             'styling': '/styling/index.html',
             'styling-v2': '/styling-v2/index.html',
-            'styling-v3': '/styling-v3/index.html?v=13&t=' + Date.now(), // Cache bust
+            'styling-v3': '/styling-v3/index.html?v=13&t=' + Date.now(),
             'setcast-v1': 'http://localhost:3001',
             'setcast-v2': '/setset-playground/editorial-prompt-generator/app/public/index.html',
             'research': '/research/index.html',
-            'remix': 'http://localhost:8000/remix.html',
-            'generate': '/generate/index.html'
+            'remix': '/remix.html?t=' + Date.now(),
+            'generate': '/generate.html?t=' + Date.now()
         };
+
+        // Check URL for direct tool access
+        const urlParams = new URLSearchParams(window.location.search);
+        const toolParam = urlParams.get('tool');
+        if (toolParam && tools[toolParam]) {
+            window.addEventListener('DOMContentLoaded', () => {
+                // Expand the nav group containing this tool
+                const navItem = document.querySelector(`[data-tool="${toolParam}"]`);
+                if (navItem) {
+                    const navGroup = navItem.closest('.nav-group');
+                    if (navGroup) navGroup.classList.remove('collapsed');
+                }
+                loadTool(toolParam);
+            });
+        }
 
         function toggleGroup(header) {
             const group = header.parentElement;
             group.classList.toggle('collapsed');
         }
 
-        function loadTool(toolName) {
+        function loadTool(toolName, updateUrl = true) {
             const url = tools[toolName];
             if (!url) return;
 
@@ -299,12 +314,29 @@
             iframe.style.display = 'block';
             iframe.src = url;
 
+            // Update URL
+            if (updateUrl) {
+                history.pushState({ tool: toolName }, '', `/?tool=${toolName}`);
+            }
+
             // Update active nav
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.querySelector(`[data-tool="${toolName}"]`).classList.add('active');
+            const navItem = document.querySelector(`[data-tool="${toolName}"]`);
+            if (navItem) navItem.classList.add('active');
+
+            // Expand parent nav group
+            const navGroup = navItem?.closest('.nav-group');
+            if (navGroup) navGroup.classList.remove('collapsed');
         }
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', (e) => {
+            if (e.state?.tool) {
+                loadTool(e.state.tool, false);
+            }
+        });
 
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
