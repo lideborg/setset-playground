@@ -296,11 +296,12 @@
 
         async function loadResearchIndex() {
             try {
-                const response = await fetch('research-index.json');
+                const response = await fetch('/research/research-index.json');
                 researchData = await response.json();
                 renderCategories();
                 renderResearch();
             } catch (error) {
+                console.error('Error loading research:', error);
                 document.getElementById('content').innerHTML = '<div class="loading">Error loading research</div>';
             }
         }
