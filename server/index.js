@@ -209,7 +209,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 /**
  * Clean URL routing - redirect tool names to /?tool=name
  */
-const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'styling-v2', 'styling-v3', 'setcast', 'research'];
+const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'angles', 'research'];
 
 app.get('/:tool', (req, res, next) => {
     const tool = req.params.tool;
@@ -227,21 +227,16 @@ app.get('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
     console.log(`
-╔═══════════════════════════════════════════════╗
-║         Setset Playground Server              ║
-╠═══════════════════════════════════════════════╣
-║  Local:   http://localhost:${PORT}               ║
-║                                               ║
-║  Routes:                                      ║
-║    /generate  → Generate images               ║
-║    /remix     → Remix images                  ║
-║    /looks     → Looks tool                    ║
-║                                               ║
-║  API Endpoints:                               ║
-║    POST /api/generate  - Generate images      ║
-║    POST /api/remix     - Remix images         ║
-║    POST /api/prompts   - Generate prompts     ║
-║    POST /api/upload    - Upload images        ║
-╚═══════════════════════════════════════════════╝
+╔════════════════════════════════════════════════╗
+║          Setset Playground Server              ║
+╠════════════════════════════════════════════════╣
+║  Local:   http://localhost:${PORT}                ║
+║                                                ║
+║  Tools:  /generate, /remix, /looks, /styling   ║
+║          /angles, /research                    ║
+║                                                ║
+║  API:    /api/generate, /api/remix             ║
+║          /api/prompts, /api/upload             ║
+╚════════════════════════════════════════════════╝
     `);
 });

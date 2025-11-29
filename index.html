@@ -51,68 +51,18 @@
             flex: 1;
             padding: 16px 0;
             overflow-y: auto;
-        }
-
-        .nav-group {
-            margin-bottom: 8px;
-        }
-
-        .nav-group-header {
             display: flex;
-            align-items: center;
-            padding: 8px 20px;
-            color: var(--ash-grey);
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: color var(--transition-fast);
-        }
-
-        .nav-group-header:hover {
-            color: var(--slate);
-        }
-
-        .nav-group-icon {
-            margin-right: 6px;
-            font-size: 9px;
-            color: var(--gainsboro);
-            transition: transform 0.2s;
-        }
-
-        .nav-group:not(.collapsed) .nav-group-icon {
-            transform: rotate(90deg);
-        }
-
-        .nav-group-arrow {
-            margin-left: auto;
-            font-size: 8px;
-            transition: transform 0.2s;
-        }
-
-        .nav-group.collapsed .nav-group-arrow {
-            transform: rotate(-90deg);
-        }
-
-        .nav-group-items {
-            max-height: 500px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .nav-group.collapsed .nav-group-items {
-            max-height: 0;
+            flex-direction: column;
+            gap: 2px;
         }
 
         .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 20px 8px 32px;
+            display: block;
+            padding: 10px 20px;
             color: var(--slate);
             text-decoration: none;
             transition: all var(--transition-fast);
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             border-left: 2px solid transparent;
         }
@@ -184,98 +134,12 @@
         </div>
 
         <nav class="sidebar-nav">
-            <!-- Generate -->
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Generate</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="generate">
-                        <span>Generate</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Remix -->
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Remix</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="remix">
-                        <span>Remix Tool</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Looks -->
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Looks</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="looks">
-                        <span>Looks</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Styling -->
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Styling</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="styling">
-                        <span>Styling v1</span>
-                    </a>
-                    <a class="nav-item" data-tool="styling-v2">
-                        <span>Styling v2</span>
-                    </a>
-                    <a class="nav-item" data-tool="styling-v3">
-                        <span>Styling v3</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- SetCast -->
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>SetCast</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="setcast-v1">
-                        <span>SetCast v1</span>
-                    </a>
-                    <a class="nav-item" data-tool="setcast-v2">
-                        <span>SetCast v2</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Research -->
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Research</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="research">
-                        <span>Research Docs</span>
-                    </a>
-                </div>
-            </div>
+            <a class="nav-item" data-tool="generate">Generate</a>
+            <a class="nav-item" data-tool="remix">Remix</a>
+            <a class="nav-item" data-tool="looks">Looks</a>
+            <a class="nav-item" data-tool="styling">Styling</a>
+            <a class="nav-item" data-tool="angles">Angles</a>
+            <a class="nav-item" data-tool="research">Research</a>
         </nav>
 
         <div class="sidebar-footer">
@@ -294,36 +158,21 @@
     </main>
 
     <script>
-        // Tool paths - now using /tools/ directory for new tools
+        // All tools now live in /tools/
         const tools = {
             'generate': '/tools/generate.html',
             'remix': '/tools/remix.html',
-            'looks': '/looks/index.html',
-            'styling': '/styling/index.html',
-            'styling-v2': '/styling-v2/index.html',
-            'styling-v3': '/styling-v3/index.html',
-            'setcast-v1': 'http://localhost:3001',
-            'setcast-v2': '/setset-playground/editorial-prompt-generator/app/public/index.html',
-            'research': '/research/index.html'
+            'looks': '/tools/looks.html',
+            'styling': '/tools/styling.html',
+            'angles': '/tools/angles.html',
+            'research': '/tools/research.html'
         };
 
         // Check URL for direct tool access
         const urlParams = new URLSearchParams(window.location.search);
         const toolParam = urlParams.get('tool');
         if (toolParam && tools[toolParam]) {
-            window.addEventListener('DOMContentLoaded', () => {
-                const navItem = document.querySelector(`[data-tool="${toolParam}"]`);
-                if (navItem) {
-                    const navGroup = navItem.closest('.nav-group');
-                    if (navGroup) navGroup.classList.remove('collapsed');
-                }
-                loadTool(toolParam);
-            });
-        }
-
-        function toggleGroup(header) {
-            const group = header.parentElement;
-            group.classList.toggle('collapsed');
+            window.addEventListener('DOMContentLoaded', () => loadTool(toolParam));
         }
 
         function loadTool(toolName, updateUrl = true) {
@@ -335,35 +184,22 @@
             iframe.style.display = 'block';
             iframe.src = url;
 
-            // Update URL
             if (updateUrl) {
                 history.pushState({ tool: toolName }, '', `/?tool=${toolName}`);
             }
 
-            // Update active nav
             document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
+                item.classList.toggle('active', item.dataset.tool === toolName);
             });
-            const navItem = document.querySelector(`[data-tool="${toolName}"]`);
-            if (navItem) navItem.classList.add('active');
-
-            // Expand parent nav group
-            const navGroup = navItem?.closest('.nav-group');
-            if (navGroup) navGroup.classList.remove('collapsed');
         }
 
         // Handle browser back/forward
         window.addEventListener('popstate', (e) => {
-            if (e.state?.tool) {
-                loadTool(e.state.tool, false);
-            }
+            if (e.state?.tool) loadTool(e.state.tool, false);
         });
 
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const tool = item.getAttribute('data-tool');
-                loadTool(tool);
-            });
+            item.addEventListener('click', () => loadTool(item.dataset.tool));
         });
     </script>
 </body>
