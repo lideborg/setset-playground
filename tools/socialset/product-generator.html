@@ -30,11 +30,11 @@
         }
 
         .section-title {
-            font-size: var(--text-xs);
+            font-size: var(--text-sm);
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--slate);
+            letter-spacing: 0.5px;
+            color: var(--carbon);
             margin-bottom: var(--space-sm);
         }
 
@@ -49,17 +49,30 @@
 
         select.input {
             width: 100%;
-            padding: 10px 12px;
-            font-size: var(--text-sm);
+            padding: 12px 36px 12px 14px;
+            font-size: var(--text-md);
+            font-family: var(--font-sans);
+            color: var(--carbon);
             border: 1px solid var(--gainsboro);
             border-radius: var(--radius-sm);
             background: var(--white);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
             cursor: pointer;
         }
 
         select.input:focus {
             outline: none;
             border-color: var(--jet);
+        }
+
+        select.input option {
+            color: var(--carbon);
+            padding: 8px;
         }
 
         .style-presets {
@@ -71,12 +84,16 @@
 
         .style-input {
             width: 100%;
-            padding: 10px 12px;
-            font-size: var(--text-sm);
+            padding: 12px 14px;
+            font-size: var(--text-md);
+            font-family: var(--font-sans);
+            color: var(--carbon);
             border: 1px solid var(--gainsboro);
             border-radius: var(--radius-sm);
+            background: var(--white);
             resize: none;
-            min-height: 60px;
+            min-height: 70px;
+            line-height: 1.5;
         }
 
         .style-input:focus {
@@ -85,7 +102,7 @@
         }
 
         .style-input::placeholder {
-            color: var(--ash-grey);
+            color: var(--slate);
         }
 
         .model-toggle {
@@ -108,10 +125,11 @@
         }
 
         .count-value {
-            font-size: var(--text-lg);
+            font-size: var(--text-xl);
             font-weight: 600;
-            min-width: 30px;
+            min-width: 36px;
             text-align: center;
+            color: var(--carbon);
         }
 
         .generate-section {
@@ -119,8 +137,8 @@
         }
 
         .calc-display {
-            font-size: var(--text-sm);
-            color: var(--slate);
+            font-size: var(--text-md);
+            color: var(--carbon);
             margin-bottom: var(--space-sm);
             text-align: center;
         }
