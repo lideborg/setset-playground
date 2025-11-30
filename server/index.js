@@ -10,9 +10,15 @@ import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import dotenv from 'dotenv';
+import { fal } from '@fal-ai/client';
 
 // Load environment variables
 dotenv.config();
+
+// Configure fal client
+fal.config({
+    credentials: process.env.FAL_API_KEY
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,7 +48,9 @@ const MODEL_ENDPOINTS = {
     'nanobanana': 'https://fal.run/fal-ai/nano-banana-pro',
 
     // Image to Image (Remix)
-    'nanobanana-edit': 'https://fal.run/fal-ai/nano-banana-pro/edit',
+    'nano': 'https://fal.run/fal-ai/nano-banana/edit',
+    'nano-pro': 'https://fal.run/fal-ai/nano-banana-pro/edit',
+    'nanobanana-edit': 'https://fal.run/fal-ai/nano-banana-pro/edit', // legacy alias
     'flux2-redux': 'https://fal.run/fal-ai/flux-2-flex/edit'
 };
 
@@ -183,14 +191,35 @@ IMPORTANT: Return ONLY the prompts. Separate each prompt with TWO blank lines. N
 
 /**
  * POST /api/analyze
- * Analyze images using GPT-4 Vision
+ * Analyze images using GPT-4 Vision (supports multiple images)
  */
 app.post('/api/analyze', async (req, res) => {
     try {
-        const { image, prompt } = req.body;
+        const { image, images, prompt } = req.body;
 
-        if (!image) {
-            return res.status(400).json({ error: 'No image provided' });
+        // Support both single image and array of images
+        const imageUrls = images || (image ? [image] : []);
+
+        if (imageUrls.length === 0) {
+            return res.status(400).json({ error: 'No images provided' });
+        }
+
+        console.log(`🔍 [Analyze] Processing ${imageUrls.length} image(s)`);
+
+        // Build content array with text prompt and all images
+        const content = [
+            { type: 'text', text: prompt }
+        ];
+
+        // Add all images to the content
+        for (const url of imageUrls) {
+            content.push({
+                type: 'image_url',
+                image_url: {
+                    url: url,
+                    detail: 'low'
+                }
+            });
         }
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -204,16 +233,7 @@ app.post('/api/analyze', async (req, res) => {
                 messages: [
                     {
                         role: 'user',
-                        content: [
-                            { type: 'text', text: prompt },
-                            {
-                                type: 'image_url',
-                                image_url: {
-                                    url: image,
-                                    detail: 'low'
-                                }
-                            }
-                        ]
+                        content: content
                     }
                 ],
                 max_tokens: 500
@@ -235,7 +255,7 @@ app.post('/api/analyze', async (req, res) => {
 
 /**
  * POST /api/upload
- * Upload image to fal.ai storage
+ * Upload image to fal.ai storage using fal client
  */
 app.post('/api/upload', upload.single('image'), async (req, res) => {
     try {
@@ -243,23 +263,17 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
             return res.status(400).json({ error: 'No image provided' });
         }
 
-        // Upload to fal.ai storage
-        const response = await fetch('https://fal.ai/api/storage/upload', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Key ${FAL_API_KEY}`,
-                'Content-Type': req.file.mimetype
-            },
-            body: req.file.buffer
-        });
+        console.log(`📤 [Upload] Uploading ${req.file.size} bytes, type: ${req.file.mimetype}`);
 
-        const data = await response.json();
+        // Create a Blob from the buffer
+        const blob = new Blob([req.file.buffer], { type: req.file.mimetype });
+        const file = new File([blob], req.file.originalname || 'image.jpg', { type: req.file.mimetype });
 
-        if (!response.ok) {
-            return res.status(response.status).json({ error: data.error || 'Upload failed' });
-        }
+        // Upload using fal client
+        const url = await fal.storage.upload(file);
 
-        res.json({ url: data.url });
+        console.log(`📥 [Upload] URL:`, url);
+        res.json({ url });
     } catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({ error: error.message });
@@ -268,7 +282,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
 /**
  * POST /api/upload-base64
- * Upload base64 image to fal.ai storage
+ * Upload base64 image to fal.ai storage using fal client
  */
 app.post('/api/upload-base64', async (req, res) => {
     try {
@@ -290,25 +304,15 @@ app.post('/api/upload-base64', async (req, res) => {
 
         console.log(`📤 [Upload] Uploading ${buffer.length} bytes, type: ${mimeType}`);
 
-        // Upload to fal.ai storage
-        const response = await fetch('https://fal.ai/api/storage/upload', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Key ${FAL_API_KEY}`,
-                'Content-Type': mimeType
-            },
-            body: buffer
-        });
+        // Create a Blob from the buffer
+        const blob = new Blob([buffer], { type: mimeType });
+        const file = new File([blob], 'image.jpg', { type: mimeType });
 
-        const data = await response.json();
+        // Upload using fal client
+        const url = await fal.storage.upload(file);
 
-        console.log(`📥 [Upload] Response:`, data);
-
-        if (!response.ok) {
-            return res.status(response.status).json({ error: data.error || 'Upload failed' });
-        }
-
-        res.json({ url: data.url });
+        console.log(`📥 [Upload] URL:`, url);
+        res.json({ url });
     } catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({ error: error.message });

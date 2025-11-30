@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LockGroup v001</title>
+    <title>LockGroup v002</title>
     <link rel="stylesheet" href="/shared/css/tokens.css">
     <link rel="stylesheet" href="/shared/css/base.css">
     <link rel="stylesheet" href="/shared/css/components.css">
     <style>
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
         }
 
         /* Step Sections */
@@ -45,7 +45,13 @@
             color: var(--jet);
         }
 
-        /* Model Upload */
+        .step-subtitle {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-left: auto;
+        }
+
+        /* Model Upload - Compact */
         .model-upload-area {
             display: flex;
             gap: var(--space-md);
@@ -65,7 +71,7 @@
         }
 
         .model-preview {
-            width: 200px;
+            width: 120px;
             aspect-ratio: 3/4;
             border: 2px dashed var(--gainsboro);
             border-radius: var(--radius-md);
@@ -96,40 +102,485 @@
         .model-preview-placeholder {
             text-align: center;
             color: var(--ash-grey);
-            padding: var(--space-md);
+            padding: var(--space-sm);
+            font-size: var(--text-xs);
         }
 
         .model-preview-placeholder svg {
+            width: 32px;
+            height: 32px;
+            margin-bottom: var(--space-2xs);
+            opacity: 0.5;
+        }
+
+        /* Model Tabs */
+        .model-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: var(--space-md);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .model-tab {
+            padding: 10px 20px;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: -1px;
+        }
+
+        .model-tab:hover {
+            color: var(--jet);
+        }
+
+        .model-tab.active {
+            color: var(--jet);
+            border-bottom-color: var(--jet);
+        }
+
+        .model-tab-content {
+            min-height: 100px;
+        }
+
+        .model-empty-message {
+            color: var(--ash-grey);
+            font-size: var(--text-sm);
+            text-align: center;
+            padding: var(--space-lg);
+        }
+
+        .model-discovered-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+        }
+
+        .model-thumb {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .model-thumb:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .model-thumb.selected {
+            border-color: var(--jet);
+        }
+
+        .model-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .model-thumb .check-mark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .model-thumb.selected .check-mark {
+            display: flex;
+        }
+
+        /* Folder Drop Zone */
+        .folder-drop-zone {
+            min-height: 150px;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .folder-drop-zone.drag-over {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .folder-drop-zone.has-looks {
+            border-style: solid;
+            border-color: var(--gainsboro);
+            background: var(--white);
+        }
+
+        .drop-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            color: var(--ash-grey);
+            text-align: center;
+        }
+
+        .drop-placeholder svg {
             width: 48px;
             height: 48px;
             margin-bottom: var(--space-xs);
             opacity: 0.5;
         }
 
+        .drop-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            color: var(--slate);
+            text-align: center;
+            gap: var(--space-xs);
+        }
+
+        .drop-loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: #002FA7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .drop-loading-status {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+        }
+
+        /* Studio message - sweep effect */
+        .studio-message {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            background: linear-gradient(90deg,
+                rgba(0, 47, 167, 0.4) 0%,
+                rgba(0, 47, 167, 1) 50%,
+                rgba(0, 47, 167, 0.4) 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: sweep 1.8s ease-in-out infinite;
+        }
+
+        .studio-message.fade-out {
+            animation: fade-out 0.25s ease-out forwards;
+        }
+
+        .studio-message.fade-in {
+            animation: fade-in 0.25s ease-out forwards;
+        }
+
+        @keyframes sweep {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        /* Looks Grid - Main Display */
+        .looks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+        }
+
+        .look-card {
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--white);
+            transition: all var(--transition-fast);
+        }
+
+        .look-card.selected {
+            border-color: var(--jet);
+        }
+
+        .look-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--off-white);
+            border-bottom: 1px solid var(--gainsboro);
+            cursor: pointer;
+        }
+
+        .look-card-header:hover {
+            background: var(--gainsboro);
+        }
+
+        .look-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--jet);
+        }
+
+        .look-name {
+            flex: 1;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--jet);
+        }
+
+        .look-count {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-right: var(--space-sm);
+        }
+
+        .look-columns {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .look-columns-slider {
+            width: 60px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gainsboro);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .look-columns-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .look-columns-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .look-columns-value {
+            font-size: 11px;
+            color: var(--slate);
+            min-width: 8px;
+            text-align: center;
+        }
+
+        .look-card-images {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            padding: 4px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .look-image-thumb {
+            aspect-ratio: 3/4;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .look-image-thumb:hover {
+            border-color: var(--ash-grey);
+            z-index: 10;
+        }
+
+        .look-image-thumb.selected {
+            border-color: var(--jet);
+        }
+
+        .look-image-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.15s ease-out;
+            transform-origin: center center;
+            display: block;
+        }
+
+        .look-image-thumb .image-type {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.5);
+            color: var(--jet);
+            font-size: 10px;
+            padding: 4px 6px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            z-index: 5;
+        }
+
+        .look-image-thumb .check-mark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            z-index: 5;
+        }
+
+        .look-image-thumb.selected .check-mark {
+            display: flex;
+        }
+
+        .look-card-footer {
+            padding: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .look-card-footer input[type="text"] {
+            padding: var(--space-sm);
+            font-size: var(--text-sm);
+        }
+
+        .look-card-actions {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .btn-analyze {
+            padding: 8px 14px;
+            font-size: var(--text-xs);
+            font-weight: 500;
+            border: 1px solid var(--jet);
+            border-radius: var(--radius-sm);
+            background: var(--jet);
+            color: var(--white);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-analyze:hover {
+            background: var(--slate);
+            border-color: var(--slate);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-analyze.analyzed {
+            background: var(--white);
+            color: var(--jet);
+        }
+
+        .look-analysis {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            line-height: 1.5;
+            padding: var(--space-xs);
+            background: var(--off-white);
+            border-radius: var(--radius-sm);
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .look-analysis-status {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+            font-style: italic;
+        }
+
+        .look-card-prompt input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            background: var(--off-white);
+        }
+
+        .look-card-prompt input:focus {
+            outline: none;
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .look-card-prompt input::placeholder {
+            color: var(--ash-grey);
+        }
+
         /* Poses Grid */
         .poses-container {
             display: flex;
             flex-direction: column;
-            gap: var(--space-md);
-        }
-
-        .pose-category {
-            margin-bottom: var(--space-sm);
+            gap: var(--space-lg);
         }
 
         .pose-category-title {
-            font-size: var(--text-sm);
+            font-size: var(--text-xs);
             font-weight: 600;
             color: var(--slate);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: var(--space-xs);
+            margin-bottom: var(--space-sm);
         }
 
         .poses-grid {
             display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: var(--space-2xs);
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-sm);
         }
 
         .pose-card {
@@ -140,6 +591,11 @@
             border: 2px solid var(--gainsboro);
             transition: all var(--transition-fast);
             background: var(--white);
+            cursor: pointer;
+        }
+
+        .pose-card:hover {
+            border-color: var(--ash-grey);
         }
 
         .pose-card.active {
@@ -149,7 +605,6 @@
         .pose-card-image {
             aspect-ratio: 3/4;
             position: relative;
-            cursor: pointer;
             overflow: hidden;
         }
 
@@ -160,8 +615,8 @@
         }
 
         .pose-card .pose-name {
-            font-size: 9px;
-            padding: 3px 2px;
+            font-size: 10px;
+            padding: 4px 2px;
             text-align: center;
             background: var(--off-white);
             color: var(--slate);
@@ -173,19 +628,19 @@
 
         .pose-card .pose-count {
             position: absolute;
-            top: 3px;
-            right: 3px;
-            min-width: 14px;
-            height: 14px;
+            top: 4px;
+            right: 4px;
+            min-width: 18px;
+            height: 18px;
             background: var(--jet);
             color: var(--white);
-            border-radius: 7px;
+            border-radius: 9px;
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 9px;
+            font-size: 10px;
             font-weight: 600;
-            padding: 0 3px;
+            padding: 0 4px;
         }
 
         .pose-card.active .pose-count {
@@ -219,246 +674,6 @@
             cursor: pointer;
         }
 
-        .pose-slider::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
-            background: var(--jet);
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
-
-
-        /* Products Upload */
-        .products-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-md);
-        }
-
-        .products-column {
-            flex: 1;
-        }
-
-        .products-column-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--space-xs);
-        }
-
-        .products-column-title {
-            font-size: var(--text-sm);
-            font-weight: 600;
-            color: var(--slate);
-        }
-
-        .products-column-actions {
-            display: flex;
-            gap: var(--space-2xs);
-        }
-
-        .btn-mini {
-            font-size: var(--text-2xs);
-            padding: 2px 6px;
-            background: var(--white);
-            border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-sm);
-            color: var(--slate);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .btn-mini:hover {
-            background: var(--off-white);
-            border-color: var(--ash-grey);
-            color: var(--jet);
-        }
-
-        .folder-drop-zone {
-            min-height: 200px;
-            border: 2px dashed var(--gainsboro);
-            border-radius: var(--radius-md);
-            padding: var(--space-md);
-            transition: all var(--transition-fast);
-            background: var(--off-white);
-        }
-
-        .folder-drop-zone.drag-over {
-            border-color: var(--jet);
-            background: var(--white);
-        }
-
-        .folder-drop-zone.has-images {
-            border-style: solid;
-            border-color: var(--gainsboro);
-        }
-
-        .drop-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 150px;
-            color: var(--ash-grey);
-            text-align: center;
-        }
-
-        .drop-placeholder svg {
-            width: 48px;
-            height: 48px;
-            margin-bottom: var(--space-xs);
-            opacity: 0.5;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: var(--space-xs);
-        }
-
-        .product-thumb {
-            aspect-ratio: 3/4;
-            width: 100%;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all var(--transition-fast);
-        }
-
-        .product-thumb:hover {
-            border-color: var(--ash-grey);
-        }
-
-        .product-thumb.selected {
-            border-color: var(--jet);
-        }
-
-        .product-thumb.deselected {
-            opacity: 0.4;
-        }
-
-        .product-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .product-thumb .product-check {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 16px;
-            height: 16px;
-            background: var(--jet);
-            color: var(--white);
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-        }
-
-        .product-thumb.selected .product-check {
-            display: flex;
-        }
-
-        /* Analysis Section */
-        .analysis-section {
-            background: var(--off-white);
-            border-radius: var(--radius-md);
-            padding: var(--space-md);
-        }
-
-        .analysis-results {
-            display: none;
-        }
-
-        .analysis-results.visible {
-            display: block;
-        }
-
-        .analysis-item {
-            display: flex;
-            gap: var(--space-sm);
-            padding: var(--space-sm) 0;
-            border-bottom: 1px solid var(--gainsboro);
-        }
-
-        .analysis-item:last-child {
-            border-bottom: none;
-        }
-
-        .analysis-thumb {
-            width: 60px;
-            height: 60px;
-            border-radius: var(--radius-sm);
-            object-fit: cover;
-        }
-
-        .analysis-content {
-            flex: 1;
-        }
-
-        .analysis-category {
-            font-size: var(--text-xs);
-            color: var(--slate);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .analysis-description {
-            font-size: var(--text-sm);
-            color: var(--jet);
-            margin-top: var(--space-2xs);
-        }
-
-        .analysis-group {
-            margin-bottom: var(--space-md);
-        }
-
-        .analysis-group-title {
-            font-size: var(--text-xs);
-            font-weight: 600;
-            color: var(--slate);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-xs);
-            padding-bottom: var(--space-2xs);
-            border-bottom: 1px solid var(--gainsboro);
-        }
-
-        .analysis-item.styling-ref {
-            background: #f0fdf4;
-            border-radius: var(--radius-sm);
-            padding: var(--space-xs);
-        }
-
-        .outfit-summary {
-            margin-top: var(--space-md);
-            padding: var(--space-md);
-            background: var(--white);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--gainsboro);
-        }
-
-        .outfit-summary-title {
-            font-size: var(--text-xs);
-            font-weight: 600;
-            color: var(--jet);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-xs);
-        }
-
-        .outfit-summary-text {
-            font-size: var(--text-sm);
-            color: var(--slate);
-            line-height: 1.5;
-        }
-
         /* Generate Section */
         .generate-section {
             background: var(--off-white);
@@ -471,6 +686,112 @@
             color: var(--slate);
             margin-bottom: var(--space-sm);
             text-align: center;
+        }
+
+        .generate-buttons {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: stretch;
+        }
+
+        .btn--secondary {
+            background: var(--white);
+            border: 1px solid var(--jet);
+            color: var(--jet);
+            min-width: 160px;
+            position: relative;
+        }
+
+        .btn--secondary:hover:not(:disabled) {
+            background: var(--off-white);
+        }
+
+        .btn--secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn--secondary.analyzing {
+            opacity: 1;
+            min-width: 200px;
+        }
+
+        .btn--secondary.analyzing .btn-text {
+            display: none;
+        }
+
+        .btn--secondary .btn-loader {
+            display: none;
+        }
+
+        .btn--secondary.analyzing .btn-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-loader-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(0, 47, 167, 0.2);
+            border-top-color: #002FA7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn-loader-text {
+            display: none;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            display: none;
+            margin-top: var(--space-lg);
+            padding: var(--space-lg);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: var(--off-white);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: var(--space-md);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
         }
 
         /* Results */
@@ -498,7 +819,7 @@
             object-fit: cover;
         }
 
-        .result-card .model-tag {
+        .result-card .result-tag {
             position: absolute;
             bottom: var(--space-xs);
             left: var(--space-xs);
@@ -530,59 +851,36 @@
             display: none;
         }
 
-        .notes-input {
-            width: 100%;
-            min-height: 60px;
-            padding: var(--space-sm);
-            border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-md);
-            font-family: var(--font-sans);
-            font-size: var(--text-sm);
-            resize: vertical;
-            background: var(--white);
-        }
-
-        .notes-input:focus {
-            outline: none;
-            border-color: var(--jet);
-        }
-
-        .notes-input::placeholder {
-            color: var(--ash-grey);
-        }
-
-        /* Lightbox nav overrides */
+        /* Lightbox nav - minimal arrows */
         .lightbox-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255,255,255,0.1);
+            background: transparent;
             border: none;
-            width: 48px;
-            height: 48px;
-            font-size: 24px;
+            padding: var(--space-md);
+            font-size: 28px;
             cursor: pointer;
-            color: var(--white);
+            color: rgba(255,255,255,0.6);
             z-index: 10;
-            border-radius: 50%;
-            transition: background var(--transition-fast);
+            transition: color var(--transition-fast);
         }
 
         .lightbox-nav:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .lightbox-nav.prev {
-            left: var(--space-md);
-        }
-
-        .lightbox-nav.next {
-            right: calc(33.33% + var(--space-md));
+            color: var(--white);
         }
 
         .lightbox-nav:disabled {
-            opacity: 0.3;
+            opacity: 0.2;
             cursor: not-allowed;
+        }
+
+        .lightbox-nav.prev {
+            left: var(--space-sm);
+        }
+
+        .lightbox-nav.next {
+            right: calc(33.33% + var(--space-sm));
         }
 
         .lightbox-counter {
@@ -591,148 +889,454 @@
             margin-bottom: var(--space-sm);
             text-align: center;
         }
+
+        .lightbox-source-images {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .lightbox-source-images img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Collapsible prompt section */
+        .lightbox-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-xs);
+        }
+
+        .lightbox-section-header:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        .lightbox-section-header:hover .lightbox-section-title {
+            color: var(--white);
+        }
+
+        .lightbox-collapse-arrow {
+            font-size: 10px;
+            transition: transform 0.2s ease;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .lightbox-section.collapsed .lightbox-collapse-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .lightbox-section.collapsed .lightbox-collapsible {
+            display: none;
+        }
+
+        .lightbox-collapsible {
+            padding: var(--space-sm);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-sm);
+            margin-top: var(--space-xs);
+        }
+
+        /* Edit section */
+        .lightbox-edit-section {
+            margin-top: var(--space-md);
+            padding-top: var(--space-md);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .lightbox-edit-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            background: rgba(255,255,255,0.15);
+            color: var(--white);
+            resize: vertical;
+            min-height: 70px;
+            font-family: inherit;
+        }
+
+        .lightbox-edit-input:focus {
+            outline: none;
+            border-color: var(--white);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-edit-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .lightbox-model-buttons {
+            display: flex;
+            gap: var(--space-xs);
+            margin: var(--space-sm) 0;
+        }
+
+        .lightbox-model-btn {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .lightbox-model-btn:hover {
+            border-color: var(--white);
+            color: var(--white);
+        }
+
+        .lightbox-model-btn.active {
+            background: var(--white);
+            color: var(--jet);
+            border-color: var(--white);
+        }
+
+        .lightbox-remix-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: var(--text-sm);
+            font-weight: 600;
+            border: 2px solid var(--white);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--jet);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-top: var(--space-sm);
+        }
+
+        .lightbox-remix-btn:hover {
+            background: transparent;
+            color: var(--white);
+        }
+
+        .lightbox-remix-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading overlay on image - white with opacity */
+        .lightbox-left {
+            position: relative;
+        }
+
+        .lightbox-image-loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.5);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .lightbox-image-loader.visible {
+            display: flex;
+        }
+
+        .lightbox-image-loader .loader-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(0,47,167,0.2);
+            border-top-color: #002FA7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .lightbox-image-loader .loader-text {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: #002FA7;
+        }
+
+        /* History section */
+        .lightbox-history {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+            margin-top: var(--space-sm);
+        }
+
+        .lightbox-history-item {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.2);
+            opacity: 0.7;
+            transition: all var(--transition-fast);
+        }
+
+        .lightbox-history-item:hover {
+            opacity: 1;
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.05);
+        }
+
+        .lightbox-history-item.selected {
+            opacity: 1;
+            border-color: var(--white);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+        }
+
+        .lightbox-history-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .lightbox-history-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-bottom: var(--space-2xs);
+        }
+
+        /* Batch info */
+        .batch-info {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .batch-info-item {
+            display: flex;
+            gap: var(--space-2xs);
+        }
+
+        .batch-info-item strong {
+            color: var(--jet);
+        }
+
+        /* Action Buttons */
+        .btn-mini {
+            padding: 8px 16px;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--jet);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-mini:hover {
+            background: var(--off-white);
+            border-color: var(--jet);
+        }
+
+        /* Actions bar */
+        .looks-actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        /* Setset Models Grid */
+        .setset-models-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .setset-model-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .setset-model-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .setset-model-card.selected {
+            border-color: var(--jet);
+        }
+
+        .setset-model-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .setset-model-card .model-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4px 6px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            font-size: var(--text-xs);
+            text-align: center;
+        }
+
+        .setset-model-card .model-check {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            background: var(--jet);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .setset-model-card.selected .model-check {
+            display: flex;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="hero">
             <h1>LockGroup</h1>
-            <p class="hero-subtitle">Create styled looks from product folders</p>
+            <p class="hero-subtitle">Batch generate styled looks from product folders</p>
         </div>
 
         <div class="error" id="error"></div>
 
-        <!-- Step 1: Model -->
-        <div class="step-section">
+        <!-- Step 1: Model Reference (hidden until folder is dropped) -->
+        <div class="step-section" id="modelSection" style="display: none;">
             <div class="step-header">
                 <span class="step-number">1</span>
-                <span class="step-title">Upload Model Reference</span>
+                <span class="step-title">Model Reference</span>
             </div>
-            <div class="model-upload-area">
-                <div class="model-upload-slot">
-                    <div class="model-preview" id="modelPreview" data-type="fullbody">
-                        <div class="model-preview-placeholder">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <div>Full Body</div>
+            <div class="model-tabs">
+                <button class="model-tab" data-tab="discovered">Discovered</button>
+                <button class="model-tab" data-tab="upload">Upload</button>
+                <button class="model-tab active" data-tab="setset">Setset Models</button>
+            </div>
+            <div class="model-tab-content" id="tabDiscovered" style="display: none;">
+                <div class="model-discovered-grid" id="modelDiscoveredGrid"></div>
+                <p class="model-empty-message" id="modelEmptyMessage">Drop a folder with model images to auto-detect</p>
+            </div>
+            <div class="model-tab-content" id="tabUpload" style="display: none;">
+                <div class="model-upload-area" id="modelUploadArea">
+                    <div class="model-upload-slot">
+                        <div class="model-preview" id="modelPreview" data-type="fullbody">
+                            <div class="model-preview-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <div>Full Body</div>
+                            </div>
                         </div>
+                        <div class="model-slot-label">Full Body</div>
                     </div>
-                    <div class="model-slot-label">Full Body</div>
-                </div>
-                <div class="model-upload-slot">
-                    <div class="model-preview" id="modelPreviewPortrait" data-type="portrait">
-                        <div class="model-preview-placeholder">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <div>Portrait</div>
+                    <div class="model-upload-slot">
+                        <div class="model-preview" id="modelPreviewPortrait" data-type="portrait">
+                            <div class="model-preview-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <div>Portrait</div>
+                            </div>
                         </div>
+                        <div class="model-slot-label">Portrait</div>
                     </div>
-                    <div class="model-slot-label">Portrait (optional)</div>
+                    <input type="file" id="modelInput" accept="image/*">
+                    <input type="file" id="modelInputPortrait" accept="image/*">
                 </div>
-                <input type="file" id="modelInput" accept="image/*">
-                <input type="file" id="modelInputPortrait" accept="image/*">
+            </div>
+            <div class="model-tab-content" id="tabSetset">
+                <div class="setset-models-grid" id="setsetModelsGrid"></div>
             </div>
         </div>
 
-        <!-- Step 2: Poses -->
+        <!-- Step 1/2: Products Folder (starts as step 1, becomes step 2 after model section appears) -->
+        <div class="step-section" id="folderSection">
+            <div class="step-header">
+                <span class="step-number" id="folderStepNumber">1</span>
+                <span class="step-title">Drop Product Folder</span>
+            </div>
+            <p style="font-size: var(--text-sm); color: var(--slate); margin-bottom: var(--space-md);">
+                Drop the parent folder containing product subfolders (each with <strong>Hero_Product</strong> and <strong>Looks</strong> inside)
+            </p>
+            <div class="folder-drop-zone" id="folderDropZone">
+                <div class="drop-placeholder" id="dropPlaceholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <div>Drop product folder here<br><small>e.g., "Set Set SMC Products - JPEG"</small></div>
+                </div>
+                <div class="drop-loading" id="dropLoading" style="display: none;">
+                    <div class="drop-loading-spinner"></div>
+                    <div class="studio-message" id="drop-studio-message">Setting up studio...</div>
+                    <div class="drop-loading-status" id="dropLoadingStatus"></div>
+                </div>
+                <div id="looksContainer" style="display: none;">
+                    <div class="looks-actions">
+                        <button class="btn-mini" onclick="selectAllLooks()">Select All</button>
+                        <button class="btn-mini" onclick="deselectAllLooks()">Deselect All</button>
+                    </div>
+                    <div class="looks-grid" id="looksGrid"></div>
+                    <div class="batch-info" id="batchInfo">
+                        <div class="batch-info-item"><strong id="lookCountDisplay">0</strong> Looks detected</div>
+                        <div class="batch-info-item"><strong id="selectedCountDisplay">0</strong> selected</div>
+                        <div class="batch-info-item"><strong id="imageCountDisplay">0</strong> images total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Poses -->
         <div class="step-section">
             <div class="step-header">
-                <span class="step-number">2</span>
+                <span class="step-number">3</span>
                 <span class="step-title">Select Poses</span>
             </div>
             <div class="poses-container" id="posesContainer"></div>
         </div>
 
-        <!-- Step 3: Products -->
-        <div class="step-section">
-            <div class="step-header">
-                <span class="step-number">3</span>
-                <span class="step-title">Upload Product Folder</span>
-            </div>
-            <p style="font-size: var(--text-sm); color: var(--slate); margin-bottom: var(--space-md);">
-                Drop a folder with <strong>Hero_Product</strong> and <strong>Looks</strong> subfolders, or drop images directly into each box.
-            </p>
-            <div class="products-row">
-                <div class="products-column">
-                    <div class="products-column-header">
-                        <div class="products-column-title">Hero Product</div>
-                        <div class="products-column-actions" id="heroActions" style="display: none;">
-                            <button class="btn-mini" onclick="selectAll('hero')">Select All</button>
-                            <button class="btn-mini" onclick="deselectAll('hero')">Deselect All</button>
-                        </div>
-                    </div>
-                    <div class="folder-drop-zone" id="heroDropZone" data-type="hero">
-                        <div class="drop-placeholder" id="heroPlaceholder">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <div>Drop hero product images<br>or folder here</div>
-                        </div>
-                        <div class="products-grid" id="heroGrid"></div>
-                    </div>
-                    <input type="file" id="heroInput" accept="image/*" multiple webkitdirectory>
-                </div>
-                <div class="products-column">
-                    <div class="products-column-header">
-                        <div class="products-column-title">Looks (Accessories)</div>
-                        <div class="products-column-actions" id="looksActions" style="display: none;">
-                            <button class="btn-mini" onclick="selectAll('looks')">Select All</button>
-                            <button class="btn-mini" onclick="deselectAll('looks')">Deselect All</button>
-                        </div>
-                    </div>
-                    <div class="folder-drop-zone" id="looksDropZone" data-type="looks">
-                        <div class="drop-placeholder" id="looksPlaceholder">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                            <div>Drop accessory images<br>or folder here</div>
-                        </div>
-                        <div class="products-grid" id="looksGrid"></div>
-                    </div>
-                    <input type="file" id="looksInput" accept="image/*" multiple webkitdirectory>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 4: Notes -->
-        <div class="step-section">
-            <div class="step-header">
-                <span class="step-number">4</span>
-                <span class="step-title">Styling Notes (Optional)</span>
-            </div>
-            <textarea class="notes-input" id="stylingNotes" placeholder="Add any styling notes or exclusions, e.g., 'no sunglasses', 'casual vibe', 'model should not wear the black bag'..."></textarea>
-        </div>
-
-        <!-- Step 5: Analyze -->
-        <div class="step-section">
-            <div class="step-header">
-                <span class="step-number">5</span>
-                <span class="step-title">Analyze Products</span>
-            </div>
-            <div class="analysis-section">
-                <button class="btn btn--primary" id="analyzeBtn" disabled>Analyze Selected Products</button>
-                <div class="analysis-results" id="analysisResults">
-                    <h4 style="margin: var(--space-md) 0 var(--space-sm);">Analysis Results</h4>
-                    <div id="analysisContent"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 6: Generate -->
+        <!-- Step 4: Generate -->
         <div class="step-section" style="border-bottom: none;">
             <div class="step-header">
-                <span class="step-number">6</span>
+                <span class="step-number">4</span>
                 <span class="step-title">Generate Images</span>
             </div>
             <div class="generate-section">
-                <!-- Settings Row -->
                 <div class="settings-row" style="margin-bottom: var(--space-md);">
                     <div class="setting-group">
                         <label class="setting-label">Model</label>
                         <div class="btn-group" id="model-buttons">
-                            <button class="btn btn--toggle active" data-model="nanobanana">Nano Banana</button>
+                            <button class="btn btn--toggle" data-value="nano">Nano</button>
+                            <button class="btn btn--toggle active" data-value="nano-pro">Nano Pro</button>
                         </div>
                     </div>
                     <div class="setting-group">
@@ -752,10 +1356,19 @@
                     </div>
                 </div>
 
-                <div class="calc-display" id="calc-display">Select model, poses, and products to generate</div>
-                <button class="btn btn--primary btn--lg btn--block" id="generateBtn" disabled>
-                    Generate Images <span class="btn-cost" id="cost-value">$0.00</span>
-                </button>
+                <div class="calc-display" id="calc-display">Drop folder and select poses to generate</div>
+                <div class="generate-buttons">
+                    <button class="btn btn--secondary btn--lg" id="analyzeAllBtn" disabled>
+                        <span class="btn-text">Analyze Products</span>
+                        <span class="btn-loader">
+                            <span class="btn-loader-spinner"></span>
+                            <span class="btn-loader-text" id="analyzeLoaderText">Analyzing...</span>
+                        </span>
+                    </button>
+                    <button class="btn btn--primary btn--lg" id="generateBtn" disabled style="flex: 1;">
+                        Generate Images <span class="btn-cost" id="cost-value">$0.00</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -768,6 +1381,7 @@
             <div class="progress-bar-container">
                 <div class="progress-bar" id="progress-bar"></div>
             </div>
+            <div class="studio-message" id="progress-studio-message">Setting up studio...</div>
         </div>
 
         <!-- Results -->
@@ -788,17 +1402,52 @@
             <button class="lightbox-nav next" id="lightbox-next">&rarr;</button>
             <div class="lightbox-left">
                 <img src="" alt="" class="lightbox-image" id="lightbox-image">
+                <div class="lightbox-image-loader" id="lightbox-loader">
+                    <div class="loader-spinner"></div>
+                    <div class="loader-text" id="lightbox-loader-text">Remixing...</div>
+                </div>
             </div>
             <div class="lightbox-right">
                 <div class="lightbox-counter" id="lightbox-counter">1 / 1</div>
                 <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Look</h3>
+                    <p class="lightbox-model-text" id="lightbox-look"></p>
+                </div>
+                <div class="lightbox-section">
                     <h3 class="lightbox-section-title">Pose</h3>
                     <p class="lightbox-model-text" id="lightbox-pose"></p>
                 </div>
-                <div class="lightbox-section">
-                    <h3 class="lightbox-section-title">Prompt</h3>
-                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                <div class="lightbox-section collapsed" id="lightbox-prompt-section">
+                    <div class="lightbox-section-header" onclick="togglePromptSection()">
+                        <h3 class="lightbox-section-title">Prompt</h3>
+                        <span class="lightbox-collapse-arrow">▼</span>
+                    </div>
+                    <div class="lightbox-collapsible">
+                        <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                    </div>
                 </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Source Images</h3>
+                    <div class="lightbox-source-images" id="lightbox-source-images"></div>
+                </div>
+
+                <!-- History -->
+                <div class="lightbox-section" id="lightbox-history-section" style="display: none;">
+                    <div class="lightbox-history-label">History</div>
+                    <div class="lightbox-history" id="lightbox-history"></div>
+                </div>
+
+                <!-- Edit/Remix Section -->
+                <div class="lightbox-edit-section">
+                    <h3 class="lightbox-section-title">Edit</h3>
+                    <textarea class="lightbox-edit-input" id="lightbox-edit-input" placeholder="Describe changes... e.g. 'make the jeans baggier' or 'change background to outdoor'"></textarea>
+                    <div class="lightbox-model-buttons">
+                        <button class="lightbox-model-btn active" data-model="nano" onclick="setLightboxModel('nano')">Nano</button>
+                        <button class="lightbox-model-btn" data-model="nano-pro" onclick="setLightboxModel('nano-pro')">Nano Pro</button>
+                    </div>
+                    <button class="lightbox-remix-btn" id="lightbox-remix-btn" onclick="remixCurrentImage()">Remix</button>
+                </div>
+
                 <button class="lightbox-download" id="lightbox-download">Download Image</button>
             </div>
         </div>
@@ -807,7 +1456,7 @@
     <!-- Loading -->
     <div class="loading-overlay" id="loading">
         <div class="spinner"></div>
-        <p class="loading-text" id="loading-text">Analyzing...</p>
+        <p class="loading-text" id="loading-text">Processing...</p>
     </div>
 
     <!-- Scripts -->
@@ -816,16 +1465,152 @@
     <script src="/shared/js/api.js"></script>
 
     <script>
+        // Studio messages for fun loader
+        const STUDIO_MESSAGES = [
+            "Setting up the Studio...",
+            "Adjusting the Key Light...",
+            "Loading the Film...",
+            "Warming up the Strobes...",
+            "Preparing the Backdrop...",
+            "Adjusting the Fill Light...",
+            "Checking the Framing...",
+            "Setting the Aperture...",
+            "Loading Color Profiles...",
+            "Positioning the C-Stand...",
+            "Focusing...",
+            "Checking Tethering...",
+            "Rolling...",
+            "Adjusting the Umbrella...",
+            "Metering...",
+            "Standby...",
+            "Loading the Presets...",
+            "Quiet on Set...",
+            "Final Touches...",
+            "Almost There...",
+            "Testing...",
+            "Checking the Batteries...",
+            "One Moment...",
+            "Preparing the Fan...",
+            "Setting the Focal Length...",
+            "Hold Please...",
+            "Touch-Ups...",
+            "Cueing the Talent...",
+            "Composing...",
+            "Ready When You Are...",
+            "Dialing It In...",
+            "Setting the Scene...",
+            "Looking Good...",
+            "Locking Focus...",
+            "Last Looks...",
+            "Warming Up...",
+            "Standing By...",
+            "All Set...",
+            "Getting Close...",
+            "Picture Ready...",
+            "Checking the Light...",
+            "Take Your Mark...",
+            "Here We Go...",
+            "Exposure Set...",
+            "Finding the Angle...",
+            "Frame Locked...",
+            "Just a Sec...",
+            "Setting Up...",
+            "Ready...",
+            "Working on It..."
+        ];
+
+        let studioMessageInterval = null;
+        let currentMessageElement = null;
+
+        // Studio message cycling functions
+        function startStudioMessages(targetElement) {
+            if (studioMessageInterval) return;
+            currentMessageElement = targetElement;
+            let lastIndex = -1;
+
+            const updateMessage = () => {
+                if (!currentMessageElement) return;
+
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastIndex && STUDIO_MESSAGES.length > 1);
+                lastIndex = idx;
+
+                // Fade out
+                currentMessageElement.classList.add('fade-out');
+                currentMessageElement.classList.remove('fade-in');
+
+                setTimeout(() => {
+                    if (!currentMessageElement) return;
+                    currentMessageElement.textContent = STUDIO_MESSAGES[idx];
+                    currentMessageElement.classList.remove('fade-out');
+                    currentMessageElement.classList.add('fade-in');
+
+                    // Resume pulse after fade-in
+                    setTimeout(() => {
+                        if (currentMessageElement) {
+                            currentMessageElement.classList.remove('fade-in');
+                        }
+                    }, 250);
+                }, 250);
+            };
+
+            // Initial message
+            if (currentMessageElement) {
+                currentMessageElement.textContent = STUDIO_MESSAGES[Math.floor(Math.random() * STUDIO_MESSAGES.length)];
+            }
+
+            studioMessageInterval = setInterval(updateMessage, 2500);
+        }
+
+        function stopStudioMessages() {
+            if (studioMessageInterval) {
+                clearInterval(studioMessageInterval);
+                studioMessageInterval = null;
+            }
+            currentMessageElement = null;
+        }
+
+        // Setset internal talent roster
+        const SETSET_MODELS = [
+            { id: 'james', name: 'James Wilson', image: '/shared/images/talent/talent-01_JamesWilson.png' },
+            { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png' },
+            { id: 'river', name: 'River Blake', image: '/shared/images/talent/talent-03_RiverBlake.png' },
+            { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png' },
+            { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/talent-05_MarcusBrown.png' },
+            { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png' },
+            { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png' },
+            { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/talent-08_LiamGarcia.png' },
+            { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png' },
+            { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
+            { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png' },
+            { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png' },
+            { id: 'kai', name: 'Kai Thompson', image: '/shared/images/talent/talent-13_KaiThompson.png' },
+            { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
+            { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png' },
+            { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
+            { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/talent-17_QuinnSantos.png' },
+            { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png' },
+            { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png' },
+            { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/talent-20_DrewMartinez.png' },
+            { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png' },
+            { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png' },
+            { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png' },
+            { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' }
+        ];
+
         // State
         const state = {
             modelImage: null,
             modelImagePortrait: null,
-            poseCounts: {}, // { poseId: count } - how many images per pose
-            heroImages: [],
-            looksImages: [],
-            analysisResults: [],
+            modelImages: [], // Array of { thumbnail, file, selected, name }
+            setsetModels: [], // Array of selected Setset model IDs
+            looks: [], // Array of { name, id, selected, heroImages: [], looksImages: [] }
+            poseCounts: {}, // { poseId: count }
             aspectRatio: '3:4',
             resolution: '1K',
+            selectedModel: 'nano-pro',
             results: [],
             lightboxIndex: 0
         };
@@ -836,18 +1621,11 @@
             modelPreviewPortrait: document.getElementById('modelPreviewPortrait'),
             modelInput: document.getElementById('modelInput'),
             modelInputPortrait: document.getElementById('modelInputPortrait'),
-            posesContainer: document.getElementById('posesContainer'),
-            heroDropZone: document.getElementById('heroDropZone'),
-            looksDropZone: document.getElementById('looksDropZone'),
-            heroGrid: document.getElementById('heroGrid'),
+            folderDropZone: document.getElementById('folderDropZone'),
+            dropPlaceholder: document.getElementById('dropPlaceholder'),
+            looksContainer: document.getElementById('looksContainer'),
             looksGrid: document.getElementById('looksGrid'),
-            heroPlaceholder: document.getElementById('heroPlaceholder'),
-            looksPlaceholder: document.getElementById('looksPlaceholder'),
-            heroInput: document.getElementById('heroInput'),
-            looksInput: document.getElementById('looksInput'),
-            analyzeBtn: document.getElementById('analyzeBtn'),
-            analysisResults: document.getElementById('analysisResults'),
-            analysisContent: document.getElementById('analysisContent'),
+            posesContainer: document.getElementById('posesContainer'),
             generateBtn: document.getElementById('generateBtn'),
             calcDisplay: document.getElementById('calc-display'),
             costValue: document.getElementById('cost-value'),
@@ -860,10 +1638,13 @@
             errorDiv: document.getElementById('error'),
             lightbox: document.getElementById('lightbox'),
             lightboxImage: document.getElementById('lightbox-image'),
+            lightboxLook: document.getElementById('lightbox-look'),
             lightboxPose: document.getElementById('lightbox-pose'),
             lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxSourceImages: document.getElementById('lightbox-source-images'),
             loading: document.getElementById('loading'),
-            loadingText: document.getElementById('loading-text')
+            loadingText: document.getElementById('loading-text'),
+            analyzeAllBtn: document.getElementById('analyzeAllBtn')
         };
 
         // Initialize poses grid
@@ -891,6 +1672,10 @@
 
             elements.posesContainer.innerHTML = pdpHtml + lifestyleHtml;
 
+            // Build pose lookup map
+            const poseMap = {};
+            POSES.forEach(p => poseMap[p.id] = p);
+
             // Add slider handlers
             elements.posesContainer.querySelectorAll('.pose-slider').forEach(slider => {
                 slider.addEventListener('input', (e) => {
@@ -900,11 +1685,7 @@
                 });
             });
 
-            // Build pose lookup map for fast access (avoid .find() on every hover)
-            const poseMap = {};
-            POSES.forEach(p => poseMap[p.id] = p);
-
-            // Add hover handlers for image preview
+            // Add hover/click handlers
             elements.posesContainer.querySelectorAll('.pose-card-image').forEach(imageContainer => {
                 const card = imageContainer.closest('.pose-card');
                 const poseId = card.dataset.id;
@@ -912,27 +1693,20 @@
                 const img = imageContainer.querySelector('img');
 
                 if (pose && pose.hoverImage) {
-                    imageContainer.addEventListener('mouseenter', () => {
-                        img.src = pose.hoverImage;
-                    });
-                    imageContainer.addEventListener('mouseleave', () => {
-                        img.src = pose.defaultImage;
-                    });
+                    imageContainer.addEventListener('mouseenter', () => img.src = pose.hoverImage);
+                    imageContainer.addEventListener('mouseleave', () => img.src = pose.defaultImage);
                 }
 
-                // Click on image sets slider to 1 (or 0 if already active)
                 imageContainer.addEventListener('click', () => {
                     const currentCount = state.poseCounts[poseId] || 0;
                     const newCount = currentCount > 0 ? 0 : 1;
-                    const slider = card.querySelector('.pose-slider');
-                    slider.value = newCount;
+                    card.querySelector('.pose-slider').value = newCount;
                     updatePoseCount(poseId, newCount);
                 });
             });
         }
 
         function createPoseCard(pose) {
-            // Initialize pose count to 0
             state.poseCounts[pose.id] = 0;
             return `
                 <div class="pose-card" data-id="${pose.id}">
@@ -952,32 +1726,20 @@
             state.poseCounts[poseId] = count;
             const card = elements.posesContainer.querySelector(`[data-id="${poseId}"]`);
             const countBadge = card.querySelector(`[data-count="${poseId}"]`);
-
             countBadge.textContent = count;
-
-            if (count > 0) {
-                card.classList.add('active');
-            } else {
-                card.classList.remove('active');
-            }
-
+            card.classList.toggle('active', count > 0);
             updateCalculator();
         }
 
-        // Model upload - Full Body
+        // Model upload
         elements.modelPreview.addEventListener('click', () => elements.modelInput.click());
         elements.modelInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleModelUpload(e.target.files[0], 'fullbody');
-            }
+            if (e.target.files.length > 0) handleModelUpload(e.target.files[0], 'fullbody');
         });
 
-        // Model upload - Portrait
         elements.modelPreviewPortrait.addEventListener('click', () => elements.modelInputPortrait.click());
         elements.modelInputPortrait.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleModelUpload(e.target.files[0], 'portrait');
-            }
+            if (e.target.files.length > 0) handleModelUpload(e.target.files[0], 'portrait');
         });
 
         function handleModelUpload(file, type = 'fullbody') {
@@ -985,11 +1747,11 @@
             reader.onload = (e) => {
                 if (type === 'fullbody') {
                     state.modelImage = { file, url: e.target.result };
-                    elements.modelPreview.innerHTML = `<img src="${e.target.result}" alt="Model Full Body">`;
+                    elements.modelPreview.innerHTML = `<img src="${e.target.result}" alt="Model">`;
                     elements.modelPreview.classList.add('has-image');
                 } else {
                     state.modelImagePortrait = { file, url: e.target.result };
-                    elements.modelPreviewPortrait.innerHTML = `<img src="${e.target.result}" alt="Model Portrait">`;
+                    elements.modelPreviewPortrait.innerHTML = `<img src="${e.target.result}" alt="Portrait">`;
                     elements.modelPreviewPortrait.classList.add('has-image');
                 }
                 updateCalculator();
@@ -997,203 +1759,572 @@
             reader.readAsDataURL(file);
         }
 
-        // Drag and drop for model - Full Body
-        elements.modelPreview.addEventListener('dragover', (e) => {
+        // Folder drop zone
+        elements.folderDropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            elements.modelPreview.style.borderColor = 'var(--jet)';
+            elements.folderDropZone.classList.add('drag-over');
         });
-        elements.modelPreview.addEventListener('dragleave', () => {
-            elements.modelPreview.style.borderColor = '';
+
+        elements.folderDropZone.addEventListener('dragleave', () => {
+            elements.folderDropZone.classList.remove('drag-over');
         });
-        elements.modelPreview.addEventListener('drop', (e) => {
+
+        elements.folderDropZone.addEventListener('drop', async (e) => {
             e.preventDefault();
-            elements.modelPreview.style.borderColor = '';
-            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-            if (files.length > 0) {
-                handleModelUpload(files[0], 'fullbody');
+            elements.folderDropZone.classList.remove('drag-over');
+
+            const items = e.dataTransfer.items;
+            state.looks = [];
+
+            // Show loading state
+            elements.dropPlaceholder.style.display = 'none';
+            document.getElementById('dropLoading').style.display = 'flex';
+            document.getElementById('dropLoadingStatus').textContent = 'Scanning folders...';
+            startStudioMessages(document.getElementById('drop-studio-message'));
+
+            console.log('📁 Processing dropped folder...');
+
+            for (const item of items) {
+                if (item.webkitGetAsEntry) {
+                    const entry = item.webkitGetAsEntry();
+                    if (entry && entry.isDirectory) {
+                        await processRootFolder(entry);
+                    }
+                }
+            }
+
+            // Hide loading state
+            stopStudioMessages();
+            document.getElementById('dropLoading').style.display = 'none';
+
+            if (state.looks.length > 0) {
+                console.log(`✅ Found ${state.looks.length} looks`);
+                renderLooksGrid();
+                elements.looksContainer.style.display = 'block';
+                elements.folderDropZone.classList.add('has-looks');
+                updateBatchInfo();
+                updateCalculator();
+
+                // Show model section and update step numbers
+                document.getElementById('modelSection').style.display = 'block';
+                document.getElementById('folderStepNumber').textContent = '2';
+
+                // If model images were discovered, switch to Discovered tab
+                if (state.modelImages.length > 0) {
+                    renderModelDiscovered();
+                    // Switch to Discovered tab
+                    document.querySelectorAll('.model-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelector('.model-tab[data-tab="discovered"]').classList.add('active');
+                    document.getElementById('tabDiscovered').style.display = 'block';
+                    document.getElementById('tabUpload').style.display = 'none';
+                    document.getElementById('tabSetset').style.display = 'none';
+                }
+            } else {
+                elements.dropPlaceholder.style.display = 'flex';
+                showError('No valid product folders found. Expected folders with Hero_Product and Looks subfolders.');
             }
         });
 
-        // Drag and drop for model - Portrait
-        elements.modelPreviewPortrait.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            elements.modelPreviewPortrait.style.borderColor = 'var(--jet)';
-        });
-        elements.modelPreviewPortrait.addEventListener('dragleave', () => {
-            elements.modelPreviewPortrait.style.borderColor = '';
-        });
-        elements.modelPreviewPortrait.addEventListener('drop', (e) => {
-            e.preventDefault();
-            elements.modelPreviewPortrait.style.borderColor = '';
-            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-            if (files.length > 0) {
-                handleModelUpload(files[0], 'portrait');
-            }
-        });
+        // Helper to read ALL entries from a directory (readEntries may return partial results)
+        async function readAllEntries(reader) {
+            const allEntries = [];
+            let entries;
+            do {
+                entries = await new Promise(resolve => reader.readEntries(resolve));
+                allEntries.push(...entries);
+            } while (entries.length > 0);
+            return allEntries;
+        }
 
-        // Products drag and drop
-        function setupDropZone(dropZone, grid, placeholder, type) {
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.classList.add('drag-over');
-            });
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('drag-over');
-            });
-            dropZone.addEventListener('drop', async (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('drag-over');
+        async function processRootFolder(rootEntry) {
+            console.log('📂 Processing folder:', rootEntry.name);
+            const reader = rootEntry.createReader();
+            const entries = await readAllEntries(reader);
+            console.log(`📂 Found ${entries.length} entries`);
 
-                const items = e.dataTransfer.items;
-                const files = [];
+            // Check if THIS folder is a product folder (has Hero_Product or Looks directly)
+            const hasHeroDirectly = entries.some(e => e.isDirectory && e.name.toLowerCase().includes('hero'));
+            const hasLooksDirectly = entries.some(e => e.isDirectory && e.name.toLowerCase().includes('look'));
 
-                // Handle folder drops
-                for (const item of items) {
-                    if (item.webkitGetAsEntry) {
-                        const entry = item.webkitGetAsEntry();
-                        if (entry) {
-                            await traverseFileTree(entry, files, type);
+            if (hasHeroDirectly || hasLooksDirectly) {
+                // This IS a product folder - process it directly
+                console.log('📦 This folder is a product folder itself');
+                await processProductFolder(rootEntry, entries);
+            } else {
+                // This is a parent folder - look for product subfolders
+                console.log('📂 Looking for product subfolders...');
+                for (const entry of entries) {
+                    if (entry.isDirectory) {
+                        const name = entry.name;
+                        console.log(`  📁 Checking folder: ${name}`);
+
+                        // Check for model/twin folder
+                        if (name.toLowerCase().includes('twin') || name.toLowerCase().includes('model')) {
+                            console.log(`  👤 Found model folder: ${name}`);
+                            document.getElementById('dropLoadingStatus').textContent = `Loading model images...`;
+                            await processModelFolder(entry);
+                            continue;
+                        }
+
+                        // Skip hidden folders
+                        if (name.startsWith('.')) {
+                            console.log(`    ⏭️ Skipping: ${name}`);
+                            continue;
+                        }
+
+                        // Check if this folder has Hero_Product or Looks subfolders
+                        const subReader = entry.createReader();
+                        const subEntries = await readAllEntries(subReader);
+                        console.log(`    📁 Found ${subEntries.length} subfolders in ${name}`);
+
+                        const hasHero = subEntries.some(e => e.isDirectory && e.name.toLowerCase().includes('hero'));
+                        const hasLooks = subEntries.some(e => e.isDirectory && e.name.toLowerCase().includes('look'));
+                        console.log(`    🔍 hasHero: ${hasHero}, hasLooks: ${hasLooks}`);
+
+                        if (hasHero || hasLooks) {
+                            await processProductFolder(entry, subEntries);
                         }
                     }
                 }
-
-                // If no folder entries, use regular files
-                if (files.length === 0) {
-                    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-                    files.push(...droppedFiles);
-                }
-
-                if (files.length > 0) {
-                    handleProductFiles(files, type);
-                }
-            });
-
-            dropZone.addEventListener('click', (e) => {
-                if (e.target === dropZone || e.target === placeholder || placeholder.contains(e.target)) {
-                    const input = type === 'hero' ? elements.heroInput : elements.looksInput;
-                    input.click();
-                }
-            });
-        }
-
-        async function traverseFileTree(entry, files, expectedType) {
-            if (entry.isFile) {
-                const file = await new Promise(resolve => entry.file(resolve));
-                if (file.type.startsWith('image/')) {
-                    files.push(file);
-                }
-            } else if (entry.isDirectory) {
-                const dirName = entry.name.toLowerCase();
-                const reader = entry.createReader();
-                const entries = await new Promise(resolve => reader.readEntries(resolve));
-
-                // Check if this is a Hero_Product or Looks folder
-                if (dirName.includes('hero') && expectedType === 'hero') {
-                    for (const childEntry of entries) {
-                        await traverseFileTree(childEntry, files, expectedType);
-                    }
-                } else if (dirName.includes('look') && expectedType === 'looks') {
-                    for (const childEntry of entries) {
-                        await traverseFileTree(childEntry, files, expectedType);
-                    }
-                } else {
-                    // For other directories, check children
-                    for (const childEntry of entries) {
-                        await traverseFileTree(childEntry, files, expectedType);
-                    }
-                }
             }
         }
 
-        function handleProductFiles(files, type) {
-            const images = type === 'hero' ? state.heroImages : state.looksImages;
-            const grid = type === 'hero' ? elements.heroGrid : elements.looksGrid;
-            const placeholder = type === 'hero' ? elements.heroPlaceholder : elements.looksPlaceholder;
-            const dropZone = type === 'hero' ? elements.heroDropZone : elements.looksDropZone;
+        async function processModelFolder(folderEntry) {
+            const images = await getImagesFromFolder(folderEntry);
+            if (images.length > 0) {
+                state.modelImages = images;
+                console.log(`👤 Loaded ${images.length} model images`);
+                renderModelDiscovered();
+            }
+        }
 
-            files.forEach(file => {
+        function renderModelDiscovered() {
+            const grid = document.getElementById('modelDiscoveredGrid');
+
+            if (state.modelImages.length === 0) {
+                grid.innerHTML = '';
+                document.getElementById('modelEmptyMessage').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('modelEmptyMessage').style.display = 'none';
+            grid.innerHTML = state.modelImages.map((img, idx) => `
+                <div class="model-thumb ${img.selected ? 'selected' : ''}" onclick="toggleModelImage(${idx})">
+                    <img src="${img.thumbnail}" alt="${img.name}">
+                    <span class="check-mark">✓</span>
+                </div>
+            `).join('');
+        }
+
+        window.toggleModelImage = function(idx) {
+            const img = state.modelImages[idx];
+            if (img) {
+                img.selected = !img.selected;
+                renderModelDiscovered();
+                updateCalculator();
+            }
+        };
+
+        async function processProductFolder(folderEntry, entries) {
+            const name = folderEntry.name;
+            const displayName = name.replace('SetSet_SMC_', '').replace(/_/g, ' ');
+
+            // Update loading status
+            document.getElementById('dropLoadingStatus').textContent = `Processing ${displayName}...`;
+
+            const look = {
+                id: `look-${state.looks.length}`,
+                name: displayName,
+                selected: false,
+                customPrompt: '',
+                heroImages: [],
+                looksImages: []
+            };
+
+            for (const subEntry of entries) {
+                if (subEntry.isDirectory) {
+                    const subName = subEntry.name.toLowerCase();
+                    if (subName.includes('hero')) {
+                        look.heroImages = await getImagesFromFolder(subEntry);
+                        console.log(`      ✅ Hero images: ${look.heroImages.length}`);
+                    } else if (subName.includes('look')) {
+                        look.looksImages = await getImagesFromFolder(subEntry);
+                        console.log(`      ✅ Looks images: ${look.looksImages.length}`);
+                    }
+                }
+            }
+
+            if (look.heroImages.length > 0 || look.looksImages.length > 0) {
+                state.looks.push(look);
+                console.log(`📦 Found look: ${look.name} (${look.heroImages.length} hero, ${look.looksImages.length} looks)`);
+            }
+        }
+
+        async function getImagesFromFolder(folderEntry) {
+            const images = [];
+            const reader = folderEntry.createReader();
+            const entries = await readAllEntries(reader);
+
+            for (const entry of entries) {
+                if (entry.isFile && /\.(jpg|jpeg|png|webp)$/i.test(entry.name)) {
+                    const file = await new Promise(resolve => entry.file(resolve));
+
+                    // Create thumbnail (800px) - good quality for preview and hover zoom
+                    const thumbnail = await createThumbnail(file, 800);
+
+                    // Store file reference for later upload, but use thumbnail for display
+                    images.push({
+                        file,
+                        thumbnail,  // Small preview
+                        url: null,  // Will be loaded on-demand when generating
+                        name: entry.name,
+                        selected: false  // All deselected by default
+                    });
+                }
+            }
+
+            return images;
+        }
+
+        // Convert file to data URL
+        function fileToDataUrl(file) {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    const imageData = { file, url: e.target.result, selected: false, name: file.name };
-                    images.push(imageData);
-                    renderProductGrid(type);
-                    updateCalculator();
-                };
+                reader.onload = (e) => resolve(e.target.result);
                 reader.readAsDataURL(file);
             });
-
-            placeholder.style.display = 'none';
-            dropZone.classList.add('has-images');
-
-            // Show select/deselect buttons
-            const actionsEl = document.getElementById(`${type}Actions`);
-            if (actionsEl) actionsEl.style.display = 'flex';
         }
 
-        // Select/Deselect all functions
-        window.selectAll = function(type) {
-            const images = type === 'hero' ? state.heroImages : state.looksImages;
-            images.forEach(img => img.selected = true);
-            renderProductGrid(type, false); // Fast update, just classes
-            updateCalculator();
-        };
+        // Create a small thumbnail from a file
+        function createThumbnail(file, maxSize) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
 
-        window.deselectAll = function(type) {
-            const images = type === 'hero' ? state.heroImages : state.looksImages;
-            images.forEach(img => img.selected = false);
-            renderProductGrid(type, false); // Fast update, just classes
-            updateCalculator();
-        };
+                img.onload = () => {
+                    // Calculate thumbnail dimensions
+                    let width = img.width;
+                    let height = img.height;
 
-        function renderProductGrid(type, fullRender = true) {
-            const images = type === 'hero' ? state.heroImages : state.looksImages;
-            const grid = type === 'hero' ? elements.heroGrid : elements.looksGrid;
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+                    }
 
-            if (fullRender) {
-                grid.innerHTML = images.map((img, idx) => `
-                    <div class="product-thumb ${img.selected ? 'selected' : 'deselected'}" data-index="${idx}" data-type="${type}">
-                        <img src="${img.url}" alt="${img.name}">
-                        <span class="product-check">✓</span>
-                    </div>
-                `).join('');
+                    // Draw to canvas
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
 
-                // Use event delegation on the grid instead of individual listeners
-                grid.onclick = (e) => {
-                    const thumb = e.target.closest('.product-thumb');
-                    if (!thumb) return;
-                    const idx = parseInt(thumb.dataset.index);
-                    const t = thumb.dataset.type;
-                    const imgs = t === 'hero' ? state.heroImages : state.looksImages;
-                    imgs[idx].selected = !imgs[idx].selected;
-                    // Just toggle classes, don't re-render
-                    thumb.classList.toggle('selected', imgs[idx].selected);
-                    thumb.classList.toggle('deselected', !imgs[idx].selected);
-                    updateCalculator();
+                    // Get data URL with good quality
+                    const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+                    // Clean up object URL
+                    URL.revokeObjectURL(url);
+
+                    resolve(thumbnailUrl);
                 };
-            } else {
-                // Just update classes without re-rendering
-                grid.querySelectorAll('.product-thumb').forEach((thumb, idx) => {
-                    thumb.classList.toggle('selected', images[idx].selected);
-                    thumb.classList.toggle('deselected', !images[idx].selected);
+
+                img.src = url;
+            });
+        }
+
+        function renderLooksGrid() {
+            // Save scroll positions before re-render
+            const scrollPositions = {};
+            document.querySelectorAll('.look-card-images').forEach(el => {
+                const lookId = el.closest('.look-card')?.dataset.lookId;
+                if (lookId) scrollPositions[lookId] = el.scrollTop;
+            });
+
+            elements.looksGrid.innerHTML = state.looks.map(look => {
+                const allImages = [...look.heroImages, ...look.looksImages];
+                const selectedCount = allImages.filter(i => i.selected).length;
+                const columns = look.columns || 5;
+
+                return `
+                    <div class="look-card ${look.selected ? 'selected' : ''}" data-look-id="${look.id}">
+                        <div class="look-card-header" onclick="toggleLook('${look.id}')">
+                            <input type="checkbox" class="look-checkbox" ${look.selected ? 'checked' : ''} onclick="event.stopPropagation(); toggleLook('${look.id}')">
+                            <span class="look-name">${look.name}</span>
+                            <span class="look-count">${selectedCount}/${allImages.length}</span>
+                            <div class="look-columns" onclick="event.stopPropagation()">
+                                <input type="range" class="look-columns-slider" min="2" max="6" value="${columns}"
+                                    oninput="updateLookColumns('${look.id}', this.value)">
+                                <span class="look-columns-value">${columns}</span>
+                            </div>
+                        </div>
+                        <div class="look-card-images" style="grid-template-columns: repeat(${columns}, 1fr)">
+                            ${allImages.map((img, idx) => {
+                                const isHero = idx < look.heroImages.length;
+                                return `
+                                    <div class="look-image-thumb ${img.selected ? 'selected' : ''}" onclick="toggleImage('${look.id}', ${idx})">
+                                        <img src="${img.thumbnail}" alt="${img.name}" loading="lazy">
+                                        <span class="check-mark">✓</span>
+                                        <span class="image-type">${isHero ? 'Hero' : 'Look'}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        <div class="look-card-footer">
+                            ${look.analysis ? `<div class="look-analysis">${look.analysis}</div>` : ''}
+                            <input type="text"
+                                placeholder="Additional instructions"
+                                value="${look.customPrompt || ''}"
+                                onchange="updateLookPrompt('${look.id}', this.value)"
+                                onclick="event.stopPropagation()">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Restore scroll positions after re-render
+            requestAnimationFrame(() => {
+                document.querySelectorAll('.look-card-images').forEach(el => {
+                    const lookId = el.closest('.look-card')?.dataset.lookId;
+                    if (lookId && scrollPositions[lookId]) {
+                        el.scrollTop = scrollPositions[lookId];
+                    }
                 });
+
+                // Add pan-on-hover to all image thumbs
+                initImageZoom();
+            });
+        }
+
+        // Pan-on-hover zoom effect
+        function initImageZoom() {
+            document.querySelectorAll('.look-image-thumb').forEach(thumb => {
+                const img = thumb.querySelector('img');
+                if (!img) return;
+
+                thumb.addEventListener('mouseenter', () => {
+                    img.style.transform = 'scale(2.5)';
+                });
+
+                thumb.addEventListener('mousemove', (e) => {
+                    const rect = thumb.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width;
+                    const y = (e.clientY - rect.top) / rect.height;
+
+                    // Calculate transform origin based on mouse position
+                    img.style.transformOrigin = `${x * 100}% ${y * 100}%`;
+                });
+
+                thumb.addEventListener('mouseleave', () => {
+                    img.style.transform = 'scale(1)';
+                    img.style.transformOrigin = 'center center';
+                });
+            });
+        }
+
+        window.toggleLook = function(lookId) {
+            const look = state.looks.find(l => l.id === lookId);
+            if (look) {
+                look.selected = !look.selected;
+                const card = document.querySelector(`[data-look-id="${lookId}"]`);
+                card.classList.toggle('selected', look.selected);
+                card.querySelector('.look-checkbox').checked = look.selected;
+                updateBatchInfo();
+                updateCalculator();
+            }
+        };
+
+        window.toggleImage = function(lookId, imageIndex) {
+            const look = state.looks.find(l => l.id === lookId);
+            if (look) {
+                const allImages = [...look.heroImages, ...look.looksImages];
+                if (allImages[imageIndex]) {
+                    allImages[imageIndex].selected = !allImages[imageIndex].selected;
+                    renderLooksGrid();
+                    updateBatchInfo();
+                    updateCalculator();
+                }
+            }
+        };
+
+        window.updateLookPrompt = function(lookId, value) {
+            const look = state.looks.find(l => l.id === lookId);
+            if (look) {
+                look.customPrompt = value;
+            }
+        };
+
+        window.updateLookColumns = function(lookId, value) {
+            const look = state.looks.find(l => l.id === lookId);
+            if (look) {
+                look.columns = parseInt(value);
+                // Update the grid and value display without full re-render
+                const card = document.querySelector(`.look-card[data-look-id="${lookId}"]`);
+                if (card) {
+                    const grid = card.querySelector('.look-card-images');
+                    const valueDisplay = card.querySelector('.look-columns-value');
+                    if (grid) grid.style.gridTemplateColumns = `repeat(${value}, 1fr)`;
+                    if (valueDisplay) valueDisplay.textContent = value;
+                }
+            }
+        };
+
+        window.selectAllLooks = function() {
+            state.looks.forEach(l => l.selected = true);
+            renderLooksGrid();
+            updateBatchInfo();
+            updateCalculator();
+        };
+
+        window.deselectAllLooks = function() {
+            state.looks.forEach(l => l.selected = false);
+            renderLooksGrid();
+            updateBatchInfo();
+            updateCalculator();
+        };
+
+        // Analyze a look's selected images
+        window.analyzeLook = async function(lookId) {
+            const look = state.looks.find(l => l.id === lookId);
+            if (!look) return;
+
+            const allImages = [...look.heroImages, ...look.looksImages];
+            const selectedImages = allImages.filter(i => i.selected);
+
+            if (selectedImages.length === 0) return;
+
+            look.analyzing = true;
+            renderLooksGrid();
+
+            console.log(`🔍 Analyzing ${selectedImages.length} images for ${look.name}...`);
+
+            try {
+                // Upload all selected images first
+                const imageUrls = [];
+                for (const img of selectedImages) {
+                    const dataUrl = await fileToDataUrl(img.file);
+                    const result = await api.uploadBase64(dataUrl);
+                    imageUrls.push(result.url);
+                }
+
+                // Analyze all images together for a cohesive description
+                const analysisPrompt = `You are analyzing product images for a fashion photo shoot. Describe ONLY the actual products/garments being sold across these ${imageUrls.length} images.
+
+IMPORTANT: IGNORE any mannequins, hangers, display props, styling accessories (like hats or glasses on mannequins), or items that are clearly not part of the product being sold.
+
+For each distinct PRODUCT, briefly note:
+- What it is (jacket, pants, shoes, bag, etc.)
+- Key visual details (color, material, style)
+
+Format as a flowing description that could be used in a prompt, like:
+"Navy wool overcoat with peak lapels, black slim-fit trousers, brown leather Chelsea boots"
+
+Keep it under 100 words total. Focus on the actual products only.`;
+
+                // Send ALL images for analysis
+                const analysisResult = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        images: imageUrls, // Send all images
+                        prompt: analysisPrompt
+                    })
+                });
+
+                const analysisData = await analysisResult.json();
+
+                if (analysisData.content) {
+                    look.analysis = analysisData.content;
+                    console.log(`✅ Analysis for ${look.name}: ${look.analysis.substring(0, 80)}...`);
+                } else {
+                    look.analysis = `${look.name} - ${selectedImages.length} items`;
+                }
+            } catch (err) {
+                console.error(`❌ Analysis failed for ${look.name}:`, err);
+                look.analysis = `${look.name} products`;
+            }
+
+            look.analyzing = false;
+            renderLooksGrid();
+        };
+
+        // Analyze all selected products
+        elements.analyzeAllBtn.addEventListener('click', analyzeAllProducts);
+
+        let analyzeMessageInterval = null;
+
+        function startAnalyzeMessages() {
+            const loaderText = document.getElementById('analyzeLoaderText');
+            if (!loaderText) return;
+
+            let lastIndex = -1;
+
+            const updateMessage = () => {
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastIndex && STUDIO_MESSAGES.length > 1);
+                lastIndex = idx;
+                loaderText.textContent = STUDIO_MESSAGES[idx];
+            };
+
+            // Initial message
+            updateMessage();
+            analyzeMessageInterval = setInterval(updateMessage, 2000);
+        }
+
+        function stopAnalyzeMessages() {
+            if (analyzeMessageInterval) {
+                clearInterval(analyzeMessageInterval);
+                analyzeMessageInterval = null;
             }
         }
 
-        // File inputs
-        elements.heroInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
-            if (files.length > 0) handleProductFiles(files, 'hero');
-            e.target.value = '';
-        });
+        async function analyzeAllProducts() {
+            const selectedLooks = state.looks.filter(l => l.selected);
+            const looksWithImages = selectedLooks.filter(look => {
+                const allImages = [...look.heroImages, ...look.looksImages];
+                return allImages.some(i => i.selected);
+            });
 
-        elements.looksInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
-            if (files.length > 0) handleProductFiles(files, 'looks');
-            e.target.value = '';
-        });
+            if (looksWithImages.length === 0) return;
 
-        setupDropZone(elements.heroDropZone, elements.heroGrid, elements.heroPlaceholder, 'hero');
-        setupDropZone(elements.looksDropZone, elements.looksGrid, elements.looksPlaceholder, 'looks');
+            // Show loader state
+            elements.analyzeAllBtn.disabled = true;
+            elements.analyzeAllBtn.classList.add('analyzing');
+            startAnalyzeMessages();
+
+            console.log(`🔍 Analyzing ${looksWithImages.length} products in parallel...`);
+
+            // Run all analyses in parallel
+            await Promise.all(looksWithImages.map(look => analyzeLook(look.id)));
+
+            // Reset button
+            stopAnalyzeMessages();
+            elements.analyzeAllBtn.classList.remove('analyzing');
+            elements.analyzeAllBtn.disabled = false;
+            console.log('✅ All products analyzed');
+        }
+
+        function updateBatchInfo() {
+            const totalLooks = state.looks.length;
+            const selectedLooks = state.looks.filter(l => l.selected).length;
+            const totalImages = state.looks.reduce((sum, l) => {
+                if (!l.selected) return sum;
+                const heroCount = l.heroImages.filter(i => i.selected).length;
+                const looksCount = l.looksImages.filter(i => i.selected).length;
+                return sum + heroCount + looksCount;
+            }, 0);
+
+            document.getElementById('lookCountDisplay').textContent = totalLooks;
+            document.getElementById('selectedCountDisplay').textContent = selectedLooks;
+            document.getElementById('imageCountDisplay').textContent = totalImages;
+        }
 
         // Aspect ratio buttons
         document.getElementById('aspect-buttons').addEventListener('click', (e) => {
@@ -1201,6 +2332,15 @@
                 document.getElementById('aspect-buttons').querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 state.aspectRatio = e.target.dataset.value;
+            }
+        });
+
+        // Model buttons
+        document.getElementById('model-buttons').addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                document.getElementById('model-buttons').querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.selectedModel = e.target.dataset.value;
             }
         });
 
@@ -1214,409 +2354,247 @@
             }
         });
 
-        // Calculator - total images = sum of all pose counts
+        // Calculator
         function updateCalculator() {
-            const hasModel = state.modelImage !== null;
-            const selectedHero = state.heroImages.filter(i => i.selected);
-            const selectedLooks = state.looksImages.filter(i => i.selected);
-            const numHero = selectedHero.length;
-            const numLooks = selectedLooks.length;
+            const hasModel = state.modelImage !== null || state.modelImages.some(m => m.selected) || state.setsetModels.length > 0;
+            const selectedLooks = state.looks.filter(l => l.selected);
+            const totalPoses = Object.values(state.poseCounts).reduce((sum, count) => sum + count, 0);
 
-            // Enable analyze button if we have at least one hero product
-            elements.analyzeBtn.disabled = numHero === 0;
+            // Count total selected product images
+            const totalSelectedImages = selectedLooks.reduce((sum, look) => {
+                const heroCount = look.heroImages.filter(i => i.selected).length;
+                const looksCount = look.looksImages.filter(i => i.selected).length;
+                return sum + heroCount + looksCount;
+            }, 0);
 
-            // Calculate total images: sum of all pose counts
-            const totalImages = Object.values(state.poseCounts).reduce((sum, count) => sum + count, 0);
-            const activePoses = Object.entries(state.poseCounts).filter(([_, count]) => count > 0);
+            // Total generated images = looks × poses
+            const totalImages = selectedLooks.length * totalPoses;
 
-            // Calculate cost (Nano Banana = $0.15 per image, 2K = double)
+            // Cost: $0.15 per image, 2K = double
             let costPerImage = 0.15;
             if (state.resolution === '2K') costPerImage *= 2;
             const totalCost = totalImages * costPerImage;
 
-            // Build display text
-            let displayText = `${totalImages} images`;
-            if (activePoses.length > 0) {
-                const poseBreakdown = activePoses.map(([poseId, count]) => {
-                    const pose = POSES.find(p => p.id === poseId);
-                    return `${count}× ${pose?.name || poseId}`;
-                }).join(', ');
-                displayText = `${totalImages} images (${poseBreakdown})`;
+            // Build display
+            if (totalImages > 0) {
+                elements.calcDisplay.textContent = `${selectedLooks.length} looks × ${totalPoses} poses = ${totalImages} images`;
+            } else {
+                elements.calcDisplay.textContent = 'Drop folder and select poses to generate';
             }
-            elements.calcDisplay.textContent = displayText;
             elements.costValue.textContent = formatCost(totalCost);
 
-            // Need model, at least one image to generate, at least one hero product, and analysis done
-            elements.generateBtn.disabled = !hasModel || totalImages === 0 || numHero === 0 || state.analysisResults.length === 0;
+            // Enable analyze button if there are selected product images
+            elements.analyzeAllBtn.disabled = totalSelectedImages === 0;
+
+            // Enable generate button
+            elements.generateBtn.disabled = !hasModel || totalImages === 0;
         }
 
-        // Analyze products
-        elements.analyzeBtn.addEventListener('click', analyzeProducts);
-
-        async function analyzeProducts() {
-            const selectedHero = state.heroImages.filter(i => i.selected);
-            const selectedLooks = state.looksImages.filter(i => i.selected);
-
-            if (selectedHero.length === 0) {
-                showError('Please select at least one hero product');
-                return;
-            }
-
-            elements.loading.classList.add('visible');
-            state.analysisResults = [];
-
-            try {
-                // Analyze hero products first
-                for (let i = 0; i < selectedHero.length; i++) {
-                    elements.loadingText.textContent = `Analyzing hero product ${i + 1}/${selectedHero.length}...`;
-                    const analysis = await analyzeImage(selectedHero[i], true);
-                    state.analysisResults.push({
-                        image: selectedHero[i],
-                        source: 'hero',
-                        ...analysis
-                    });
-                }
-
-                // Then analyze looks/accessories
-                for (let i = 0; i < selectedLooks.length; i++) {
-                    elements.loadingText.textContent = `Analyzing accessory ${i + 1}/${selectedLooks.length}...`;
-                    const analysis = await analyzeImage(selectedLooks[i], false);
-                    state.analysisResults.push({
-                        image: selectedLooks[i],
-                        source: 'looks',
-                        ...analysis
-                    });
-                }
-
-                // Display results
-                renderAnalysisResults();
-                elements.analysisResults.classList.add('visible');
-                updateCalculator();
-
-            } catch (error) {
-                console.error('Analysis error:', error);
-                showError('Failed to analyze products: ' + error.message);
-            } finally {
-                elements.loading.classList.remove('visible');
-            }
-        }
-
-        async function analyzeImage(img, isHero = false) {
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        image: img.url,
-                        prompt: `Analyze this fashion product image carefully. Determine:
-
-1. IMAGE TYPE - Is this:
-   - "product_only": Just the product (on hanger, flat lay, mannequin, or product shot)
-   - "styling_reference": A full outfit/look on a model showing how items should be styled together
-   - "accessory": A single accessory item (bag, shoes, sunglasses, jewelry, etc.)
-
-2. PRODUCT CATEGORY: coat, jacket, dress, pants, skirt, bag, shoes, boots, sunglasses, jewelry, scarf, hat, etc.
-
-3. DETAILED DESCRIPTION for AI image generation. CRITICAL - Include ALL of these details:
-   - Color and material (e.g., "charcoal wool", "black leather")
-   - FIT: oversized, relaxed, slim, fitted, boxy, cropped, etc.
-   - LENGTH: extra long, floor-length, ankle-length, cropped, midi, etc.
-   - SILHOUETTE: wide-leg, straight-leg, tapered, A-line, etc.
-   - For PANTS especially: note if they pool at ankles, have break, are hemmed short
-   - Key construction details (pleats, seams, pockets, closures)
-
-4. PROMPT FRAGMENT: A concise but SPECIFIC description for dressing a model.
-   IMPORTANT: Always include fit and length. Examples:
-   - "oversized charcoal wool trousers with extra-long wide legs pooling at the ankles"
-   - "relaxed-fit cream linen pants with soft pleats and straight leg"
-   - "slim black tailored trousers cropped above the ankle"
-
-Respond ONLY with valid JSON:
-{
-    "imageType": "product_only" | "styling_reference" | "accessory",
-    "category": "string",
-    "description": "string",
-    "promptFragment": "string",
-    "stylingNotes": "string (only if imageType is styling_reference - describe the overall styling aesthetic)",
-    "background": "string (only if styling_reference - describe the background/setting: studio color, environment, props)",
-    "lighting": "string (only if styling_reference - describe lighting: soft, harsh, directional, natural, studio flash, shadows)"
-}`
-                    })
-                });
-
-                if (!response.ok) throw new Error('Analysis API error');
-
-                const data = await response.json();
-                // Try to extract JSON from the response
-                let content = data.content;
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    content = jsonMatch[0];
-                }
-                return JSON.parse(content);
-            } catch (error) {
-                console.error('Image analysis error:', error);
-                // Fallback analysis
-                return {
-                    imageType: isHero ? 'product_only' : 'accessory',
-                    category: 'unknown',
-                    description: 'Fashion product',
-                    promptFragment: 'fashion item',
-                    stylingNotes: null
-                };
-            }
-        }
-
-        function renderAnalysisResults() {
-            // Group by type
-            const heroProducts = state.analysisResults.filter(r => r.source === 'hero' && r.imageType !== 'styling_reference');
-            const accessories = state.analysisResults.filter(r => r.source === 'looks' && r.imageType !== 'styling_reference');
-            const stylingRefs = state.analysisResults.filter(r => r.imageType === 'styling_reference');
-
-            let html = '';
-
-            if (heroProducts.length > 0) {
-                html += `<div class="analysis-group"><div class="analysis-group-title">Hero Product</div>`;
-                html += heroProducts.map(result => createAnalysisItem(result)).join('');
-                html += `</div>`;
-            }
-
-            if (accessories.length > 0) {
-                html += `<div class="analysis-group"><div class="analysis-group-title">Accessories</div>`;
-                html += accessories.map(result => createAnalysisItem(result)).join('');
-                html += `</div>`;
-            }
-
-            if (stylingRefs.length > 0) {
-                html += `<div class="analysis-group"><div class="analysis-group-title">Styling Reference (Background & Lighting)</div>`;
-                html += stylingRefs.map(result => `
-                    <div class="analysis-item styling-ref">
-                        <img src="${result.image.url}" alt="" class="analysis-thumb">
-                        <div class="analysis-content">
-                            <div class="analysis-category">STYLING REFERENCE</div>
-                            <div class="analysis-description">${result.stylingNotes || result.description}</div>
-                            ${result.background ? `<div class="analysis-description" style="margin-top: 4px;"><strong>Background:</strong> ${result.background}</div>` : ''}
-                            ${result.lighting ? `<div class="analysis-description" style="margin-top: 2px;"><strong>Lighting:</strong> ${result.lighting}</div>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-                html += `</div>`;
-            }
-
-            // Show combined outfit description
-            const outfitDesc = buildOutfitDescription();
-            if (outfitDesc) {
-                html += `
-                    <div class="outfit-summary">
-                        <div class="outfit-summary-title">Combined Outfit</div>
-                        <div class="outfit-summary-text">${outfitDesc}</div>
-                    </div>
-                `;
-            }
-
-            elements.analysisContent.innerHTML = html;
-        }
-
-        function createAnalysisItem(result) {
-            const typeLabel = result.imageType === 'accessory' ? result.category.toUpperCase() : result.category.toUpperCase();
-            return `
-                <div class="analysis-item">
-                    <img src="${result.image.url}" alt="" class="analysis-thumb">
-                    <div class="analysis-content">
-                        <div class="analysis-category">${typeLabel}</div>
-                        <div class="analysis-description">${result.promptFragment}</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Build outfit description from analysis results
-        function buildOutfitDescription() {
-            const heroProducts = state.analysisResults.filter(r => r.source === 'hero' && r.imageType !== 'styling_reference');
-            const accessories = state.analysisResults.filter(r => r.source === 'looks' && r.imageType !== 'styling_reference');
-            const stylingRefs = state.analysisResults.filter(r => r.imageType === 'styling_reference');
-
-            const parts = [];
-
-            // Hero product - use FIRST one only (multiple images are just for reference angles)
-            if (heroProducts.length > 0) {
-                parts.push(`wearing ${heroProducts[0].promptFragment}`);
-            }
-
-            // Accessories - organized by category (use first of each type)
-            const bagItems = accessories.filter(a => ['bag', 'handbag', 'tote', 'purse', 'clutch'].some(c => a.category.toLowerCase().includes(c)));
-            const shoeItems = accessories.filter(a => ['shoes', 'boots', 'heels', 'sneakers', 'sandals', 'loafers'].some(c => a.category.toLowerCase().includes(c)));
-            const eyewearItems = accessories.filter(a => ['sunglasses', 'glasses', 'eyewear'].some(c => a.category.toLowerCase().includes(c)));
-            const otherAccessories = accessories.filter(a =>
-                !bagItems.includes(a) && !shoeItems.includes(a) && !eyewearItems.includes(a)
-            );
-
-            if (bagItems.length > 0) {
-                parts.push(`holding ${bagItems[0].promptFragment}`);
-            }
-            if (shoeItems.length > 0) {
-                parts.push(`with ${shoeItems[0].promptFragment}`);
-            }
-            if (eyewearItems.length > 0) {
-                parts.push(`wearing ${eyewearItems[0].promptFragment}`);
-            }
-            if (otherAccessories.length > 0) {
-                parts.push(`accessorized with ${otherAccessories.map(o => o.promptFragment).join(', ')}`);
-            }
-
-            // Add user's custom styling notes
-            const userNotes = document.getElementById('stylingNotes').value.trim();
-            if (userNotes) {
-                parts.push(userNotes);
-            }
-
-            return parts.join(', ');
-        }
-
-        // Get environment description from styling reference
-        function getEnvironmentFromStylingRef() {
-            const stylingRefs = state.analysisResults.filter(r => r.imageType === 'styling_reference');
-            if (stylingRefs.length === 0) {
-                return null;
-            }
-            const ref = stylingRefs[0];
-            const envParts = [];
-            if (ref.background) {
-                envParts.push(ref.background);
-            }
-            if (ref.lighting) {
-                envParts.push(ref.lighting);
-            }
-            return envParts.length > 0 ? envParts.join('. ') : null;
-        }
-
-        // Generate images
+        // Generate
         elements.generateBtn.addEventListener('click', generateImages);
 
         async function generateImages() {
-            console.log('🚀 [Generate] Starting generation...');
-            const totalImages = Object.values(state.poseCounts).reduce((sum, count) => sum + count, 0);
-            console.log('📊 [Generate] Total images to generate:', totalImages);
-            console.log('📊 [Generate] Model image:', state.modelImage ? 'YES' : 'NO');
-            console.log('📊 [Generate] Analysis results:', state.analysisResults.length);
+            const selectedLooks = state.looks.filter(l => l.selected);
+            const totalPoses = Object.values(state.poseCounts).reduce((sum, count) => sum + count, 0);
+            const selectedModelImages = state.modelImages.filter(m => m.selected);
+            const hasModel = state.modelImage !== null || selectedModelImages.length > 0 || state.setsetModels.length > 0;
 
-            if (!state.modelImage || totalImages === 0 || state.analysisResults.length === 0) {
-                console.warn('⚠️ [Generate] Blocked - missing requirements');
-                return;
-            }
+            if (!hasModel || selectedLooks.length === 0 || totalPoses === 0) return;
+
+            console.log('🚀 Starting batch generation...');
+            console.log(`📊 ${selectedLooks.length} looks × ${totalPoses} poses`);
 
             elements.errorDiv.classList.remove('show');
             state.results = [];
             elements.resultsGrid.innerHTML = '';
 
-            // Build the combined outfit description (ONE for all poses)
-            const outfitDescription = buildOutfitDescription();
-
-            // Get environment from styling reference (if available)
-            const environment = getEnvironmentFromStylingRef();
-
-            // Build all generation tasks - based on pose counts
+            // Build tasks: each look × each pose × pose count
             const tasks = [];
 
-            for (const [poseId, count] of Object.entries(state.poseCounts)) {
-                if (count === 0) continue;
+            for (const look of selectedLooks) {
+                const selectedHeroImages = look.heroImages.filter(i => i.selected);
+                const selectedLooksImages = look.looksImages.filter(i => i.selected);
 
-                const pose = POSES.find(p => p.id === poseId);
-                const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'] || [];
+                if (selectedHeroImages.length === 0 && selectedLooksImages.length === 0) continue;
 
-                if (prompts.length === 0) {
-                    console.warn(`No prompts found for pose: ${poseId}`);
-                    continue;
-                }
+                for (const [poseId, count] of Object.entries(state.poseCounts)) {
+                    if (count === 0) continue;
 
-                // Create 'count' number of tasks for this pose
-                for (let i = 0; i < count; i++) {
-                    // Get a random prompt variation and inject the outfit
-                    const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
-                    let prompt = promptTemplate.replace('[PRODUCT_DESCRIPTION]', outfitDescription);
+                    const pose = POSES.find(p => p.id === poseId);
+                    const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'] || [];
 
-                    // If we have environment from styling ref, append it to override default lighting
-                    if (environment) {
-                        prompt += ` Environment and lighting from reference: ${environment}`;
+                    for (let i = 0; i < count; i++) {
+                        const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
+
+                        tasks.push({
+                            lookId: look.id,
+                            lookName: look.name,
+                            poseId,
+                            poseName: pose?.name || poseId,
+                            promptTemplate,
+                            customPrompt: look.customPrompt || '',
+                            analysis: look.analysis || null,
+                            heroImages: selectedHeroImages,
+                            looksImages: selectedLooksImages
+                        });
                     }
-
-                    tasks.push({
-                        poseId,
-                        poseName: pose.name,
-                        prompt,
-                        imageIndex: i + 1
-                    });
                 }
             }
 
             const totalTasks = tasks.length;
             let completed = 0;
 
-            console.log('📋 [Generate] Tasks created:', totalTasks);
-            console.log('📋 [Generate] Tasks:', tasks.map(t => `${t.poseName} #${t.imageIndex}`));
+            console.log(`📋 Created ${totalTasks} generation tasks`);
 
             elements.progressSection.classList.add('visible');
             elements.progressCount.textContent = `0 / ${totalTasks}`;
             elements.progressBar.style.width = '0%';
             elements.generateBtn.disabled = true;
+            startStudioMessages(document.getElementById('progress-studio-message'));
 
-            // Collect product image URLs (hero products + accessories, NOT styling refs)
-            const productImages = state.analysisResults
-                .filter(r => r.imageType !== 'styling_reference')
-                .map(r => r.image.url);
+            // Upload model images first
+            console.log('📤 Uploading model images...');
+            elements.loadingText && (elements.loadingText.textContent = 'Uploading model...');
+            elements.loading.classList.add('visible');
 
-            console.log('🖼️ [Generate] Product images:', productImages.length);
-
-            // Upload all images to fal.ai storage first (convert data URLs to hosted URLs)
-            console.log('📤 [Generate] Uploading images to fal.ai storage...');
-            elements.loadingText && (elements.loadingText.textContent = 'Uploading images...');
-
-            const allDataUrls = [];
-            allDataUrls.push(state.modelImage.url);
-            if (state.modelImagePortrait) {
-                allDataUrls.push(state.modelImagePortrait.url);
-            }
-            allDataUrls.push(...productImages);
-
-            // Upload all images in parallel, but only if they're data URLs
-            const uploadedUrls = await Promise.all(allDataUrls.map(async (url, idx) => {
-                if (url.startsWith('data:')) {
-                    console.log(`📤 [Upload ${idx + 1}/${allDataUrls.length}] Uploading data URL...`);
-                    try {
-                        const result = await api.uploadBase64(url);
-                        console.log(`✅ [Upload ${idx + 1}] Got URL:`, result.url);
-                        return result.url;
-                    } catch (err) {
-                        console.error(`❌ [Upload ${idx + 1}] Failed:`, err);
-                        return null;
+            const modelUrls = [];
+            try {
+                // Handle manually uploaded model images (old method)
+                if (state.modelImage && state.modelImage.url) {
+                    if (state.modelImage.url.startsWith('data:')) {
+                        const result = await api.uploadBase64(state.modelImage.url);
+                        modelUrls.push(result.url);
+                    } else {
+                        modelUrls.push(state.modelImage.url);
                     }
-                } else {
-                    // Already a hosted URL
-                    console.log(`✅ [Upload ${idx + 1}] Already hosted:`, url.substring(0, 50));
-                    return url;
                 }
-            }));
 
-            // Filter out failed uploads
-            const validUrls = uploadedUrls.filter(url => url !== null);
-            console.log(`📦 [Generate] ${validUrls.length}/${allDataUrls.length} images uploaded successfully`);
+                if (state.modelImagePortrait && state.modelImagePortrait.url) {
+                    if (state.modelImagePortrait.url.startsWith('data:')) {
+                        const result = await api.uploadBase64(state.modelImagePortrait.url);
+                        modelUrls.push(result.url);
+                    } else {
+                        modelUrls.push(state.modelImagePortrait.url);
+                    }
+                }
 
-            if (validUrls.length === 0) {
-                showError('Failed to upload images');
-                elements.generateBtn.disabled = false;
+                // Handle discovered model images from TWIN folder
+                if (selectedModelImages.length > 0) {
+                    console.log(`📤 Uploading ${selectedModelImages.length} discovered model images...`);
+                    for (const modelImg of selectedModelImages) {
+                        // Convert file to data URL, then upload
+                        const dataUrl = await fileToDataUrl(modelImg.file);
+                        const result = await api.uploadBase64(dataUrl);
+                        modelUrls.push(result.url);
+                        console.log(`  ✅ Uploaded: ${modelImg.name}`);
+                    }
+                }
+
+                // Handle Setset internal models
+                if (state.setsetModels.length > 0) {
+                    console.log(`📤 Using ${state.setsetModels.length} Setset models...`);
+                    for (const modelId of state.setsetModels) {
+                        const model = SETSET_MODELS.find(m => m.id === modelId);
+                        if (model) {
+                            // These are local paths, upload them
+                            const response = await fetch(model.image);
+                            const blob = await response.blob();
+                            const dataUrl = await new Promise((resolve) => {
+                                const reader = new FileReader();
+                                reader.onload = () => resolve(reader.result);
+                                reader.readAsDataURL(blob);
+                            });
+                            const result = await api.uploadBase64(dataUrl);
+                            modelUrls.push(result.url);
+                            console.log(`  ✅ Added Setset model: ${model.name}`);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('❌ Model upload failed:', err);
+                showError('Failed to upload model images');
+                stopStudioMessages();
+                elements.loading.classList.remove('visible');
                 elements.progressSection.classList.remove('visible');
+                elements.generateBtn.disabled = false;
                 return;
             }
 
-            // Execute all tasks
-            await Promise.all(tasks.map(async (task, taskIndex) => {
-                console.log(`🔄 [Task ${taskIndex + 1}/${totalTasks}] Starting: ${task.poseName}`);
-                try {
-                    // Use the uploaded URLs
-                    const imageUrls = validUrls;
+            elements.loading.classList.remove('visible');
+            console.log(`✅ Model images uploaded: ${modelUrls.length}`);
 
+            // PRE-UPLOAD: Upload all product images ONCE per look (not per task)
+            console.log('📤 Pre-uploading product images for all looks...');
+            const lookProductUrls = {}; // { lookId: [urls] }
+            const lookThumbnails = {}; // { lookId: [thumbnails] }
+
+            await Promise.all(selectedLooks.map(async (look) => {
+                const allImages = [
+                    ...look.heroImages.filter(i => i.selected),
+                    ...look.looksImages.filter(i => i.selected)
+                ];
+
+                if (allImages.length === 0) return;
+
+                console.log(`  📤 Uploading ${allImages.length} images for ${look.name}...`);
+
+                const urls = await Promise.all(allImages.map(async (img) => {
+                    const fullDataUrl = await fileToDataUrl(img.file);
+                    const result = await api.uploadBase64(fullDataUrl);
+                    return result.url;
+                }));
+
+                lookProductUrls[look.id] = urls;
+                lookThumbnails[look.id] = allImages.map(i => i.thumbnail);
+                console.log(`  ✅ ${look.name}: ${urls.length} images uploaded`);
+            }));
+
+            console.log('✅ All product images pre-uploaded');
+
+            // Process tasks with true parallel concurrency (rolling queue)
+            const CONCURRENCY = 10; // 10 concurrent generation tasks
+
+            async function processTask(task, taskIndex) {
+                console.log(`🔄 [${taskIndex + 1}/${totalTasks}] ${task.lookName} - ${task.poseName}`);
+
+                try {
+                    // Use pre-uploaded URLs (no upload needed!)
+                    const productUrls = lookProductUrls[task.lookId] || [];
+                    const thumbnails = lookThumbnails[task.lookId] || [];
+
+                    // Get product description (use cached analysis or analyze now)
+                    let productDescription = task.lookName;
+                    if (task.analysis) {
+                        productDescription = task.analysis;
+                        console.log(`  📋 Using cached analysis`);
+                    } else if (productUrls.length > 0) {
+                        console.log(`  🔍 Analyzing...`);
+                        try {
+                            const analysisPrompt = `Describe ALL the fashion products shown across these ${productUrls.length} images. For each distinct product, note what it is and key visual details (color, material, style). Ignore mannequins, hangers, or display props. Format as a flowing description. Keep it under 100 words total.`;
+                            const analysisResult = await fetch('/api/analyze', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ images: productUrls, prompt: analysisPrompt })
+                            });
+                            const analysisData = await analysisResult.json();
+                            if (analysisData.content) {
+                                productDescription = analysisData.content;
+                            }
+                        } catch (err) {
+                            console.log(`  ⚠️ Analysis failed`);
+                        }
+                    }
+
+                    // Build final prompt
+                    let finalPrompt = task.promptTemplate.replace('[PRODUCT_DESCRIPTION]', productDescription);
+                    if (task.customPrompt) {
+                        finalPrompt += `. ${task.customPrompt}`;
+                    }
+
+                    // Generate image
+                    const imageUrls = [...modelUrls, ...productUrls];
                     const params = {
-                        prompt: task.prompt,
+                        prompt: finalPrompt,
                         image_urls: imageUrls,
                         num_images: 1,
                         aspect_ratio: state.aspectRatio,
@@ -1624,44 +2602,70 @@ Respond ONLY with valid JSON:
                         output_format: 'png'
                     };
 
-                    console.log(`📤 [Task ${taskIndex + 1}] Calling API with ${imageUrls.length} images`);
-                    const data = await api.remixImage('nanobanana-edit', params);
-                    console.log(`📥 [Task ${taskIndex + 1}] API Response:`, data);
+                    const data = await api.remixImage(state.selectedModel, params);
 
                     if (data.images && data.images.length > 0) {
-                        console.log(`✅ [Task ${taskIndex + 1}] Got ${data.images.length} images`);
                         data.images.forEach(img => {
                             state.results.push({
                                 url: img.url,
-                                prompt: task.prompt,
+                                prompt: finalPrompt,
+                                lookName: task.lookName,
                                 poseName: task.poseName,
-                                poseId: task.poseId,
-                                outfit: outfitDescription,
-                                aspectRatio: state.aspectRatio
+                                aspectRatio: state.aspectRatio,
+                                sourceImages: productUrls,
+                                sourceThumbnails: thumbnails
                             });
                         });
-                        console.log(`🎨 [Task ${taskIndex + 1}] Total results now:`, state.results.length);
                         renderResults();
-                    } else {
-                        console.warn(`⚠️ [Task ${taskIndex + 1}] No images in response:`, data);
+                        console.log(`  ✅ Done`);
                     }
+
+                    return { success: true, taskIndex };
                 } catch (error) {
-                    console.error(`❌ [Task ${taskIndex + 1}] Generation error:`, error);
+                    console.error(`❌ [${task.lookName}] Error:`, error);
+                    return { success: false, taskIndex, error };
                 }
+            }
 
-                completed++;
-                elements.progressCount.textContent = `${completed} / ${totalTasks}`;
-                elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
-            }));
+            // Rolling concurrent queue - starts new task as soon as one finishes
+            const runConcurrent = async (tasks, concurrency) => {
+                let index = 0;
+                const results = [];
 
-            console.log('🏁 [Generate] All tasks complete. Total results:', state.results.length);
+                const runNext = async () => {
+                    if (index >= tasks.length) return;
+                    const currentIndex = index++;
+                    const result = await processTask(tasks[currentIndex], currentIndex);
+                    results.push(result);
+
+                    // Update progress
+                    completed++;
+                    elements.progressCount.textContent = `${completed} / ${totalTasks}`;
+                    elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+
+                    // Start next task immediately
+                    await runNext();
+                };
+
+                // Start initial batch of concurrent tasks
+                const workers = Array(Math.min(concurrency, tasks.length))
+                    .fill(null)
+                    .map(() => runNext());
+
+                await Promise.all(workers);
+                return results;
+            };
+
+            await runConcurrent(tasks, CONCURRENCY);
+
+            console.log('🏁 Batch complete. Total results:', state.results.length);
+            stopStudioMessages();
             elements.progressSection.classList.remove('visible');
             elements.resultsSection.classList.add('visible');
             updateCalculator();
         }
 
         function renderResults() {
-            // Convert aspect ratio to CSS aspect-ratio
             const getAspectCSS = (ar) => {
                 if (ar === '3:4') return '3/4';
                 if (ar === '4:3') return '4/3';
@@ -1671,18 +2675,23 @@ Respond ONLY with valid JSON:
 
             elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
                 <div class="result-card" onclick="openLightbox(${idx})" style="aspect-ratio: ${getAspectCSS(result.aspectRatio || '3:4')};">
-                    <img src="${result.url}" alt="Result ${idx + 1}" class="result-image">
-                    <span class="model-tag">${result.poseName}</span>
+                    <img src="${result.url}" alt="Result ${idx + 1}">
+                    <span class="result-tag">${result.lookName} - ${result.poseName}</span>
                 </div>
             `).join('');
         }
 
-        // Lightbox
+        // Lightbox state
+        let lightboxRemixModel = 'nano';
+        let lightboxLoaderInterval = null;
+
         window.openLightbox = function(index) {
             state.lightboxIndex = index;
             updateLightboxContent();
             elements.lightbox.classList.add('visible');
             document.body.style.overflow = 'hidden';
+            // Clear edit input when opening
+            document.getElementById('lightbox-edit-input').value = '';
         };
 
         function updateLightboxContent() {
@@ -1691,14 +2700,224 @@ Respond ONLY with valid JSON:
             const current = state.lightboxIndex + 1;
 
             elements.lightboxImage.src = result.url;
+            elements.lightboxLook.textContent = result.lookName;
             elements.lightboxPose.textContent = result.poseName;
             elements.lightboxPrompt.textContent = result.prompt;
             document.getElementById('lightbox-counter').textContent = `${current} / ${total}`;
 
-            // Update nav button states (disable at boundaries)
+            // Display source images using thumbnails for faster loading
+            if (result.sourceThumbnails && result.sourceThumbnails.length > 0) {
+                elements.lightboxSourceImages.innerHTML = result.sourceThumbnails.map(thumb =>
+                    `<img src="${thumb}" alt="Source">`
+                ).join('');
+            } else if (result.sourceImages && result.sourceImages.length > 0) {
+                // Fallback to full URLs if no thumbnails
+                elements.lightboxSourceImages.innerHTML = result.sourceImages.map(url =>
+                    `<img src="${url}" alt="Source">`
+                ).join('');
+            } else {
+                elements.lightboxSourceImages.innerHTML = '<span style="color: var(--slate); font-size: var(--text-xs);">No source images</span>';
+            }
+
+            // Display history if exists
+            const historySection = document.getElementById('lightbox-history-section');
+            const historyContainer = document.getElementById('lightbox-history');
+
+            // Initialize selected history index (current = last)
+            if (!result.hasOwnProperty('selectedHistoryIndex')) {
+                result.selectedHistoryIndex = -1; // -1 means current image
+            }
+
+            if (result.history && result.history.length > 0) {
+                historySection.style.display = 'block';
+                const historyHtml = result.history.map((histItem, idx) =>
+                    `<div class="lightbox-history-item ${result.selectedHistoryIndex === idx ? 'selected' : ''}"
+                         onclick="selectHistoryItem(${idx})" title="Version ${idx + 1}">
+                        <img src="${histItem.url}" alt="Version ${idx + 1}">
+                    </div>`
+                ).join('');
+                const currentHtml = `<div class="lightbox-history-item ${result.selectedHistoryIndex === -1 ? 'selected' : ''}"
+                     onclick="selectHistoryItem(-1)" title="Current">
+                    <img src="${result.url}" alt="Current">
+                </div>`;
+                historyContainer.innerHTML = historyHtml + currentHtml;
+            } else {
+                historySection.style.display = 'none';
+            }
+
             document.getElementById('lightbox-prev').disabled = state.lightboxIndex === 0;
             document.getElementById('lightbox-next').disabled = state.lightboxIndex === total - 1;
         }
+
+        // Toggle prompt section collapse
+        window.togglePromptSection = function() {
+            const section = document.getElementById('lightbox-prompt-section');
+            section.classList.toggle('collapsed');
+        };
+
+        // Set lightbox remix model
+        window.setLightboxModel = function(model) {
+            lightboxRemixModel = model;
+            document.querySelectorAll('.lightbox-model-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.model === model);
+            });
+        };
+
+        // Select history item (for remixing)
+        window.selectHistoryItem = function(historyIndex) {
+            const result = state.results[state.lightboxIndex];
+            result.selectedHistoryIndex = historyIndex;
+
+            // Update the displayed image
+            if (historyIndex === -1) {
+                elements.lightboxImage.src = result.url;
+            } else if (result.history && result.history[historyIndex]) {
+                elements.lightboxImage.src = result.history[historyIndex].url;
+            }
+
+            // Update history item styling
+            document.querySelectorAll('.lightbox-history-item').forEach((item, idx) => {
+                const itemIndex = idx < result.history.length ? idx : -1;
+                item.classList.toggle('selected', itemIndex === historyIndex);
+            });
+        };
+
+        // Start lightbox loader messages
+        function startLightboxLoader() {
+            const loader = document.getElementById('lightbox-loader');
+            const loaderText = document.getElementById('lightbox-loader-text');
+            loader.classList.add('visible');
+
+            let lastIndex = -1;
+            const updateMessage = () => {
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastIndex && STUDIO_MESSAGES.length > 1);
+                lastIndex = idx;
+                loaderText.textContent = STUDIO_MESSAGES[idx];
+            };
+            updateMessage();
+            lightboxLoaderInterval = setInterval(updateMessage, 2000);
+        }
+
+        function stopLightboxLoader() {
+            const loader = document.getElementById('lightbox-loader');
+            loader.classList.remove('visible');
+            if (lightboxLoaderInterval) {
+                clearInterval(lightboxLoaderInterval);
+                lightboxLoaderInterval = null;
+            }
+        }
+
+        // Enhance edit prompt for better remix results
+        function enhanceEditPrompt(originalPrompt, editRequest) {
+            // Build a clear, direct edit instruction
+            return `${originalPrompt}. Modify the image: ${editRequest}. Maintain the same person, pose, and overall composition while applying these changes.`;
+        }
+
+        // Remix current image
+        window.remixCurrentImage = async function() {
+            const editInput = document.getElementById('lightbox-edit-input');
+            const editPrompt = editInput.value.trim();
+
+            if (!editPrompt) {
+                editInput.focus();
+                editInput.placeholder = 'Please enter edit instructions...';
+                return;
+            }
+
+            const result = state.results[state.lightboxIndex];
+            const remixBtn = document.getElementById('lightbox-remix-btn');
+
+            // Determine which image to remix (selected history item or current)
+            let sourceImageUrl = result.url;
+            let sourcePrompt = result.prompt;
+
+            if (result.selectedHistoryIndex !== undefined && result.selectedHistoryIndex !== -1) {
+                const histItem = result.history[result.selectedHistoryIndex];
+                if (histItem) {
+                    sourceImageUrl = histItem.url;
+                    sourcePrompt = histItem.prompt;
+                }
+            }
+
+            // Show loader
+            startLightboxLoader();
+            remixBtn.disabled = true;
+            remixBtn.textContent = 'Remixing...';
+
+            try {
+                // Enhance the prompt for better results
+                const fullPrompt = enhanceEditPrompt(sourcePrompt, editPrompt);
+
+                // Prepare image URLs - selected image + source product images
+                const imageUrls = [sourceImageUrl];
+                if (result.sourceImages) {
+                    imageUrls.push(...result.sourceImages);
+                }
+
+                const params = {
+                    prompt: fullPrompt,
+                    image_urls: imageUrls,
+                    num_images: 1,
+                    aspect_ratio: result.aspectRatio || '3:4',
+                    output_format: 'png'
+                };
+
+                console.log('🔄 Remixing with model:', lightboxRemixModel);
+                console.log('📝 Edit prompt:', editPrompt);
+                console.log('📝 Enhanced prompt:', fullPrompt);
+
+                const data = await api.remixImage(lightboxRemixModel, params);
+
+                if (data.images && data.images.length > 0) {
+                    const newUrl = data.images[0].url;
+
+                    // Save current to history (if not already in history)
+                    if (!result.history) {
+                        result.history = [];
+                    }
+
+                    // Only add to history if it's not already there
+                    const existingUrls = result.history.map(h => h.url);
+                    if (!existingUrls.includes(result.url)) {
+                        result.history.push({
+                            url: result.url,
+                            prompt: result.prompt
+                        });
+                    }
+
+                    // Update result with new image
+                    result.url = newUrl;
+                    result.prompt = fullPrompt;
+                    result.selectedHistoryIndex = -1; // Select the new current
+
+                    // Update display
+                    elements.lightboxImage.src = newUrl;
+                    elements.lightboxPrompt.textContent = fullPrompt;
+
+                    // Update results grid
+                    renderResults();
+
+                    // Update history display
+                    updateLightboxContent();
+
+                    // Clear edit input
+                    editInput.value = '';
+
+                    console.log('✅ Remix complete');
+                }
+            } catch (error) {
+                console.error('❌ Remix failed:', error);
+                alert('Remix failed: ' + error.message);
+            } finally {
+                stopLightboxLoader();
+                remixBtn.disabled = false;
+                remixBtn.textContent = 'Remix';
+                editInput.placeholder = "Describe changes... e.g. 'make the jeans baggier' or 'change background to outdoor'";
+            }
+        };
 
         document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
         elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
@@ -1717,9 +2936,9 @@ Respond ONLY with valid JSON:
             }
         });
 
-        document.getElementById('lightbox-download').addEventListener('click', async () => {
+        document.getElementById('lightbox-download').addEventListener('click', () => {
             const result = state.results[state.lightboxIndex];
-            downloadFile(result.url, `casting-${result.poseName}-${Date.now()}.png`);
+            downloadFile(result.url, `lockgroup-${result.lookName}-${result.poseName}-${Date.now()}.png`);
         });
 
         document.addEventListener('keydown', (e) => {
@@ -1745,40 +2964,50 @@ Respond ONLY with valid JSON:
             elements.errorDiv.classList.add('show');
         }
 
-        // Load default model images
-        async function loadDefaultModels() {
-            // Full body default
-            const fullBodyUrl = '/shared/images/models/default-fullbody.jpg';
-            const portraitUrl = '/shared/images/models/default-portrait.jpg';
-
-            try {
-                // Load full body
-                const fullBodyImg = new Image();
-                fullBodyImg.onload = () => {
-                    state.modelImage = { url: fullBodyUrl, file: null };
-                    elements.modelPreview.innerHTML = `<img src="${fullBodyUrl}" alt="Model Full Body">`;
-                    elements.modelPreview.classList.add('has-image');
-                    updateCalculator();
-                };
-                fullBodyImg.src = fullBodyUrl;
-
-                // Load portrait
-                const portraitImg = new Image();
-                portraitImg.onload = () => {
-                    state.modelImagePortrait = { url: portraitUrl, file: null };
-                    elements.modelPreviewPortrait.innerHTML = `<img src="${portraitUrl}" alt="Model Portrait">`;
-                    elements.modelPreviewPortrait.classList.add('has-image');
-                    updateCalculator();
-                };
-                portraitImg.src = portraitUrl;
-            } catch (e) {
-                console.log('Default model images not found, using placeholders');
-            }
+        // Render Setset models grid
+        function renderSetsetModels() {
+            const grid = document.getElementById('setsetModelsGrid');
+            grid.innerHTML = SETSET_MODELS.map(model => `
+                <div class="setset-model-card ${state.setsetModels.includes(model.id) ? 'selected' : ''}"
+                     data-model-id="${model.id}" onclick="toggleSetsetModel('${model.id}')">
+                    <img src="${model.image}" alt="${model.name}" loading="lazy">
+                    <div class="model-name">${model.name}</div>
+                    <div class="model-check">✓</div>
+                </div>
+            `).join('');
         }
+
+        // Toggle Setset model selection
+        window.toggleSetsetModel = function(modelId) {
+            const idx = state.setsetModels.indexOf(modelId);
+            if (idx === -1) {
+                state.setsetModels.push(modelId);
+            } else {
+                state.setsetModels.splice(idx, 1);
+            }
+            renderSetsetModels();
+            updateCalculator();
+        };
+
+        // Model tab switching
+        document.querySelectorAll('.model-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                // Update active tab
+                document.querySelectorAll('.model-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Show corresponding content
+                document.getElementById('tabDiscovered').style.display = tabName === 'discovered' ? 'block' : 'none';
+                document.getElementById('tabUpload').style.display = tabName === 'upload' ? 'block' : 'none';
+                document.getElementById('tabSetset').style.display = tabName === 'setset' ? 'block' : 'none';
+            });
+        });
 
         // Initialize
         initializePoses();
-        loadDefaultModels();
+        renderSetsetModels();
         updateCalculator();
     </script>
 </body>
