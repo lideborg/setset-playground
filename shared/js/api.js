@@ -81,6 +81,24 @@ class API {
 
         return response.json();
     }
+
+    /**
+     * Upload base64 data URL and get hosted URL
+     */
+    async uploadBase64(dataUrl) {
+        const response = await fetch(`${this.baseUrl}/api/upload-base64`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dataUrl })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Upload failed');
+        }
+
+        return response.json();
+    }
 }
 
 // Export singleton

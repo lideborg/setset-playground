@@ -90,6 +90,10 @@ app.post('/api/remix', async (req, res) => {
         const { model, ...params } = req.body;
         const endpoint = MODEL_ENDPOINTS[model];
 
+        console.log('📤 [Remix] Model:', model);
+        console.log('📤 [Remix] Endpoint:', endpoint);
+        console.log('📤 [Remix] Params:', JSON.stringify(params, null, 2));
+
         if (!endpoint) {
             return res.status(400).json({ error: `Unknown model: ${model}` });
         }
@@ -105,13 +109,17 @@ app.post('/api/remix', async (req, res) => {
 
         const data = await response.json();
 
+        console.log('📥 [Remix] Response status:', response.status);
+        console.log('📥 [Remix] Response:', JSON.stringify(data, null, 2));
+
         if (!response.ok) {
-            return res.status(response.status).json({ error: data.error || 'Remix failed' });
+            console.error('❌ [Remix] API Error:', data);
+            return res.status(response.status).json({ error: data.detail || data.error || 'Remix failed', details: data });
         }
 
         res.json(data);
     } catch (error) {
-        console.error('Remix error:', error);
+        console.error('❌ [Remix] Server error:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -246,6 +254,55 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
         });
 
         const data = await response.json();
+
+        if (!response.ok) {
+            return res.status(response.status).json({ error: data.error || 'Upload failed' });
+        }
+
+        res.json({ url: data.url });
+    } catch (error) {
+        console.error('Upload error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/upload-base64
+ * Upload base64 image to fal.ai storage
+ */
+app.post('/api/upload-base64', async (req, res) => {
+    try {
+        const { dataUrl } = req.body;
+
+        if (!dataUrl) {
+            return res.status(400).json({ error: 'No dataUrl provided' });
+        }
+
+        // Extract base64 data and mime type
+        const matches = dataUrl.match(/^data:(.+);base64,(.+)$/);
+        if (!matches) {
+            return res.status(400).json({ error: 'Invalid data URL format' });
+        }
+
+        const mimeType = matches[1];
+        const base64Data = matches[2];
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        console.log(`📤 [Upload] Uploading ${buffer.length} bytes, type: ${mimeType}`);
+
+        // Upload to fal.ai storage
+        const response = await fetch('https://fal.ai/api/storage/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Key ${FAL_API_KEY}`,
+                'Content-Type': mimeType
+            },
+            body: buffer
+        });
+
+        const data = await response.json();
+
+        console.log(`📥 [Upload] Response:`, data);
 
         if (!response.ok) {
             return res.status(response.status).json({ error: data.error || 'Upload failed' });

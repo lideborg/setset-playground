@@ -47,6 +47,12 @@
           "file": "/research/01_AESTHETICS_RESEARCH/MENSWEAR_LUXURY_AESTHETICS.md",
           "summary": "Comprehensive guide to men's luxury fashion brands: Loro Piana, Brunello Cucinelli, Tom Ford, Zegna, and more. Styling archetypes, poses, and prompt templates.",
           "tags": ["menswear", "luxury", "tailoring"]
+        },
+        {
+          "title": "Bottega Veneta Social Strategy",
+          "file": "/research/01_AESTHETICS_RESEARCH/BOTTEGA_VENETA_SOCIAL_STRATEGY.md",
+          "summary": "Bottega Veneta's radical anti-social media strategy: deleted Instagram (2.5M followers), launched 'Issue' digital journal, achieved 70% higher popularity through exclusivity, scarcity, and editorial-first content.",
+          "tags": ["social media", "strategy", "editorial", "luxury"]
         }
       ]
     },
@@ -207,6 +213,12 @@
           "file": "/research/05_SOCIAL_MEDIA_STRATEGY/Caption_Writing_Storytelling_Fashion_Tech_Content.md",
           "summary": "30+ hook formulas, hashtag strategies, 50+ CTA examples, voice development.",
           "tags": ["captions", "copywriting", "storytelling"]
+        },
+        {
+          "title": "Carousel Post Sequence Strategy",
+          "file": "/research/05_SOCIAL_MEDIA_STRATEGY/CAROUSEL_POST_SEQUENCE_STRATEGY.md",
+          "summary": "Data-backed carousel sequence framework for fashion editorial: optimal slide counts (2-3 vs 8-10), slide-by-slide formulas, luxury vs fast fashion strategies, video vs static performance, engagement benchmarks (2.07% for 10-slide carousels).",
+          "tags": ["carousel", "instagram", "engagement", "strategy"]
         }
       ]
     },

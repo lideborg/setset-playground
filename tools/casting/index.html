@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casting</title>
+    <title>LockGroup v001</title>
     <link rel="stylesheet" href="/shared/css/tokens.css">
     <link rel="stylesheet" href="/shared/css/base.css">
     <link rel="stylesheet" href="/shared/css/components.css">
@@ -50,6 +50,18 @@
             display: flex;
             gap: var(--space-md);
             align-items: flex-start;
+        }
+
+        .model-upload-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .model-slot-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
         }
 
         .model-preview {
@@ -116,64 +128,106 @@
 
         .poses-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: var(--space-xs);
+            grid-template-columns: repeat(10, 1fr);
+            gap: var(--space-2xs);
         }
 
         .pose-card {
-            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
             border-radius: var(--radius-md);
             overflow: hidden;
-            cursor: pointer;
-            position: relative;
-            border: 2px solid transparent;
+            border: 2px solid var(--gainsboro);
             transition: all var(--transition-fast);
+            background: var(--white);
         }
 
-        .pose-card:hover {
-            border-color: var(--ash-grey);
-        }
-
-        .pose-card.selected {
+        .pose-card.active {
             border-color: var(--jet);
         }
 
-        .pose-card img {
+        .pose-card-image {
+            aspect-ratio: 3/4;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .pose-card-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
         .pose-card .pose-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
-            color: var(--white);
-            font-size: var(--text-2xs);
-            padding: var(--space-2xs) var(--space-xs);
+            font-size: 9px;
+            padding: 3px 2px;
             text-align: center;
+            background: var(--off-white);
+            color: var(--slate);
+            border-top: 1px solid var(--gainsboro);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .pose-card .pose-check {
+        .pose-card .pose-count {
             position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 20px;
-            height: 20px;
+            top: 3px;
+            right: 3px;
+            min-width: 14px;
+            height: 14px;
             background: var(--jet);
             color: var(--white);
-            border-radius: 50%;
+            border-radius: 7px;
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 0 3px;
         }
 
-        .pose-card.selected .pose-check {
+        .pose-card.active .pose-count {
             display: flex;
         }
+
+        .pose-slider-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 4px;
+            background: var(--off-white);
+        }
+
+        .pose-slider {
+            width: 95%;
+            -webkit-appearance: none;
+            height: 2px;
+            background: var(--gainsboro);
+            border-radius: 1px;
+            outline: none;
+            margin: 0;
+        }
+
+        .pose-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .pose-slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
 
         /* Products Upload */
         .products-row {
@@ -259,12 +313,13 @@
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: var(--space-xs);
         }
 
         .product-thumb {
-            aspect-ratio: 1;
+            aspect-ratio: 3/4;
+            width: 100%;
             border-radius: var(--radius-sm);
             overflow: hidden;
             position: relative;
@@ -423,6 +478,37 @@
             margin-top: var(--space-lg);
         }
 
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            background: var(--off-white);
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-card .model-tag {
+            position: absolute;
+            bottom: var(--space-xs);
+            left: var(--space-xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-2xs);
+        }
+
         /* Error */
         .error {
             display: none;
@@ -443,12 +529,74 @@
         input[type="file"] {
             display: none;
         }
+
+        .notes-input {
+            width: 100%;
+            min-height: 60px;
+            padding: var(--space-sm);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            font-family: var(--font-sans);
+            font-size: var(--text-sm);
+            resize: vertical;
+            background: var(--white);
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .notes-input::placeholder {
+            color: var(--ash-grey);
+        }
+
+        /* Lightbox nav overrides */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--white);
+            z-index: 10;
+            border-radius: 50%;
+            transition: background var(--transition-fast);
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-nav.prev {
+            left: var(--space-md);
+        }
+
+        .lightbox-nav.next {
+            right: calc(33.33% + var(--space-md));
+        }
+
+        .lightbox-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .lightbox-counter {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="hero">
-            <h1>Casting</h1>
+            <h1>LockGroup</h1>
             <p class="hero-subtitle">Create styled looks from product folders</p>
         </div>
 
@@ -461,15 +609,30 @@
                 <span class="step-title">Upload Model Reference</span>
             </div>
             <div class="model-upload-area">
-                <div class="model-preview" id="modelPreview">
-                    <div class="model-preview-placeholder">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <div>Click or drop<br>model image</div>
+                <div class="model-upload-slot">
+                    <div class="model-preview" id="modelPreview" data-type="fullbody">
+                        <div class="model-preview-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <div>Full Body</div>
+                        </div>
                     </div>
+                    <div class="model-slot-label">Full Body</div>
+                </div>
+                <div class="model-upload-slot">
+                    <div class="model-preview" id="modelPreviewPortrait" data-type="portrait">
+                        <div class="model-preview-placeholder">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <div>Portrait</div>
+                        </div>
+                    </div>
+                    <div class="model-slot-label">Portrait (optional)</div>
                 </div>
                 <input type="file" id="modelInput" accept="image/*">
+                <input type="file" id="modelInputPortrait" accept="image/*">
             </div>
         </div>
 
@@ -533,10 +696,19 @@
             </div>
         </div>
 
-        <!-- Step 4: Analyze -->
+        <!-- Step 4: Notes -->
         <div class="step-section">
             <div class="step-header">
                 <span class="step-number">4</span>
+                <span class="step-title">Styling Notes (Optional)</span>
+            </div>
+            <textarea class="notes-input" id="stylingNotes" placeholder="Add any styling notes or exclusions, e.g., 'no sunglasses', 'casual vibe', 'model should not wear the black bag'..."></textarea>
+        </div>
+
+        <!-- Step 5: Analyze -->
+        <div class="step-section">
+            <div class="step-header">
+                <span class="step-number">5</span>
                 <span class="step-title">Analyze Products</span>
             </div>
             <div class="analysis-section">
@@ -548,10 +720,10 @@
             </div>
         </div>
 
-        <!-- Step 5: Generate -->
+        <!-- Step 6: Generate -->
         <div class="step-section" style="border-bottom: none;">
             <div class="step-header">
-                <span class="step-number">5</span>
+                <span class="step-number">6</span>
                 <span class="step-title">Generate Images</span>
             </div>
             <div class="generate-section">
@@ -564,17 +736,18 @@
                         </div>
                     </div>
                     <div class="setting-group">
+                        <label class="setting-label">Aspect Ratio</label>
+                        <div class="btn-group" id="aspect-buttons">
+                            <button class="btn btn--toggle active" data-value="3:4">3:4</button>
+                            <button class="btn btn--toggle" data-value="1:1">1:1</button>
+                            <button class="btn btn--toggle" data-value="4:3">4:3</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
                         <label class="setting-label">Resolution</label>
                         <div class="btn-group" id="resolution-buttons">
                             <button class="btn btn--toggle active" data-value="1K">1K</button>
                             <button class="btn btn--toggle" data-value="2K">2K</button>
-                        </div>
-                    </div>
-                    <div class="setting-group">
-                        <label class="setting-label">Seeds</label>
-                        <div class="slider-box">
-                            <input type="range" class="slider" id="seeds-slider" min="1" max="4" value="1">
-                            <span class="slider-value" id="seeds-value">1</span>
                         </div>
                     </div>
                 </div>
@@ -617,6 +790,7 @@
                 <img src="" alt="" class="lightbox-image" id="lightbox-image">
             </div>
             <div class="lightbox-right">
+                <div class="lightbox-counter" id="lightbox-counter">1 / 1</div>
                 <div class="lightbox-section">
                     <h3 class="lightbox-section-title">Pose</h3>
                     <p class="lightbox-model-text" id="lightbox-pose"></p>
@@ -645,12 +819,13 @@
         // State
         const state = {
             modelImage: null,
-            selectedPoses: [],
+            modelImagePortrait: null,
+            poseCounts: {}, // { poseId: count } - how many images per pose
             heroImages: [],
             looksImages: [],
             analysisResults: [],
+            aspectRatio: '3:4',
             resolution: '1K',
-            seeds: 1,
             results: [],
             lightboxIndex: 0
         };
@@ -658,7 +833,9 @@
         // DOM Elements
         const elements = {
             modelPreview: document.getElementById('modelPreview'),
+            modelPreviewPortrait: document.getElementById('modelPreviewPortrait'),
             modelInput: document.getElementById('modelInput'),
+            modelInputPortrait: document.getElementById('modelInputPortrait'),
             posesContainer: document.getElementById('posesContainer'),
             heroDropZone: document.getElementById('heroDropZone'),
             looksDropZone: document.getElementById('looksDropZone'),
@@ -674,8 +851,6 @@
             generateBtn: document.getElementById('generateBtn'),
             calcDisplay: document.getElementById('calc-display'),
             costValue: document.getElementById('cost-value'),
-            seedsSlider: document.getElementById('seeds-slider'),
-            seedsValue: document.getElementById('seeds-value'),
             resolutionButtons: document.getElementById('resolution-buttons'),
             progressSection: document.getElementById('progress-section'),
             progressCount: document.getElementById('progress-count'),
@@ -716,69 +891,113 @@
 
             elements.posesContainer.innerHTML = pdpHtml + lifestyleHtml;
 
-            // Add click handlers
-            elements.posesContainer.querySelectorAll('.pose-card').forEach(card => {
-                card.addEventListener('click', () => togglePose(card.dataset.id));
-                card.addEventListener('mouseenter', () => {
-                    const pose = POSES.find(p => p.id === card.dataset.id);
-                    if (pose && pose.hoverImage) {
-                        card.querySelector('img').src = pose.hoverImage;
-                    }
+            // Add slider handlers
+            elements.posesContainer.querySelectorAll('.pose-slider').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const poseId = e.target.dataset.pose;
+                    const count = parseInt(e.target.value);
+                    updatePoseCount(poseId, count);
                 });
-                card.addEventListener('mouseleave', () => {
-                    const pose = POSES.find(p => p.id === card.dataset.id);
-                    if (pose && pose.defaultImage) {
-                        card.querySelector('img').src = pose.defaultImage;
-                    }
+            });
+
+            // Build pose lookup map for fast access (avoid .find() on every hover)
+            const poseMap = {};
+            POSES.forEach(p => poseMap[p.id] = p);
+
+            // Add hover handlers for image preview
+            elements.posesContainer.querySelectorAll('.pose-card-image').forEach(imageContainer => {
+                const card = imageContainer.closest('.pose-card');
+                const poseId = card.dataset.id;
+                const pose = poseMap[poseId];
+                const img = imageContainer.querySelector('img');
+
+                if (pose && pose.hoverImage) {
+                    imageContainer.addEventListener('mouseenter', () => {
+                        img.src = pose.hoverImage;
+                    });
+                    imageContainer.addEventListener('mouseleave', () => {
+                        img.src = pose.defaultImage;
+                    });
+                }
+
+                // Click on image sets slider to 1 (or 0 if already active)
+                imageContainer.addEventListener('click', () => {
+                    const currentCount = state.poseCounts[poseId] || 0;
+                    const newCount = currentCount > 0 ? 0 : 1;
+                    const slider = card.querySelector('.pose-slider');
+                    slider.value = newCount;
+                    updatePoseCount(poseId, newCount);
                 });
             });
         }
 
         function createPoseCard(pose) {
+            // Initialize pose count to 0
+            state.poseCounts[pose.id] = 0;
             return `
                 <div class="pose-card" data-id="${pose.id}">
-                    <img src="${pose.defaultImage}" alt="${pose.name}">
-                    <span class="pose-name">${pose.name}</span>
-                    <span class="pose-check">✓</span>
+                    <div class="pose-card-image">
+                        <img src="${pose.defaultImage}" alt="${pose.name}">
+                        <span class="pose-count" data-count="${pose.id}">0</span>
+                    </div>
+                    <div class="pose-name">${pose.name}</div>
+                    <div class="pose-slider-row">
+                        <input type="range" class="pose-slider" data-pose="${pose.id}" min="0" max="4" value="0">
+                    </div>
                 </div>
             `;
         }
 
-        function togglePose(poseId) {
+        function updatePoseCount(poseId, count) {
+            state.poseCounts[poseId] = count;
             const card = elements.posesContainer.querySelector(`[data-id="${poseId}"]`);
-            const index = state.selectedPoses.indexOf(poseId);
+            const countBadge = card.querySelector(`[data-count="${poseId}"]`);
 
-            if (index > -1) {
-                state.selectedPoses.splice(index, 1);
-                card.classList.remove('selected');
+            countBadge.textContent = count;
+
+            if (count > 0) {
+                card.classList.add('active');
             } else {
-                state.selectedPoses.push(poseId);
-                card.classList.add('selected');
+                card.classList.remove('active');
             }
 
             updateCalculator();
         }
 
-        // Model upload
+        // Model upload - Full Body
         elements.modelPreview.addEventListener('click', () => elements.modelInput.click());
         elements.modelInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                handleModelUpload(e.target.files[0]);
+                handleModelUpload(e.target.files[0], 'fullbody');
             }
         });
 
-        function handleModelUpload(file) {
+        // Model upload - Portrait
+        elements.modelPreviewPortrait.addEventListener('click', () => elements.modelInputPortrait.click());
+        elements.modelInputPortrait.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleModelUpload(e.target.files[0], 'portrait');
+            }
+        });
+
+        function handleModelUpload(file, type = 'fullbody') {
             const reader = new FileReader();
             reader.onload = (e) => {
-                state.modelImage = { file, url: e.target.result };
-                elements.modelPreview.innerHTML = `<img src="${e.target.result}" alt="Model">`;
-                elements.modelPreview.classList.add('has-image');
+                if (type === 'fullbody') {
+                    state.modelImage = { file, url: e.target.result };
+                    elements.modelPreview.innerHTML = `<img src="${e.target.result}" alt="Model Full Body">`;
+                    elements.modelPreview.classList.add('has-image');
+                } else {
+                    state.modelImagePortrait = { file, url: e.target.result };
+                    elements.modelPreviewPortrait.innerHTML = `<img src="${e.target.result}" alt="Model Portrait">`;
+                    elements.modelPreviewPortrait.classList.add('has-image');
+                }
                 updateCalculator();
             };
             reader.readAsDataURL(file);
         }
 
-        // Drag and drop for model
+        // Drag and drop for model - Full Body
         elements.modelPreview.addEventListener('dragover', (e) => {
             e.preventDefault();
             elements.modelPreview.style.borderColor = 'var(--jet)';
@@ -791,7 +1010,24 @@
             elements.modelPreview.style.borderColor = '';
             const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             if (files.length > 0) {
-                handleModelUpload(files[0]);
+                handleModelUpload(files[0], 'fullbody');
+            }
+        });
+
+        // Drag and drop for model - Portrait
+        elements.modelPreviewPortrait.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.modelPreviewPortrait.style.borderColor = 'var(--jet)';
+        });
+        elements.modelPreviewPortrait.addEventListener('dragleave', () => {
+            elements.modelPreviewPortrait.style.borderColor = '';
+        });
+        elements.modelPreviewPortrait.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.modelPreviewPortrait.style.borderColor = '';
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) {
+                handleModelUpload(files[0], 'portrait');
             }
         });
 
@@ -898,38 +1134,49 @@
         window.selectAll = function(type) {
             const images = type === 'hero' ? state.heroImages : state.looksImages;
             images.forEach(img => img.selected = true);
-            renderProductGrid(type);
+            renderProductGrid(type, false); // Fast update, just classes
             updateCalculator();
         };
 
         window.deselectAll = function(type) {
             const images = type === 'hero' ? state.heroImages : state.looksImages;
             images.forEach(img => img.selected = false);
-            renderProductGrid(type);
+            renderProductGrid(type, false); // Fast update, just classes
             updateCalculator();
         };
 
-        function renderProductGrid(type) {
+        function renderProductGrid(type, fullRender = true) {
             const images = type === 'hero' ? state.heroImages : state.looksImages;
             const grid = type === 'hero' ? elements.heroGrid : elements.looksGrid;
 
-            grid.innerHTML = images.map((img, idx) => `
-                <div class="product-thumb ${img.selected ? 'selected' : 'deselected'}" data-index="${idx}" data-type="${type}">
-                    <img src="${img.url}" alt="${img.name}">
-                    <span class="product-check">✓</span>
-                </div>
-            `).join('');
+            if (fullRender) {
+                grid.innerHTML = images.map((img, idx) => `
+                    <div class="product-thumb ${img.selected ? 'selected' : 'deselected'}" data-index="${idx}" data-type="${type}">
+                        <img src="${img.url}" alt="${img.name}">
+                        <span class="product-check">✓</span>
+                    </div>
+                `).join('');
 
-            grid.querySelectorAll('.product-thumb').forEach(thumb => {
-                thumb.addEventListener('click', () => {
+                // Use event delegation on the grid instead of individual listeners
+                grid.onclick = (e) => {
+                    const thumb = e.target.closest('.product-thumb');
+                    if (!thumb) return;
                     const idx = parseInt(thumb.dataset.index);
                     const t = thumb.dataset.type;
                     const imgs = t === 'hero' ? state.heroImages : state.looksImages;
                     imgs[idx].selected = !imgs[idx].selected;
-                    renderProductGrid(t);
+                    // Just toggle classes, don't re-render
+                    thumb.classList.toggle('selected', imgs[idx].selected);
+                    thumb.classList.toggle('deselected', !imgs[idx].selected);
                     updateCalculator();
+                };
+            } else {
+                // Just update classes without re-rendering
+                grid.querySelectorAll('.product-thumb').forEach((thumb, idx) => {
+                    thumb.classList.toggle('selected', images[idx].selected);
+                    thumb.classList.toggle('deselected', !images[idx].selected);
                 });
-            });
+            }
         }
 
         // File inputs
@@ -948,6 +1195,15 @@
         setupDropZone(elements.heroDropZone, elements.heroGrid, elements.heroPlaceholder, 'hero');
         setupDropZone(elements.looksDropZone, elements.looksGrid, elements.looksPlaceholder, 'looks');
 
+        // Aspect ratio buttons
+        document.getElementById('aspect-buttons').addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                document.getElementById('aspect-buttons').querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.aspectRatio = e.target.dataset.value;
+            }
+        });
+
         // Resolution buttons
         elements.resolutionButtons.addEventListener('click', (e) => {
             if (e.target.classList.contains('btn--toggle')) {
@@ -958,17 +1214,9 @@
             }
         });
 
-        // Seeds slider
-        elements.seedsSlider.addEventListener('input', (e) => {
-            state.seeds = parseInt(e.target.value);
-            elements.seedsValue.textContent = state.seeds;
-            updateCalculator();
-        });
-
-        // Calculator - NEW LOGIC: poses × seeds = total images (products merged into ONE outfit)
+        // Calculator - total images = sum of all pose counts
         function updateCalculator() {
             const hasModel = state.modelImage !== null;
-            const numPoses = state.selectedPoses.length;
             const selectedHero = state.heroImages.filter(i => i.selected);
             const selectedLooks = state.looksImages.filter(i => i.selected);
             const numHero = selectedHero.length;
@@ -977,8 +1225,9 @@
             // Enable analyze button if we have at least one hero product
             elements.analyzeBtn.disabled = numHero === 0;
 
-            // Calculate total images: poses × seeds (all products merged into one outfit)
-            const totalImages = numPoses * state.seeds;
+            // Calculate total images: sum of all pose counts
+            const totalImages = Object.values(state.poseCounts).reduce((sum, count) => sum + count, 0);
+            const activePoses = Object.entries(state.poseCounts).filter(([_, count]) => count > 0);
 
             // Calculate cost (Nano Banana = $0.15 per image, 2K = double)
             let costPerImage = 0.15;
@@ -986,18 +1235,19 @@
             const totalCost = totalImages * costPerImage;
 
             // Build display text
-            let displayText = `${numPoses} poses × ${state.seeds} seeds = ${totalImages} images`;
-            if (numHero > 0 || numLooks > 0) {
-                const outfitParts = [];
-                if (numHero > 0) outfitParts.push(`${numHero} hero`);
-                if (numLooks > 0) outfitParts.push(`${numLooks} accessories`);
-                displayText = `${numPoses} poses × ${state.seeds} seeds = ${totalImages} images (outfit: ${outfitParts.join(' + ')})`;
+            let displayText = `${totalImages} images`;
+            if (activePoses.length > 0) {
+                const poseBreakdown = activePoses.map(([poseId, count]) => {
+                    const pose = POSES.find(p => p.id === poseId);
+                    return `${count}× ${pose?.name || poseId}`;
+                }).join(', ');
+                displayText = `${totalImages} images (${poseBreakdown})`;
             }
             elements.calcDisplay.textContent = displayText;
             elements.costValue.textContent = formatCost(totalCost);
 
-            // Need model, at least one pose, at least one hero product, and analysis done
-            elements.generateBtn.disabled = !hasModel || numPoses === 0 || numHero === 0 || state.analysisResults.length === 0;
+            // Need model, at least one image to generate, at least one hero product, and analysis done
+            elements.generateBtn.disabled = !hasModel || totalImages === 0 || numHero === 0 || state.analysisResults.length === 0;
         }
 
         // Analyze products
@@ -1067,9 +1317,19 @@
 
 2. PRODUCT CATEGORY: coat, jacket, dress, pants, skirt, bag, shoes, boots, sunglasses, jewelry, scarf, hat, etc.
 
-3. DETAILED DESCRIPTION for AI image generation (color, material, texture, style, silhouette, key details)
+3. DETAILED DESCRIPTION for AI image generation. CRITICAL - Include ALL of these details:
+   - Color and material (e.g., "charcoal wool", "black leather")
+   - FIT: oversized, relaxed, slim, fitted, boxy, cropped, etc.
+   - LENGTH: extra long, floor-length, ankle-length, cropped, midi, etc.
+   - SILHOUETTE: wide-leg, straight-leg, tapered, A-line, etc.
+   - For PANTS especially: note if they pool at ankles, have break, are hemmed short
+   - Key construction details (pleats, seams, pockets, closures)
 
-4. PROMPT FRAGMENT: How to describe this item when dressing a model (e.g., "camel wool belted wrap coat with wide notched lapels and self-tie belt")
+4. PROMPT FRAGMENT: A concise but SPECIFIC description for dressing a model.
+   IMPORTANT: Always include fit and length. Examples:
+   - "oversized charcoal wool trousers with extra-long wide legs pooling at the ankles"
+   - "relaxed-fit cream linen pants with soft pleats and straight leg"
+   - "slim black tailored trousers cropped above the ankle"
 
 Respond ONLY with valid JSON:
 {
@@ -1077,7 +1337,9 @@ Respond ONLY with valid JSON:
     "category": "string",
     "description": "string",
     "promptFragment": "string",
-    "stylingNotes": "string (only if imageType is styling_reference - describe the overall styling aesthetic)"
+    "stylingNotes": "string (only if imageType is styling_reference - describe the overall styling aesthetic)",
+    "background": "string (only if styling_reference - describe the background/setting: studio color, environment, props)",
+    "lighting": "string (only if styling_reference - describe lighting: soft, harsh, directional, natural, studio flash, shadows)"
 }`
                     })
                 });
@@ -1126,13 +1388,15 @@ Respond ONLY with valid JSON:
             }
 
             if (stylingRefs.length > 0) {
-                html += `<div class="analysis-group"><div class="analysis-group-title">Styling Reference</div>`;
+                html += `<div class="analysis-group"><div class="analysis-group-title">Styling Reference (Background & Lighting)</div>`;
                 html += stylingRefs.map(result => `
                     <div class="analysis-item styling-ref">
                         <img src="${result.image.url}" alt="" class="analysis-thumb">
                         <div class="analysis-content">
                             <div class="analysis-category">STYLING REFERENCE</div>
                             <div class="analysis-description">${result.stylingNotes || result.description}</div>
+                            ${result.background ? `<div class="analysis-description" style="margin-top: 4px;"><strong>Background:</strong> ${result.background}</div>` : ''}
+                            ${result.lighting ? `<div class="analysis-description" style="margin-top: 2px;"><strong>Lighting:</strong> ${result.lighting}</div>` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -1174,13 +1438,12 @@ Respond ONLY with valid JSON:
 
             const parts = [];
 
-            // Hero product (main garment) - e.g., "wearing a camel wool belted coat"
+            // Hero product - use FIRST one only (multiple images are just for reference angles)
             if (heroProducts.length > 0) {
-                const heroDesc = heroProducts.map(p => p.promptFragment).join(' layered with ');
-                parts.push(`wearing ${heroDesc}`);
+                parts.push(`wearing ${heroProducts[0].promptFragment}`);
             }
 
-            // Accessories - organized by category
+            // Accessories - organized by category (use first of each type)
             const bagItems = accessories.filter(a => ['bag', 'handbag', 'tote', 'purse', 'clutch'].some(c => a.category.toLowerCase().includes(c)));
             const shoeItems = accessories.filter(a => ['shoes', 'boots', 'heels', 'sneakers', 'sandals', 'loafers'].some(c => a.category.toLowerCase().includes(c)));
             const eyewearItems = accessories.filter(a => ['sunglasses', 'glasses', 'eyewear'].some(c => a.category.toLowerCase().includes(c)));
@@ -1189,32 +1452,58 @@ Respond ONLY with valid JSON:
             );
 
             if (bagItems.length > 0) {
-                parts.push(`holding ${bagItems.map(b => b.promptFragment).join(' and ')}`);
+                parts.push(`holding ${bagItems[0].promptFragment}`);
             }
             if (shoeItems.length > 0) {
-                parts.push(`with ${shoeItems.map(s => s.promptFragment).join(' and ')}`);
+                parts.push(`with ${shoeItems[0].promptFragment}`);
             }
             if (eyewearItems.length > 0) {
-                parts.push(`wearing ${eyewearItems.map(e => e.promptFragment).join(' and ')}`);
+                parts.push(`wearing ${eyewearItems[0].promptFragment}`);
             }
             if (otherAccessories.length > 0) {
                 parts.push(`accessorized with ${otherAccessories.map(o => o.promptFragment).join(', ')}`);
             }
 
-            // Styling reference notes
-            if (stylingRefs.length > 0) {
-                const stylingNote = stylingRefs[0].stylingNotes || stylingRefs[0].description;
-                parts.push(`styled in ${stylingNote}`);
+            // Add user's custom styling notes
+            const userNotes = document.getElementById('stylingNotes').value.trim();
+            if (userNotes) {
+                parts.push(userNotes);
             }
 
             return parts.join(', ');
+        }
+
+        // Get environment description from styling reference
+        function getEnvironmentFromStylingRef() {
+            const stylingRefs = state.analysisResults.filter(r => r.imageType === 'styling_reference');
+            if (stylingRefs.length === 0) {
+                return null;
+            }
+            const ref = stylingRefs[0];
+            const envParts = [];
+            if (ref.background) {
+                envParts.push(ref.background);
+            }
+            if (ref.lighting) {
+                envParts.push(ref.lighting);
+            }
+            return envParts.length > 0 ? envParts.join('. ') : null;
         }
 
         // Generate images
         elements.generateBtn.addEventListener('click', generateImages);
 
         async function generateImages() {
-            if (!state.modelImage || state.selectedPoses.length === 0 || state.analysisResults.length === 0) return;
+            console.log('🚀 [Generate] Starting generation...');
+            const totalImages = Object.values(state.poseCounts).reduce((sum, count) => sum + count, 0);
+            console.log('📊 [Generate] Total images to generate:', totalImages);
+            console.log('📊 [Generate] Model image:', state.modelImage ? 'YES' : 'NO');
+            console.log('📊 [Generate] Analysis results:', state.analysisResults.length);
+
+            if (!state.modelImage || totalImages === 0 || state.analysisResults.length === 0) {
+                console.warn('⚠️ [Generate] Blocked - missing requirements');
+                return;
+            }
 
             elements.errorDiv.classList.remove('show');
             state.results = [];
@@ -1223,27 +1512,48 @@ Respond ONLY with valid JSON:
             // Build the combined outfit description (ONE for all poses)
             const outfitDescription = buildOutfitDescription();
 
-            // Build all generation tasks - one per pose
+            // Get environment from styling reference (if available)
+            const environment = getEnvironmentFromStylingRef();
+
+            // Build all generation tasks - based on pose counts
             const tasks = [];
 
-            for (const poseId of state.selectedPoses) {
+            for (const [poseId, count] of Object.entries(state.poseCounts)) {
+                if (count === 0) continue;
+
                 const pose = POSES.find(p => p.id === poseId);
-                const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'];
+                const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'] || [];
 
-                // Get one prompt variation and inject the outfit
-                const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
-                const prompt = promptTemplate.replace('[PRODUCT_DESCRIPTION]', outfitDescription);
+                if (prompts.length === 0) {
+                    console.warn(`No prompts found for pose: ${poseId}`);
+                    continue;
+                }
 
-                tasks.push({
-                    poseId,
-                    poseName: pose.name,
-                    prompt,
-                    seeds: state.seeds
-                });
+                // Create 'count' number of tasks for this pose
+                for (let i = 0; i < count; i++) {
+                    // Get a random prompt variation and inject the outfit
+                    const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
+                    let prompt = promptTemplate.replace('[PRODUCT_DESCRIPTION]', outfitDescription);
+
+                    // If we have environment from styling ref, append it to override default lighting
+                    if (environment) {
+                        prompt += ` Environment and lighting from reference: ${environment}`;
+                    }
+
+                    tasks.push({
+                        poseId,
+                        poseName: pose.name,
+                        prompt,
+                        imageIndex: i + 1
+                    });
+                }
             }
 
             const totalTasks = tasks.length;
             let completed = 0;
+
+            console.log('📋 [Generate] Tasks created:', totalTasks);
+            console.log('📋 [Generate] Tasks:', tasks.map(t => `${t.poseName} #${t.imageIndex}`));
 
             elements.progressSection.classList.add('visible');
             elements.progressCount.textContent = `0 / ${totalTasks}`;
@@ -1255,37 +1565,88 @@ Respond ONLY with valid JSON:
                 .filter(r => r.imageType !== 'styling_reference')
                 .map(r => r.image.url);
 
+            console.log('🖼️ [Generate] Product images:', productImages.length);
+
+            // Upload all images to fal.ai storage first (convert data URLs to hosted URLs)
+            console.log('📤 [Generate] Uploading images to fal.ai storage...');
+            elements.loadingText && (elements.loadingText.textContent = 'Uploading images...');
+
+            const allDataUrls = [];
+            allDataUrls.push(state.modelImage.url);
+            if (state.modelImagePortrait) {
+                allDataUrls.push(state.modelImagePortrait.url);
+            }
+            allDataUrls.push(...productImages);
+
+            // Upload all images in parallel, but only if they're data URLs
+            const uploadedUrls = await Promise.all(allDataUrls.map(async (url, idx) => {
+                if (url.startsWith('data:')) {
+                    console.log(`📤 [Upload ${idx + 1}/${allDataUrls.length}] Uploading data URL...`);
+                    try {
+                        const result = await api.uploadBase64(url);
+                        console.log(`✅ [Upload ${idx + 1}] Got URL:`, result.url);
+                        return result.url;
+                    } catch (err) {
+                        console.error(`❌ [Upload ${idx + 1}] Failed:`, err);
+                        return null;
+                    }
+                } else {
+                    // Already a hosted URL
+                    console.log(`✅ [Upload ${idx + 1}] Already hosted:`, url.substring(0, 50));
+                    return url;
+                }
+            }));
+
+            // Filter out failed uploads
+            const validUrls = uploadedUrls.filter(url => url !== null);
+            console.log(`📦 [Generate] ${validUrls.length}/${allDataUrls.length} images uploaded successfully`);
+
+            if (validUrls.length === 0) {
+                showError('Failed to upload images');
+                elements.generateBtn.disabled = false;
+                elements.progressSection.classList.remove('visible');
+                return;
+            }
+
             // Execute all tasks
-            await Promise.all(tasks.map(async (task) => {
+            await Promise.all(tasks.map(async (task, taskIndex) => {
+                console.log(`🔄 [Task ${taskIndex + 1}/${totalTasks}] Starting: ${task.poseName}`);
                 try {
-                    // Model image first, then product images
-                    const imageUrls = [state.modelImage.url, ...productImages];
+                    // Use the uploaded URLs
+                    const imageUrls = validUrls;
 
                     const params = {
                         prompt: task.prompt,
                         image_urls: imageUrls,
-                        num_images: task.seeds,
-                        aspect_ratio: '3:4',
+                        num_images: 1,
+                        aspect_ratio: state.aspectRatio,
                         resolution: state.resolution,
                         output_format: 'png'
                     };
 
+                    console.log(`📤 [Task ${taskIndex + 1}] Calling API with ${imageUrls.length} images`);
                     const data = await api.remixImage('nanobanana-edit', params);
+                    console.log(`📥 [Task ${taskIndex + 1}] API Response:`, data);
 
-                    if (data.images) {
+                    if (data.images && data.images.length > 0) {
+                        console.log(`✅ [Task ${taskIndex + 1}] Got ${data.images.length} images`);
                         data.images.forEach(img => {
                             state.results.push({
                                 url: img.url,
                                 prompt: task.prompt,
                                 poseName: task.poseName,
                                 poseId: task.poseId,
-                                outfit: outfitDescription
+                                outfit: outfitDescription,
+                                aspectRatio: state.aspectRatio
                             });
                         });
+                        console.log(`🎨 [Task ${taskIndex + 1}] Total results now:`, state.results.length);
                         renderResults();
+                    } else {
+                        console.warn(`⚠️ [Task ${taskIndex + 1}] No images in response:`, data);
                     }
                 } catch (error) {
-                    console.error('Generation error:', error);
+                    console.error(`❌ [Task ${taskIndex + 1}] Generation error:`, error);
                 }
 
                 completed++;
@@ -1293,14 +1654,23 @@ Respond ONLY with valid JSON:
                 elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
             }));
 
+            console.log('🏁 [Generate] All tasks complete. Total results:', state.results.length);
             elements.progressSection.classList.remove('visible');
             elements.resultsSection.classList.add('visible');
             updateCalculator();
         }
 
         function renderResults() {
+            // Convert aspect ratio to CSS aspect-ratio
+            const getAspectCSS = (ar) => {
+                if (ar === '3:4') return '3/4';
+                if (ar === '4:3') return '4/3';
+                if (ar === '1:1') return '1/1';
+                return '3/4';
+            };
+
             elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
-                <div class="result-card" onclick="openLightbox(${idx})">
+                <div class="result-card" onclick="openLightbox(${idx})" style="aspect-ratio: ${getAspectCSS(result.aspectRatio || '3:4')};">
                     <img src="${result.url}" alt="Result ${idx + 1}" class="result-image">
                     <span class="model-tag">${result.poseName}</span>
                 </div>
@@ -1317,22 +1687,34 @@ Respond ONLY with valid JSON:
 
         function updateLightboxContent() {
             const result = state.results[state.lightboxIndex];
+            const total = state.results.length;
+            const current = state.lightboxIndex + 1;
+
             elements.lightboxImage.src = result.url;
             elements.lightboxPose.textContent = result.poseName;
             elements.lightboxPrompt.textContent = result.prompt;
+            document.getElementById('lightbox-counter').textContent = `${current} / ${total}`;
+
+            // Update nav button states (disable at boundaries)
+            document.getElementById('lightbox-prev').disabled = state.lightboxIndex === 0;
+            document.getElementById('lightbox-next').disabled = state.lightboxIndex === total - 1;
         }
 
         document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
         elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
 
         document.getElementById('lightbox-prev').addEventListener('click', () => {
-            state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
-            updateLightboxContent();
+            if (state.lightboxIndex > 0) {
+                state.lightboxIndex--;
+                updateLightboxContent();
+            }
         });
 
         document.getElementById('lightbox-next').addEventListener('click', () => {
-            state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
-            updateLightboxContent();
+            if (state.lightboxIndex < state.results.length - 1) {
+                state.lightboxIndex++;
+                updateLightboxContent();
+            }
         });
 
         document.getElementById('lightbox-download').addEventListener('click', async () => {
@@ -1343,8 +1725,14 @@ Respond ONLY with valid JSON:
         document.addEventListener('keydown', (e) => {
             if (!elements.lightbox.classList.contains('visible')) return;
             if (e.key === 'Escape') closeLightbox();
-            else if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
-            else if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
+            else if (e.key === 'ArrowLeft' && state.lightboxIndex > 0) {
+                state.lightboxIndex--;
+                updateLightboxContent();
+            }
+            else if (e.key === 'ArrowRight' && state.lightboxIndex < state.results.length - 1) {
+                state.lightboxIndex++;
+                updateLightboxContent();
+            }
         });
 
         function closeLightbox() {
@@ -1357,8 +1745,40 @@ Respond ONLY with valid JSON:
             elements.errorDiv.classList.add('show');
         }
 
+        // Load default model images
+        async function loadDefaultModels() {
+            // Full body default
+            const fullBodyUrl = '/shared/images/models/default-fullbody.jpg';
+            const portraitUrl = '/shared/images/models/default-portrait.jpg';
+
+            try {
+                // Load full body
+                const fullBodyImg = new Image();
+                fullBodyImg.onload = () => {
+                    state.modelImage = { url: fullBodyUrl, file: null };
+                    elements.modelPreview.innerHTML = `<img src="${fullBodyUrl}" alt="Model Full Body">`;
+                    elements.modelPreview.classList.add('has-image');
+                    updateCalculator();
+                };
+                fullBodyImg.src = fullBodyUrl;
+
+                // Load portrait
+                const portraitImg = new Image();
+                portraitImg.onload = () => {
+                    state.modelImagePortrait = { url: portraitUrl, file: null };
+                    elements.modelPreviewPortrait.innerHTML = `<img src="${portraitUrl}" alt="Model Portrait">`;
+                    elements.modelPreviewPortrait.classList.add('has-image');
+                    updateCalculator();
+                };
+                portraitImg.src = portraitUrl;
+            } catch (e) {
+                console.log('Default model images not found, using placeholders');
+            }
+        }
+
         // Initialize
         initializePoses();
+        loadDefaultModels();
         updateCalculator();
     </script>
 </body>
