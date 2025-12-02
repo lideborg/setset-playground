@@ -2291,8 +2291,8 @@
             });
         }
 
-        // Compress image for upload - resize to max 1500px on longest side
-        function compressImageForUpload(file, maxSize = 1500) {
+        // Compress image for upload - resize to max 2300px on longest side (optimized for 2K output)
+        function compressImageForUpload(file, maxSize = 2300) {
             return new Promise((resolve) => {
                 const img = new Image();
                 const url = URL.createObjectURL(file);
@@ -2897,10 +2897,10 @@ Keep it under 100 words total. Focus on the actual products only.`;
 
                 // Handle discovered model images from TWIN folder
                 if (selectedModelImages.length > 0) {
-                    console.log(`📤 Uploading ${selectedModelImages.length} discovered model images (compressing to 1500px)...`);
+                    console.log(`📤 Uploading ${selectedModelImages.length} discovered model images (compressing to 2300px)...`);
                     for (const modelImg of selectedModelImages) {
                         // Compress and upload
-                        const compressedDataUrl = await compressImageForUpload(modelImg.file, 1500);
+                        const compressedDataUrl = await compressImageForUpload(modelImg.file, 2300);
                         const result = await api.uploadBase64(compressedDataUrl);
                         modelUrls.push(result.url);
                         console.log(`  ✅ Uploaded: ${modelImg.name}`);
@@ -2943,9 +2943,9 @@ Keep it under 100 words total. Focus on the actual products only.`;
             // Upload reference image if provided (for lighting/shadows consistency)
             let referenceUrl = null;
             if (state.referenceImage && state.referenceImage.file) {
-                console.log('📤 Uploading reference image for lighting/shadows (compressing to 1500px)...');
+                console.log('📤 Uploading reference image for lighting/shadows (compressing to 2300px)...');
                 try {
-                    const compressedDataUrl = await compressImageForUpload(state.referenceImage.file, 1500);
+                    const compressedDataUrl = await compressImageForUpload(state.referenceImage.file, 2300);
                     const result = await api.uploadBase64(compressedDataUrl);
                     referenceUrl = result.url;
                     console.log('✅ Reference image uploaded:', referenceUrl);
@@ -2982,10 +2982,10 @@ Keep it under 100 words total. Focus on the actual products only.`;
                 console.log(`      Front poses: ${frontImages.length} images (${frontOnlyCount} front + ${allCount} all)`);
                 console.log(`      Back pose: ${backImages.length} images (${backOnlyCount} back + ${allCount} all)`);
 
-                // Upload front images (compressed to 1500px)
+                // Upload front images (compressed to 2300px)
                 if (frontImages.length > 0) {
                     const frontUrls = await Promise.all(frontImages.map(async (img) => {
-                        const compressedDataUrl = await compressImageForUpload(img.file, 1500);
+                        const compressedDataUrl = await compressImageForUpload(img.file, 2300);
                         const result = await api.uploadBase64(compressedDataUrl);
                         return result.url;
                     }));
@@ -2993,10 +2993,10 @@ Keep it under 100 words total. Focus on the actual products only.`;
                     lookFrontThumbnails[look.id] = frontImages.map(i => i.thumbnail);
                 }
 
-                // Upload back images (compressed to 1500px)
+                // Upload back images (compressed to 2300px)
                 if (backImages.length > 0) {
                     const backUrls = await Promise.all(backImages.map(async (img) => {
-                        const compressedDataUrl = await compressImageForUpload(img.file, 1500);
+                        const compressedDataUrl = await compressImageForUpload(img.file, 2300);
                         const result = await api.uploadBase64(compressedDataUrl);
                         return result.url;
                     }));
@@ -3199,7 +3199,7 @@ Keep it under 100 words total. Focus on the actual products only.`;
                 if (slot >= 4) break;
 
                 // Read file and compress
-                const dataUrl = await compressImageForUpload(file, 1500);
+                const dataUrl = await compressImageForUpload(file, 2300);
                 lightboxRefImages[slot] = dataUrl;
                 updateRefSlotUI(slot);
                 slot++;

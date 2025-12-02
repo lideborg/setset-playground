@@ -84,6 +84,7 @@ class API {
 
     /**
      * Upload base64 data URL and get hosted URL
+     * @returns {Promise<{url: string}>} Object with hosted URL
      */
     async uploadBase64(dataUrl) {
         const response = await fetch(`${this.baseUrl}/api/upload-base64`, {
@@ -113,6 +114,26 @@ class API {
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'BG Replace failed');
+        }
+
+        return response.json();
+    }
+
+    /**
+     * Analyze images using GPT-4 Vision
+     * @param {string[]} images - Array of image URLs or data URLs
+     * @param {string} prompt - Analysis prompt
+     */
+    async analyzeImages(images, prompt) {
+        const response = await fetch(`${this.baseUrl}/api/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ images, prompt })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Analysis failed');
         }
 
         return response.json();

@@ -103,6 +103,12 @@
             filter: grayscale(100%);
         }
 
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
         /* Idea Section */
         .idea-section {
             margin-bottom: var(--space-sm);
@@ -536,6 +542,7 @@
         let secondaryImages = new Array(10).fill(null);
         let batchImages = new Array(10).fill(null);
         let referenceImage = null;  // Single lighting reference image
+        let pasteTarget = null;  // { type: 'primary'|'secondary'|'batch', index: number }
         let state = {
             selectedModel: 'nanopro',
             aspectRatio: '3:4',
@@ -618,18 +625,41 @@
             slot.dataset.type = type;
             slot.addEventListener('click', (e) => {
                 const images = getImagesArray(type);
-                // If slot has image, toggle selection; otherwise open upload
+                // If slot has image, toggle selection; otherwise set as paste target
                 if (images[index]) {
                     // Don't toggle if clicking on remove button
                     if (e.target.closest('.remove-btn')) return;
                     toggleImage(index, type, !images[index].selected);
                 } else {
+                    // Single click: set as paste target (for Cmd+V)
+                    setPasteTarget(type, index);
+                }
+            });
+            // Double-click opens file picker
+            slot.addEventListener('dblclick', (e) => {
+                const images = getImagesArray(type);
+                if (!images[index]) {
                     const input = getInput(type);
                     input.click();
                     input.dataset.targetSlot = index;
                 }
             });
             return slot;
+        }
+
+        function setPasteTarget(type, index) {
+            // Clear previous paste target
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+
+            // Set new paste target
+            pasteTarget = { type, index };
+            const grid = getGrid(type);
+            grid.children[index].classList.add('paste-ready');
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = null;
         }
 
         // Drag and drop
@@ -1174,6 +1204,27 @@
             if (e.key === 'Escape') closeLightbox();
             else if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
             else if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
+        });
+
+        // Clipboard paste handler
+        document.addEventListener('paste', async (e) => {
+            // Only handle if we have a paste target
+            if (!pasteTarget) return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        handleFileUpload([file], pasteTarget.type, pasteTarget.index);
+                        clearPasteTarget();
+                    }
+                    break;
+                }
+            }
         });
 
         function closeLightbox() {
