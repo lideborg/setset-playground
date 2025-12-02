@@ -99,6 +99,24 @@ class API {
 
         return response.json();
     }
+
+    /**
+     * Replace background using Bria AI
+     */
+    async bgReplace(params) {
+        const response = await fetch(`${this.baseUrl}/api/bg-replace`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'BG Replace failed');
+        }
+
+        return response.json();
+    }
 }
 
 // Export singleton

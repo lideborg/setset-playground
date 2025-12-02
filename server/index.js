@@ -29,7 +29,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // Serve static files from parent directory
 app.use(express.static(join(__dirname, '..')));
@@ -52,7 +53,10 @@ const MODEL_ENDPOINTS = {
     'nanobanana-pro-edit': 'https://fal.run/fal-ai/nano-banana-pro/edit',
     'flux2-redux': 'https://fal.run/fal-ai/flux-2-flex/edit',
     'nano': 'https://fal.run/fal-ai/nano-banana/edit',
-    'nano-pro': 'https://fal.run/fal-ai/nano-banana-pro/edit'
+    'nano-pro': 'https://fal.run/fal-ai/nano-banana-pro/edit',
+
+    // Background Replace
+    'bria-bg-replace': 'https://fal.run/fal-ai/bria/background/replace'
 };
 
 /**
@@ -129,6 +133,43 @@ app.post('/api/remix', async (req, res) => {
         res.json(data);
     } catch (error) {
         console.error('❌ [Remix] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/bg-replace
+ * Replace backgrounds using Bria AI
+ */
+app.post('/api/bg-replace', async (req, res) => {
+    try {
+        const params = req.body;
+        const endpoint = MODEL_ENDPOINTS['bria-bg-replace'];
+
+        console.log('📤 [BG Replace] Params:', JSON.stringify(params, null, 2));
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Key ${FAL_API_KEY}`
+            },
+            body: JSON.stringify(params)
+        });
+
+        const data = await response.json();
+
+        console.log('📥 [BG Replace] Response status:', response.status);
+        console.log('📥 [BG Replace] Response:', JSON.stringify(data, null, 2));
+
+        if (!response.ok) {
+            console.error('❌ [BG Replace] API Error:', data);
+            return res.status(response.status).json({ error: data.detail || data.error || 'BG Replace failed', details: data });
+        }
+
+        res.json(data);
+    } catch (error) {
+        console.error('❌ [BG Replace] Server error:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -323,7 +364,7 @@ app.post('/api/upload-base64', async (req, res) => {
 /**
  * Clean URL routing - redirect tool names to /?tool=name
  */
-const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'angles', 'research', 'lockgroup'];
+const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'angles', 'research', 'lockgroup', 'bg-replace'];
 
 app.get('/:tool', (req, res, next) => {
     const tool = req.params.tool;

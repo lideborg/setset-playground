@@ -229,6 +229,76 @@
             grid-template-columns: repeat(10, 1fr);
         }
 
+        /* Reference Image Section */
+        .reference-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .reference-box {
+            width: 120px;
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: var(--space-2xs);
+        }
+
+        .reference-box:hover {
+            border-color: var(--jet);
+        }
+
+        .reference-box.filled {
+            border-style: solid;
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .reference-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .reference-box .placeholder-icon {
+            font-size: 24px;
+            color: var(--gainsboro);
+        }
+
+        .reference-box .placeholder-text {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+        }
+
+        .reference-box .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .reference-box.filled:hover .remove-btn {
+            display: flex;
+        }
+
         /* Dim secondary when batch has images */
         .images-row.batch-active .images-column:last-child {
             opacity: 0.3;
@@ -281,6 +351,16 @@
             <div class="section-label">Batch (Optional) <span class="section-hint">— All batch images are combined with each primary</span></div>
             <div class="upload-grid upload-grid--batch" id="batchGrid" data-type="batch"></div>
             <input type="file" id="batchInput" accept="image/*" multiple>
+        </div>
+
+        <!-- Reference Image -->
+        <div class="reference-section">
+            <div class="section-label">Lighting Reference (Optional) <span class="section-hint">— Match lighting & shadows from this image</span></div>
+            <div class="reference-box" id="referenceBox">
+                <span class="placeholder-icon">+</span>
+                <span class="placeholder-text">Add image</span>
+            </div>
+            <input type="file" id="referenceInput" accept="image/*">
         </div>
 
         <!-- Idea Section -->
@@ -431,7 +511,7 @@
             nano: {
                 name: 'Nano',
                 endpoint: 'nanobanana-edit',
-                costPerImage: 0.04,
+                costPerImage: 0.15,
                 hasResolution: false,
                 hasAspectRatio: true
             },
@@ -439,13 +519,13 @@
                 name: 'Nano Pro',
                 endpoint: 'nanobanana-pro-edit',
                 costPerImage: 0.15,
-                hasResolution: true,  // 1K, 2K, 4K
+                hasResolution: true,  // 1K, 2K
                 hasAspectRatio: true
             },
             flux2: {
                 name: 'Flux 2',
                 endpoint: 'flux2-redux',
-                costPerImage: 0.08,
+                costPerImage: 0.15,
                 hasResolution: false,
                 hasAspectRatio: false
             }
@@ -455,6 +535,7 @@
         let primaryImages = new Array(10).fill(null);
         let secondaryImages = new Array(10).fill(null);
         let batchImages = new Array(10).fill(null);
+        let referenceImage = null;  // Single lighting reference image
         let state = {
             selectedModel: 'nanopro',
             aspectRatio: '3:4',
@@ -497,7 +578,9 @@
             ideaInput: document.getElementById('idea-input'),
             ideaPromptsSlider: document.getElementById('idea-prompts-slider'),
             ideaPromptsValue: document.getElementById('idea-prompts-value'),
-            ideaGenerateBtn: document.getElementById('idea-generate-btn')
+            ideaGenerateBtn: document.getElementById('idea-generate-btn'),
+            referenceBox: document.getElementById('referenceBox'),
+            referenceInput: document.getElementById('referenceInput')
         };
 
         // Initialize grids
@@ -578,6 +661,41 @@
             handleFileUpload(Array.from(e.target.files), 'batch', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
             e.target.value = '';
         });
+
+        // Reference image handlers
+        elements.referenceBox.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-btn')) return;
+            if (referenceImage) {
+                // If already has image, clicking replaces it
+            }
+            elements.referenceInput.click();
+        });
+
+        elements.referenceInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                referenceImage = { file, url: ev.target.result };
+                elements.referenceBox.classList.add('filled');
+                elements.referenceBox.innerHTML = `
+                    <img src="${ev.target.result}" alt="Reference">
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeReferenceImage()">&times;</button>
+                `;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        window.removeReferenceImage = function() {
+            referenceImage = null;
+            elements.referenceBox.classList.remove('filled');
+            elements.referenceBox.innerHTML = `
+                <span class="placeholder-icon">+</span>
+                <span class="placeholder-text">Add image</span>
+            `;
+        };
 
         function handleFileUpload(files, type, startIndex) {
             const images = getImagesArray(type);
@@ -775,6 +893,12 @@
         // Generate
         elements.generateBtn.addEventListener('click', handleGenerate);
 
+        // Helper to upload base64 image and get fal.ai URL
+        async function uploadImageToFal(dataUrl) {
+            const response = await api.uploadBase64(dataUrl);
+            return response.url;
+        }
+
         async function handleGenerate() {
             elements.errorDiv.classList.remove('show');
 
@@ -802,6 +926,61 @@
             state.results = [];
             elements.resultsGrid.innerHTML = '';
 
+            // Upload all images to fal.ai first (convert base64 to hosted URLs)
+            console.log('📤 Uploading images to fal.ai...');
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = 'Uploading images...';
+            elements.progressBar.style.width = '0%';
+
+            try {
+                // Upload primary images
+                for (const img of selectedPrimary) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded primary image`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+
+                // Upload secondary images
+                for (const img of selectedSecondary) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded secondary image`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+
+                // Upload batch images
+                for (const img of selectedBatch) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded batch image`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+
+                // Upload reference image if present
+                if (referenceImage) {
+                    if (referenceImage.url.startsWith('data:')) {
+                        referenceImage.hostedUrl = await uploadImageToFal(referenceImage.url);
+                        console.log(`  ✅ Uploaded reference image`);
+                    } else {
+                        referenceImage.hostedUrl = referenceImage.url;
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Image upload failed:', error);
+                showError('Failed to upload images: ' + error.message);
+                elements.progressSection.classList.remove('visible');
+                return;
+            }
+
+            console.log('📤 All images uploaded!');
+
             // Build all tasks
             const allTasks = [];
             const modelKey = state.selectedModel;
@@ -809,9 +988,14 @@
             if (useBatchMode) {
                 // Batch mode: each primary + ALL batch images together × each prompt
                 selectedPrimary.forEach((primaryImg, pIdx) => {
-                    // Combine primary with ALL batch images
-                    const imageUrls = [primaryImg.url, ...selectedBatch.map(b => b.url)];
-                    const sourceImages = [primaryImg.url, ...selectedBatch.map(b => b.url)];
+                    // Combine primary with ALL batch images - use hostedUrl for API, url for display
+                    let imageUrls = [primaryImg.hostedUrl, ...selectedBatch.map(b => b.hostedUrl)];
+                    let sourceImages = [primaryImg.url, ...selectedBatch.map(b => b.url)];
+                    // Add reference image if present
+                    if (referenceImage && referenceImage.hostedUrl) {
+                        imageUrls.push(referenceImage.hostedUrl);
+                        sourceImages.push(referenceImage.url);
+                    }
                     const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
                     prompts.forEach((prompt, promptIdx) => {
                         allTasks.push({
@@ -832,8 +1016,14 @@
                 selectedPrimary.forEach((primaryImg, pIdx) => {
                     const secondaryToUse = selectedSecondary.length > 0 ? selectedSecondary : [null];
                     secondaryToUse.forEach((secondaryImg, sIdx) => {
-                        const imageUrls = secondaryImg ? [primaryImg.url, secondaryImg.url] : [primaryImg.url];
-                        const sourceImages = secondaryImg ? [primaryImg.url, secondaryImg.url] : [primaryImg.url];
+                        // Use hostedUrl for API, url for display
+                        let imageUrls = secondaryImg ? [primaryImg.hostedUrl, secondaryImg.hostedUrl] : [primaryImg.hostedUrl];
+                        let sourceImages = secondaryImg ? [primaryImg.url, secondaryImg.url] : [primaryImg.url];
+                        // Add reference image if present
+                        if (referenceImage && referenceImage.hostedUrl) {
+                            imageUrls.push(referenceImage.hostedUrl);
+                            sourceImages.push(referenceImage.url);
+                        }
                         const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
                         prompts.forEach((prompt, promptIdx) => {
                             allTasks.push({
