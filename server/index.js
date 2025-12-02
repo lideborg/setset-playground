@@ -48,10 +48,11 @@ const MODEL_ENDPOINTS = {
     'nanobanana': 'https://fal.run/fal-ai/nano-banana-pro',
 
     // Image to Image (Remix)
+    'nanobanana-edit': 'https://fal.run/fal-ai/nano-banana/edit',
+    'nanobanana-pro-edit': 'https://fal.run/fal-ai/nano-banana-pro/edit',
+    'flux2-redux': 'https://fal.run/fal-ai/flux-2-flex/edit',
     'nano': 'https://fal.run/fal-ai/nano-banana/edit',
-    'nano-pro': 'https://fal.run/fal-ai/nano-banana-pro/edit',
-    'nanobanana-edit': 'https://fal.run/fal-ai/nano-banana-pro/edit', // legacy alias
-    'flux2-redux': 'https://fal.run/fal-ai/flux-2-flex/edit'
+    'nano-pro': 'https://fal.run/fal-ai/nano-banana-pro/edit'
 };
 
 /**
@@ -322,7 +323,7 @@ app.post('/api/upload-base64', async (req, res) => {
 /**
  * Clean URL routing - redirect tool names to /?tool=name
  */
-const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'angles', 'research', 'casting'];
+const TOOL_ROUTES = ['generate', 'remix', 'looks', 'styling', 'angles', 'research', 'lockgroup'];
 
 app.get('/:tool', (req, res, next) => {
     const tool = req.params.tool;
@@ -345,7 +346,7 @@ app.listen(PORT, () => {
 ╠════════════════════════════════════════════════╣
 ║  Local:   http://localhost:${PORT}                ║
 ║                                                ║
-║  Tools:  /generate, /remix, /casting           ║
+║  Tools:  /generate, /remix, /lockgroup          ║
 ║          /research                             ║
 ║                                                ║
 ║  API:    /api/generate, /api/remix             ║

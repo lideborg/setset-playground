@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Remix</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
     <link rel="stylesheet" href="/shared/css/tokens.css">
     <link rel="stylesheet" href="/shared/css/base.css">
     <link rel="stylesheet" href="/shared/css/components.css">
@@ -93,27 +94,6 @@
             display: flex;
         }
 
-        .upload-slot .checkbox-wrapper {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        .upload-slot .checkbox-wrapper input[type="checkbox"] {
-            width: 12px;
-            height: 12px;
-            cursor: pointer;
-            margin: 0;
-        }
 
         .upload-slot.deselected {
             opacity: 0.4;
@@ -183,6 +163,25 @@
         }
 
         /* Results */
+        .result-image {
+            aspect-ratio: 3/4;
+        }
+
+        /* Source images in lightbox */
+        .lightbox-source-images {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .lightbox-source-images img {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
         .result-card .model-tag {
             position: absolute;
             bottom: var(--space-2xs);
@@ -213,6 +212,27 @@
 
         input[type="file"] {
             display: none;
+        }
+
+        /* Batch Section */
+        .batch-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .section-hint {
+            font-weight: 400;
+            color: var(--ash-grey);
+            font-size: var(--text-xs);
+        }
+
+        .upload-grid--batch {
+            grid-template-columns: repeat(10, 1fr);
+        }
+
+        /* Dim secondary when batch has images */
+        .images-row.batch-active .images-column:last-child {
+            opacity: 0.3;
+            pointer-events: none;
         }
 
         /* Custom lightbox overrides */
@@ -256,6 +276,13 @@
             </div>
         </div>
 
+        <!-- Batch Row -->
+        <div class="batch-section">
+            <div class="section-label">Batch (Optional) <span class="section-hint">— All batch images are combined with each primary</span></div>
+            <div class="upload-grid upload-grid--batch" id="batchGrid" data-type="batch"></div>
+            <input type="file" id="batchInput" accept="image/*" multiple>
+        </div>
+
         <!-- Idea Section -->
         <div class="idea-section">
             <div class="section-label">Idea</div>
@@ -283,9 +310,10 @@
             <!-- Models -->
             <div class="settings-row">
                 <div class="setting-group flex-1">
-                    <label class="setting-label">Models (select multiple)</label>
+                    <label class="setting-label">Model</label>
                     <div class="btn-group" id="model-buttons">
-                        <button class="btn btn--toggle active" data-model="nanobanana">Nano Banana</button>
+                        <button class="btn btn--toggle" data-model="nano">Nano</button>
+                        <button class="btn btn--toggle active" data-model="nanopro">Nano Pro</button>
                         <button class="btn btn--toggle" data-model="flux2">Flux 2</button>
                     </div>
                 </div>
@@ -307,16 +335,19 @@
                 </div>
             </div>
 
-            <!-- Resolution & Seeds -->
-            <div class="settings-row">
+            <!-- Resolution (only for Nano Pro) -->
+            <div class="settings-row" id="resolution-row">
                 <div class="setting-group">
                     <label class="setting-label">Resolution</label>
                     <div class="btn-group" id="resolution-buttons">
-                        <button class="btn btn--toggle active" data-value="1K">1K</button>
-                        <button class="btn btn--toggle" data-value="2K">2K</button>
+                        <button class="btn btn--toggle" data-value="1K">1K</button>
+                        <button class="btn btn--toggle active" data-value="2K">2K</button>
                     </div>
                 </div>
+            </div>
 
+            <!-- Seeds -->
+            <div class="settings-row">
                 <div class="setting-group">
                     <label class="setting-label">Seeds</label>
                     <div class="slider-box">
@@ -374,6 +405,10 @@
                     <h3 class="lightbox-section-title">Prompt</h3>
                     <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
                 </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Source Images</h3>
+                    <div class="lightbox-source-images" id="lightbox-source-images"></div>
+                </div>
                 <button class="lightbox-download" id="lightbox-download">Download Image</button>
             </div>
         </div>
@@ -393,27 +428,37 @@
     <script>
         // Remix-specific model configs (image-to-image)
         const REMIX_MODELS = {
-            nanobanana: {
-                name: 'Nano Banana',
+            nano: {
+                name: 'Nano',
                 endpoint: 'nanobanana-edit',
+                costPerImage: 0.04,
+                hasResolution: false,
+                hasAspectRatio: true
+            },
+            nanopro: {
+                name: 'Nano Pro',
+                endpoint: 'nanobanana-pro-edit',
                 costPerImage: 0.15,
-                usesAspectRatio: true
+                hasResolution: true,  // 1K, 2K, 4K
+                hasAspectRatio: true
             },
             flux2: {
                 name: 'Flux 2',
                 endpoint: 'flux2-redux',
                 costPerImage: 0.08,
-                usesAspectRatio: false
+                hasResolution: false,
+                hasAspectRatio: false
             }
         };
 
         // State
         let primaryImages = new Array(10).fill(null);
         let secondaryImages = new Array(10).fill(null);
+        let batchImages = new Array(10).fill(null);
         let state = {
-            selectedModels: ['nanobanana'],
+            selectedModel: 'nanopro',
             aspectRatio: '3:4',
-            resolution: '1K',
+            resolution: '2K',
             seeds: 1,
             ideaNumPrompts: 4,
             results: [],
@@ -424,8 +469,11 @@
         const elements = {
             primaryGrid: document.getElementById('primaryGrid'),
             secondaryGrid: document.getElementById('secondaryGrid'),
+            batchGrid: document.getElementById('batchGrid'),
             primaryInput: document.getElementById('primaryInput'),
             secondaryInput: document.getElementById('secondaryInput'),
+            batchInput: document.getElementById('batchInput'),
+            imagesRow: document.querySelector('.images-row'),
             promptTextarea: document.getElementById('promptTextarea'),
             modelButtons: document.getElementById('model-buttons'),
             aspectButtons: document.getElementById('aspect-buttons'),
@@ -445,6 +493,7 @@
             lightboxImage: document.getElementById('lightbox-image'),
             lightboxModel: document.getElementById('lightbox-model'),
             lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxSourceImages: document.getElementById('lightbox-source-images'),
             ideaInput: document.getElementById('idea-input'),
             ideaPromptsSlider: document.getElementById('idea-prompts-slider'),
             ideaPromptsValue: document.getElementById('idea-prompts-value'),
@@ -456,7 +505,26 @@
             for (let i = 0; i < 10; i++) {
                 elements.primaryGrid.appendChild(createUploadSlot(i, 'primary'));
                 elements.secondaryGrid.appendChild(createUploadSlot(i, 'secondary'));
+                elements.batchGrid.appendChild(createUploadSlot(i, 'batch'));
             }
+        }
+
+        function getImagesArray(type) {
+            if (type === 'primary') return primaryImages;
+            if (type === 'secondary') return secondaryImages;
+            if (type === 'batch') return batchImages;
+        }
+
+        function getGrid(type) {
+            if (type === 'primary') return elements.primaryGrid;
+            if (type === 'secondary') return elements.secondaryGrid;
+            if (type === 'batch') return elements.batchGrid;
+        }
+
+        function getInput(type) {
+            if (type === 'primary') return elements.primaryInput;
+            if (type === 'secondary') return elements.secondaryInput;
+            if (type === 'batch') return elements.batchInput;
         }
 
         function createUploadSlot(index, type) {
@@ -465,10 +533,18 @@
             slot.innerHTML = '+';
             slot.dataset.index = index;
             slot.dataset.type = type;
-            slot.addEventListener('click', () => {
-                const input = type === 'primary' ? elements.primaryInput : elements.secondaryInput;
-                input.click();
-                input.dataset.targetSlot = index;
+            slot.addEventListener('click', (e) => {
+                const images = getImagesArray(type);
+                // If slot has image, toggle selection; otherwise open upload
+                if (images[index]) {
+                    // Don't toggle if clicking on remove button
+                    if (e.target.closest('.remove-btn')) return;
+                    toggleImage(index, type, !images[index].selected);
+                } else {
+                    const input = getInput(type);
+                    input.click();
+                    input.dataset.targetSlot = index;
+                }
             });
             return slot;
         }
@@ -498,9 +574,14 @@
             e.target.value = '';
         });
 
+        elements.batchInput.addEventListener('change', (e) => {
+            handleFileUpload(Array.from(e.target.files), 'batch', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
+            e.target.value = '';
+        });
+
         function handleFileUpload(files, type, startIndex) {
-            const images = type === 'primary' ? primaryImages : secondaryImages;
-            const grid = type === 'primary' ? elements.primaryGrid : elements.secondaryGrid;
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
 
             files.forEach((file, i) => {
                 let index = startIndex !== null ? startIndex : images.findIndex((img, idx) => !img && idx >= i);
@@ -513,35 +594,40 @@
                     slot.classList.add('filled');
                     slot.innerHTML = `
                         <img src="${e.target.result}" alt="Image ${index + 1}">
-                        <div class="checkbox-wrapper" onclick="event.stopPropagation()">
-                            <input type="checkbox" checked onchange="toggleImage(${index}, '${type}', this.checked)">
-                        </div>
                         <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${index}, '${type}')">&times;</button>
                     `;
                     updateCalculator();
+                    updateBatchActiveState();
                 };
                 reader.readAsDataURL(file);
             });
         }
 
         window.toggleImage = function(index, type, checked) {
-            const images = type === 'primary' ? primaryImages : secondaryImages;
-            const grid = type === 'primary' ? elements.primaryGrid : elements.secondaryGrid;
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
             if (images[index]) {
                 images[index].selected = checked;
                 grid.children[index].classList.toggle('deselected', !checked);
                 updateCalculator();
+                updateBatchActiveState();
             }
         };
 
         window.removeImage = function(index, type) {
-            const images = type === 'primary' ? primaryImages : secondaryImages;
-            const grid = type === 'primary' ? elements.primaryGrid : elements.secondaryGrid;
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
             images.splice(index, 1);
             images.push(null);
             rerenderGrid(images, grid, type);
             updateCalculator();
+            updateBatchActiveState();
         };
+
+        function updateBatchActiveState() {
+            const hasBatchImages = batchImages.some(img => img && img.selected);
+            elements.imagesRow.classList.toggle('batch-active', hasBatchImages);
+        }
 
         function rerenderGrid(images, grid, type) {
             for (let i = 0; i < 10; i++) {
@@ -550,9 +636,6 @@
                     slot.className = 'upload-slot filled' + (images[i].selected ? '' : ' deselected');
                     slot.innerHTML = `
                         <img src="${images[i].url}" alt="Image ${i + 1}">
-                        <div class="checkbox-wrapper" onclick="event.stopPropagation()">
-                            <input type="checkbox" ${images[i].selected ? 'checked' : ''} onchange="toggleImage(${i}, '${type}', this.checked)">
-                        </div>
                         <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i}, '${type}')">&times;</button>
                     `;
                 } else {
@@ -565,17 +648,19 @@
         // Model buttons
         elements.modelButtons.addEventListener('click', (e) => {
             if (e.target.classList.contains('btn--toggle')) {
-                e.target.classList.toggle('active');
                 const modelKey = e.target.dataset.model;
-                if (e.target.classList.contains('active')) {
-                    if (!state.selectedModels.includes(modelKey)) state.selectedModels.push(modelKey);
-                } else {
-                    state.selectedModels = state.selectedModels.filter(m => m !== modelKey);
+                // Single selection - remove active from all, add to clicked
+                elements.modelButtons.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.selectedModel = modelKey;
+
+                // Show/hide resolution based on model
+                const model = REMIX_MODELS[modelKey];
+                const resolutionRow = document.getElementById('resolution-row');
+                if (resolutionRow) {
+                    resolutionRow.style.display = model.hasResolution ? 'flex' : 'none';
                 }
-                if (state.selectedModels.length === 0) {
-                    state.selectedModels = ['nanobanana'];
-                    elements.modelButtons.querySelector('[data-model="nanobanana"]').classList.add('active');
-                }
+
                 updateCalculator();
             }
         });
@@ -651,29 +736,37 @@
         function updateCalculator() {
             const selectedPrimary = primaryImages.filter(img => img && img.selected);
             const selectedSecondary = secondaryImages.filter(img => img && img.selected);
+            const selectedBatch = batchImages.filter(img => img && img.selected);
             const prompts = getValidPrompts();
 
             const numPrimary = selectedPrimary.length;
-            const numSecondary = selectedSecondary.length > 0 ? selectedSecondary.length : 1;
             const numPrompts = prompts.length;
             const numSeeds = state.seeds;
-            const numModels = state.selectedModels.length;
 
-            const totalCombinations = numPrimary * numSecondary * numPrompts;
-            const totalImages = totalCombinations * numSeeds * numModels;
+            // If batch has images, use batch mode (ignore secondary)
+            const useBatchMode = selectedBatch.length > 0;
+            let totalCombinations, displayLabel;
+
+            if (useBatchMode) {
+                // Batch mode: each primary + all batch images together × each prompt
+                totalCombinations = numPrimary * numPrompts;
+                displayLabel = `${numPrimary} primary (+ ${selectedBatch.length} batch refs) × ${numPrompts} prompts × ${numSeeds} seeds`;
+            } else {
+                // Normal mode: primary × secondary × prompts
+                const numSecondary = selectedSecondary.length > 0 ? selectedSecondary.length : 1;
+                totalCombinations = numPrimary * numSecondary * numPrompts;
+                const secondaryLabel = selectedSecondary.length > 0 ? `${numSecondary} secondary` : '(solo)';
+                displayLabel = `${numPrimary} primary × ${secondaryLabel} × ${numPrompts} prompts × ${numSeeds} seeds`;
+            }
+
+            const totalImages = totalCombinations * numSeeds;
 
             // Calculate cost
-            let cost = 0;
-            state.selectedModels.forEach(modelKey => {
-                const model = REMIX_MODELS[modelKey];
-                let modelCost = model.costPerImage;
-                if (modelKey === 'nanobanana' && state.resolution === '2K') modelCost *= 2;
-                cost += totalCombinations * numSeeds * modelCost;
-            });
+            const model = REMIX_MODELS[state.selectedModel];
+            const cost = totalCombinations * numSeeds * model.costPerImage;
 
             // Update display
-            const secondaryLabel = selectedSecondary.length > 0 ? `${numSecondary} secondary` : '(solo)';
-            elements.calcDisplay.textContent = `${numPrimary} primary × ${secondaryLabel} × ${numPrompts} prompts × ${numSeeds} seeds × ${numModels} models = ${totalImages} images`;
+            elements.calcDisplay.textContent = `${displayLabel} = ${totalImages} images`;
             elements.costValue.textContent = formatCost(cost);
 
             elements.generateBtn.disabled = numPrimary === 0 || numPrompts === 0;
@@ -688,6 +781,18 @@
             const prompts = getValidPrompts();
             const selectedPrimary = primaryImages.filter(img => img && img.selected);
             const selectedSecondary = secondaryImages.filter(img => img && img.selected);
+            const selectedBatch = batchImages.filter(img => img && img.selected);
+            const useBatchMode = selectedBatch.length > 0;
+
+            console.log('🎨 REMIX: Starting generation');
+            console.log(`  📷 Primary images: ${selectedPrimary.length}`);
+            if (useBatchMode) {
+                console.log(`  📦 Batch mode: ${selectedBatch.length} batch images`);
+            } else {
+                console.log(`  📷 Secondary images: ${selectedSecondary.length}`);
+            }
+            console.log(`  📝 Prompts: ${prompts.length}`);
+            console.log(`  🎯 Model: ${state.selectedModel}`);
 
             if (prompts.length === 0 || selectedPrimary.length === 0) {
                 showError('Please add images and prompts');
@@ -699,28 +804,74 @@
 
             // Build all tasks
             const allTasks = [];
-            state.selectedModels.forEach(modelKey => {
-                selectedPrimary.forEach((primaryImg) => {
-                    const secondaryToUse = selectedSecondary.length > 0 ? selectedSecondary : [null];
-                    secondaryToUse.forEach((secondaryImg) => {
-                        const imageUrls = secondaryImg ? [primaryImg.url, secondaryImg.url] : [primaryImg.url];
-                        prompts.forEach((prompt) => {
-                            allTasks.push({ modelKey, prompt, imageUrls, seeds: state.seeds });
+            const modelKey = state.selectedModel;
+
+            if (useBatchMode) {
+                // Batch mode: each primary + ALL batch images together × each prompt
+                selectedPrimary.forEach((primaryImg, pIdx) => {
+                    // Combine primary with ALL batch images
+                    const imageUrls = [primaryImg.url, ...selectedBatch.map(b => b.url)];
+                    const sourceImages = [primaryImg.url, ...selectedBatch.map(b => b.url)];
+                    const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
+                    prompts.forEach((prompt, promptIdx) => {
+                        allTasks.push({
+                            modelKey,
+                            prompt,
+                            imageUrls,
+                            seeds: state.seeds,
+                            primaryFilename,
+                            sourceImages,
+                            primaryIndex: pIdx,
+                            batchCount: selectedBatch.length,
+                            promptIndex: promptIdx
                         });
                     });
                 });
-            });
+            } else {
+                // Normal mode: primary × secondary × prompts
+                selectedPrimary.forEach((primaryImg, pIdx) => {
+                    const secondaryToUse = selectedSecondary.length > 0 ? selectedSecondary : [null];
+                    secondaryToUse.forEach((secondaryImg, sIdx) => {
+                        const imageUrls = secondaryImg ? [primaryImg.url, secondaryImg.url] : [primaryImg.url];
+                        const sourceImages = secondaryImg ? [primaryImg.url, secondaryImg.url] : [primaryImg.url];
+                        const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
+                        prompts.forEach((prompt, promptIdx) => {
+                            allTasks.push({
+                                modelKey,
+                                prompt,
+                                imageUrls,
+                                seeds: state.seeds,
+                                primaryFilename,
+                                sourceImages,
+                                primaryIndex: pIdx,
+                                secondaryIndex: secondaryImg ? sIdx : null,
+                                promptIndex: promptIdx
+                            });
+                        });
+                    });
+                });
+            }
 
             const totalTasks = allTasks.length;
-            let completed = 0;
+            const totalImages = totalTasks * state.seeds;
+            let imagesCompleted = 0;
+
+            console.log(`📋 Created ${totalTasks} tasks, expecting ${totalImages} images`);
+            console.log(useBatchMode ? '  Formula: primary × prompts × seeds' : '  Formula: primary × secondary × prompts × seeds');
 
             elements.progressSection.classList.add('visible');
-            elements.progressCount.textContent = `0 / ${totalTasks}`;
+            elements.progressCount.textContent = `0 / ${totalImages}`;
             elements.progressBar.style.width = '0%';
             elements.generateBtn.disabled = true;
 
             // Execute all in parallel
-            await Promise.all(allTasks.map(async (task) => {
+            await Promise.all(allTasks.map(async (task, taskIdx) => {
+                const taskLabel = `Primary[${task.primaryIndex}]` +
+                    (task.batchCount ? ` + ${task.batchCount} batch refs` : '') +
+                    (task.secondaryIndex !== null && task.secondaryIndex !== undefined ? ` + Secondary[${task.secondaryIndex}]` : '') +
+                    ` + Prompt[${task.promptIndex}]`;
+                console.log(`🔄 [${taskIdx + 1}/${totalTasks}] ${task.modelKey}: ${taskLabel}`);
+
                 try {
                     const model = REMIX_MODELS[task.modelKey];
                     let params = {
@@ -730,7 +881,11 @@
                         output_format: 'png'
                     };
 
-                    if (task.modelKey === 'nanobanana') {
+                    // Model-specific params
+                    if (task.modelKey === 'nano') {
+                        params.aspect_ratio = state.aspectRatio;
+                        // No resolution for nano
+                    } else if (task.modelKey === 'nanopro') {
                         params.aspect_ratio = state.aspectRatio;
                         params.resolution = state.resolution;
                     } else if (task.modelKey === 'flux2') {
@@ -740,25 +895,33 @@
                     const data = await api.remixImage(model.endpoint, params);
 
                     if (data.images) {
-                        data.images.forEach(img => {
+                        console.log(`  ✅ Got ${data.images.length} image(s)`);
+                        data.images.forEach((img, idx) => {
                             state.results.push({
                                 url: img.url,
                                 prompt: task.prompt,
                                 modelKey: task.modelKey,
-                                modelName: model.name
+                                modelName: model.name,
+                                primaryFilename: task.primaryFilename,
+                                sourceImages: task.sourceImages
                             });
                         });
                         renderResults();
+
+                        // Update progress with actual images received
+                        imagesCompleted += data.images.length;
                     }
                 } catch (error) {
-                    console.error('Task error:', error);
+                    console.error(`  ❌ Task failed:`, error);
+                    // Still count expected images for progress even on failure
+                    imagesCompleted += state.seeds;
                 }
 
-                completed++;
-                elements.progressCount.textContent = `${completed} / ${totalTasks}`;
-                elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+                elements.progressCount.textContent = `${imagesCompleted} / ${totalImages}`;
+                elements.progressBar.style.width = `${(imagesCompleted / totalImages) * 100}%`;
             }));
 
+            console.log(`🎉 REMIX: Complete! Generated ${state.results.length} images`);
             elements.progressSection.classList.remove('visible');
             elements.resultsSection.classList.add('visible');
             updateCalculator();
@@ -786,6 +949,15 @@
             elements.lightboxImage.src = result.url;
             elements.lightboxModel.textContent = result.modelName;
             elements.lightboxPrompt.textContent = result.prompt;
+
+            // Display source images
+            if (result.sourceImages && result.sourceImages.length > 0) {
+                elements.lightboxSourceImages.innerHTML = result.sourceImages.map((url, idx) =>
+                    `<img src="${url}" alt="${idx === 0 ? 'Primary' : 'Secondary'}" title="${idx === 0 ? 'Primary' : 'Secondary'}">`
+                ).join('');
+            } else {
+                elements.lightboxSourceImages.innerHTML = '<span style="color: var(--slate); font-size: var(--text-xs);">No source images</span>';
+            }
         }
 
         document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
@@ -803,7 +975,8 @@
 
         document.getElementById('lightbox-download').addEventListener('click', async () => {
             const result = state.results[state.lightboxIndex];
-            downloadFile(result.url, `remix-${Date.now()}.png`);
+            const filename = result.primaryFilename || 'image';
+            downloadFile(result.url, `Remix_${filename}.png`);
         });
 
         document.addEventListener('keydown', (e) => {
@@ -827,6 +1000,11 @@
         initializeGrids();
         setupDragAndDrop(elements.primaryGrid, 'primary');
         setupDragAndDrop(elements.secondaryGrid, 'secondary');
+        if (elements.batchGrid) {
+            setupDragAndDrop(elements.batchGrid, 'batch');
+        } else {
+            console.error('Batch grid not found!');
+        }
         updateCalculator();
     </script>
 </body>

@@ -1,6 +1,34 @@
 // SocialSet Application
 // Instagram-ready fashion content generator
 
+// SetSet Talent Roster
+const SETSET_MODELS = [
+    { id: 'james', name: 'James Wilson', image: '/shared/images/talent/talent-01_JamesWilson.png' },
+    { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png' },
+    { id: 'river', name: 'River Blake', image: '/shared/images/talent/talent-03_RiverBlake.png' },
+    { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png' },
+    { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/talent-05_MarcusBrown.png' },
+    { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png' },
+    { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png' },
+    { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/talent-08_LiamGarcia.png' },
+    { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png' },
+    { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
+    { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png' },
+    { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png' },
+    { id: 'kai', name: 'Kai Thompson', image: '/shared/images/talent/talent-13_KaiThompson.png' },
+    { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
+    { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png' },
+    { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
+    { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/talent-17_QuinnSantos.png' },
+    { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png' },
+    { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png' },
+    { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/talent-20_DrewMartinez.png' },
+    { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png' },
+    { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png' },
+    { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png' },
+    { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' }
+];
+
 // State Management
 const state = {
     // Model selection
@@ -63,8 +91,9 @@ const elements = {
 async function init() {
     console.log('Initializing SocialSet...');
 
-    // Load models from JSON
-    await loadModels();
+    // Use SetSet talent roster
+    state.models = SETSET_MODELS;
+    console.log(`Loaded ${state.models.length} models`);
 
     // Render UI
     renderModels();
@@ -81,18 +110,6 @@ async function init() {
     updateUI();
 
     console.log('SocialSet initialized');
-}
-
-// Load models from shared data
-async function loadModels() {
-    try {
-        const response = await fetch('/shared/data/model-descriptions.json');
-        state.models = await response.json();
-        console.log(`Loaded ${state.models.length} models`);
-    } catch (error) {
-        console.error('Failed to load models:', error);
-        state.models = [];
-    }
 }
 
 // Load available products from folders
@@ -119,9 +136,9 @@ function renderModels() {
         <div class="model-card ${state.selectedModel?.id === model.id ? 'selected' : ''}"
              data-model-id="${model.id}"
              onclick="selectModel('${model.id}')">
-            <img src="/shared/images/models/${model.id}-portrait.jpg"
+            <img src="${model.image}"
                  alt="${model.name}"
-                 onerror="this.src='/shared/images/placeholder.jpg'">
+                 onerror="this.onerror=null; this.style.background='var(--silver)'">
             <div class="check-mark">✓</div>
             <div class="model-name">${model.name}</div>
         </div>
@@ -166,7 +183,7 @@ function renderPoseCards(poses) {
             <div class="pose-card ${isActive ? 'active' : ''}" data-pose-id="${pose.id}">
                 <div class="pose-card-image" onclick="togglePose('${pose.id}')">
                     <img src="${pose.defaultImage}" alt="${pose.name}"
-                         onerror="this.src='/shared/images/placeholder.jpg'">
+                         onerror="this.onerror=null; this.style.background='var(--silver)'">
                     <div class="pose-count">${count}</div>
                 </div>
                 <div class="pose-name">${pose.name}</div>
