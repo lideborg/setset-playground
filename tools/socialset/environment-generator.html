@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Environment Generator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌆</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        .generator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .generator-section {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+        }
+
+        .generator-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .section-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+            margin-bottom: var(--space-sm);
+        }
+
+        .select-dropdown {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 12px;
+            font-family: var(--font-sans);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            color: #1a1a1a !important;
+            background: #ffffff !important;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 16px center !important;
+        }
+
+        .select-dropdown option {
+            color: #1a1a1a !important;
+            background: #ffffff !important;
+        }
+
+        .select-dropdown optgroup {
+            color: #666666 !important;
+            font-weight: 600;
+        }
+
+        .select-dropdown:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .toggle-row {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .toggle-row .btn {
+            flex: 1;
+        }
+
+        .style-input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: var(--text-md);
+            font-family: var(--font-sans);
+            color: var(--carbon);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            resize: none;
+            min-height: 80px;
+            line-height: 1.5;
+        }
+
+        .style-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .style-input::placeholder {
+            color: var(--slate);
+        }
+
+        .generate-section {
+            margin-top: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-md);
+            color: var(--carbon);
+            margin-bottom: var(--space-sm);
+            text-align: center;
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            margin-top: var(--space-lg);
+            padding: var(--space-lg);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: var(--off-white);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+            margin-top: var(--space-lg);
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        .results-grid.landscape {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .result-card:hover {
+            border-color: var(--jet);
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-card.landscape img {
+            aspect-ratio: 16/9;
+        }
+
+        .result-card.square img {
+            aspect-ratio: 1/1;
+        }
+
+        .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-sm);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .result-card:hover .result-overlay {
+            opacity: 1;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .result-btn {
+            flex: 1;
+            padding: 6px 10px;
+            background: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-btn:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        /* Idea/Enhancer Section */
+        .idea-section {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .idea-row {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .idea-input {
+            flex: 1;
+            height: 38px;
+            padding: 0 12px;
+            font-size: 13px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--carbon);
+        }
+
+        .idea-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .idea-input::placeholder {
+            color: var(--slate);
+        }
+
+        .idea-controls {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .slider-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .slider-box .slider {
+            width: 60px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gainsboro);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .slider-box .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-box .slider-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--carbon);
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Prompts Display */
+        .prompts-section {
+            display: none;
+            margin-top: var(--space-md);
+        }
+
+        .prompts-section.visible {
+            display: block;
+        }
+
+        .prompts-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .prompt-item {
+            background: var(--white);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--carbon);
+            position: relative;
+        }
+
+        .prompt-item-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .prompt-item-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: var(--off-white);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prompt-item-btn:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .generate-from-prompts {
+            margin-top: var(--space-md);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Environment Generator</h1>
+            <p class="hero-subtitle">Generate backdrop environments for fashion photography</p>
+        </div>
+
+        <!-- Idea Enhancer Section -->
+        <div class="idea-section">
+            <div class="section-title">Describe Your Environment</div>
+            <div class="idea-row">
+                <input type="text" class="idea-input" id="idea-input" placeholder="e.g. 'sun-drenched Mediterranean terrace with ocean views' or 'moody Tokyo alley at night'">
+                <div class="idea-controls">
+                    <div class="slider-box">
+                        <input type="range" class="slider" id="num-prompts-slider" min="1" max="8" value="4">
+                        <span class="slider-value" id="num-prompts-value">4</span>
+                    </div>
+                    <button class="btn" id="enhance-btn">Enhance</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated Prompts Display -->
+        <div class="prompts-section" id="prompts-section">
+            <div class="section-title">Generated Prompts</div>
+            <div class="prompts-list" id="prompts-list"></div>
+            <button class="btn btn--primary btn--lg btn--block generate-from-prompts" id="generate-from-prompts-btn">Generate All Environments</button>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--gainsboro); margin: var(--space-lg) 0;">
+        <p style="text-align: center; color: var(--slate); font-size: 12px; margin-bottom: var(--space-md);">Or use presets below</p>
+
+        <div class="generator-grid">
+            <!-- Location -->
+            <div class="generator-section">
+                <div class="section-title">Location</div>
+                <select id="location-select" class="select-dropdown">
+                    <optgroup label="Indoor">
+                        <option value="studio">Studio (White/Minimal)</option>
+                        <option value="loft">Industrial Loft (NYC/SoHo)</option>
+                        <option value="parisian">Parisian Apartment</option>
+                        <option value="gallery">Gallery Space</option>
+                        <option value="milanese">Milanese Apartment</option>
+                        <option value="tokyo-studio">Tokyo Minimal Studio</option>
+                    </optgroup>
+                    <optgroup label="Urban">
+                        <option value="street">European Street</option>
+                        <option value="rooftop">Urban Rooftop</option>
+                        <option value="industrial">Industrial/Warehouse</option>
+                    </optgroup>
+                    <optgroup label="Nature">
+                        <option value="beach">Beach/Coastal</option>
+                        <option value="desert">Desert/Arid</option>
+                        <option value="forest">Forest/Woods</option>
+                        <option value="meadow">Meadow/Field</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Lighting -->
+            <div class="generator-section">
+                <div class="section-title">Lighting</div>
+                <select id="lighting-select" class="select-dropdown">
+                    <option value="natural">Natural Daylight</option>
+                    <option value="golden">Golden Hour</option>
+                    <option value="soft">Soft/Diffused</option>
+                    <option value="dramatic">Dramatic/Directional</option>
+                    <option value="overcast">Overcast/Even</option>
+                    <option value="blue">Blue Hour/Twilight</option>
+                </select>
+            </div>
+
+            <!-- Aspect Ratio -->
+            <div class="generator-section">
+                <div class="section-title">Aspect Ratio</div>
+                <div class="toggle-row">
+                    <button class="btn btn--toggle" data-aspect="1:1">1:1</button>
+                    <button class="btn btn--toggle active" data-aspect="3:4">3:4</button>
+                    <button class="btn btn--toggle" data-aspect="4:3">4:3</button>
+                    <button class="btn btn--toggle" data-aspect="9:16">9:16</button>
+                    <button class="btn btn--toggle" data-aspect="16:9">16:9</button>
+                </div>
+            </div>
+
+            <!-- Count -->
+            <div class="generator-section">
+                <div class="section-title">Number of Images</div>
+                <div class="toggle-row">
+                    <button class="btn btn--toggle" data-count="4">4</button>
+                    <button class="btn btn--toggle active" data-count="8">8</button>
+                    <button class="btn btn--toggle" data-count="12">12</button>
+                </div>
+            </div>
+
+            <!-- Model -->
+            <div class="generator-section">
+                <div class="section-title">AI Model</div>
+                <div class="toggle-row">
+                    <button class="btn btn--toggle active" data-model="reve">Reve</button>
+                    <button class="btn btn--toggle" data-model="zimage">Z Image</button>
+                </div>
+            </div>
+
+            <!-- Style Notes -->
+            <div class="generator-section full-width">
+                <div class="section-title">Additional Details (Optional)</div>
+                <textarea class="style-input" id="style-input" placeholder="e.g. 'brutalist concrete, warm terracotta tones, Mediterranean villa, floor-to-ceiling windows'"></textarea>
+            </div>
+        </div>
+
+        <!-- Generate -->
+        <div class="generate-section">
+            <div class="calc-display" id="calc-display">8 images @ $0.02 each = $0.16</div>
+            <button class="btn btn--primary btn--lg btn--block" id="generate-btn">Generate Environments</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Generated Environments</h2>
+                <button class="btn" onclick="downloadAll()">Download All</button>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox will be created by shared component -->
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Generating...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/shared/js/models.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/lightbox.js"></script>
+    <script>
+        // State
+        const state = {
+            location: 'studio',
+            lighting: 'natural',
+            aspectRatio: '3:4',
+            styleText: '',
+            model: 'reve',
+            count: 8,
+            results: [],
+            numPrompts: 4,
+            enhancedPrompts: []
+        };
+
+        // Initialize lightbox
+        let lightbox;
+
+        // Rich detailed location prompts with props, textures, atmosphere - based on editorial research
+        const LOCATIONS = {
+            // Indoor locations
+            'studio': {
+                name: 'Studio',
+                variations: [
+                    'Professional high-end fashion photography studio with pure white cyclorama backdrop curving seamlessly into polished white floor, massive softboxes creating even shadowless illumination, ceiling-mounted track lighting system, pristine clinical environment with museum-quality light, subtle reflections on glossy floor surface, shot on Arri Alexa, photorealistic',
+                    'Minimalist photography studio with warm gray seamless paper backdrop, polished concrete floor with subtle texture, large north-facing windows providing soft diffused natural light, single sculptural white plinth in corner, professional lighting rigs visible in ceiling, clean uncluttered space with intentional negative space, editorial magazine quality',
+                    'Contemporary photo studio with gradient gray to white backdrop, industrial ceiling with exposed black ductwork and adjustable track lights, weathered wooden floor adding warmth, large circular reflector leaning against wall, professional photography atmosphere, soft even illumination',
+                    'Elegant cream-toned photography studio with floor-to-ceiling sheer curtains diffusing window light, pale oak flooring, single velvet ottoman in muted blush, tall mirror with brass frame against wall, fresh eucalyptus in ceramic vase, soft romantic light quality, high-end editorial aesthetic'
+                ]
+            },
+            'loft': {
+                name: 'Industrial Loft',
+                variations: [
+                    'SoHo industrial loft with original 19th-century cast-iron Corinthian columns showing aged green patina, exposed red brick walls with weathered mortar and paint chips, white pressed tin ceiling with ornate geometric patterns 14 feet high, massive steel-framed factory windows flooding space with afternoon light, worn wide-plank oak flooring with visible grain, vintage leather Chesterfield sofa, stacked art books on reclaimed wood coffee table, single monstera plant in terracotta pot, dust motes floating in light beams, photorealistic editorial',
+                    'Brooklyn warehouse loft conversion with exposed concrete columns and raw ductwork painted matte black, tall ceilings with industrial skylights casting geometric light patterns, polished concrete floor with subtle imperfections, exposed wooden beams and iron riveted girders, vintage Persian rug defining seating area, mid-century modern furniture, large fiddle leaf fig in woven basket, industrial pendant lights with Edison bulbs, urban artistic atmosphere',
+                    'New York creative loft with whitewashed brick walls showing texture underneath, massive arched steel-framed windows with original hardware, distressed wide-plank pine flooring, exposed copper pipes and vintage radiators, velvet emerald sofa with brass legs, stacked fashion photography books, fresh white peonies in clear glass vase, afternoon light creating long shadows, photorealistic interior photography',
+                    'Tribeca artist loft with soaring 16-foot ceilings, original cast-iron columns painted cream, walls of exposed aged brick with patchy whitewash, huge factory windows with steel muntins, concrete floor with layered vintage rugs, leather butterfly chairs, oversized abstract art leaning against wall, potted olive tree, warm incandescent lighting mixing with natural light'
+                ]
+            },
+            'parisian': {
+                name: 'Parisian Apartment',
+                variations: [
+                    'Grand Haussmann-style Parisian apartment with honey-toned herringbone parquet floors polished to soft sheen, ornate white ceiling with acanthus leaf moldings and decorative ceiling rose, floor-to-ceiling French windows with wrought iron Juliet balcony and sheer linen curtains filtering warm light, white marble fireplace with gilded baroque mirror above, crystal chandelier casting prismatic light, velvet chaise lounge in deep emerald, stacked Vogue coffee table books on marble side table, fresh pink peonies in crystal vase, cashmere throw draped casually, high-end editorial magazine style, photorealistic',
+                    'Elegant Parisian salon with 4-meter high ceilings, elaborate decorative crown moldings with gold leaf accents, floor-to-ceiling windows with champagne silk curtains, antique herringbone parquet with warm patina, ornate white marble mantlepiece with candelabras, Louis XV gilded armchair upholstered in pale blue velvet, crystal wall sconces, stack of French fashion magazines, single white orchid in porcelain pot, soft afternoon light streaming in',
+                    'Classic French apartment interior with white boiserie wall paneling, large windows overlooking zinc rooftops of Paris, original marble fireplace with ornate carved details, antique parquet flooring in chevron pattern, tufted linen settee in cream, round marble-topped gueridon table with fresh roses, gilded sunburst mirror, sheer curtains billowing slightly, romantic European elegance, shot on 35mm film aesthetic',
+                    'Intimate Parisian bedroom with tall French windows draped in heavy cream linen, unmade bed with rumpled white linen sheets and cashmere throw, ornate ceiling medallion with vintage chandelier, herringbone oak floors with faded Persian rug, antique writing desk with fresh tulips in silver pitcher, morning light filtering through sheer curtains, lived-in luxury atmosphere'
+                ]
+            },
+            'gallery': {
+                name: 'Gallery Space',
+                variations: [
+                    'Contemporary art gallery with pristine white cube walls in matte finish, polished pale concrete floor with subtle aggregate texture, museum-quality track lighting creating precise illumination, vast negative space with single white sculptural plinth, 20-foot ceilings with geometric skylight diffusing natural light, minimal architecture with intentional emptiness, institutional art setting, photorealistic',
+                    'Modern gallery space with seamless white walls curving into white floor, high ceilings with large rectangular skylights providing diffused daylight, single geometric brass sculpture on white pedestal, polished terrazzo floor with subtle pink and gray chips, clean architectural lines, abundant negative space creating contemplative atmosphere, editorial photography quality',
+                    'Minimalist gallery interior with warm white walls, bleached wide-plank oak flooring, floor-to-ceiling windows with view of courtyard garden, single statement bench in natural oak, track lighting on exposed ceiling beams, fresh air and natural light, serene museum aesthetic with subtle warmth',
+                    'White cube exhibition space with matte walls and polished concrete floor reflecting overhead lights, single large abstract canvas leaning against wall, industrial steel and glass entrance visible, floating white display shelves, precise architectural proportions, quiet contemplative atmosphere, high-end contemporary art world aesthetic'
+                ]
+            },
+            'milanese': {
+                name: 'Milanese Apartment',
+                variations: [
+                    'Brutalist Milanese apartment in 1960s building with raw board-formed concrete walls showing wood grain texture, floor-to-ceiling steel-framed windows with black frames, polished black terrazzo floor with brass inlays, transparent glass room dividers in steel frames, single Cassina leather armchair, stack of Italian design magazines, geometric brass floor lamp, cool northern light creating sharp shadows, architectural drama, photorealistic',
+                    'Milan design apartment with authentic terrazzo flooring in warm cream and rose tones, high plastered ceilings with contemporary molding, large windows with Italian proportions and wooden shutters, iconic Arco floor lamp by Castiglioni, velvet modular sofa in terracotta, marble coffee table with design books and ceramic objects, single large monstera, sophisticated Italian minimalism',
+                    'Contemporary Milan loft in converted factory with polished concrete floors and white plaster walls, exposed steel I-beams painted matte black, industrial steel-framed windows, single statement artwork on wall, Italian leather daybed, brass and glass coffee table, potted citrus tree, warm afternoon light, refined urban sophistication',
+                    'Italian brutalist interior with textured raw concrete walls and ceiling, terrazzo floor in neutral gray, floor-to-ceiling windows with views of courtyard, single Gio Ponti chair in cognac leather, architectural brass pendant light, stack of Italian Vogue magazines, minimal but warm, controlled natural light through sheer linen panels'
+                ]
+            },
+            'tokyo-studio': {
+                name: 'Tokyo Studio',
+                variations: [
+                    'Japanese minimalist studio with pristine white plaster walls and exposed concrete accent wall with board-formed texture, geometric rectangular window opening creating precise pool of light on pale hinoki wood floor, single low platform in natural wood, ceramic ikebana vessel with single branch, shoji screen partially visible, absolute calm and negative space following ma philosophy, serene zen-like atmosphere, photorealistic',
+                    'Tokyo photography studio with whitewashed concrete walls, polished light gray concrete floor, large geometric skylight casting soft diffused light, single wabi-sabi ceramic object on wooden block, extreme reduction to essential elements, translucent paper screens filtering light, meditative quiet quality, pristine and contemplative',
+                    'Contemporary Japanese interior with white lime-washed walls, subtle concrete texture visible, precise architectural lines, bamboo flooring with natural grain, recessed lighting creating gentle wash of illumination, single low wooden bench, view through sliding glass to small courtyard garden with moss and stones, controlled natural light through rice paper panels',
+                    'Minimalist Tokyo space with off-white textured plaster walls, pale oak wide-plank flooring, floor-level window creating dramatic side light, single noguchi paper lantern, ceramic tea set on low wooden table, fresh cherry blossom branch in simple vase, morning light with floating dust particles, serene Japanese aesthetic'
+                ]
+            },
+            // Urban outdoor
+            'street': {
+                name: 'European Street',
+                variations: [
+                    'Quiet cobblestone Parisian alleyway with weathered cream and ochre building facades showing centuries of patina, ornate cast-iron balconies with peeling paint, aged limestone walls with moss in crevices, antique street lamp with glass globe, climbing ivy on wall, window boxes with geraniums, soft morning mist, wet cobblestones reflecting buildings, vintage bicycle leaning against wall, photorealistic editorial',
+                    'Copenhagen street with clean modernist architecture in soft gray and white, wide bicycle path with vintage bikes parked, pastel-painted building facades in blush and sage, large windows with white frames, geometric Scandinavian design elements, northern European diffused light, window flower boxes, cobblestone street glistening after rain, contemporary urban elegance',
+                    'Lisbon street scene with colorful azulejo tile facades in blue and white traditional patterns, narrow cobblestone path worn smooth, ornate wrought iron balconies with hanging laundry, warm terracotta building walls, vintage yellow tram tracks embedded in stones, bougainvillea cascading from balcony, warm Mediterranean afternoon light casting long shadows, authentic European charm',
+                    'Italian piazza corner with weathered sienna and terracotta plastered walls showing age, wooden shutters with peeling green paint, ancient stone pavement with weeds in cracks, vintage Vespa parked against wall, potted lemon tree, clothesline with white linens above, warm golden afternoon light, romantic southern European atmosphere'
+                ]
+            },
+            'rooftop': {
+                name: 'Urban Rooftop',
+                variations: [
+                    'Modern urban rooftop terrace with panoramic city skyline at dusk, minimalist concrete planters with ornamental grasses, sleek glass and steel barriers, weathered teak decking, contemporary outdoor furniture in charcoal, string lights overhead, dramatic sky with pink and orange sunset clouds 70 percent of frame, city lights beginning to twinkle, architectural clean lines, photorealistic',
+                    'Industrial rooftop with aged water towers and metal vents creating sculptural silhouettes, weathered concrete surface with puddles reflecting sky, rusted metal structures and pipes, urban grit and texture, expansive dramatic sky with billowing clouds taking up 80 percent of frame, distant city skyline, raw urban poetry',
+                    'Luxury penthouse rooftop garden with sleek minimal design, infinity edge planter with sculptural boxwood, polished concrete floor, glass balustrade with brass details, city lights twinkling in distance, contemporary teak and steel furniture, large ceramic planters with olive trees, twilight blue hour atmosphere, sophisticated urban retreat',
+                    'Brooklyn warehouse rooftop with exposed brick parapets and industrial steel structures, gravel surface with weathered wooden deck area, vintage metal chairs, potted herbs and tomato plants, water tower in background, Manhattan skyline at golden hour, string lights and lanterns, urban garden atmosphere'
+                ]
+            },
+            'industrial': {
+                name: 'Industrial/Warehouse',
+                variations: [
+                    'Abandoned warehouse interior with dramatically peeling paint revealing layers of history on concrete walls, large broken windows with remaining glass catching light, rusted metal structures and exposed beams, concrete debris and dust, shafts of dramatic directional light through gaps, raw urban decay aesthetic with haunting beauty, photorealistic',
+                    'Converted factory space with original exposed riveted steel beams and trusses, weathered red brick walls with whitewash remnants, polished concrete floor with industrial patina, massive steel-framed windows with original hardware, vintage factory cart as coffee table, leather club chairs, industrial pendant lights, modern industrial chic with authentic character',
+                    'Raw loading dock with massive corrugated metal roll-up doors partially open letting in dramatic side light, concrete platform with oil stains and wear marks, industrial chains and pulleys hanging from ceiling, forklift in background, dust particles visible in light beams, gritty authentic industrial atmosphere',
+                    'Brutalist concrete interior with board-formed walls showing wood grain texture, geometric shapes and angular forms, dramatic shadows from high clerestory windows, raw gray concrete surfaces, minimal industrial fixtures, harsh but sculptural lighting quality, architectural photography aesthetic'
+                ]
+            },
+            // Nature outdoor
+            'beach': {
+                name: 'Beach/Coastal',
+                variations: [
+                    'Dramatic rocky coastline during golden hour with waves crashing against smooth volcanic boulders in foreground, sea spray mist catching warm light, tide pools with reflective surfaces, weathered driftwood log creating leading line into frame, wild coastal grass and sea thrift flowers, distant sea stacks emerging from misty water, moody atmospheric sky, cinematic coastal photography, photorealistic',
+                    'Pristine white sand beach at sunrise with gentle turquoise waves, clear horizon line where ocean meets soft pink sky, scattered seashells and weathered coral on wet sand, beach grass on dunes in background, footprints leading into distance, crystal clear water with visible sandy bottom, minimal serene landscape, editorial quality',
+                    'Windswept coastal dunes at blue hour with wild beach grass bending in breeze, dramatic curves of sand with wind-rippled patterns, weathered fence posts half-buried, moody atmospheric sky with deep blue and purple tones taking up 70 percent of frame, distant lighthouse silhouette, contemplative coastal solitude',
+                    'Secluded rocky cove with calm turquoise waters, ancient cliff faces with stratified rock layers, small pebble beach with driftwood, coastal wildflowers on cliff edges, late afternoon sun creating golden rim light on rock formations, sense of hidden discovery, Mediterranean coastal atmosphere'
+                ]
+            },
+            'desert': {
+                name: 'Desert/Arid',
+                variations: [
+                    'Vast white salt flat with perfectly flat horizon line stretching to infinity, minimalist landscape with cracked hexagonal salt patterns in foreground, bright harsh overhead sunlight creating stark shadows, endless white expanse meeting deep blue sky, heat shimmer visible in distance, surreal otherworldly atmosphere, photorealistic',
+                    'Red sandstone canyon with dramatic eroded rock formations, warm terracotta and burnt sienna tones, late afternoon light creating deep purple shadows in crevices, ancient twisted juniper tree, rippled sand at canyon floor, geological drama and texture, distant buttes silhouetted against orange sky',
+                    'Moroccan desert dunes with perfect golden sand ripples catching low morning light, warm honey and amber tones, single acacia tree silhouette on horizon, camel tracks in sand creating leading lines, vast sky with wispy clouds taking up 60 percent of frame, romantic Saharan atmosphere',
+                    'Sparse high desert landscape with scattered Joshua trees creating sculptural silhouettes, distant purple mountains, golden wild grass, dramatic sky with towering cumulus clouds, warm afternoon light, sense of vast American Southwest wilderness'
+                ]
+            },
+            'forest': {
+                name: 'Forest/Woods',
+                variations: [
+                    'Misty ancient forest at dawn with towering moss-covered oak trees, soft fog filtering through canopy creating ethereal atmosphere, shafts of golden light piercing through mist, carpet of fallen autumn leaves in amber and rust, gnarled roots and fallen logs covered in ferns, mysterious atmospheric depth with background fading into soft focus, enchanted woodland, photorealistic',
+                    'Birch forest in autumn with white bark trees creating vertical rhythm, golden and copper leaves carpeting forest floor, soft dappled light filtering through remaining foliage, mushrooms on fallen log, delicate ferns in undergrowth, natural cathedral feeling with light coming from above, peaceful contemplative atmosphere',
+                    'Pine forest clearing with soft morning mist hovering between trees, dramatic shafts of light through branches creating god rays, thick carpet of brown pine needles, moss-covered boulders, single weathered wooden bench, serene peaceful atmosphere with birdsong implied, Scandinavian forest aesthetic',
+                    'Enchanted forest with rays of golden sunset light piercing through dense leaf canopy, lush green undergrowth of ferns and wild garlic, bluebells carpeting forest floor, ancient twisted tree trunks, floating dust and pollen particles visible in light beams, magical fairytale atmosphere'
+                ]
+            },
+            'meadow': {
+                name: 'Meadow/Field',
+                variations: [
+                    'Rolling wildflower meadow at golden hour with pink, yellow, and purple blooms swaying in gentle breeze, distant mountains in soft focus, vast dramatic sky with golden-rimmed clouds taking up 60 percent of frame, tall wild grasses catching warm light, single ancient oak tree on horizon, pastoral romantic landscape, photorealistic',
+                    'Foggy field at dawn with soft white mist hovering above tall grass, diffused pearlescent light, minimal muted color palette of soft greens and grays, fence posts disappearing into fog, serene expansive space with sense of infinite quietude, atmospheric landscape photography',
+                    'Lavender field in Provence at sunset with rows of purple blooms stretching to horizon, warm golden light creating long shadows between rows, distant stone farmhouse, cypress trees silhouetted against pink and orange sky, intoxicating sense of summer in southern France',
+                    'Golden hay field after harvest with rolled bales creating geometric shapes, stubble catching low afternoon light, massive dramatic sky with towering cumulus clouds taking up 70 percent of frame, single dirt path leading to distant treeline, sense of vast agricultural landscape'
+                ]
+            }
+        };
+
+        // Lighting modifiers - rich descriptions
+        const LIGHTING = {
+            'natural': 'bright natural daylight streaming through windows, even illumination with soft shadows, true-to-life colors and tones, professional photography lighting quality',
+            'golden': 'warm golden hour sunlight with honey-toned warmth, long dramatic shadows stretching across surfaces, rich amber and gold tones, late afternoon magic hour glow, cinematic warm light',
+            'soft': 'soft diffused light creating gentle gradual shadows, flattering even illumination as if through sheer curtains, overcast sky quality light, delicate and romantic',
+            'dramatic': 'dramatic directional side lighting creating bold sculptural shadows, strong contrast between light and dark, chiaroscuro effect, theatrical and moody atmosphere',
+            'overcast': 'soft overcast diffused light from cloudy sky, minimal harsh shadows, even contemplative illumination, muted sophisticated tones, fashion editorial lighting',
+            'blue': 'cool blue hour twilight at dusk, soft ambient glow mixing with last warm light on horizon, serene atmospheric quality, deep blue and purple tones, cinematic mood'
+        };
+
+        // CRITICAL: Strong empty scene language for AI compliance
+        const EMPTY_SCENE_SUFFIX = 'EMPTY SCENE WITH ABSOLUTELY NO PEOPLE, no humans, no figures, no silhouettes, no mannequins, no pedestrians, completely uninhabited architectural space, environment and atmosphere only, pure location scout photograph for fashion photography backdrop composite, professional location photography';
+
+        // Build prompt from selections
+        function buildPrompt() {
+            const location = LOCATIONS[state.location];
+            const variation = location.variations[Math.floor(Math.random() * location.variations.length)];
+            const lighting = LIGHTING[state.lighting];
+
+            let prompt = `${variation}. ${lighting}. ${EMPTY_SCENE_SUFFIX}.`;
+
+            if (state.styleText.trim()) {
+                prompt = `${variation}. ${state.styleText.trim()}. ${lighting}. ${EMPTY_SCENE_SUFFIX}.`;
+            }
+
+            return prompt;
+        }
+
+        // Update cost display
+        function updateCalc() {
+            const cost = (state.count * 0.02).toFixed(2);
+            document.getElementById('calc-display').textContent = `${state.count} images @ $0.02 each = $${cost}`;
+        }
+
+        // Toggle handlers
+        function setupToggles() {
+            // Location select
+            document.getElementById('location-select').addEventListener('change', (e) => {
+                state.location = e.target.value;
+            });
+
+            // Lighting select
+            document.getElementById('lighting-select').addEventListener('change', (e) => {
+                state.lighting = e.target.value;
+            });
+
+            // Aspect ratio
+            document.querySelectorAll('[data-aspect]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-aspect]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.aspectRatio = btn.dataset.aspect;
+                });
+            });
+
+            // Count
+            document.querySelectorAll('[data-count]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-count]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.count = parseInt(btn.dataset.count);
+                    updateCalc();
+                });
+            });
+
+            // Style input
+            document.getElementById('style-input').addEventListener('input', (e) => {
+                state.styleText = e.target.value;
+            });
+
+            // Model toggle
+            document.querySelectorAll('[data-model]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-model]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.model = btn.dataset.model;
+                });
+            });
+        }
+
+        // Generate images - PARALLEL
+        async function generate() {
+            const progressSection = document.getElementById('progress-section');
+            const progressBar = document.getElementById('progress-bar');
+            const progressCount = document.getElementById('progress-count');
+            const resultsSection = document.getElementById('results-section');
+            const resultsGrid = document.getElementById('results-grid');
+
+            progressSection.classList.add('visible');
+            resultsSection.classList.remove('visible');
+            resultsGrid.innerHTML = '';
+            state.results = [];
+
+            // Parse aspect ratio
+            const [w, h] = state.aspectRatio.split(':').map(Number);
+            const isLandscape = w > h;
+            const isSquare = w === h;
+
+            let completed = 0;
+            progressCount.textContent = `${completed} / ${state.count}`;
+
+            // Build all prompts upfront
+            const prompts = [];
+            for (let i = 0; i < state.count; i++) {
+                prompts.push(buildPrompt());
+            }
+
+            // Create all fetch promises
+            const fetchPromises = prompts.map((prompt, i) => {
+                return fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: state.model,
+                        prompt: prompt,
+                        aspect_ratio: state.aspectRatio,
+                        num_images: 1
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    completed++;
+                    progressCount.textContent = `${completed} / ${state.count}`;
+                    progressBar.style.width = `${(completed / state.count) * 100}%`;
+
+                    if (data.images && data.images[0]) {
+                        const result = {
+                            url: data.images[0].url,
+                            prompt: prompt,
+                            location: LOCATIONS[state.location].name,
+                            aspectRatio: state.aspectRatio,
+                            index: i
+                        };
+                        state.results.push(result);
+
+                        // Add to grid immediately
+                        const card = document.createElement('div');
+                        card.className = `result-card${isLandscape ? ' landscape' : ''}${isSquare ? ' square' : ''}`;
+                        card.dataset.index = i;
+                        card.innerHTML = `
+                            <img src="${data.images[0].url}" alt="Environment">
+                            <div class="result-overlay">
+                                <div class="result-actions">
+                                    <button class="result-btn" onclick="event.stopPropagation(); downloadImage('${data.images[0].url}', 'environment-${i + 1}.png')">Download</button>
+                                </div>
+                            </div>
+                        `;
+                        card.onclick = () => {
+                            const idx = state.results.findIndex(r => r.index === i);
+                            if (idx !== -1) openLightbox(idx);
+                        };
+                        resultsGrid.appendChild(card);
+
+                        resultsSection.classList.add('visible');
+                        if (isLandscape) {
+                            resultsGrid.classList.add('landscape');
+                        } else {
+                            resultsGrid.classList.remove('landscape');
+                        }
+                    }
+                    return data;
+                })
+                .catch(error => {
+                    console.error('Generation error:', error);
+                    completed++;
+                    progressCount.textContent = `${completed} / ${state.count}`;
+                    progressBar.style.width = `${(completed / state.count) * 100}%`;
+                });
+            });
+
+            // Wait for all to complete
+            await Promise.all(fetchPromises);
+            progressBar.style.width = '100%';
+        }
+
+        // Lightbox - use shared component
+        function openLightbox(index) {
+            // Format results for shared lightbox
+            const formattedResults = state.results.map((r, i) => ({
+                url: r.url,
+                prompt: r.prompt,
+                modelName: r.location
+            }));
+            lightbox.setResults(formattedResults);
+            lightbox.open(index);
+        }
+
+        // Download helpers
+        async function downloadImage(url, filename) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } catch (error) {
+                console.error('Download error:', error);
+                window.open(url, '_blank');
+            }
+        }
+
+        async function downloadAll() {
+            for (let i = 0; i < state.results.length; i++) {
+                await downloadImage(state.results[i].url, `environment-${i + 1}.png`);
+                await new Promise(r => setTimeout(r, 500));
+            }
+        }
+
+        // Enhance prompts using AI
+        async function enhancePrompts() {
+            const idea = document.getElementById('idea-input').value.trim();
+            if (!idea) return;
+
+            const enhanceBtn = document.getElementById('enhance-btn');
+            enhanceBtn.disabled = true;
+            enhanceBtn.textContent = 'Enhancing...';
+
+            try {
+                const response = await fetch('/api/prompts/environment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idea, numPrompts: state.numPrompts })
+                });
+
+                const data = await response.json();
+
+                if (data.prompts && data.prompts.length > 0) {
+                    state.enhancedPrompts = data.prompts;
+                    displayPrompts(data.prompts);
+                }
+            } catch (error) {
+                console.error('Error enhancing prompts:', error);
+                alert('Failed to enhance prompts. Please try again.');
+            } finally {
+                enhanceBtn.disabled = false;
+                enhanceBtn.textContent = 'Enhance';
+            }
+        }
+
+        // Display generated prompts
+        function displayPrompts(prompts) {
+            const promptsList = document.getElementById('prompts-list');
+            const promptsSection = document.getElementById('prompts-section');
+
+            promptsList.innerHTML = prompts.map((prompt, i) => `
+                <div class="prompt-item" data-index="${i}">
+                    <div class="prompt-item-actions">
+                        <button class="prompt-item-btn" onclick="removePrompt(${i})" title="Remove">×</button>
+                    </div>
+                    ${prompt}
+                </div>
+            `).join('');
+
+            promptsSection.classList.add('visible');
+        }
+
+        // Remove a prompt
+        function removePrompt(index) {
+            state.enhancedPrompts.splice(index, 1);
+            if (state.enhancedPrompts.length > 0) {
+                displayPrompts(state.enhancedPrompts);
+            } else {
+                document.getElementById('prompts-section').classList.remove('visible');
+            }
+        }
+
+        // Generate from enhanced prompts
+        async function generateFromPrompts() {
+            if (state.enhancedPrompts.length === 0) return;
+
+            const progressSection = document.getElementById('progress-section');
+            const progressBar = document.getElementById('progress-bar');
+            const progressCount = document.getElementById('progress-count');
+            const resultsSection = document.getElementById('results-section');
+            const resultsGrid = document.getElementById('results-grid');
+
+            progressSection.classList.add('visible');
+            resultsSection.classList.remove('visible');
+            resultsGrid.innerHTML = '';
+            state.results = [];
+
+            const [w, h] = state.aspectRatio.split(':').map(Number);
+            const isLandscape = w > h;
+            const isSquare = w === h;
+
+            let completed = 0;
+            const total = state.enhancedPrompts.length;
+            progressCount.textContent = `${completed} / ${total}`;
+
+            const fetchPromises = state.enhancedPrompts.map((prompt, i) => {
+                return fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: state.model,
+                        prompt: prompt,
+                        aspect_ratio: state.aspectRatio,
+                        num_images: 1
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    completed++;
+                    progressCount.textContent = `${completed} / ${total}`;
+                    progressBar.style.width = `${(completed / total) * 100}%`;
+
+                    if (data.images && data.images[0]) {
+                        const result = {
+                            url: data.images[0].url,
+                            prompt: prompt,
+                            location: 'Custom',
+                            aspectRatio: state.aspectRatio,
+                            index: i
+                        };
+                        state.results.push(result);
+
+                        const card = document.createElement('div');
+                        card.className = `result-card${isLandscape ? ' landscape' : ''}${isSquare ? ' square' : ''}`;
+                        card.dataset.index = i;
+                        card.innerHTML = `
+                            <img src="${data.images[0].url}" alt="Environment">
+                            <div class="result-overlay">
+                                <div class="result-actions">
+                                    <button class="result-btn" onclick="event.stopPropagation(); downloadImage('${data.images[0].url}', 'environment-${i + 1}.png')">Download</button>
+                                </div>
+                            </div>
+                        `;
+                        card.onclick = () => {
+                            const idx = state.results.findIndex(r => r.index === i);
+                            if (idx !== -1) openLightbox(idx);
+                        };
+                        resultsGrid.appendChild(card);
+
+                        resultsSection.classList.add('visible');
+                        resultsGrid.classList.toggle('landscape', isLandscape);
+                    }
+                    return data;
+                })
+                .catch(error => {
+                    console.error('Generation error:', error);
+                    completed++;
+                    progressCount.textContent = `${completed} / ${total}`;
+                    progressBar.style.width = `${(completed / total) * 100}%`;
+                });
+            });
+
+            await Promise.all(fetchPromises);
+            progressBar.style.width = '100%';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupToggles();
+            updateCalc();
+
+            // Initialize shared lightbox
+            lightbox = new Lightbox();
+
+            // Preset generate button
+            document.getElementById('generate-btn').addEventListener('click', generate);
+
+            // Enhance section
+            const numPromptsSlider = document.getElementById('num-prompts-slider');
+            const numPromptsValue = document.getElementById('num-prompts-value');
+            numPromptsSlider.addEventListener('input', (e) => {
+                state.numPrompts = parseInt(e.target.value);
+                numPromptsValue.textContent = state.numPrompts;
+            });
+
+            document.getElementById('enhance-btn').addEventListener('click', enhancePrompts);
+            document.getElementById('generate-from-prompts-btn').addEventListener('click', generateFromPrompts);
+
+            // Allow Enter key in idea input
+            document.getElementById('idea-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') enhancePrompts();
+            });
+        });
+    </script>
+</body>
+</html>

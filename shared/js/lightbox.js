@@ -100,6 +100,13 @@ class Lightbox {
                 case 'ArrowRight':
                     this.navigate(1);
                     break;
+                case 'd':
+                case 'D':
+                    const result = this.results[this.currentIndex];
+                    if (result) {
+                        this.onDownload(result.url, `image-${this.currentIndex + 1}.png`);
+                    }
+                    break;
             }
         });
     }

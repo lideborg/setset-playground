@@ -232,6 +232,77 @@ IMPORTANT: Return ONLY the prompts. Separate each prompt with TWO blank lines. N
 });
 
 /**
+ * POST /api/prompts/environment
+ * Generate environment-specific prompts optimized for Reve
+ */
+app.post('/api/prompts/environment', async (req, res) => {
+    try {
+        const { idea, numPrompts = 4 } = req.body;
+
+        const systemPrompt = `You are an expert at writing highly detailed, photorealistic environment prompts for the Reve AI image generation model. Your prompts should create rich, cinematic backdrops for fashion photography.
+
+Given a concept, create ${numPrompts} unique environment prompts following these Reve best practices:
+
+PROMPT STRUCTURE:
+1. Start with the location type and specific architectural/natural features
+2. Add specific textures and materials (weathered brick, polished concrete, herringbone parquet, etc.)
+3. Include props and objects that make spaces feel real (furniture, plants, books, flowers, ceramics)
+4. Describe lighting quality and direction specifically (golden hour, soft diffused, dramatic side light)
+5. Add atmospheric conditions (morning mist, dust particles in light beams, rain-slicked surfaces)
+6. Include professional photography terms (shot on Arri Alexa, shallow depth of field, photorealistic)
+
+IMPORTANT RULES:
+- Each prompt must be 3-5 sentences long with rich visual detail
+- Include specific textures (aged patina, board-formed concrete, worn oak planks)
+- Add lived-in details for interiors (stacked books, fresh flowers, cashmere throws)
+- Describe atmospheric depth (foreground, midground, background elements)
+- Always end with: "EMPTY SCENE WITH ABSOLUTELY NO PEOPLE, no humans, no figures, uninhabited space, pure backdrop photograph"
+
+STYLE:
+- High-end editorial fashion photography aesthetic
+- Cinematic and atmospheric
+- Rich in texture, depth, and mood
+
+Return ONLY the prompts. Separate each prompt with TWO blank lines. No numbering, no explanations.`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `Create ${numPrompts} detailed environment backdrop prompts based on: "${idea}"` }
+                ],
+                temperature: 0.85,
+                max_tokens: 2000
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return res.status(response.status).json({ error: data.error?.message || 'Prompt generation failed' });
+        }
+
+        const content = data.choices[0].message.content.trim();
+        let prompts = content.split(/\n\n+/).filter(line => line.trim());
+        if (prompts.length < 2) {
+            prompts = content.split('\n').filter(line => line.trim());
+        }
+        prompts = prompts.slice(0, numPrompts);
+
+        res.json({ prompts });
+    } catch (error) {
+        console.error('Environment prompts error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/analyze
  * Analyze images using GPT-4 Vision (supports multiple images)
  */

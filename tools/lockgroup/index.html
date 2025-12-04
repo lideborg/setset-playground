@@ -418,6 +418,8 @@
             border-radius: var(--radius-sm);
             transition: all var(--transition-fast);
             background: var(--off-white);
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
         .look-image-thumb:hover {
@@ -445,6 +447,9 @@
             transition: transform 0.15s ease-out;
             transform-origin: center center;
             display: block;
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-select: none;
         }
 
         .look-image-thumb .image-type {
@@ -2402,8 +2407,8 @@
                             ${allImages.map((img, idx) => {
                                 const selType = img.selectionType || 'none';
                                 return `
-                                    <div class="look-image-thumb ${selType !== 'none' ? selType : ''}" onclick="toggleImage('${look.id}', ${idx})">
-                                        <img src="${img.thumbnail}" alt="${img.name}" loading="lazy">
+                                    <div class="look-image-thumb ${selType !== 'none' ? selType : ''}" onclick="toggleImage('${look.id}', ${idx})" onmousedown="event.preventDefault()">
+                                        <img src="${img.thumbnail}" alt="${img.name}" loading="lazy" draggable="false">
                                         <span class="check-mark">✓</span>
                                         ${selType !== 'none' ? `<span class="selection-label">${selType.toUpperCase()}</span>` : ''}
                                     </div>
