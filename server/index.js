@@ -9,6 +9,7 @@ import fetch from 'node-fetch';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { readdirSync, statSync, existsSync } from 'fs';
 import dotenv from 'dotenv';
 import { fal } from '@fal-ai/client';
 
@@ -320,24 +321,27 @@ app.post('/api/analyze-brand', async (req, res) => {
     try {
         const { images, brandName, previousAnalysis, feedback } = req.body;
 
-        if (!images || images.length === 0) {
-            return res.status(400).json({ error: 'No images provided' });
+        if (!brandName) {
+            return res.status(400).json({ error: 'Brand name is required' });
         }
 
-        console.log(`🎨 [Brand Analysis] Analyzing ${images.length} images for brand: ${brandName}`);
+        const hasImages = images && images.length > 0;
+        console.log(`🎨 [Brand Analysis] ${hasImages ? `Analyzing ${images.length} images for` : 'Using GPT knowledge for'} brand: ${brandName}`);
 
-        // Build content array with all images
+        // Build content array
         const content = [];
 
-        // Add all images
-        for (const url of images) {
-            content.push({
-                type: 'image_url',
-                image_url: {
-                    url: url,
-                    detail: 'high'
-                }
-            });
+        // Add images if provided
+        if (hasImages) {
+            for (const url of images) {
+                content.push({
+                    type: 'image_url',
+                    image_url: {
+                        url: url,
+                        detail: 'high'
+                    }
+                });
+            }
         }
 
         // Build the analysis prompt
@@ -354,10 +358,14 @@ The user has provided this feedback for refinement:
 
 Please update and refine your analysis based on this feedback. Keep the same structure but adjust the content based on the user's notes.`;
         } else {
-            // Initial analysis
-            analysisPrompt = `You are an expert creative director extracting the VISUAL PRINCIPLES and AESTHETIC QUALITIES of ${brandName}.
+            // Initial analysis - with or without images
+            const imageContext = hasImages
+                ? `Examine these campaign/Instagram images to understand the brand's visual language.`
+                : `Based on your knowledge of ${brandName}'s visual identity, campaign imagery, and brand aesthetic, provide a comprehensive visual analysis. Think about their Instagram, campaigns, brand guidelines, and overall visual language.`;
 
-Examine these campaign/Instagram images to understand the brand's visual language.
+            analysisPrompt = `You are an expert creative director ${hasImages ? 'extracting' : 'with deep knowledge of fashion and lifestyle brands, analyzing'} the VISUAL PRINCIPLES and AESTHETIC QUALITIES of ${brandName}.
+
+${imageContext}
 
 Your response must have TWO parts, clearly separated:
 
@@ -466,35 +474,99 @@ The goal is to create NEW campaign images that FEEL like ${brandName}, not recre
 /**
  * POST /api/campaign-prompts
  * Generate campaign-style prompts based on brand analysis + e-commerce image
+ * Handles both MODEL shots (people) and PRODUCT shots (flat lays)
  */
 app.post('/api/campaign-prompts', async (req, res) => {
     try {
-        const { brandAnalysis, brandName, ecomDescription, numPrompts = 3, imageIndex = 0 } = req.body;
+        const { brandAnalysis, brandName, ecomDescription, numPrompts = 3, imageIndex = 0, numPeople = 1, imageType = 'model', previousPrompts = [] } = req.body;
 
-        console.log(`📝 [Campaign Prompts] Generating ${numPrompts} varied prompts for ${brandName} (image ${imageIndex + 1})`);
+        console.log(`📝 [Campaign Prompts] Generating ${numPrompts} prompts for ${brandName} (unit ${imageIndex + 1}, type: ${imageType}, ${previousPrompts.length} previous)`);
 
-        const systemPrompt = `You are an expert at writing prompts for AI image-to-image generation that transforms e-commerce product shots into campaign-style imagery.
+        // Build context about previous prompts to avoid repetition
+        const avoidRepetitionContext = previousPrompts.length > 0
+            ? `\n\nALREADY USED (DO NOT REPEAT these settings):
+${previousPrompts.map((p, i) => `- ${p.substring(0, 100)}...`).join('\n')}
 
-Your job: Based on the brand's visual identity analysis, create ${numPrompts} prompts that place the subject in environments that FEEL true to the brand.
+You MUST create completely DIFFERENT settings from the above.`
+            : '';
+
+        let systemPrompt, userPrompt;
+
+        if (imageType === 'product') {
+            // FLAT LAY / PRODUCT SHOT prompts
+            systemPrompt = `You are an expert at writing prompts for AI image-to-image generation that transforms e-commerce product shots into styled product photography.
+
+Your job: Based on the brand's visual identity, create ${numPrompts} prompts for PRODUCT/FLAT LAY photography that feels authentic to the brand.
 
 RULES:
-1. Study the brand analysis carefully - understand what types of environments, lighting, and moods define this brand
-2. Create environments that are AUTHENTIC to the brand aesthetic - not generic, but specifically right for THIS brand
-3. Each prompt should be DIFFERENT from the others - vary the setting, lighting, and mood while staying on-brand
-4. DO NOT describe the person or clothing - only the environment, lighting, and atmosphere. The AI preserves the subject.
+1. Study the brand analysis - understand textures, colors, materials, and mood that define this brand
+2. Create styled product shots that are AUTHENTIC to the brand aesthetic
+3. MAXIMUM VARIETY: Each prompt MUST use completely different surfaces, props, and lighting
+4. DO NOT describe the product itself - only the surface, props, lighting, and styling. The AI preserves the product.
 5. Keep prompts to 2-3 sentences. Be specific and evocative.
-6. Use photography terms naturally: depth of field, lighting quality, atmosphere, etc.
+6. Use photography terms: soft diffused light, harsh shadows, warm tones, etc.
+
+VARIETY DIMENSIONS FOR PRODUCT SHOTS - vary across ALL of these:
+- Surface/backdrop (marble, wood, linen, concrete, terrazzo, sand, stone, fabric)
+- Props/styling (botanicals, ceramics, paper, jewelry, food items, natural objects)
+- Lighting style (soft window light, dramatic side light, even diffused, dappled sunlight)
+- Color temperature (warm golden, cool blue, neutral, sunset tones)
+- Composition angle (overhead flat lay, 45-degree angle, low angle, detail macro)
+- Mood (minimal clean, rich layered, organic natural, architectural stark)
 
 Return ONLY the prompts, one per line, no numbering or explanations.`;
 
-        const userPrompt = `BRAND: ${brandName}
+            userPrompt = `BRAND: ${brandName}
 
 BRAND VISUAL IDENTITY:
 ${brandAnalysis}
 
-PRODUCT IMAGE: ${ecomDescription}
+PRODUCT TO STYLE: ${ecomDescription}
+${avoidRepetitionContext}
 
-Generate ${numPrompts} campaign-style prompts. Each should feel authentically like ${brandName} - use environments, lighting, and moods that match the brand's aesthetic. Make each prompt distinct from the others.`;
+Generate ${numPrompts} styled product photography prompts. Each should feel authentically like ${brandName}'s aesthetic. Make each prompt COMPLETELY DIFFERENT - different surface, different props, different lighting, different mood. Think editorial product photography for a luxury campaign.`;
+
+        } else {
+            // MODEL / PERSON prompts (original behavior)
+            const peopleContext = numPeople > 1
+                ? `IMPORTANT: This scene will feature ${numPeople} people together. Describe how they should be positioned and interacting naturally.`
+                : '';
+
+            systemPrompt = `You are an expert at writing prompts for AI image-to-image generation that transforms e-commerce shots into campaign-style imagery.
+
+Your job: Based on the brand's visual identity, create ${numPrompts} prompts that place the subject${numPeople > 1 ? 's' : ''} in environments that FEEL true to the brand.
+
+${peopleContext}
+
+RULES:
+1. Study the brand analysis - understand environments, lighting, and moods that define this brand
+2. Create environments AUTHENTIC to the brand aesthetic - not generic
+3. MAXIMUM VARIETY: Each prompt MUST use completely different environment, time of day, and atmosphere
+4. DO NOT describe clothing - only environment, lighting, atmosphere, and pose. The AI preserves the subjects.
+5. Keep prompts to 2-3 sentences. Be specific and evocative.
+6. Use photography terms naturally.
+${numPeople > 1 ? `7. For ${numPeople} people: describe natural positioning (walking together, sitting nearby, conversing, etc.)` : ''}
+
+VARIETY DIMENSIONS FOR MODEL SHOTS - vary across ALL of these:
+- Location type (urban/nature/interior/architectural/industrial/coastal)
+- Time of day (golden hour/midday/blue hour/overcast/night)
+- Weather/atmosphere (misty/sunny/moody/crisp/dramatic/rainy)
+- Camera perspective (wide environmental/intimate close/dynamic angle/from below/from above)
+- Energy level (calm/active/contemplative/dynamic/playful)
+- Setting specificity (be SPECIFIC - not "urban" but "rain-slicked Tokyo side street at night")
+
+Return ONLY the prompts, one per line, no numbering or explanations.`;
+
+            userPrompt = `BRAND: ${brandName}
+
+BRAND VISUAL IDENTITY:
+${brandAnalysis}
+
+${numPeople > 1 ? `GROUP SCENE (${numPeople} people):` : 'MODEL/PERSON IMAGE:'} ${ecomDescription}
+${avoidRepetitionContext}
+
+Generate ${numPrompts} campaign-style prompts. Each should feel authentically like ${brandName}. Make each prompt COMPLETELY DIFFERENT - different location, different time, different mood, different energy. Be SPECIFIC with locations (not "beach" but "windswept Icelandic black sand beach at dusk").${numPeople > 1 ? ` Include natural positioning for ${numPeople} people.` : ''}`;
+        }
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -664,6 +736,67 @@ app.post('/api/upload-base64', async (req, res) => {
         res.json({ url });
     } catch (error) {
         console.error('Upload error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/clothing
+ * Scan clothing folders and return available products
+ */
+app.get('/api/clothing', (req, res) => {
+    try {
+        const clothingPath = join(__dirname, '..', 'shared', 'images', 'clothing');
+        const products = {};
+
+        // Categories to scan (matching PRODUCT_CATEGORIES)
+        const categories = ['top', 'sweater', 'outerwear', 'dress', 'bottom', 'shoes', 'bag', 'accessories'];
+        const genders = ['female', 'male'];
+
+        for (const gender of genders) {
+            const genderPath = join(clothingPath, gender);
+            if (!existsSync(genderPath)) continue;
+
+            for (const category of categories) {
+                const categoryPath = join(genderPath, category);
+                if (!existsSync(categoryPath)) continue;
+
+                if (!products[category]) {
+                    products[category] = { female: [], male: [] };
+                }
+
+                // Scan style subfolders
+                const styles = readdirSync(categoryPath).filter(f =>
+                    statSync(join(categoryPath, f)).isDirectory()
+                );
+
+                for (const style of styles) {
+                    const stylePath = join(categoryPath, style);
+                    const images = readdirSync(stylePath).filter(f =>
+                        /\.(jpg|jpeg|png|webp)$/i.test(f)
+                    );
+
+                    for (const image of images) {
+                        products[category][gender].push({
+                            url: `/shared/images/clothing/${gender}/${category}/${style}/${image}`,
+                            style: style,
+                            filename: image,
+                            description: `${style} ${category}`
+                        });
+                    }
+                }
+            }
+        }
+
+        console.log(`📦 [Clothing] Scanned products:`,
+            Object.entries(products).map(([cat, data]) =>
+                `${cat}: ${data.female.length}F/${data.male.length}M`
+            ).join(', ')
+        );
+
+        res.json(products);
+    } catch (error) {
+        console.error('❌ [Clothing] Scan error:', error);
         res.status(500).json({ error: error.message });
     }
 });

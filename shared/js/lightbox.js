@@ -74,7 +74,8 @@ class Lightbox {
         this.elements.download.addEventListener('click', () => {
             const result = this.results[this.currentIndex];
             if (result) {
-                this.onDownload(result.url, `image-${this.currentIndex + 1}.png`);
+                const filename = result.filename || `image-${this.currentIndex + 1}.png`;
+                this.onDownload(result.url, filename);
             }
         });
 
@@ -104,7 +105,8 @@ class Lightbox {
                 case 'D':
                     const result = this.results[this.currentIndex];
                     if (result) {
-                        this.onDownload(result.url, `image-${this.currentIndex + 1}.png`);
+                        const filename = result.filename || `image-${this.currentIndex + 1}.png`;
+                        this.onDownload(result.url, filename);
                     }
                     break;
             }
