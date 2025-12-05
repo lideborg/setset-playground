@@ -1,0 +1,125 @@
+/* Base Styles - Setset Playground */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: var(--text-md);
+    line-height: 1.5;
+    color: var(--carbon);
+    background: var(--white);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-lg);
+}
+
+.container--wide {
+    max-width: 1200px;
+}
+
+.container--full {
+    max-width: none;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--gainsboro);
+}
+
+.hero h1 {
+    font-size: var(--text-3xl);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-xs);
+}
+
+.hero-subtitle {
+    color: var(--slate);
+    font-size: var(--text-base);
+}
+
+/* Section Labels */
+.section-label {
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--slate);
+    margin-bottom: var(--space-xs);
+}
+
+/* Settings Section */
+.settings-section {
+    background: var(--off-white);
+    border: 1px solid var(--gainsboro);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.settings-row {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: flex-end;
+    margin-bottom: var(--space-sm);
+}
+
+.settings-row:last-child {
+    margin-bottom: 0;
+}
+
+.setting-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.setting-group.flex-1 {
+    flex: 1;
+}
+
+.setting-label {
+    display: block;
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--carbon);
+    margin-bottom: var(--space-2xs);
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--off-white);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--silver);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--ash-grey);
+}
+
+/* Selection */
+::selection {
+    background: var(--jet);
+    color: var(--white);
+}

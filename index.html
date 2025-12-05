@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Setset Playground</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
     <style>
         * {
             margin: 0;
@@ -12,8 +15,8 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #fafafa;
+            font-family: var(--font-sans);
+            background: var(--off-white);
             display: flex;
             height: 100vh;
             overflow: hidden;
@@ -22,8 +25,8 @@
         /* Left Sidebar */
         .sidebar {
             width: 200px;
-            background: #ffffff;
-            border-right: 1px solid #e5e5e5;
+            background: var(--white);
+            border-right: 1px solid var(--gainsboro);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
@@ -31,7 +34,7 @@
 
         .sidebar-header {
             padding: 24px 20px;
-            border-bottom: 1px solid #e5e5e5;
+            border-bottom: 1px solid var(--gainsboro);
         }
 
         .sidebar-header h1 {
@@ -43,88 +46,99 @@
 
         .sidebar-header p {
             font-size: 11px;
-            color: #a3a3a3;
+            color: var(--ash-grey);
         }
 
         .sidebar-nav {
             flex: 1;
-            padding: 16px 0;
-        }
-
-        .nav-group {
-            margin-bottom: 8px;
-        }
-
-        .nav-group-header {
+            padding: 0;
+            overflow-y: auto;
             display: flex;
-            align-items: center;
-            padding: 8px 20px;
-            color: #a3a3a3;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: color 0.15s;
+            flex-direction: column;
+            gap: 2px;
         }
 
-        .nav-group-header:hover {
-            color: #737373;
-        }
-
-        .nav-group-icon {
-            margin-right: 6px;
-            font-size: 9px;
-            color: #d4d4d4;
-            transition: transform 0.2s;
-        }
-
-        .nav-group:not(.collapsed) .nav-group-icon {
-            transform: rotate(90deg);
-        }
-
-        .nav-group-arrow {
-            margin-left: auto;
-            font-size: 8px;
-            transition: transform 0.2s;
-        }
-
-        .nav-group.collapsed .nav-group-arrow {
-            transform: rotate(-90deg);
-        }
-
-        .nav-group-items {
-            max-height: 500px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .nav-group.collapsed .nav-group-items {
-            max-height: 0;
+        #apiKeySwitcher {
+            padding: 16px 20px 8px;
         }
 
         .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 20px 8px 32px;
-            color: #737373;
+            display: block;
+            padding: 10px 20px;
+            color: var(--slate);
             text-decoration: none;
-            transition: all 0.15s;
-            font-size: 12px;
+            transition: all var(--transition-fast);
+            font-size: 13px;
             cursor: pointer;
             border-left: 2px solid transparent;
         }
 
         .nav-item:hover {
-            background: #fafafa;
-            color: #1a1a1a;
+            background: var(--off-white);
+            color: var(--carbon);
         }
 
         .nav-item.active {
-            background: #f0f0f0;
-            color: #1a1a1a;
+            background: var(--off-white);
+            color: var(--carbon);
             font-weight: 500;
-            border-left-color: #1a1a1a;
+            border-left-color: var(--jet);
+        }
+
+        .nav-section {
+            padding: 16px 20px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ash-grey);
+        }
+
+        .nav-section:first-child {
+            padding-top: 0;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--gainsboro);
+            margin: 12px 20px;
+        }
+
+        .nav-collapsible {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ash-grey);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .nav-collapsible:hover {
+            color: var(--slate);
+        }
+
+        .nav-collapsible .chevron {
+            font-size: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-collapsible.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .nav-group {
+            overflow: hidden;
+            transition: max-height 0.2s ease;
+            max-height: 200px;
+        }
+
+        .nav-group.collapsed {
+            max-height: 0;
         }
 
         /* Main Content */
@@ -149,6 +163,7 @@
             height: 100%;
             text-align: center;
             padding: 40px;
+            background: var(--white);
         }
 
         .welcome h2 {
@@ -160,8 +175,16 @@
 
         .welcome p {
             font-size: 15px;
-            color: #737373;
+            color: var(--slate);
             line-height: 1.6;
+        }
+
+        /* Sidebar footer */
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--gainsboro);
+            font-size: 10px;
+            color: var(--ash-grey);
         }
     </style>
 </head>
@@ -173,67 +196,34 @@
         </div>
 
         <nav class="sidebar-nav">
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Looks</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="looks">
-                        <span>Looks</span>
-                    </a>
-                </div>
-            </div>
+            <div id="apiKeySwitcher"></div>
+            <div class="nav-section">Tools</div>
+            <a class="nav-item" data-tool="generate">Generate</a>
+            <a class="nav-item" data-tool="remix">Remix</a>
+            <a class="nav-item" data-tool="batch-remix">Batch Remix</a>
+            <a class="nav-item" data-tool="bg-replace">BG Replace</a>
+            <a class="nav-item" data-tool="lockgroup">LockGroup</a>
+            <a class="nav-item" data-tool="socialset">SocialSet</a>
+            <a class="nav-item" data-tool="productgen">Product Gen</a>
+            <a class="nav-item" data-tool="envgen">Environment Gen</a>
+            <a class="nav-item" data-tool="campaign">Campaign Gen</a>
+            <a class="nav-item" data-tool="research">Research</a>
 
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Styling</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="styling">
-                        <span>Styling v1</span>
-                    </a>
-                    <a class="nav-item" data-tool="styling-v2">
-                        <span>Styling v2</span>
-                    </a>
-                    <a class="nav-item" data-tool="styling-v3">
-                        <span>Styling v3</span>
-                    </a>
-                </div>
+            <div class="nav-divider"></div>
+            <div class="nav-collapsible collapsed" id="legacy-toggle">
+                <span>Legacy</span>
+                <span class="chevron">▼</span>
             </div>
-
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>SetCast</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="setcast-v1">
-                        <span>SetCast v1</span>
-                    </a>
-                    <a class="nav-item" data-tool="setcast-v2">
-                        <span>SetCast v2</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="nav-group collapsed">
-                <div class="nav-group-header" onclick="toggleGroup(this)">
-                    <span class="nav-group-icon">▸</span>
-                    <span>Research</span>
-                    <span class="nav-group-arrow">▾</span>
-                </div>
-                <div class="nav-group-items">
-                    <a class="nav-item" data-tool="research">
-                        <span>Research Docs</span>
-                    </a>
-                </div>
+            <div class="nav-group collapsed" id="legacy-group">
+                <a class="nav-item" data-tool="looks">Looks</a>
+                <a class="nav-item" data-tool="styling">Styling</a>
+                <a class="nav-item" data-tool="angles">Angles</a>
             </div>
         </nav>
+
+        <div class="sidebar-footer">
+            v2.0 - Refactored
+        </div>
     </aside>
 
     <main class="main-content">
@@ -246,23 +236,39 @@
         <iframe id="content-frame" style="display: none;"></iframe>
     </main>
 
+    <script src="/shared/js/api.js"></script>
     <script>
+        // Initialize API key switcher in sidebar
+        document.getElementById('apiKeySwitcher').appendChild(createApiKeySwitcher());
+    </script>
+    <script>
+        // All tools now live in /tools/
+        const v = Date.now();
         const tools = {
-            'looks': '/looks/index.html',
-            'styling': '/styling/index.html',
-            'styling-v2': '/styling-v2/index.html',
-            'styling-v3': '/styling-v3/index.html?v=13&t=' + Date.now(), // Cache bust
-            'setcast-v1': 'http://localhost:3001',
-            'setcast-v2': '/setset-playground/editorial-prompt-generator/app/public/index.html',
-            'research': '/research/index.html'
+            'generate': `/tools/generate.html?v=${v}`,
+            'remix': `/tools/remix.html?v=${v}`,
+            'batch-remix': `/tools/batch-remix.html?v=${v}`,
+            'bg-replace': `/tools/bg-replace.html?v=${v}`,
+            'lockgroup': `/tools/lockgroup/index.html?v=${v}`,
+            'socialset': `/tools/socialset/index.html?v=${v}`,
+            'productgen': `/tools/socialset/product-generator.html?v=${v}`,
+            'envgen': `/tools/socialset/environment-generator.html?v=${v}`,
+            'campaign': `/tools/campaign-generator.html?v=${v}`,
+            'research': `/tools/research.html?v=${v}`,
+            // Legacy tools
+            'looks': `/tools/legacy/looks.html?v=${v}`,
+            'styling': `/tools/legacy/styling.html?v=${v}`,
+            'angles': `/tools/legacy/angles.html?v=${v}`
         };
 
-        function toggleGroup(header) {
-            const group = header.parentElement;
-            group.classList.toggle('collapsed');
+        // Check URL for direct tool access
+        const urlParams = new URLSearchParams(window.location.search);
+        const toolParam = urlParams.get('tool');
+        if (toolParam && tools[toolParam]) {
+            window.addEventListener('DOMContentLoaded', () => loadTool(toolParam));
         }
 
-        function loadTool(toolName) {
+        function loadTool(toolName, updateUrl = true) {
             const url = tools[toolName];
             if (!url) return;
 
@@ -271,18 +277,30 @@
             iframe.style.display = 'block';
             iframe.src = url;
 
-            // Update active nav
+            if (updateUrl) {
+                history.pushState({ tool: toolName }, '', `/?tool=${toolName}`);
+            }
+
             document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
+                item.classList.toggle('active', item.dataset.tool === toolName);
             });
-            document.querySelector(`[data-tool="${toolName}"]`).classList.add('active');
         }
 
+        // Handle browser back/forward
+        window.addEventListener('popstate', (e) => {
+            if (e.state?.tool) loadTool(e.state.tool, false);
+        });
+
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const tool = item.getAttribute('data-tool');
-                loadTool(tool);
-            });
+            item.addEventListener('click', () => loadTool(item.dataset.tool));
+        });
+
+        // Legacy collapsible toggle
+        document.getElementById('legacy-toggle').addEventListener('click', () => {
+            const toggle = document.getElementById('legacy-toggle');
+            const group = document.getElementById('legacy-group');
+            toggle.classList.toggle('collapsed');
+            group.classList.toggle('collapsed');
         });
     </script>
 </body>

@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Product Generator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        .generator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .generator-section {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+        }
+
+        .generator-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .section-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+            margin-bottom: var(--space-sm);
+        }
+
+        .gender-toggle {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .gender-toggle .btn {
+            flex: 1;
+        }
+
+        select.input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            font-family: var(--font-sans);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+        }
+
+        select.input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .style-presets {
+            display: flex;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .style-input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: var(--text-md);
+            font-family: var(--font-sans);
+            color: var(--carbon);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            resize: none;
+            min-height: 70px;
+            line-height: 1.5;
+        }
+
+        .style-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .style-input::placeholder {
+            color: var(--slate);
+        }
+
+        .model-toggle {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .model-toggle .btn {
+            flex: 1;
+        }
+
+        .aspect-toggle {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .aspect-toggle .btn {
+            flex: 1;
+        }
+
+        .count-buttons {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .count-buttons .btn {
+            flex: 1;
+        }
+
+        .generate-section {
+            margin-top: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-md);
+            color: var(--carbon);
+            margin-bottom: var(--space-sm);
+            text-align: center;
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            margin-top: var(--space-lg);
+            padding: var(--space-lg);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: var(--off-white);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+            margin-top: var(--space-lg);
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .result-card:hover {
+            border-color: var(--jet);
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-sm);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .result-card:hover .result-overlay {
+            opacity: 1;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .result-btn {
+            flex: 1;
+            padding: 6px 10px;
+            background: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-btn:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Product Generator</h1>
+            <p class="hero-subtitle">Generate flat-lay and product photography for your wardrobe library</p>
+        </div>
+
+        <!-- Generator Controls -->
+        <div class="generator-grid">
+            <!-- Gender -->
+            <div class="generator-section">
+                <div class="section-title">Gender</div>
+                <div class="gender-toggle">
+                    <button class="btn btn--toggle active" data-gender="female">Female</button>
+                    <button class="btn btn--toggle" data-gender="male">Male</button>
+                </div>
+            </div>
+
+            <!-- Category -->
+            <div class="generator-section">
+                <div class="section-title">Category</div>
+                <select id="category-select" style="width:100%; padding:16px 12px; font-size:13px; color:#000000; background:#ffffff; border:1px solid #ccc; border-radius:4px;">
+                    <option value="top">Top (T-shirts, Blouses)</option>
+                    <option value="sweater">Sweater (Knits, Cardigans)</option>
+                    <option value="outerwear">Outerwear (Jackets, Coats)</option>
+                    <option value="dress">Dress</option>
+                    <option value="bottom">Bottom (Pants, Skirts)</option>
+                    <option value="shoes">Shoes</option>
+                    <option value="bag">Bag</option>
+                    <option value="accessories">Accessories (Eyewear, Jewelry)</option>
+                </select>
+            </div>
+
+            <!-- Shot Type -->
+            <div class="generator-section">
+                <div class="section-title">Shot Type</div>
+                <select id="shot-select" style="width:100%; padding:16px 12px; font-size:13px; color:#000000; background:#ffffff; border:1px solid #ccc; border-radius:4px;">
+                    <option value="flatlay">Flat Lay (Top-down)</option>
+                    <option value="ghost">Ghost Mannequin</option>
+                    <option value="hanger">On Hanger</option>
+                    <option value="styled">Styled Arrangement</option>
+                </select>
+            </div>
+
+            <!-- Style -->
+            <div class="generator-section full-width">
+                <div class="section-title">Style Influence</div>
+                <div class="style-presets">
+                    <button class="btn btn--toggle btn--sm" data-style="minimal">Minimal</button>
+                    <button class="btn btn--toggle btn--sm" data-style="luxury">Luxury</button>
+                    <button class="btn btn--toggle btn--sm" data-style="avantgarde">Avant-garde</button>
+                    <button class="btn btn--toggle btn--sm" data-style="streetwear">Streetwear</button>
+                    <button class="btn btn--toggle btn--sm" data-style="classic">Classic</button>
+                    <button class="btn btn--toggle btn--sm" data-style="bohemian">Bohemian</button>
+                    <button class="btn btn--toggle btn--sm" data-style="scandinavian">Scandinavian</button>
+                    <button class="btn btn--toggle btn--sm" data-style="athleisure">Athleisure</button>
+                    <button class="btn btn--toggle btn--sm" data-style="romantic">Romantic</button>
+                </div>
+                <textarea class="style-input" id="style-input" placeholder="Add style notes... e.g. 'high-end designer feel, architectural silhouette, muted earth tones'"></textarea>
+            </div>
+
+            <!-- Settings Row -->
+            <div class="generator-section">
+                <div class="section-title">AI Model</div>
+                <div class="model-toggle">
+                    <button class="btn btn--toggle active" data-model="reve">Reve</button>
+                    <button class="btn btn--toggle" data-model="zimage">Z Image</button>
+                </div>
+            </div>
+
+            <div class="generator-section">
+                <div class="section-title">Aspect Ratio</div>
+                <div class="aspect-toggle">
+                    <button class="btn btn--toggle" data-aspect="1:1">1:1</button>
+                    <button class="btn btn--toggle active" data-aspect="3:4">3:4</button>
+                    <button class="btn btn--toggle" data-aspect="4:3">4:3</button>
+                    <button class="btn btn--toggle" data-aspect="9:16">9:16</button>
+                </div>
+            </div>
+
+            <div class="generator-section full-width">
+                <div class="section-title">Number of Images</div>
+                <div class="count-buttons">
+                    <button class="btn btn--toggle" data-count="5">5</button>
+                    <button class="btn btn--toggle active" data-count="10">10</button>
+                    <button class="btn btn--toggle" data-count="15">15</button>
+                    <button class="btn btn--toggle" data-count="20">20</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate -->
+        <div class="generate-section">
+            <div class="calc-display" id="calc-display">4 images @ $0.02 each = $0.08</div>
+            <button class="btn btn--primary btn--lg btn--block" id="generate-btn">Generate Products</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Generated Products</h2>
+                <button class="btn" onclick="downloadAll()">Download All</button>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Category</h3>
+                    <p id="lightbox-category"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Generating...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/shared/js/models.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script>
+        // State
+        const state = {
+            genders: ['female'],  // Multi-select like styles
+            category: 'top',
+            shotType: 'flatlay',
+            model: 'reve',
+            aspectRatio: '3:4',
+            stylePresets: [],
+            styleText: '',
+            count: 10,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // Color palettes for each style (for random variation)
+        const STYLE_COLORS = {
+            minimal: ['oatmeal', 'taupe', 'greige', 'sand', 'ivory', 'charcoal', 'black', 'cream', 'stone', 'soft grey', 'off-white', 'mushroom'],
+            luxury: ['black', 'charcoal', 'slate grey', 'ivory', 'cream', 'camel', 'chocolate brown', 'deep navy', 'muted burgundy', 'stone', 'taupe', 'espresso', 'cognac', 'soft grey', 'off-white'],
+            avantgarde: ['black', 'ink black', 'charcoal', 'dark grey', 'ash black', 'off-black', 'graphite', 'slate', 'bone', 'chalk white'],
+            streetwear: ['black', 'off-white', 'grey', 'olive', 'tan', 'navy', 'stone', 'cream', 'charcoal', 'brown', 'sand', 'slate'],
+            classic: ['navy', 'burgundy', 'camel', 'cream', 'forest green', 'tan', 'white', 'grey', 'brown', 'hunter green', 'wine', 'ivory'],
+            bohemian: ['terracotta', 'ochre', 'rust', 'cream', 'olive', 'burnt orange', 'dusty rose', 'sage green', 'mustard', 'cinnamon', 'sand', 'wine'],
+            scandinavian: ['oatmeal', 'grey', 'black', 'white', 'soft blue', 'camel', 'blush', 'sage', 'cream', 'charcoal', 'dusty pink', 'moss'],
+            athleisure: ['black', 'white', 'grey', 'navy', 'red', 'royal blue', 'volt green', 'orange', 'charcoal', 'teal', 'purple', 'neon yellow'],
+            romantic: ['blush pink', 'lavender', 'powder blue', 'cream', 'soft rose', 'ivory', 'lilac', 'dusty pink', 'champagne', 'soft peach', 'pale mint', 'white']
+        };
+
+        // Master style prompts with brand references, colors, fabrics, and styling details
+        const STYLE_PRESETS = {
+            minimal: 'quiet luxury minimalist aesthetic in the style of The Row, Jil Sander, Totême, Lemaire, or Khaite. Color palette: oatmeal, taupe, greige, sand, ivory, charcoal, black. Fabrics: fine wool, cashmere, silk, premium cotton, soft leather. Silhouette: clean architectural lines, impeccable tailoring, refined simplicity, understated elegance. No visible logos, focus on quality and craftsmanship',
+
+            luxury: 'opulent high luxury fashion in the style of Hermès, Versace, Chanel, Gucci, Dior, or Bottega Veneta. Color palette: rich jewel tones, gold, burgundy, emerald, royal blue, classic black, cream. Fabrics: sumptuous silk, fine Italian leather, tweed, velvet, satin, exotic skins. Silhouette: structured sophistication, maximalist glamour, bold statement pieces, heritage craftsmanship, ornate details and hardware',
+
+            avantgarde: 'dark avant-garde aesthetic in the style of Rick Owens, Yohji Yamamoto, Ann Demeulemeester, or Boris Bidjan Saberi. PREDOMINANTLY BLACK AND DARK TONES. Fabrics: washed leather, heavy draped jersey, distressed cotton, raw-edge linen, crinkled technical fabrics, matte leather, coated cotton. Silhouette: dramatic elongated proportions, asymmetric hems, deconstructed seams, architectural draping, raw exposed edges, dystopian post-apocalyptic mood. Dark, moody, sculptural, minimal but dramatic',
+
+            streetwear: 'elevated contemporary streetwear in the style of A-COLD-WALL*, Aimé Leon Dore, Fear of God, Essentials, or Stüssy. Muted earth tones and neutrals. Fabrics: heavyweight cotton, premium fleece, technical nylon, washed canvas, substantial jersey. Silhouette: oversized relaxed fit, dropped shoulders, boxy cuts, utilitarian details, industrial influences, architectural streetwear. NO LOGOS, NO GRAPHICS. Clean elevated street aesthetic with refined construction',
+
+            classic: 'timeless heritage elegance in the style of Ralph Lauren, Burberry, Brooks Brothers, Loro Piana, or Barbour. Color palette: navy, burgundy, camel, cream, forest green, classic plaids and tartans. Fabrics: cashmere, fine wool, oxford cotton, tweed, waxed cotton, premium leather. Silhouette: traditional tailoring, Ivy League preppy refinement, equestrian influences, collegiate sophistication, enduring quality',
+
+            bohemian: 'bohemian free-spirit aesthetic in the style of Free People, Zimmermann, Isabel Marant, or Ulla Johnson. Color palette: warm earth tones, terracotta, ochre, rust, cream, olive, sunset hues. Fabrics: flowing linen, cotton gauze, crochet, suede, embroidered textiles, natural fibers. Silhouette: relaxed flowing silhouettes, layered textures, folk-inspired patterns, artisanal details, fringe and tassels, romantic bohemian layering',
+
+            scandinavian: 'Scandinavian minimalism in the style of Totême, Ganni, Arket, Filippa K, or Acne Studios. Color palette: soft neutrals, oatmeal, grey, black, white, muted pastels, camel. Fabrics: organic cotton, merino wool, recycled materials, cozy knits, quality denim. Silhouette: functional clean lines, relaxed yet refined, cozy hygge comfort, sustainable timeless design, effortless Copenhagen cool',
+
+            athleisure: 'athletic sportswear in the style of Nike, Adidas, Under Armour, or Puma. Bold sporty aesthetic. Fabrics: Dri-FIT performance fabric, breathable mesh panels, technical polyester, stretchy spandex, moisture-wicking materials. Silhouette: athletic fit, sporty cuts, performance-ready shapes, dynamic sportswear design. NO LOGOS, NO BRANDING, NO TEXT. Clean athletic wear with bold colors and technical construction',
+
+            romantic: 'romantic feminine aesthetic in the style of Reformation, Zimmermann, Self-Portrait, LoveShackFancy, or Simone Rocha. Color palette: blush pink, lavender, powder blue, cream, soft florals, delicate prints. Fabrics: flowing chiffon, delicate lace, silk organza, embroidered tulle, cotton broderie. Silhouette: soft billowing silhouettes, puff sleeves, ruffled details, cinched waists, tiered skirts, ethereal dreamy romance'
+        };
+
+        // Category-specific prompt templates (research-backed best practices)
+        const CATEGORY_PROMPTS = {
+            top: {
+                flatlay: 'Professional flat lay product photography, CAMERA DIRECTLY OVERHEAD AT 90 DEGREES, bird\'s eye view looking straight down. Single {GENDER} {ITEM} CENTERED IN FRAME, laid COMPLETELY FLAT FACE UP showing FRONT of garment on PURE WHITE background. Arms and sleeves extended outward symmetrically. Neckline, collar, buttons, and front details clearly visible. FULL GARMENT VISIBLE from collar to hem, no cropping, smoothed with no wrinkles. NO LOGOS, NO BRANDING, NO TEXT on garment. WHITE seamless backdrop, bright even lighting, no shadows. E-commerce catalog style, {STYLE}.',
+                ghost: 'Professional ghost mannequin product photography, {GENDER} {ITEM} displayed on invisible form, 3D structure maintained, natural shoulder structure preserved, collar stands naturally, interior neck label visible, sleeves drape authentically showing fabric weight, pure white seamless background, high-key studio softbox lighting, centered composition fills 85% of frame, true-to-life color rendering, {STYLE}. Premium catalog standard.',
+                hanger: 'Premium clothing on hanger photography, {GENDER} {ITEM} hanging from polished walnut wood hanger, soft natural window light from left creates gentle shadows and depth, white wall background, natural fabric drape demonstrates material quality and weight, sleeves fall naturally, slightly angled view adds dimension, {STYLE}. Sophisticated casual luxury aesthetic.',
+                styled: 'Editorial flat lay composition, {GENDER} {ITEM} artfully arranged on white marble surface with curated accessories nearby, bird\'s-eye overhead view, soft diffused lighting, intentional negative space guides eye to product, complementary props (watch, sunglasses) without overwhelming, rule of thirds composition, magazine-worthy styling, narrative-driven display, {STYLE}.'
+            },
+            sweater: {
+                flatlay: 'Professional flat lay product photography, CAMERA DIRECTLY OVERHEAD AT 90 DEGREES, bird\'s eye view looking straight down. Single {GENDER} {ITEM} CENTERED IN FRAME, laid COMPLETELY FLAT FACE UP showing FRONT of garment on PURE WHITE background. Arms and sleeves extended outward symmetrically. Neckline and front knit pattern clearly visible. FULL GARMENT VISIBLE from neckline to hem, no cropping, no bunching, knit texture visible. NO LOGOS, NO BRANDING, NO TEXT on garment. WHITE seamless backdrop, bright even lighting, no shadows. E-commerce catalog style, {STYLE}.',
+                ghost: 'Ghost mannequin product photography, {GENDER} {ITEM} on invisible form maintaining natural shape, shoulder structure preserved, sleeve drape shows fabric weight, interior collar visible, knit texture detail sharp, pure white seamless background, studio softbox lighting, centered composition, {STYLE}. High-end knitwear presentation.',
+                hanger: 'Premium hanger photography, {GENDER} {ITEM} hanging from velvet-covered padded hanger, soft window light creates gentle shadows, white background, natural drape demonstrates knit weight and quality, sleeves fall authentically, slightly angled view reveals dimension, {STYLE}. Luxury knitwear catalog aesthetic.',
+                styled: 'Editorial lifestyle flat lay, {GENDER} {ITEM} artfully folded on textured linen surface, styled with leather accessories and coffee table book, bird\'s-eye view, soft natural lighting, warm earth-tone color harmony, cozy atmospheric styling, intentional layering creates depth, {STYLE}. Magazine editorial quality.'
+            },
+            outerwear: {
+                flatlay: 'Professional flat lay product photography, CAMERA DIRECTLY OVERHEAD AT 90 DEGREES, bird\'s eye view looking straight down. Single {GENDER} {ITEM} CENTERED IN FRAME, laid COMPLETELY FLAT FACE UP showing FRONT of garment on PURE WHITE background. Arms and sleeves extended outward symmetrically. Lapels, buttons, zipper, and front details clearly visible. FULL GARMENT VISIBLE from collar to hem, no cropping, smoothed. NO LOGOS, NO BRANDING, NO TEXT on garment. WHITE seamless backdrop, bright even lighting, no shadows. E-commerce catalog style, {STYLE}.',
+                ghost: 'Premium ghost mannequin photography, {GENDER} {ITEM} on invisible form, structured shoulders and lapels maintain tailored shape, natural drape shows construction quality, interior silk lining partially visible at collar, shows garment as worn without distraction, white seamless background, professional studio lighting, {STYLE}. Luxury outerwear catalog standard.',
+                hanger: 'High-end hanger photography, {GENDER} {ITEM} on polished wooden coat hanger, full length visible from shoulder to hem, natural fabric drape demonstrates weight and quality, structured collar and lapels prominent, soft directional window light creates depth, neutral warm-toned background, slightly angled view, {STYLE}. Heritage quality presentation.',
+                styled: 'Editorial product photography, {GENDER} {ITEM} draped over modern sculptural furniture, dramatic side lighting creates sophisticated shadows, styled with leather gloves and designer sunglasses nearby, intentional negative space, rich color palette, aspirational luxury mood, {STYLE}. Campaign-quality imagery.'
+            },
+            dress: {
+                flatlay: 'Professional flat lay product photography, CAMERA DIRECTLY OVERHEAD AT 90 DEGREES, bird\'s eye view looking straight down. Single {GENDER} {ITEM} CENTERED IN FRAME, laid COMPLETELY FLAT FACE UP showing FRONT of dress on PURE WHITE background. Arms extended symmetrically. Neckline, bodice, and front details clearly visible. FULL GARMENT VISIBLE from neckline to hem, no cropping, fabric smoothed. NO LOGOS, NO BRANDING, NO TEXT on garment. WHITE seamless backdrop, bright even lighting, no shadows. E-commerce catalog style, {STYLE}.',
+                ghost: 'Ghost mannequin product photography, {GENDER} {ITEM} displayed on invisible form, fitted bodice shows intended silhouette, skirt drapes naturally, neckline structure clear, full length visible from shoulder to hem, 3D structure maintained without distraction, white seamless background, even studio lighting, {STYLE}. Premium fashion catalog quality.',
+                hanger: 'Full-length hanger photography, {GENDER} {ITEM} on padded satin hanger, complete garment visible from neckline to floor-length hem, soft natural window light creates romantic atmosphere, minimal white background, fabric flows with gravity showing material quality, {STYLE}. Designer presentation.',
+                styled: 'Editorial luxury flat lay, {GENDER} {ITEM} artfully arranged on white marble, styled with strappy heels positioned at complementary angles, clutch and jewelry add lifestyle context, overhead soft lighting, feminine color palette, sophisticated arrangement suggests complete look, magazine-worthy styling, {STYLE}.'
+            },
+            bottom: {
+                flatlay: 'Professional flat lay product photography, CAMERA DIRECTLY OVERHEAD AT 90 DEGREES, bird\'s eye view looking straight down. Single {GENDER} {ITEM} CENTERED IN FRAME, laid COMPLETELY FLAT FACE UP showing FRONT on PURE WHITE background. Legs extended straight. Waistband, fly, front pockets clearly visible. FULL GARMENT VISIBLE from waistband to hem, no cropping, fabric smoothed. NO LOGOS, NO BRANDING, NO TEXT on garment. WHITE seamless backdrop, bright even lighting, no shadows. E-commerce catalog style, {STYLE}.',
+                ghost: 'Ghost mannequin technique, {GENDER} {ITEM} on invisible lower form, maintains intended fit and shape, waistband structure clear, fabric drape authentic, shows leg line and hemline, light gray seamless background, professional studio lighting, catalog standard, {STYLE}. E-commerce quality.',
+                hanger: 'Product photography, {GENDER} {ITEM} on premium chrome clip hanger, white background, full length visible showing natural drape and leg silhouette, soft even lighting, waistband and pocket details clear, slightly angled view adds dimension, {STYLE}. Premium catalog presentation.',
+                styled: 'Editorial flat lay composition, {GENDER} {ITEM} arranged with coordinated leather belt and shoes, bird\'s-eye view on natural wood surface, warm natural lighting, creates complete outfit suggestion, intentional negative space, {STYLE}. Lifestyle fashion photography.'
+            },
+            shoes: {
+                flatlay: 'Professional product photography, 3/4 ANGLE VIEW from slightly above, {GENDER} {ITEM} pair CENTERED IN FRAME on PURE WHITE background. One shoe facing forward, one at angle to show side profile and heel. Full shoes visible, showing shape and construction details. NO LOGOS, NO BRANDING, NO TEXT on shoes. WHITE seamless backdrop, bright even lighting, soft shadows for depth. E-commerce catalog style, {STYLE}.',
+                ghost: 'High-end shoe product shot, {GENDER} {ITEM} pair positioned for maximum detail visibility, one front-facing showing toe and lacing, one at three-quarter angle revealing side profile and heel, white background, soft studio lighting highlights premium materials and craftsmanship, {STYLE}. Luxury footwear catalog.',
+                hanger: 'Professional shoe photography, {GENDER} {ITEM} on polished marble surface at elegant angle, soft side lighting creates sculptural shadows and emphasizes leather texture, gentle contact shadow grounds product, white gradient background, {STYLE}. Designer presentation quality.',
+                styled: 'Editorial shoe photography, {GENDER} {ITEM} positioned on marble pedestal, dramatic directional lighting creates depth, styled minimally with product box or dust bag suggesting luxury packaging, sophisticated atmosphere, {STYLE}. Magazine editorial aesthetic.'
+            },
+            bag: {
+                flatlay: 'Professional product photography, 3/4 ANGLE VIEW from slightly above, {GENDER} {ITEM} CENTERED IN FRAME on PURE WHITE background. Bag positioned to show front face, side depth, and top opening. Full bag visible including handle and hardware details. NO LOGOS, NO BRANDING, NO TEXT on bag. WHITE seamless backdrop, bright even lighting, soft shadows for depth. E-commerce catalog style, {STYLE}.',
+                ghost: 'Premium bag product shot, {GENDER} {ITEM} structured presentation showing dimension and shape, front view with slight angle revealing depth, all hardware and stitching detail visible, white seamless background, soft studio lighting emphasizes material quality, {STYLE}. High-end accessory catalog.',
+                hanger: 'Luxury bag photography, {GENDER} {ITEM} on velvet display pedestal, slightly angled view shows dimension and interior, soft directional lighting creates sophisticated shadows while highlighting grain texture, neutral background, {STYLE}. Investment piece presentation.',
+                styled: 'Editorial bag photography, {GENDER} {ITEM} on velvet surface, styled with designer sunglasses and silk scarf nearby, dramatic side lighting emphasizes leather texture, jewel-tone color harmony, sophisticated luxury aesthetic, aspirational presentation, {STYLE}. Magazine campaign quality.'
+            },
+            accessories: {
+                flatlay: 'Professional product photography, 3/4 ANGLE VIEW from slightly above, {GENDER} {ITEM} CENTERED IN FRAME on PURE WHITE background. Positioned to show shape, depth and craftsmanship details. Full item visible. NO LOGOS, NO BRANDING, NO TEXT. WHITE seamless backdrop, bright even lighting, soft shadows for depth. E-commerce catalog style, {STYLE}.',
+                ghost: 'High-end accessory product shot, {GENDER} {ITEM} on clean background, precision lighting highlights materials and craftsmanship detail, studio softbox illumination, sharp focus on texture and finish, elegant presentation, {STYLE}. Luxury catalog quality.',
+                hanger: 'Professional accessory photography, {GENDER} {ITEM} elegant display on marble surface, soft directional lighting creates gentle shadows and depth, material texture and quality visible, sophisticated neutral background, {STYLE}. Designer presentation.',
+                styled: 'Editorial accessory composition, curated arrangement of {GENDER} {ITEM} on velvet or marble surface, styled with complementary luxury items, dramatic spotlight creates sophisticated atmosphere, intentional negative space, museum-quality presentation, {STYLE}. Magazine editorial aesthetic.'
+            }
+        };
+
+        // Item variations per category - GENDER SPECIFIC
+        const ITEM_VARIATIONS = {
+            top: {
+                female: [
+                    'silk blouse', 'linen shirt', 'jersey top', 'tailored button-up', 'draped top',
+                    'ribbed tank', 'poplin shirt', 'peplum top', 'crop top', 'tunic', 'bodysuit',
+                    'camisole', 'halter top', 'off-shoulder top', 'wrap top', 'peasant blouse',
+                    'oxford shirt', 'chambray shirt', 'viscose blouse', 'flutter sleeve top'
+                ],
+                male: [
+                    'cotton t-shirt', 'linen shirt', 'oxford shirt', 'henley shirt', 'polo shirt',
+                    'camp collar shirt', 'band collar shirt', 'chambray shirt', 'flannel shirt',
+                    'poplin dress shirt', 'crew neck tee', 'v-neck tee', 'long sleeve tee',
+                    'button-down shirt', 'mandarin collar shirt', 'denim shirt', 'jersey polo'
+                ]
+            },
+            sweater: {
+                female: [
+                    'cashmere sweater', 'wool cardigan', 'chunky knit pullover', 'fine gauge knit',
+                    'ribbed sweater', 'cable knit jumper', 'turtleneck sweater', 'mock neck sweater',
+                    'v-neck sweater', 'crew neck sweater', 'oversized cardigan', 'cropped sweater',
+                    'mohair sweater', 'bouclé knit', 'pointelle knit', 'wrap cardigan', 'off-shoulder sweater'
+                ],
+                male: [
+                    'cashmere sweater', 'wool cardigan', 'chunky knit pullover', 'fine gauge knit',
+                    'ribbed sweater', 'cable knit jumper', 'turtleneck sweater', 'mock neck sweater',
+                    'v-neck sweater', 'crew neck sweater', 'half-zip pullover', 'shawl collar cardigan',
+                    'sweater vest', 'fisherman sweater', 'merino wool sweater', 'cotton sweater'
+                ]
+            },
+            outerwear: {
+                female: [
+                    'tailored blazer', 'wool coat', 'leather jacket', 'trench coat', 'quilted jacket',
+                    'bomber jacket', 'oversized coat', 'denim jacket', 'shearling coat', 'peacoat',
+                    'parka', 'cropped jacket', 'longline blazer', 'double-breasted coat', 'camel coat',
+                    'puffer jacket', 'moto jacket', 'cape coat', 'cocoon coat', 'belted coat'
+                ],
+                male: [
+                    'tailored blazer', 'wool coat', 'leather jacket', 'trench coat', 'quilted jacket',
+                    'bomber jacket', 'overcoat', 'denim jacket', 'shearling jacket', 'peacoat',
+                    'duffle coat', 'parka', 'field jacket', 'safari jacket', 'chore coat',
+                    'puffer jacket', 'suede jacket', 'harrington jacket', 'mac coat', 'topcoat'
+                ]
+            },
+            dress: {
+                female: [
+                    'midi dress', 'slip dress', 'shirt dress', 'wrap dress', 'maxi dress', 'mini dress',
+                    'knit dress', 'structured dress', 'A-line dress', 'sheath dress', 'fit-and-flare dress',
+                    'shift dress', 'sweater dress', 'halter dress', 'tiered dress', 'pleated dress',
+                    'column dress', 'trapeze dress', 'pinafore dress', 'smock dress', 'blazer dress'
+                ],
+                male: [] // Men don't wear dresses in this context
+            },
+            bottom: {
+                female: [
+                    'tailored trousers', 'wide-leg pants', 'slim jeans', 'pleated skirt', 'midi skirt',
+                    'shorts', 'culottes', 'straight-leg pants', 'palazzo pants', 'cigarette pants',
+                    'mini skirt', 'maxi skirt', 'pencil skirt', 'wrap skirt', 'A-line skirt',
+                    'high-waisted trousers', 'cropped pants', 'linen pants', 'leather pants', 'flared jeans'
+                ],
+                male: [
+                    'tailored trousers', 'slim jeans', 'straight-leg pants', 'chinos', 'cargo pants',
+                    'joggers', 'dress pants', 'pleated trousers', 'corduroy pants', 'linen pants',
+                    'shorts', 'bermuda shorts', 'bootcut jeans', 'relaxed jeans', 'wool trousers',
+                    'drawstring pants', 'cropped chinos', 'slim chinos', 'tapered pants', 'flat-front pants'
+                ]
+            },
+            shoes: {
+                female: [
+                    'leather loafers', 'minimalist sneakers', 'heeled boots', 'ballet flats', 'ankle boots',
+                    'sandals', 'mules', 'chelsea boots', 'knee-high boots', 'espadrilles', 'slip-on sneakers',
+                    'kitten heels', 'block heels', 'platform sandals', 'slides', 'slingback heels',
+                    'wedge sandals', 'chunky loafers', 'mary janes', 'pointed toe flats'
+                ],
+                male: [
+                    'leather loafers', 'minimalist sneakers', 'chelsea boots', 'oxford shoes', 'derby shoes',
+                    'brogues', 'monk strap shoes', 'ankle boots', 'desert boots', 'chukka boots',
+                    'boat shoes', 'driving moccasins', 'slip-on sneakers', 'leather sandals', 'penny loafers',
+                    'suede loafers', 'canvas sneakers', 'combat boots', 'dress boots', 'espadrilles'
+                ]
+            },
+            bag: {
+                female: [
+                    'leather tote', 'structured handbag', 'crossbody bag', 'clutch', 'shoulder bag',
+                    'bucket bag', 'mini bag', 'hobo bag', 'satchel', 'envelope clutch', 'camera bag',
+                    'saddle bag', 'baguette bag', 'top-handle bag', 'drawstring bag', 'woven tote', 'quilted bag'
+                ],
+                male: [
+                    'leather briefcase', 'messenger bag', 'weekender bag', 'backpack', 'crossbody bag',
+                    'duffle bag', 'laptop bag', 'portfolio', 'leather tote', 'dopp kit', 'satchel',
+                    'canvas messenger', 'travel bag', 'carryall', 'document holder'
+                ]
+            },
+            accessories: {
+                female: [
+                    'silk scarf', 'wool scarf', 'sunglasses', 'aviator sunglasses', 'cat-eye sunglasses',
+                    'drop earrings', 'hoop earrings', 'statement earrings', 'stud earrings',
+                    'pendant necklace', 'chain necklace', 'choker necklace', 'layered necklaces',
+                    'wide-brim hat', 'fedora hat', 'beret', 'bucket hat', 'straw hat',
+                    'cashmere scarf', 'printed silk scarf', 'headband', 'hair clip', 'pearl necklace'
+                ],
+                male: [
+                    'wool scarf', 'cashmere scarf', 'knit scarf', 'silk scarf',
+                    'sunglasses', 'aviator sunglasses', 'wayfarer sunglasses', 'round sunglasses',
+                    'fedora hat', 'flat cap', 'baseball cap', 'beanie', 'bucket hat', 'panama hat',
+                    'knit beanie', 'wool hat', 'newsboy cap', 'trucker cap'
+                ]
+            }
+        };
+
+        // Style-specific item overrides - these replace default items when style is selected
+        const STYLE_ITEMS = {
+            streetwear: {
+                top: {
+                    female: ['oversized hoodie', 'cropped hoodie', 'graphic tee', 'oversized tee', 'crop top', 'tank top', 'long sleeve tee', 'zip-up hoodie', 'pullover sweatshirt', 'baggy tee'],
+                    male: ['oversized hoodie', 'graphic tee', 'oversized tee', 'long sleeve tee', 'zip-up hoodie', 'pullover sweatshirt', 'henley', 'raglan tee', 'baggy tee', 'mock neck']
+                },
+                sweater: {
+                    female: ['oversized crewneck sweatshirt', 'cropped sweatshirt', 'zip hoodie', 'fleece pullover', 'oversized knit', 'hoodie'],
+                    male: ['oversized crewneck sweatshirt', 'zip hoodie', 'fleece pullover', 'heavyweight hoodie', 'quarter-zip fleece', 'hoodie']
+                },
+                outerwear: {
+                    female: ['puffer jacket', 'bomber jacket', 'oversized denim jacket', 'track jacket', 'windbreaker', 'varsity jacket', 'coach jacket', 'fleece jacket'],
+                    male: ['puffer jacket', 'bomber jacket', 'oversized denim jacket', 'track jacket', 'windbreaker', 'varsity jacket', 'coach jacket', 'work jacket', 'fleece jacket']
+                },
+                bottom: {
+                    female: ['cargo pants', 'wide-leg joggers', 'baggy jeans', 'track pants', 'sweatpants', 'cargo shorts', 'parachute pants', 'loose fit jeans'],
+                    male: ['cargo pants', 'wide-leg joggers', 'baggy jeans', 'track pants', 'sweatpants', 'cargo shorts', 'parachute pants', 'loose fit jeans', 'carpenter pants']
+                },
+                shoes: {
+                    female: ['chunky sneakers', 'platform sneakers', 'retro sneakers', 'high-top sneakers', 'dad sneakers', 'skate shoes'],
+                    male: ['chunky sneakers', 'retro sneakers', 'high-top sneakers', 'basketball sneakers', 'skate shoes', 'running sneakers']
+                },
+                bag: {
+                    female: ['crossbody bag', 'belt bag', 'mini backpack', 'shoulder bag', 'messenger bag', 'fanny pack'],
+                    male: ['crossbody bag', 'belt bag', 'backpack', 'messenger bag', 'sling bag', 'fanny pack']
+                },
+                accessories: {
+                    female: ['bucket hat', 'beanie', 'snapback cap', 'sunglasses', 'chain necklace', 'hoop earrings'],
+                    male: ['bucket hat', 'beanie', 'snapback cap', 'dad cap', 'sunglasses', 'chain necklace']
+                }
+            },
+            athleisure: {
+                top: {
+                    female: ['sports bra', 'racerback tank', 'performance tee', 'running tank', 'athletic crop top', 'compression top', 'mesh panel tank', 'training tee'],
+                    male: ['performance tee', 'running tank', 'compression shirt', 'sleeveless training top', 'athletic tank', 'dri-fit tee', 'muscle tank']
+                },
+                sweater: {
+                    female: ['athletic hoodie', 'zip-up training jacket', 'performance fleece', 'running pullover', 'warm-up top'],
+                    male: ['athletic hoodie', 'zip-up training jacket', 'performance fleece', 'running pullover', 'warm-up top', 'track top']
+                },
+                outerwear: {
+                    female: ['windbreaker', 'running jacket', 'puffer vest', 'track jacket', 'rain shell', 'lightweight down jacket'],
+                    male: ['windbreaker', 'running jacket', 'puffer vest', 'track jacket', 'rain shell', 'lightweight down jacket', 'training jacket']
+                },
+                bottom: {
+                    female: ['running shorts', 'compression leggings', 'yoga pants', 'athletic leggings', 'biker shorts', 'track pants', 'training shorts', 'joggers'],
+                    male: ['running shorts', 'compression shorts', 'track pants', 'training shorts', 'basketball shorts', 'athletic joggers', 'sweat shorts']
+                },
+                shoes: {
+                    female: ['running shoes', 'training sneakers', 'cross-trainers', 'athletic sneakers'],
+                    male: ['running shoes', 'training sneakers', 'cross-trainers', 'basketball shoes', 'athletic sneakers']
+                },
+                bag: {
+                    female: ['gym bag', 'sports duffle', 'drawstring backpack', 'athletic backpack', 'yoga mat bag'],
+                    male: ['gym bag', 'sports duffle', 'drawstring backpack', 'athletic backpack', 'training bag']
+                },
+                accessories: {
+                    female: ['sports headband', 'athletic cap', 'visor', 'sport sunglasses', 'sweatband', 'running armband'],
+                    male: ['athletic cap', 'visor', 'sport sunglasses', 'sweatband', 'running armband', 'sports headband']
+                }
+            }
+        };
+
+        // Helper to get items for a gender and style
+        function getItemsForGender(category, gender, style = null) {
+            // Check if style has specific items for this category
+            if (style && STYLE_ITEMS[style] && STYLE_ITEMS[style][category]) {
+                const styleItems = STYLE_ITEMS[style][category][gender];
+                if (styleItems && styleItems.length > 0) {
+                    return styleItems;
+                }
+            }
+
+            // Fall back to default items
+            const catItems = ITEM_VARIATIONS[category];
+            if (!catItems) return ITEM_VARIATIONS.top[gender] || ITEM_VARIATIONS.top.female;
+
+            const genderItems = catItems[gender];
+            // If no items for this gender (e.g., dresses for men), return empty
+            if (!genderItems || genderItems.length === 0) return [];
+            return genderItems;
+        }
+
+        // Elements
+        const elements = {
+            categorySelect: document.getElementById('category-select'),
+            shotSelect: document.getElementById('shot-select'),
+            styleInput: document.getElementById('style-input'),
+            calcDisplay: document.getElementById('calc-display'),
+            generateBtn: document.getElementById('generate-btn'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxCategory: document.getElementById('lightbox-category'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxDownload: document.getElementById('lightbox-download')
+        };
+
+        // Initialize
+        function init() {
+            // Gender toggle (multi-select)
+            document.querySelectorAll('[data-gender]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    const gender = btn.dataset.gender;
+                    if (btn.classList.contains('active')) {
+                        if (!state.genders.includes(gender)) {
+                            state.genders.push(gender);
+                        }
+                    } else {
+                        state.genders = state.genders.filter(g => g !== gender);
+                        // Ensure at least one gender is selected
+                        if (state.genders.length === 0) {
+                            state.genders = ['female'];
+                            document.querySelector('[data-gender="female"]').classList.add('active');
+                        }
+                    }
+                    updateCalc();
+                });
+            });
+
+            // Model toggle
+            document.querySelectorAll('[data-model]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-model]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.model = btn.dataset.model;
+                    updateCalc();
+                });
+            });
+
+            // Aspect ratio toggle
+            document.querySelectorAll('[data-aspect]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-aspect]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.aspectRatio = btn.dataset.aspect;
+                });
+            });
+
+            // Style presets (multi-select)
+            document.querySelectorAll('[data-style]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    const style = btn.dataset.style;
+                    if (btn.classList.contains('active')) {
+                        state.stylePresets.push(style);
+                    } else {
+                        state.stylePresets = state.stylePresets.filter(s => s !== style);
+                    }
+                    updateCalc(); // Update total when styles change
+                });
+            });
+
+            // Category select
+            elements.categorySelect.addEventListener('change', () => {
+                state.category = elements.categorySelect.value;
+            });
+
+            // Shot type select
+            elements.shotSelect.addEventListener('change', () => {
+                state.shotType = elements.shotSelect.value;
+            });
+
+            // Style text
+            elements.styleInput.addEventListener('input', () => {
+                state.styleText = elements.styleInput.value;
+            });
+
+            // Count buttons
+            document.querySelectorAll('[data-count]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-count]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.count = parseInt(btn.dataset.count);
+                    updateCalc();
+                });
+            });
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', generate);
+
+            // Lightbox
+            document.addEventListener('keydown', (e) => {
+                if (!elements.lightbox.classList.contains('visible')) return;
+                if (e.key === 'Escape') closeLightbox();
+                else if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                else if (e.key === 'ArrowRight') navigateLightbox(1);
+            });
+
+            updateCalc();
+        }
+
+        function updateCalc() {
+            const model = MODELS[state.model];
+            const cost = model ? model.costPerImage : 0.04;
+            const styleCount = Math.max(state.stylePresets.length, 1);
+            const genderCount = state.genders.length;
+            const totalImages = state.count * styleCount * genderCount;
+            const total = (totalImages * cost).toFixed(2);
+
+            // Build multiplier display
+            const multipliers = [];
+            if (genderCount > 1) multipliers.push(`${genderCount} genders`);
+            if (styleCount > 1) multipliers.push(`${styleCount} styles`);
+
+            if (multipliers.length > 0) {
+                elements.calcDisplay.textContent = `${state.count} × ${multipliers.join(' × ')} = ${totalImages} images @ $${cost} each = $${total}`;
+            } else {
+                elements.calcDisplay.textContent = `${state.count} images @ $${cost} each = $${total}`;
+            }
+        }
+
+        function buildStyleString() {
+            const parts = [];
+
+            // Add preset styles (without color info - OpenAI handles colors now)
+            state.stylePresets.forEach(preset => {
+                if (STYLE_PRESETS[preset]) {
+                    // Remove color palette info from style string since OpenAI handles colors
+                    const styleWithoutColors = STYLE_PRESETS[preset]
+                        .replace(/Color palette:[^.]+\./gi, '')
+                        .trim();
+                    parts.push(styleWithoutColors);
+                }
+            });
+
+            // Add custom text
+            if (state.styleText.trim()) {
+                parts.push(state.styleText.trim());
+            }
+
+            return parts.join('. ') || 'clean minimal aesthetic';
+        }
+
+        function buildPrompt(itemVariation) {
+            const template = CATEGORY_PROMPTS[state.category]?.[state.shotType] || CATEGORY_PROMPTS.top.flatlay;
+            const styleString = buildStyleString();
+
+            return template
+                .replace('{GENDER}', state.gender === 'female' ? "women's" : "men's")
+                .replace('{ITEM}', itemVariation)
+                .replace('{STYLE}', styleString);
+        }
+
+        async function enhanceAllPrompts(basePrompts, gender = 'female') {
+            const start = performance.now();
+            const genderLabel = gender === 'female' ? "WOMEN'S" : "MEN'S";
+
+            // Build a single request for all prompts
+            const itemList = basePrompts.map((p, i) => `${i + 1}. ${p.item}`).join('\n');
+
+            // Get color palette from selected styles
+            let colorPalette = [];
+            state.stylePresets.forEach(style => {
+                if (STYLE_COLORS[style]) {
+                    colorPalette = colorPalette.concat(STYLE_COLORS[style]);
+                }
+            });
+            // Remove duplicates
+            colorPalette = [...new Set(colorPalette)];
+            const colorList = colorPalette.length > 0
+                ? colorPalette.join(', ')
+                : 'oatmeal, charcoal, cream, navy, black, white, grey, tan';
+
+            const enhanceRequest = `You are a creative fashion designer. Generate ${basePrompts.length} HIGHLY VARIED ${genderLabel} product descriptions.
+
+GENDER: ${genderLabel} clothing ONLY
+COLOR PALETTE: ${colorList}
+
+For each item, create a UNIQUE description (max 25 words) combining:
+- A specific color from the palette (vary between light/dark, warm/cool, muted/rich)
+- A distinctive fabric/texture (vary between: silk, cotton, linen, wool, cashmere, leather, denim, velvet, satin, tweed, corduroy, jersey, poplin, chambray, gauze, mesh, bouclé, mohair)
+- A unique design detail (vary between: different necklines, sleeve styles, fits, closures, pockets, seams, hems, collars)
+
+Items to describe:
+${itemList}
+
+CRITICAL - MAXIMIZE VARIETY:
+- NO TWO ITEMS should have similar descriptions
+- Vary the FIT: oversized, relaxed, slim, tailored, cropped, longline, boxy
+- Vary NECKLINES: crew, v-neck, scoop, boat, mock, turtleneck, collared, henley
+- Vary SLEEVES: short, long, 3/4, cap, balloon, raglan, dolman, sleeveless
+- Vary DETAILS: buttons, zippers, ties, pleats, seams, pockets, cuffs, hems
+- Each item must have a DIFFERENT color
+- These are ${genderLabel} garments with ${gender === 'male' ? 'masculine' : 'feminine'} cuts
+
+Return EXACTLY ${basePrompts.length} descriptions, numbered. Just garment details, no photography terms.
+
+Format:
+1. [color] ${gender === 'male' ? "men's" : "women's"} [fit] [item] in [fabric], [unique detail]
+2. ...`;
+
+            try {
+                const response = await api.generatePrompts(enhanceRequest, basePrompts.length);
+                const elapsed = ((performance.now() - start) / 1000).toFixed(2);
+
+                if (response.prompts && response.prompts.length > 0) {
+                    console.log(`[${elapsed}s] ✨ All ${response.prompts.length} item descriptions generated`);
+                    // Return the enhanced item descriptions (not full prompts)
+                    return response.prompts.map(p => {
+                        // Clean up numbering if present
+                        return p.replace(/^\d+\.\s*/, '').trim();
+                    });
+                }
+            } catch (error) {
+                console.log(`⚠️ Enhancement failed, using base items:`, error.message);
+            }
+
+            // Fallback to base item names
+            return basePrompts.map(p => p.item);
+        }
+
+        function buildFinalPrompt(itemDescription, gender = null) {
+            // Build the final prompt with the enhanced item description
+            const template = CATEGORY_PROMPTS[state.category]?.[state.shotType] || CATEGORY_PROMPTS.top.flatlay;
+            const styleString = buildStyleString();
+            const genderToUse = gender || state.genders[0] || 'female';
+
+            let prompt = template
+                .replace('{GENDER}', genderToUse === 'female' ? "women's" : "men's")
+                .replace('{ITEM}', itemDescription)
+                .replace('{STYLE}', styleString);
+
+            // Reinforce flat lay camera angle at the end for flatlay shots
+            if (state.shotType === 'flatlay') {
+                const isAccessoryType = ['shoes', 'bag', 'accessories'].includes(state.category);
+                if (isAccessoryType) {
+                    prompt += ' IMPORTANT: 3/4 angle view from above, item facing forward, fully visible, no cropping.';
+                } else {
+                    prompt += ' CRITICAL: Show FRONT of garment only, NOT the back. Garment laid flat FACE UP with buttons/collar/neckline visible. Camera directly overhead. Never show back of garment.';
+                }
+            }
+
+            return prompt;
+        }
+
+        async function generate() {
+            const totalStart = performance.now();
+
+            // Get genders and styles to generate
+            const gendersToGenerate = [...state.genders];
+            const stylesToGenerate = state.stylePresets.length > 0 ? [...state.stylePresets] : [''];
+            const totalImages = state.count * stylesToGenerate.length * gendersToGenerate.length;
+
+            console.log('\n🚀 Starting generation...');
+            console.log(`   Category: ${state.category}`);
+            console.log(`   Genders: ${gendersToGenerate.join(', ')}`);
+            console.log(`   Styles: ${stylesToGenerate.join(', ') || 'none'}`);
+            console.log(`   Count: ${state.count} × ${gendersToGenerate.length} genders × ${stylesToGenerate.length} styles = ${totalImages} total`);
+
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+
+            // Show progress
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${totalImages}`;
+            elements.progressBar.style.width = '0%';
+
+            let overallCompleted = 0;
+
+            // PHASE 1: Get ALL OpenAI descriptions in parallel
+            console.log('\n📝 Getting all item descriptions in parallel...');
+            const enhancementJobs = [];
+
+            for (const currentGender of gendersToGenerate) {
+                for (const currentStyle of stylesToGenerate) {
+                    // Get GENDER and STYLE-SPECIFIC item variations - SHUFFLE for no repeats
+                    const items = getItemsForGender(state.category, currentGender, currentStyle);
+
+                    // Skip if no items for this gender/category combo (e.g., dresses for men)
+                    if (items.length === 0) {
+                        console.log(`   ⚠️ Skipping ${currentGender} ${state.category} - no items available`);
+                        continue;
+                    }
+
+                    const shuffled = [...items].sort(() => Math.random() - 0.5);
+                    // Take unique items, cycle through if we need more than available
+                    const selectedItems = [];
+                    for (let i = 0; i < state.count; i++) {
+                        selectedItems.push(shuffled[i % shuffled.length]);
+                    }
+
+                    // Build base item list for enhancement
+                    const basePrompts = selectedItems.map(item => ({ item }));
+
+                    // Create enhancement job
+                    enhancementJobs.push({
+                        gender: currentGender,
+                        style: currentStyle,
+                        selectedItems: selectedItems,
+                        basePrompts: basePrompts
+                    });
+                }
+            }
+
+            // Run ALL OpenAI calls in parallel
+            const originalStyles = [...state.stylePresets];
+            const enhancementResults = await Promise.all(
+                enhancementJobs.map(async (job) => {
+                    // Temporarily set style for this call
+                    state.stylePresets = job.style ? [job.style] : [];
+                    const enhancedItems = await enhanceAllPrompts(job.basePrompts, job.gender);
+                    console.log(`   ✨ ${job.gender} / ${job.style || 'default'} descriptions ready`);
+                    return {
+                        ...job,
+                        enhancedItems: enhancedItems
+                    };
+                })
+            );
+            state.stylePresets = originalStyles;
+
+            // PHASE 2: Fire ALL image generations in parallel
+            console.log(`\n🖼️  Generating ${totalImages} images in parallel...`);
+            const allPromises = [];
+
+            enhancementResults.forEach((result) => {
+                const { gender, style, selectedItems, enhancedItems } = result;
+
+                // Temporarily set style for prompt building
+                state.stylePresets = style ? [style] : [];
+
+                enhancedItems.forEach((itemDesc, i) => {
+                    const finalPrompt = buildFinalPrompt(itemDesc, gender);
+
+                    const promise = (async () => {
+                        const imgStart = performance.now();
+                        try {
+                            const params = {
+                                prompt: finalPrompt,
+                                num_images: 1,
+                                output_format: 'png'
+                            };
+
+                            // Model-specific params
+                            if (state.model === 'reve') {
+                                params.aspect_ratio = state.aspectRatio;
+                            } else {
+                                const sizes = {
+                                    '1:1': { width: 1024, height: 1024 },
+                                    '3:4': { width: 768, height: 1024 },
+                                    '4:3': { width: 1024, height: 768 },
+                                    '9:16': { width: 576, height: 1024 }
+                                };
+                                params.image_size = sizes[state.aspectRatio] || sizes['3:4'];
+                                params.num_inference_steps = 8;
+                                params.enable_safety_checker = false;
+                            }
+
+                            const data = await api.generateImage(state.model, params);
+                            const imgElapsed = ((performance.now() - imgStart) / 1000).toFixed(2);
+
+                            if (data.images && data.images.length > 0) {
+                                console.log(`   [${imgElapsed}s] ✅ ${gender} ${itemDesc.substring(0, 35)}...`);
+                                state.results.push({
+                                    url: data.images[0].url,
+                                    prompt: finalPrompt,
+                                    category: state.category,
+                                    item: selectedItems[i],
+                                    itemDesc: itemDesc,
+                                    gender: gender,
+                                    styles: style ? [style] : []
+                                });
+                                renderResults();
+                            }
+                        } catch (error) {
+                            console.error(`   ❌ Failed: ${error.message}`);
+                        }
+
+                        overallCompleted++;
+                        elements.progressCount.textContent = `${overallCompleted} / ${totalImages}`;
+                        elements.progressBar.style.width = `${(overallCompleted / totalImages) * 100}%`;
+                    })();
+
+                    allPromises.push(promise);
+                });
+
+                state.stylePresets = originalStyles;
+            });
+
+            // Execute ALL at once
+            await Promise.all(allPromises);
+
+            const totalElapsed = ((performance.now() - totalStart) / 1000).toFixed(2);
+
+            console.log(`\n✅ Generation complete!`);
+            console.log(`   Total time: ${totalElapsed}s`);
+            console.log(`   Images created: ${state.results.length}/${totalImages}\n`);
+
+            // Hide progress, show results
+            elements.progressSection.classList.remove('visible');
+            elements.resultsSection.classList.add('visible');
+        }
+
+        function renderResults() {
+            elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
+                <div class="result-card" onclick="openLightbox(${idx})">
+                    <img src="${result.url}" alt="${result.item}">
+                    <div class="result-overlay">
+                        <div class="result-actions">
+                            <button class="result-btn" onclick="event.stopPropagation(); downloadImage(${idx})">Download</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            elements.resultsSection.classList.add('visible');
+        }
+
+        function openLightbox(idx) {
+            state.lightboxIndex = idx;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+        }
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+        }
+
+        function navigateLightbox(direction) {
+            const newIndex = state.lightboxIndex + direction;
+            if (newIndex >= 0 && newIndex < state.results.length) {
+                state.lightboxIndex = newIndex;
+                updateLightboxContent();
+            }
+        }
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxCategory.textContent = `${result.category} - ${result.item}`;
+            elements.lightboxPrompt.textContent = result.prompt;
+            elements.lightboxDownload.onclick = () => downloadImage(state.lightboxIndex);
+        }
+
+        function buildFilename(result, idx) {
+            const parts = [result.gender, result.category];
+            if (result.styles && result.styles.length > 0) {
+                parts.push(result.styles.join('-'));
+            }
+            parts.push(idx + 1);
+            return parts.join('_') + '.png';
+        }
+
+        function downloadImage(idx) {
+            const result = state.results[idx];
+            downloadFile(result.url, buildFilename(result, idx));
+        }
+
+        function downloadAll() {
+            state.results.forEach((result, idx) => {
+                setTimeout(() => {
+                    downloadFile(result.url, buildFilename(result, idx));
+                }, idx * 500);
+            });
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

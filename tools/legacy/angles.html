@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Angles - Image Transformer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            padding: 40px 20px;
+            color: #171717;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #737373;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: white;
+            border: 2px dashed #e5e5e5;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 32px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-section:hover {
+            border-color: #171717;
+            background: #fafafa;
+        }
+
+        .upload-section.dragging {
+            border-color: #171717;
+            background: #f5f5f5;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: #737373;
+            margin-bottom: 8px;
+        }
+
+        .upload-limit {
+            font-size: 12px;
+            color: #a3a3a3;
+        }
+
+        /* Image Previews */
+        .uploaded-images {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .image-preview {
+            position: relative;
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e5e5;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .image-preview:hover .remove-btn {
+            opacity: 1;
+        }
+
+        .image-preview .analyzing {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 11px;
+            padding: 6px;
+            text-align: center;
+        }
+
+        /* Angle Grid */
+        .angles-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .angles-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .angle-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .angle-label {
+            font-size: 12px;
+            color: #737373;
+            margin-bottom: 8px;
+        }
+
+        .angle-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .angle-select:focus {
+            outline: none;
+            border-color: #171717;
+        }
+
+        .image-selector {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .image-selector:focus {
+            outline: none;
+            border-color: #171717;
+        }
+
+        .angle-result {
+            margin-top: 12px;
+            aspect-ratio: 1;
+            background: #fafafa;
+            border-radius: 6px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .angle-result.show {
+            display: block;
+        }
+
+        .angle-result img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .angle-result .loading {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #737373;
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: #171717;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .generate-btn:hover {
+            background: #404040;
+        }
+
+        .generate-btn:disabled {
+            background: #e5e5e5;
+            color: #a3a3a3;
+            cursor: not-allowed;
+        }
+
+        /* Hidden file input */
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Camera Angles Transformer</h1>
+        <p class="subtitle">Upload up to 5 images and transform them with different camera angles</p>
+
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadZone">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">Drag and drop images here or click to browse</div>
+            <div class="upload-limit">Up to 5 images (JPG, PNG)</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+
+        <!-- Uploaded Images Preview -->
+        <div class="uploaded-images" id="imagesPreview"></div>
+
+        <!-- Camera Angles Section -->
+        <div class="angles-section">
+            <div class="section-title">Camera Angle Transformations</div>
+            <div class="angles-grid" id="anglesGrid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="generate-btn" id="generateBtn" disabled>Generate Transformations</button>
+    </div>
+
+    <script src="angles.js"></script>
+</body>
+</html>

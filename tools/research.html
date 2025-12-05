@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research - Setset Playground</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e5e5e5;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e5e5;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .search-box:focus {
+            border-color: #1a1a1a;
+        }
+
+        .search-box::placeholder {
+            color: #a3a3a3;
+        }
+
+        .category-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+            color: #525252;
+            border-left: 2px solid transparent;
+        }
+
+        .category-item:hover {
+            background: #fafafa;
+            color: #1a1a1a;
+        }
+
+        .category-item.active {
+            background: #fafafa;
+            color: #1a1a1a;
+            font-weight: 500;
+            border-left-color: #1a1a1a;
+        }
+
+        .category-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .category-name {
+            flex: 1;
+        }
+
+        .category-count {
+            font-size: 11px;
+            color: #a3a3a3;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Document List View */
+        .list-view {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+
+        .list-header {
+            margin-bottom: 24px;
+        }
+
+        .list-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .list-description {
+            font-size: 13px;
+            color: #737373;
+        }
+
+        .doc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            background: #e5e5e5;
+            border: 1px solid #e5e5e5;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: white;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .doc-item:hover {
+            background: #fafafa;
+        }
+
+        .doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doc-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #1a1a1a;
+        }
+
+        .doc-summary {
+            font-size: 12px;
+            color: #737373;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .doc-arrow {
+            color: #d4d4d4;
+            font-size: 18px;
+            margin-left: 16px;
+        }
+
+        .doc-item:hover .doc-arrow {
+            color: #737373;
+        }
+
+        /* Document Reader View */
+        .reader-view {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .reader-view.active {
+            display: flex;
+        }
+
+        .list-view.hidden {
+            display: none;
+        }
+
+        .reader-header {
+            padding: 16px 32px;
+            border-bottom: 1px solid #e5e5e5;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #525252;
+        }
+
+        .back-btn:hover {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: #737373;
+        }
+
+        .breadcrumb span {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .reader-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            background: white;
+        }
+
+        .reader-body {
+            max-width: 800px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #1a1a1a;
+        }
+
+        .reader-body h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin: 0 0 24px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .reader-body h2 {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 40px 0 16px 0;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .reader-body h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin: 32px 0 12px 0;
+        }
+
+        .reader-body h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 24px 0 8px 0;
+        }
+
+        .reader-body p {
+            margin-bottom: 16px;
+        }
+
+        .reader-body ul, .reader-body ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .reader-body li {
+            margin-bottom: 6px;
+        }
+
+        .reader-body code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            font-size: 13px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            border-radius: 3px;
+        }
+
+        .reader-body pre {
+            background: #1a1a1a;
+            color: #f5f5f5;
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+            border-radius: 4px;
+        }
+
+        .reader-body pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .reader-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .reader-body th, .reader-body td {
+            padding: 10px 12px;
+            border: 1px solid #e5e5e5;
+            text-align: left;
+        }
+
+        .reader-body th {
+            background: #fafafa;
+            font-weight: 500;
+        }
+
+        .reader-body blockquote {
+            border-left: 3px solid #e5e5e5;
+            padding-left: 16px;
+            margin: 16px 0;
+            color: #525252;
+            font-style: italic;
+        }
+
+        .reader-body hr {
+            border: none;
+            border-top: 1px solid #e5e5e5;
+            margin: 32px 0;
+        }
+
+        .reader-body a {
+            color: #1a1a1a;
+            text-decoration: underline;
+        }
+
+        .reader-body strong {
+            font-weight: 600;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #737373;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #525252;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #737373;
+            font-size: 13px;
+        }
+
+        /* Search results highlight */
+        .search-results .doc-item {
+            display: flex;
+        }
+
+        .no-results {
+            padding: 40px;
+            text-align: center;
+            color: #737373;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <input type="text" class="search-box" id="search" placeholder="Search documents...">
+        </div>
+        <div class="category-list" id="categoryList">
+            <div class="loading">Loading...</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- List View -->
+        <div class="list-view" id="listView">
+            <div class="list-header">
+                <h1 class="list-title" id="listTitle">All Research</h1>
+                <p class="list-description" id="listDescription">Select a category to browse documents</p>
+            </div>
+            <div class="doc-list" id="docList">
+                <div class="loading">Loading documents...</div>
+            </div>
+        </div>
+
+        <!-- Reader View -->
+        <div class="reader-view" id="readerView">
+            <div class="reader-header">
+                <button class="back-btn" onclick="closeReader()">
+                    ← Back
+                </button>
+                <div class="breadcrumb">
+                    <span id="readerCategory"></span> / <span id="readerTitle"></span>
+                </div>
+            </div>
+            <div class="reader-content">
+                <div class="reader-body" id="readerBody">
+                    <div class="loading">Loading document...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        let researchData = null;
+        let currentCategory = 'all';
+        let allDocuments = [];
+
+        async function init() {
+            try {
+                const response = await fetch('/research/research-index.json');
+                researchData = await response.json();
+
+                // Build flat document list
+                researchData.categories.forEach(cat => {
+                    cat.documents.forEach(doc => {
+                        allDocuments.push({
+                            ...doc,
+                            categoryId: cat.id,
+                            categoryName: cat.name,
+                            categoryIcon: cat.icon
+                        });
+                    });
+                });
+
+                renderCategories();
+                renderDocuments('all');
+            } catch (error) {
+                console.error('Error loading research:', error);
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoryList');
+
+            // Count all docs
+            const totalDocs = allDocuments.length;
+
+            let html = `
+                <div class="category-item active" data-category="all">
+                    <span class="category-icon">📚</span>
+                    <span class="category-name">All Research</span>
+                    <span class="category-count">${totalDocs}</span>
+                </div>
+            `;
+
+            researchData.categories.forEach(cat => {
+                html += `
+                    <div class="category-item" data-category="${cat.id}">
+                        <span class="category-icon">${cat.icon}</span>
+                        <span class="category-name">${cat.name}</span>
+                        <span class="category-count">${cat.documents.length}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Add click handlers
+            container.querySelectorAll('.category-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    container.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    renderDocuments(item.dataset.category);
+                });
+            });
+        }
+
+        function renderDocuments(categoryId) {
+            currentCategory = categoryId;
+            const listView = document.getElementById('listView');
+            const readerView = document.getElementById('readerView');
+
+            // Ensure we're in list view
+            listView.classList.remove('hidden');
+            readerView.classList.remove('active');
+
+            const title = document.getElementById('listTitle');
+            const description = document.getElementById('listDescription');
+            const docList = document.getElementById('docList');
+
+            let docs;
+            if (categoryId === 'all') {
+                title.textContent = 'All Research';
+                description.textContent = `${allDocuments.length} documents across all categories`;
+                docs = allDocuments;
+            } else {
+                const category = researchData.categories.find(c => c.id === categoryId);
+                title.textContent = category.name;
+                description.textContent = category.description;
+                docs = allDocuments.filter(d => d.categoryId === categoryId);
+            }
+
+            if (docs.length === 0) {
+                docList.innerHTML = '<div class="empty-state"><h3>No documents</h3><p>This category is empty</p></div>';
+                return;
+            }
+
+            docList.innerHTML = docs.map(doc => `
+                <div class="doc-item" onclick='openDocument(${JSON.stringify(doc).replace(/'/g, "&#39;")})'>
+                    <div class="doc-info">
+                        <div class="doc-title">${doc.title}</div>
+                        <div class="doc-summary">${doc.summary}</div>
+                    </div>
+                    <span class="doc-arrow">→</span>
+                </div>
+            `).join('');
+        }
+
+        async function openDocument(doc) {
+            const listView = document.getElementById('listView');
+            const readerView = document.getElementById('readerView');
+            const readerBody = document.getElementById('readerBody');
+            const readerCategory = document.getElementById('readerCategory');
+            const readerTitle = document.getElementById('readerTitle');
+
+            // Switch views
+            listView.classList.add('hidden');
+            readerView.classList.add('active');
+
+            // Set breadcrumb
+            readerCategory.textContent = doc.categoryName;
+            readerTitle.textContent = doc.title;
+
+            // Load content
+            readerBody.innerHTML = '<div class="loading">Loading document...</div>';
+
+            try {
+                const response = await fetch(doc.file);
+                const markdown = await response.text();
+                readerBody.innerHTML = marked.parse(markdown);
+            } catch (error) {
+                readerBody.innerHTML = '<div class="empty-state"><h3>Error loading document</h3><p>Could not load the document content</p></div>';
+            }
+        }
+
+        function closeReader() {
+            const listView = document.getElementById('listView');
+            const readerView = document.getElementById('readerView');
+
+            listView.classList.remove('hidden');
+            readerView.classList.remove('active');
+        }
+
+        // Search functionality
+        document.getElementById('search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+
+            if (!query) {
+                renderDocuments(currentCategory);
+                return;
+            }
+
+            const results = allDocuments.filter(doc =>
+                doc.title.toLowerCase().includes(query) ||
+                doc.summary.toLowerCase().includes(query) ||
+                doc.tags?.some(tag => tag.toLowerCase().includes(query))
+            );
+
+            const title = document.getElementById('listTitle');
+            const description = document.getElementById('listDescription');
+            const docList = document.getElementById('docList');
+
+            title.textContent = 'Search Results';
+            description.textContent = `${results.length} document${results.length !== 1 ? 's' : ''} found for "${query}"`;
+
+            // Deselect category
+            document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+
+            if (results.length === 0) {
+                docList.innerHTML = '<div class="no-results">No documents match your search</div>';
+                return;
+            }
+
+            docList.innerHTML = results.map(doc => `
+                <div class="doc-item" onclick='openDocument(${JSON.stringify(doc).replace(/'/g, "&#39;")})'>
+                    <div class="doc-info">
+                        <div class="doc-title">${doc.title}</div>
+                        <div class="doc-summary">${doc.summary}</div>
+                    </div>
+                    <span class="doc-arrow">→</span>
+                </div>
+            `).join('');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const readerView = document.getElementById('readerView');
+                if (readerView.classList.contains('active')) {
+                    closeReader();
+                }
+            }
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

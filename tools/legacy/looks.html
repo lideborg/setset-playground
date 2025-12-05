@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Looks - Model Portfolio</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            padding: 40px 24px;
+            color: #1a1a1a;
+        }
+
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: #737373;
+            font-size: 15px;
+        }
+
+        .filters {
+            max-width: 1400px;
+            margin: 0 auto 32px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .filter-btn:hover {
+            border-color: #1a1a1a;
+        }
+
+        .filter-btn.active {
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
+        }
+
+        .grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .model-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            overflow: hidden;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .model-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            border-color: #1a1a1a;
+        }
+
+        .model-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            background: #f5f5f5;
+        }
+
+        .model-info {
+            padding: 16px;
+        }
+
+        .model-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .model-meta {
+            font-size: 12px;
+            color: #737373;
+            line-height: 1.5;
+        }
+
+        .aesthetic-tag {
+            display: inline-block;
+            font-size: 11px;
+            padding: 4px 8px;
+            background: #f0f0f0;
+            margin-top: 8px;
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Looks</h1>
+        <p class="subtitle">Browse your talent roster of 25 diverse models</p>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="editorial">Editorial</button>
+        <button class="filter-btn" data-filter="commercial">Commercial</button>
+        <button class="filter-btn" data-filter="avant-garde">Avant-Garde</button>
+        <button class="filter-btn" data-filter="androgynous">Androgynous</button>
+    </div>
+
+    <div class="grid" id="modelGrid"></div>
+
+    <script>
+        const models = [
+            {
+                name: "James Wilson",
+                image: "/shared/images/talent/talent-02_JamesWilson.png",
+                gender: "Male",
+                age: "Mid 40s",
+                ethnicity: "East Asian",
+                aesthetic: ["commercial", "mature"]
+            },
+            {
+                name: "Maya Johnson",
+                image: "/shared/images/talent/talent-02_MayaJohnson.png",
+                gender: "Female",
+                age: "Late 20s-30s",
+                ethnicity: "South Asian",
+                aesthetic: ["commercial"]
+            },
+            {
+                name: "River Blake",
+                image: "/shared/images/talent/talent-03_RiverBlake.png",
+                gender: "Non-binary",
+                age: "Late teens-20s",
+                ethnicity: "Caucasian",
+                aesthetic: ["editorial", "avant-garde", "androgynous"]
+            },
+            {
+                name: "Emma Sullivan",
+                image: "/shared/images/talent/talent-04_EmmaSullivan.png",
+                gender: "Female",
+                age: "Late 20s-30s",
+                ethnicity: "Caucasian",
+                aesthetic: ["commercial"]
+            },
+            {
+                name: "Marcus Brown",
+                image: "/shared/images/talent/talent-05_MarcusBrown.png",
+                gender: "Male",
+                age: "Late 20s-30s",
+                ethnicity: "Black",
+                aesthetic: ["editorial"]
+            },
+            {
+                name: "Zara Mitchell",
+                image: "/shared/images/talent/talent-06_ZaraMitchell.png",
+                gender: "Female",
+                age: "Late teens-20s",
+                ethnicity: "South Asian",
+                aesthetic: ["commercial", "contemporary"]
+            },
+            {
+                name: "Sophia Anderson",
+                image: "/shared/images/talent/talent-07_SophiaAnderson.png",
+                gender: "Female",
+                age: "Late teens-20s",
+                ethnicity: "Caucasian",
+                aesthetic: ["commercial"]
+            },
+            {
+                name: "Liam Garcia",
+                image: "/shared/images/talent/talent-08_LiamGarcia.png",
+                gender: "Male",
+                age: "Late 20s-30s",
+                ethnicity: "Latino/Indigenous",
+                aesthetic: ["commercial"]
+            },
+            {
+                name: "Nina Davis",
+                image: "/shared/images/talent/talent-09_NinaDavis.png",
+                gender: "Female",
+                age: "Late 20s",
+                ethnicity: "Mixed Race",
+                aesthetic: ["editorial"]
+            },
+            {
+                name: "Ava Martinez",
+                image: "/shared/images/talent/talent-10_AvaMartinez.png",
+                gender: "Female",
+                age: "Early 20s",
+                ethnicity: "East Asian",
+                aesthetic: ["commercial"]
+            },
+            {
+                name: "Luna Park",
+                image: "/shared/images/talent/talent-11_LunaPark.png",
+                gender: "Female",
+                age: "Early 20s",
+                ethnicity: "East Asian",
+                aesthetic: ["commercial"]
+            },
+            {
+                name: "Noah Chen",
+                image: "/shared/images/talent/talent-12_NoahChen.png",
+                gender: "Male",
+                age: "Late 20s-30s",
+                ethnicity: "East Asian",
+                aesthetic: ["editorial"]
+            },
+            {
+                name: "Kai Thompson",
+                image: "/shared/images/talent/talent-13_KaiThompson.png",
+                gender: "Non-binary",
+                age: "Mid 20s",
+                ethnicity: "Mixed Race",
+                aesthetic: ["editorial", "androgynous"]
+            },
+            {
+                name: "Riley Morgan",
+                image: "/shared/images/talent/talent-14_RileyMorgan.png",
+                gender: "Non-binary",
+                age: "Early 20s",
+                ethnicity: "Caucasian",
+                aesthetic: ["editorial", "androgynous"]
+            },
+            {
+                name: "Jordan Lee",
+                image: "/shared/images/talent/talent-15_JordanLee.png",
+                gender: "Non-binary",
+                age: "Mid 20s",
+                ethnicity: "East Asian",
+                aesthetic: ["editorial", "androgynous"]
+            }
+        ];
+
+        function renderModels(filter = 'all') {
+            const grid = document.getElementById('modelGrid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'all'
+                ? models
+                : models.filter(m => m.aesthetic.includes(filter));
+
+            filtered.forEach(model => {
+                const card = document.createElement('div');
+                card.className = 'model-card';
+                card.innerHTML = `
+                    <img src="${model.image}" alt="${model.name}" class="model-image"
+                         onerror="this.style.background='#e5e5e5'; this.style.display='block';">
+                    <div class="model-info">
+                        <div class="model-name">${model.name}</div>
+                        <div class="model-meta">
+                            ${model.gender} · ${model.age}<br>
+                            ${model.ethnicity}
+                        </div>
+                        <div class="aesthetic-tag">${model.aesthetic[0]}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderModels(btn.getAttribute('data-filter'));
+            });
+        });
+
+        // Initial render
+        renderModels();
+    </script>
+</body>
+</html>

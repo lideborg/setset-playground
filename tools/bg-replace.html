@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Replace</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        /* Page-specific styles */
+        .container {
+            max-width: 700px;
+        }
+
+        /* Images Row */
+        .images-row {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .images-column {
+            flex: 1;
+        }
+
+        /* Upload Grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-2xs);
+            padding: var(--space-xs);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        /* Prompt Section */
+        .prompt-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .prompt-hint {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+            margin-top: var(--space-2xs);
+            text-align: center;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+            margin-top: var(--space-sm);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+            text-align: center;
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Results */
+        .result-image {
+            aspect-ratio: 3/4;
+        }
+
+        /* Source images in lightbox */
+        .lightbox-source-images {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .lightbox-source-images img {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .lightbox-source-images .source-label {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .lightbox-source-images .source-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Error */
+        .error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: var(--space-sm);
+            color: #991b1b;
+            margin-bottom: var(--space-md);
+            font-size: var(--text-base);
+            text-align: center;
+            border-radius: var(--radius-md);
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Custom lightbox overrides */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: var(--white);
+            padding: var(--space-sm);
+            z-index: 10;
+        }
+
+        .lightbox-nav.prev { left: var(--space-md); }
+        .lightbox-nav.next { right: 320px; }
+
+        /* Pairing indicator */
+        .pairing-hint {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+            margin-top: var(--space-2xs);
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .pairing-hint span {
+            background: var(--off-white);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>BG Replace</h1>
+            <p class="hero-subtitle">Replace backgrounds using AI</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <!-- Images Row -->
+        <div class="images-row">
+            <div class="images-column">
+                <div class="section-label">Foreground (Subject)</div>
+                <div class="upload-grid" id="primaryGrid" data-type="primary"></div>
+                <input type="file" id="primaryInput" accept="image/*" multiple>
+                <p class="pairing-hint">Images with subjects to keep</p>
+            </div>
+            <div class="images-column">
+                <div class="section-label">Background Reference</div>
+                <div class="upload-grid" id="secondaryGrid" data-type="secondary"></div>
+                <input type="file" id="secondaryInput" accept="image/*" multiple>
+                <p class="pairing-hint">New backgrounds (paired 1:1 with foreground)</p>
+            </div>
+        </div>
+
+        <!-- Prompts -->
+        <div class="prompt-section">
+            <div class="section-label">Background Prompt (Optional)</div>
+            <textarea class="textarea" id="promptTextarea" placeholder="Describe the desired background... (e.g., 'sunny beach with palm trees', 'modern office interior')"></textarea>
+            <p class="prompt-hint">Use prompt OR reference image - reference takes priority if both provided</p>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <!-- Seeds -->
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label class="setting-label">Variations per Image</label>
+                    <div class="slider-box">
+                        <input type="range" class="slider" id="seeds-slider" min="1" max="4" value="1">
+                        <span class="slider-value" id="seeds-value">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate -->
+            <div class="generate-section">
+                <div class="calc-display" id="calc-display">0 foreground images = 0 outputs</div>
+                <button class="btn btn--primary btn--lg btn--block" id="generate-btn" disabled>
+                    Replace Backgrounds <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Processing</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <p class="results-subtitle">Click to view details</p>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <button class="lightbox-nav prev" id="lightbox-prev">&larr;</button>
+            <button class="lightbox-nav next" id="lightbox-next">&rarr;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Source Images</h3>
+                    <div class="lightbox-source-images" id="lightbox-source-images"></div>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Loading...</p>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+
+    <script>
+        // Cost per image for Bria BG Replace
+        const COST_PER_IMAGE = 0.15;
+
+        // State
+        let primaryImages = new Array(10).fill(null);  // Foreground images
+        let secondaryImages = new Array(10).fill(null);  // Background references
+        let state = {
+            seeds: 1,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            primaryGrid: document.getElementById('primaryGrid'),
+            secondaryGrid: document.getElementById('secondaryGrid'),
+            primaryInput: document.getElementById('primaryInput'),
+            secondaryInput: document.getElementById('secondaryInput'),
+            promptTextarea: document.getElementById('promptTextarea'),
+            seedsSlider: document.getElementById('seeds-slider'),
+            seedsValue: document.getElementById('seeds-value'),
+            generateBtn: document.getElementById('generate-btn'),
+            costValue: document.getElementById('cost-value'),
+            calcDisplay: document.getElementById('calc-display'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            errorDiv: document.getElementById('error'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxSourceImages: document.getElementById('lightbox-source-images')
+        };
+
+        // Initialize grids
+        function initializeGrids() {
+            for (let i = 0; i < 10; i++) {
+                elements.primaryGrid.appendChild(createUploadSlot(i, 'primary'));
+                elements.secondaryGrid.appendChild(createUploadSlot(i, 'secondary'));
+            }
+        }
+
+        function getImagesArray(type) {
+            if (type === 'primary') return primaryImages;
+            if (type === 'secondary') return secondaryImages;
+        }
+
+        function getGrid(type) {
+            if (type === 'primary') return elements.primaryGrid;
+            if (type === 'secondary') return elements.secondaryGrid;
+        }
+
+        function getInput(type) {
+            if (type === 'primary') return elements.primaryInput;
+            if (type === 'secondary') return elements.secondaryInput;
+        }
+
+        function createUploadSlot(index, type) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.innerHTML = '+';
+            slot.dataset.index = index;
+            slot.dataset.type = type;
+            slot.addEventListener('click', (e) => {
+                const images = getImagesArray(type);
+                if (images[index]) {
+                    if (e.target.closest('.remove-btn')) return;
+                    toggleImage(index, type, !images[index].selected);
+                } else {
+                    const input = getInput(type);
+                    input.click();
+                    input.dataset.targetSlot = index;
+                }
+            });
+            return slot;
+        }
+
+        // Drag and drop
+        function setupDragAndDrop(grid, type) {
+            grid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                grid.classList.add('drag-over');
+            });
+            grid.addEventListener('dragleave', () => grid.classList.remove('drag-over'));
+            grid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                grid.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0) handleFileUpload(files, type, null);
+            });
+        }
+
+        elements.primaryInput.addEventListener('change', (e) => {
+            handleFileUpload(Array.from(e.target.files), 'primary', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
+            e.target.value = '';
+        });
+
+        elements.secondaryInput.addEventListener('change', (e) => {
+            handleFileUpload(Array.from(e.target.files), 'secondary', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
+            e.target.value = '';
+        });
+
+        function handleFileUpload(files, type, startIndex) {
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
+
+            files.forEach((file, i) => {
+                let index = startIndex !== null ? startIndex : images.findIndex((img, idx) => !img && idx >= i);
+                if (index === -1 || index >= 10) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images[index] = { file, url: e.target.result, selected: true };
+                    const slot = grid.children[index];
+                    slot.classList.add('filled');
+                    slot.innerHTML = `
+                        <img src="${e.target.result}" alt="Image ${index + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${index}, '${type}')">&times;</button>
+                    `;
+                    updateCalculator();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.toggleImage = function(index, type, checked) {
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
+            if (images[index]) {
+                images[index].selected = checked;
+                grid.children[index].classList.toggle('deselected', !checked);
+                updateCalculator();
+            }
+        };
+
+        window.removeImage = function(index, type) {
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
+            images.splice(index, 1);
+            images.push(null);
+            rerenderGrid(images, grid, type);
+            updateCalculator();
+        };
+
+        function rerenderGrid(images, grid, type) {
+            for (let i = 0; i < 10; i++) {
+                const slot = grid.children[i];
+                if (images[i]) {
+                    slot.className = 'upload-slot filled' + (images[i].selected ? '' : ' deselected');
+                    slot.innerHTML = `
+                        <img src="${images[i].url}" alt="Image ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i}, '${type}')">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            }
+        }
+
+        // Seeds slider
+        elements.seedsSlider.addEventListener('input', (e) => {
+            state.seeds = parseInt(e.target.value);
+            elements.seedsValue.textContent = state.seeds;
+            updateCalculator();
+        });
+
+        // Prompt textarea
+        elements.promptTextarea.addEventListener('input', updateCalculator);
+
+        // Update calculator
+        function updateCalculator() {
+            const selectedPrimary = primaryImages.filter(img => img && img.selected);
+            const selectedSecondary = secondaryImages.filter(img => img && img.selected);
+            const prompt = elements.promptTextarea.value.trim();
+            const numSeeds = state.seeds;
+
+            const numPrimary = selectedPrimary.length;
+            const numSecondary = selectedSecondary.length;
+            const hasPrompt = prompt.length > 0;
+
+            // Each foreground is processed with its corresponding background reference (or prompt)
+            const totalImages = numPrimary * numSeeds;
+            const cost = totalImages * COST_PER_IMAGE;
+
+            // Build display text
+            let displayLabel = `${numPrimary} foreground`;
+            if (numSecondary > 0) {
+                displayLabel += ` + ${numSecondary} background ref`;
+            }
+            if (hasPrompt) {
+                displayLabel += numSecondary > 0 ? ' (prompt ignored)' : ' + prompt';
+            }
+            displayLabel += ` × ${numSeeds} variations = ${totalImages} outputs`;
+
+            elements.calcDisplay.textContent = displayLabel;
+            elements.costValue.textContent = formatCost(cost);
+
+            // Enable if we have foreground images AND (background refs OR prompt)
+            const hasBackground = numSecondary > 0 || hasPrompt;
+            elements.generateBtn.disabled = numPrimary === 0 || !hasBackground;
+        }
+
+        // Helper to upload base64 image and get fal.ai URL
+        async function uploadImageToFal(dataUrl) {
+            const response = await api.uploadBase64(dataUrl);
+            return response.url;
+        }
+
+        // Generate
+        elements.generateBtn.addEventListener('click', handleGenerate);
+
+        async function handleGenerate() {
+            elements.errorDiv.classList.remove('show');
+
+            const selectedPrimary = primaryImages.filter(img => img && img.selected);
+            const selectedSecondary = secondaryImages.filter(img => img && img.selected);
+            const prompt = elements.promptTextarea.value.trim();
+
+            console.log('🖼️ BG REPLACE: Starting generation');
+            console.log(`  📷 Foreground images: ${selectedPrimary.length}`);
+            console.log(`  🎨 Background refs: ${selectedSecondary.length}`);
+            console.log(`  📝 Prompt: ${prompt || '(none)'}`);
+
+            if (selectedPrimary.length === 0) {
+                showError('Please add foreground images');
+                return;
+            }
+
+            if (selectedSecondary.length === 0 && !prompt) {
+                showError('Please add background references or a prompt');
+                return;
+            }
+
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+
+            // Upload all images to fal.ai first
+            console.log('📤 Uploading images to fal.ai...');
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = 'Uploading images...';
+            elements.progressBar.style.width = '0%';
+
+            try {
+                // Upload foreground images
+                for (const img of selectedPrimary) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded foreground image`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+
+                // Upload background reference images
+                for (const img of selectedSecondary) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded background reference`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Image upload failed:', error);
+                showError('Failed to upload images: ' + error.message);
+                elements.progressSection.classList.remove('visible');
+                return;
+            }
+
+            console.log('📤 All images uploaded!');
+
+            // Build tasks: pair foreground[i] with background[i]
+            const allTasks = [];
+            selectedPrimary.forEach((foregroundImg, idx) => {
+                // Get corresponding background ref (if available)
+                const backgroundRef = selectedSecondary[idx] || null;
+                const foregroundFilename = foregroundImg.file?.name?.replace(/\.[^/.]+$/, '') || 'bg-replace';
+
+                allTasks.push({
+                    foregroundUrl: foregroundImg.hostedUrl,
+                    foregroundDisplay: foregroundImg.url,
+                    backgroundRefUrl: backgroundRef?.hostedUrl || null,
+                    backgroundRefDisplay: backgroundRef?.url || null,
+                    prompt: prompt,
+                    seeds: state.seeds,
+                    filename: foregroundFilename,
+                    index: idx
+                });
+            });
+
+            const totalTasks = allTasks.length;
+            const totalImages = totalTasks * state.seeds;
+            let imagesCompleted = 0;
+
+            console.log(`📋 Created ${totalTasks} tasks, expecting ${totalImages} images`);
+
+            elements.progressCount.textContent = `0 / ${totalImages}`;
+            elements.progressBar.style.width = '0%';
+            elements.generateBtn.disabled = true;
+
+            // Execute all in parallel
+            await Promise.all(allTasks.map(async (task, taskIdx) => {
+                console.log(`🔄 [${taskIdx + 1}/${totalTasks}] Processing foreground ${task.index + 1}`);
+
+                try {
+                    const params = {
+                        image_url: task.foregroundUrl,
+                        num_images: task.seeds
+                    };
+
+                    // Use ref_image_url if we have a background reference, otherwise use prompt
+                    if (task.backgroundRefUrl) {
+                        params.ref_image_url = task.backgroundRefUrl;
+                        console.log(`  🎨 Using background reference image`);
+                    } else if (task.prompt) {
+                        params.prompt = task.prompt;
+                        console.log(`  📝 Using prompt: ${task.prompt.substring(0, 50)}...`);
+                    }
+
+                    const data = await api.bgReplace(params);
+
+                    if (data.images) {
+                        console.log(`  ✅ Got ${data.images.length} image(s)`);
+                        data.images.forEach((img, idx) => {
+                            state.results.push({
+                                url: img.url,
+                                prompt: task.prompt || '(reference image)',
+                                filename: task.filename,
+                                foregroundImage: task.foregroundDisplay,
+                                backgroundRefImage: task.backgroundRefDisplay
+                            });
+                        });
+                        renderResults();
+                        imagesCompleted += data.images.length;
+                    }
+                } catch (error) {
+                    console.error(`  ❌ Task failed:`, error);
+                    imagesCompleted += state.seeds;
+                }
+
+                elements.progressCount.textContent = `${imagesCompleted} / ${totalImages}`;
+                elements.progressBar.style.width = `${(imagesCompleted / totalImages) * 100}%`;
+            }));
+
+            console.log(`🎉 BG REPLACE: Complete! Generated ${state.results.length} images`);
+            elements.progressSection.classList.remove('visible');
+            elements.resultsSection.classList.add('visible');
+            updateCalculator();
+        }
+
+        function renderResults() {
+            elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
+                <div class="result-card" onclick="openLightbox(${idx})">
+                    <img src="${result.url}" alt="Result ${idx + 1}" class="result-image">
+                </div>
+            `).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxPrompt.textContent = result.prompt;
+
+            // Display source images
+            let sourceHtml = '';
+            if (result.foregroundImage) {
+                sourceHtml += `
+                    <div class="source-item">
+                        <img src="${result.foregroundImage}" alt="Foreground">
+                        <span class="source-label">Foreground</span>
+                    </div>
+                `;
+            }
+            if (result.backgroundRefImage) {
+                sourceHtml += `
+                    <div class="source-item">
+                        <img src="${result.backgroundRefImage}" alt="Background Ref">
+                        <span class="source-label">Background Ref</span>
+                    </div>
+                `;
+            }
+            elements.lightboxSourceImages.innerHTML = sourceHtml || '<span style="color: var(--slate); font-size: var(--text-xs);">No source images</span>';
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
+
+        document.getElementById('lightbox-prev').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-next').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-download').addEventListener('click', async () => {
+            const result = state.results[state.lightboxIndex];
+            const filename = result.filename || 'image';
+            downloadFile(result.url, `BGReplace_${filename}.png`);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!elements.lightbox.classList.contains('visible')) return;
+            if (e.key === 'Escape') closeLightbox();
+            else if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
+            else if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
+        });
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        function showError(message) {
+            elements.errorDiv.textContent = message;
+            elements.errorDiv.classList.add('show');
+        }
+
+        // Initialize
+        initializeGrids();
+        setupDragAndDrop(elements.primaryGrid, 'primary');
+        setupDragAndDrop(elements.secondaryGrid, 'secondary');
+        updateCalculator();
+    </script>
+</body>
+</html>

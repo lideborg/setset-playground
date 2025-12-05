@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        /* Page-specific styles */
+        .idea-section {
+            margin-bottom: var(--space-sm);
+        }
+
+        .idea-row {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .idea-input {
+            flex: 1;
+            height: 34px;
+        }
+
+        .idea-controls {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .idea-generate-btn {
+            height: 34px;
+            min-width: 120px;
+        }
+
+        .prompt-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .prompt-count {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-top: var(--space-2xs);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .generate-section {
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+            margin-top: var(--space-sm);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+            text-align: center;
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Custom size container */
+        .custom-size-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2xs);
+        }
+
+        .custom-size-separator {
+            color: var(--ash-grey);
+            font-size: var(--text-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Generate</h1>
+            <p class="hero-subtitle">Enter prompts (one per line) to generate images in parallel</p>
+        </div>
+
+        <!-- Idea Section -->
+        <div class="idea-section">
+            <div class="section-label">Idea</div>
+            <div class="idea-row">
+                <input type="text" class="input idea-input" id="idea-input" placeholder="Describe what you want to create...">
+                <div class="idea-controls">
+                    <div class="slider-box slider-box--compact">
+                        <input type="range" class="slider" id="idea-prompts-slider" min="1" max="10" value="4">
+                        <span class="slider-value" id="idea-prompts-value">4</span>
+                    </div>
+                    <button class="btn idea-generate-btn" id="idea-generate-btn">Generate Prompts</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompts -->
+        <div class="prompt-section">
+            <div class="section-label">Prompts</div>
+            <textarea class="textarea" id="prompts" placeholder="Enter prompts, one per line... (or use the idea generator above)"></textarea>
+            <p class="prompt-count" id="prompt-count">0 prompts</p>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <!-- Row 1: Models -->
+            <div class="settings-row">
+                <div class="setting-group flex-1">
+                    <label class="setting-label">Models (select multiple)</label>
+                    <div class="btn-group" id="model-buttons">
+                        <button class="btn btn--toggle active" data-model="reve">Reve</button>
+                        <button class="btn btn--toggle" data-model="zimage">Z Image</button>
+                        <button class="btn btn--toggle" data-model="flux2">Flux 2</button>
+                        <button class="btn btn--toggle" data-model="krea">Krea</button>
+                        <button class="btn btn--toggle" data-model="nanobanana">Nano Banana</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Aspect Ratio, Resolution, Custom Size -->
+            <div class="settings-row">
+                <div class="setting-group flex-1">
+                    <label class="setting-label">Aspect Ratio</label>
+                    <div class="btn-group" id="aspect-buttons">
+                        <button class="btn btn--toggle" data-ratio="16:9">16:9</button>
+                        <button class="btn btn--toggle" data-ratio="9:16">9:16</button>
+                        <button class="btn btn--toggle active" data-ratio="3:2">3:2</button>
+                        <button class="btn btn--toggle" data-ratio="2:3">2:3</button>
+                        <button class="btn btn--toggle" data-ratio="4:3">4:3</button>
+                        <button class="btn btn--toggle" data-ratio="3:4">3:4</button>
+                        <button class="btn btn--toggle" data-ratio="1:1">1:1</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Resolution</label>
+                    <div class="btn-group" id="resolution-buttons">
+                        <button class="btn btn--toggle active" data-res="1K">1K</button>
+                        <button class="btn btn--toggle" data-res="2K">2K</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Custom</label>
+                    <div class="custom-size-container">
+                        <input type="number" class="input input--number" id="custom-width" placeholder="W" min="256" max="2048">
+                        <span class="custom-size-separator">&times;</span>
+                        <input type="number" class="input input--number" id="custom-height" placeholder="H" min="256" max="2048">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Seeds + Z Image Steps -->
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label class="setting-label">Seeds</label>
+                    <div class="slider-box">
+                        <input type="range" class="slider" id="seeds-slider" min="1" max="4" value="1">
+                        <span class="slider-value" id="seeds-value">1</span>
+                    </div>
+                </div>
+
+                <div class="setting-group zimage-setting" style="display: none;">
+                    <label class="setting-label">Steps</label>
+                    <div class="slider-box">
+                        <input type="range" class="slider" id="steps-slider" min="1" max="30" value="8">
+                        <span class="slider-value" id="steps-value">8</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="generate-section">
+                <div class="calc-display" id="calc-display">0 prompts &times; 1 seed &times; 1 model = 0 images</div>
+                <button class="btn btn--primary btn--lg btn--block" id="generate-btn" disabled>
+                    Generate Images <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <p class="results-subtitle">Click to view details</p>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Model</h3>
+                    <p class="lightbox-model-text" id="lightbox-model"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">
+                    Download Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Generating...</p>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/models.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+
+    <script>
+        // State
+        const state = {
+            prompts: [],
+            selectedModels: ['reve'],
+            aspectRatio: '3:2',
+            resolution: '1K',
+            customWidth: null,
+            customHeight: null,
+            seeds: 1,
+            steps: 8,
+            ideaNumPrompts: 4,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            promptsTextarea: document.getElementById('prompts'),
+            promptCount: document.getElementById('prompt-count'),
+            modelButtons: document.getElementById('model-buttons'),
+            aspectButtons: document.getElementById('aspect-buttons'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            customWidth: document.getElementById('custom-width'),
+            customHeight: document.getElementById('custom-height'),
+            seedsSlider: document.getElementById('seeds-slider'),
+            seedsValue: document.getElementById('seeds-value'),
+            stepsSlider: document.getElementById('steps-slider'),
+            stepsValue: document.getElementById('steps-value'),
+            costValue: document.getElementById('cost-value'),
+            calcDisplay: document.getElementById('calc-display'),
+            generateBtn: document.getElementById('generate-btn'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxModel: document.getElementById('lightbox-model'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxClose: document.getElementById('lightbox-close'),
+            lightboxDownload: document.getElementById('lightbox-download'),
+            zimageSettings: document.querySelectorAll('.zimage-setting'),
+            ideaInput: document.getElementById('idea-input'),
+            ideaPromptsSlider: document.getElementById('idea-prompts-slider'),
+            ideaPromptsValue: document.getElementById('idea-prompts-value'),
+            ideaGenerateBtn: document.getElementById('idea-generate-btn')
+        };
+
+        // Initialize
+        function init() {
+            // Prompts
+            elements.promptsTextarea.addEventListener('input', updatePrompts);
+
+            // Model buttons - multi-select
+            elements.modelButtons.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn--toggle')) {
+                    const modelKey = e.target.dataset.model;
+                    e.target.classList.toggle('active');
+
+                    if (e.target.classList.contains('active')) {
+                        if (!state.selectedModels.includes(modelKey)) {
+                            state.selectedModels.push(modelKey);
+                        }
+                    } else {
+                        state.selectedModels = state.selectedModels.filter(m => m !== modelKey);
+                    }
+
+                    // Ensure at least one model is selected
+                    if (state.selectedModels.length === 0) {
+                        state.selectedModels = ['reve'];
+                        elements.modelButtons.querySelector('[data-model="reve"]').classList.add('active');
+                    }
+
+                    updateModelSettings();
+                    updateCost();
+                }
+            });
+
+            // Aspect ratio buttons
+            elements.aspectButtons.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn--toggle')) {
+                    elements.aspectButtons.querySelectorAll('.btn--toggle').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.aspectRatio = e.target.dataset.ratio;
+                    const size = getAspectSize(state.aspectRatio, state.resolution);
+                    elements.customWidth.value = size.width;
+                    elements.customHeight.value = size.height;
+                    elements.customWidth.classList.remove('active');
+                    elements.customHeight.classList.remove('active');
+                    state.customWidth = null;
+                    state.customHeight = null;
+                }
+            });
+
+            // Resolution buttons
+            elements.resolutionButtons.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn--toggle')) {
+                    elements.resolutionButtons.querySelectorAll('.btn--toggle').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.resolution = e.target.dataset.res;
+                    const size = getAspectSize(state.aspectRatio, state.resolution);
+                    elements.customWidth.value = size.width;
+                    elements.customHeight.value = size.height;
+                    state.customWidth = null;
+                    state.customHeight = null;
+                }
+            });
+
+            // Custom size inputs
+            elements.customWidth.addEventListener('input', handleCustomSize);
+            elements.customHeight.addEventListener('input', handleCustomSize);
+
+            // Seeds slider
+            elements.seedsSlider.addEventListener('input', (e) => {
+                state.seeds = parseInt(e.target.value);
+                elements.seedsValue.textContent = state.seeds;
+                updateCost();
+            });
+
+            // Steps slider
+            elements.stepsSlider.addEventListener('input', (e) => {
+                state.steps = parseInt(e.target.value);
+                elements.stepsValue.textContent = state.steps;
+            });
+
+            // Idea generator
+            elements.ideaPromptsSlider.addEventListener('input', (e) => {
+                state.ideaNumPrompts = parseInt(e.target.value);
+                elements.ideaPromptsValue.textContent = state.ideaNumPrompts;
+            });
+
+            elements.ideaGenerateBtn.addEventListener('click', generatePromptsFromIdea);
+            elements.ideaInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    generatePromptsFromIdea();
+                }
+            });
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', generate);
+
+            // Lightbox
+            elements.lightboxClose.addEventListener('click', closeLightbox);
+            elements.lightbox.addEventListener('click', (e) => {
+                if (e.target === elements.lightbox) closeLightbox();
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (!elements.lightbox.classList.contains('visible')) return;
+                if (e.key === 'Escape') closeLightbox();
+                else if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                else if (e.key === 'ArrowRight') navigateLightbox(1);
+            });
+
+            // Initialize custom size with default aspect ratio
+            const defaultSize = getAspectSize(state.aspectRatio, state.resolution);
+            elements.customWidth.value = defaultSize.width;
+            elements.customHeight.value = defaultSize.height;
+
+            updateCost();
+        }
+
+        function handleCustomSize() {
+            const w = parseInt(elements.customWidth.value);
+            const h = parseInt(elements.customHeight.value);
+
+            if (w && h && w >= 256 && h >= 256) {
+                state.customWidth = w;
+                state.customHeight = h;
+                elements.aspectButtons.querySelectorAll('.btn--toggle').forEach(btn => btn.classList.remove('active'));
+                elements.customWidth.classList.add('active');
+                elements.customHeight.classList.add('active');
+            } else if (!elements.customWidth.value && !elements.customHeight.value) {
+                state.customWidth = null;
+                state.customHeight = null;
+                elements.customWidth.classList.remove('active');
+                elements.customHeight.classList.remove('active');
+            }
+        }
+
+        function updateModelSettings() {
+            const hasZImage = state.selectedModels.includes('zimage');
+            elements.zimageSettings.forEach(el => {
+                el.style.display = hasZImage ? 'flex' : 'none';
+            });
+        }
+
+        function updatePrompts() {
+            const text = elements.promptsTextarea.value.trim();
+            state.prompts = text ? text.split('\n').filter(line => line.trim()) : [];
+            elements.promptCount.textContent = `${state.prompts.length} prompt${state.prompts.length !== 1 ? 's' : ''}`;
+            elements.generateBtn.disabled = state.prompts.length === 0;
+            updateCost();
+        }
+
+        function updateCost() {
+            const numPrompts = state.prompts.length;
+            const numSeeds = state.seeds;
+            const numModels = state.selectedModels.length;
+            const totalImages = numPrompts * numSeeds * numModels;
+
+            const cost = calculateCost(state.selectedModels, numPrompts, numSeeds);
+
+            // Update calculator display
+            const promptWord = numPrompts === 1 ? 'prompt' : 'prompts';
+            const seedWord = numSeeds === 1 ? 'seed' : 'seeds';
+            const modelWord = numModels === 1 ? 'model' : 'models';
+            const imageWord = totalImages === 1 ? 'image' : 'images';
+            elements.calcDisplay.textContent = `${numPrompts} ${promptWord} × ${numSeeds} ${seedWord} × ${numModels} ${modelWord} = ${totalImages} ${imageWord}`;
+
+            elements.costValue.textContent = formatCost(cost);
+        }
+
+        async function generatePromptsFromIdea() {
+            const idea = elements.ideaInput.value.trim();
+            if (!idea) return;
+
+            elements.ideaGenerateBtn.disabled = true;
+            elements.ideaGenerateBtn.textContent = 'Generating...';
+
+            try {
+                const data = await api.generatePrompts(idea, state.ideaNumPrompts);
+                elements.promptsTextarea.value = data.prompts.join('\n\n');
+                updatePrompts();
+                elements.ideaInput.value = '';
+            } catch (error) {
+                console.error('Error generating prompts:', error);
+            } finally {
+                elements.ideaGenerateBtn.disabled = false;
+                elements.ideaGenerateBtn.textContent = 'Generate Prompts';
+            }
+        }
+
+        async function generate() {
+            if (state.prompts.length === 0) return;
+
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+
+            const promptsToGenerate = [...state.prompts];
+            const totalTasks = promptsToGenerate.length * state.selectedModels.length;
+            let completed = 0;
+
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${totalTasks}`;
+            elements.progressBar.style.width = '0%';
+
+            const allPromises = [];
+
+            state.selectedModels.forEach(modelKey => {
+                const model = MODELS[modelKey];
+
+                promptsToGenerate.forEach((prompt, index) => {
+                    const promise = (async () => {
+                        try {
+                            let params = {
+                                prompt: prompt,
+                                num_images: state.seeds,
+                                output_format: 'png'
+                            };
+
+                            // Model-specific params
+                            if (modelKey === 'reve') {
+                                if (!state.customWidth) {
+                                    params.aspect_ratio = state.aspectRatio;
+                                }
+                            } else if (modelKey === 'zimage') {
+                                params.image_size = state.customWidth && state.customHeight
+                                    ? { width: state.customWidth, height: state.customHeight }
+                                    : getAspectSize(state.aspectRatio, state.resolution);
+                                params.num_inference_steps = state.steps;
+                                params.enable_safety_checker = false;
+                                params.acceleration = 'none';
+                            } else if (modelKey === 'flux2' || modelKey === 'krea') {
+                                params.image_size = state.customWidth && state.customHeight
+                                    ? { width: state.customWidth, height: state.customHeight }
+                                    : getAspectSize(state.aspectRatio, state.resolution);
+                                params.enable_safety_checker = false;
+                            } else if (modelKey === 'nanobanana') {
+                                params.aspect_ratio = state.aspectRatio;
+                                params.resolution = state.resolution;
+                            }
+
+                            const data = await api.generateImage(modelKey, params);
+
+                            if (data.error) {
+                                console.error(`Error for ${model.name} - prompt ${index + 1}:`, data.error);
+                                return { success: false };
+                            }
+
+                            const images = data.images || [];
+                            images.forEach(img => {
+                                state.results.push({
+                                    url: img.url,
+                                    prompt: prompt,
+                                    modelKey: modelKey,
+                                    modelName: model.name
+                                });
+                            });
+
+                            completed++;
+                            elements.progressCount.textContent = `${completed} / ${totalTasks}`;
+                            elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+                            renderResults();
+
+                            return { success: true };
+                        } catch (error) {
+                            console.error(`Error for ${model.name}:`, error);
+                            completed++;
+                            elements.progressCount.textContent = `${completed} / ${totalTasks}`;
+                            elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+                            return { success: false };
+                        }
+                    })();
+
+                    allPromises.push(promise);
+                });
+            });
+
+            await Promise.all(allPromises);
+            elements.progressSection.classList.remove('visible');
+            elements.resultsSection.classList.add('visible');
+        }
+
+        function renderResults() {
+            elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
+                <div class="result-card" onclick="openLightbox(${idx})">
+                    <img src="${result.url}" alt="Generated ${idx + 1}" class="result-image">
+                    <div class="result-overlay">
+                        <p class="result-prompt">${result.prompt}</p>
+                    </div>
+                </div>
+            `).join('');
+            elements.resultsSection.classList.add('visible');
+        }
+
+        function openLightbox(idx) {
+            state.lightboxIndex = idx;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+        }
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+        }
+
+        function navigateLightbox(direction) {
+            const newIndex = state.lightboxIndex + direction;
+            if (newIndex >= 0 && newIndex < state.results.length) {
+                state.lightboxIndex = newIndex;
+                updateLightboxContent();
+            }
+        }
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxModel.textContent = result.modelName || 'Unknown';
+            elements.lightboxPrompt.textContent = result.prompt;
+            elements.lightboxDownload.onclick = () => downloadFile(result.url, `generate-${state.lightboxIndex + 1}.png`);
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

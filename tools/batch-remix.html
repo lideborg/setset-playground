@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Remix</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 900px;
+        }
+
+        /* Compact header */
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .header-row h1 {
+            font-size: var(--text-lg);
+            margin: 0;
+        }
+
+        .sets-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .sets-control label {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .sets-slider {
+            width: 80px;
+        }
+
+        .sets-value {
+            font-weight: 600;
+            min-width: 20px;
+        }
+
+        /* Remix Set */
+        .remix-set {
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Mode toggle - button group style */
+        .mode-toggle-mini {
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        .mode-toggle-mini button {
+            padding: 6px 12px;
+            font-size: var(--text-xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .mode-toggle-mini button:first-child {
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+            border-right: none;
+        }
+
+        .mode-toggle-mini button:last-child {
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .mode-toggle-mini button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .mode-toggle-mini button:hover:not(.active) {
+            border-color: var(--jet);
+        }
+
+        /* Images row - side by side */
+        .images-row {
+            display: flex;
+            justify-content: space-between;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xs);
+        }
+
+        .images-column {
+            flex: 0 0 auto;
+        }
+
+        .images-column:first-child {
+            text-align: left;
+        }
+
+        .images-column:last-child {
+            text-align: right;
+        }
+
+        .images-column:last-child .upload-grid {
+            margin-left: auto;
+        }
+
+        .column-label {
+            font-size: var(--text-2xs);
+            color: var(--ash-grey);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* Compact upload grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            padding: 6px;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            width: 320px;
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 8px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Compact prompt row */
+        .prompt-row {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: stretch;
+        }
+
+        .prompt-input {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: var(--text-sm);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            resize: none;
+            height: 36px;
+            font-family: inherit;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .btn-analyze {
+            padding: 8px 12px;
+            font-size: var(--text-xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .btn-analyze:hover {
+            border-color: var(--jet);
+            color: var(--jet);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-analyze.loading {
+            color: var(--ash-grey);
+        }
+
+        /* Settings row - compact */
+        .settings-compact {
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2xs);
+        }
+
+        .setting-item label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .btn-group-compact {
+            display: flex;
+            gap: 2px;
+        }
+
+        .btn-group-compact button {
+            padding: 4px 8px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-group-compact button:first-child {
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+        }
+
+        .btn-group-compact button:last-child {
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+
+        .btn-group-compact button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        /* Generate section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Results */
+        .result-image {
+            aspect-ratio: 3/4;
+        }
+
+        .lightbox-source-images {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .lightbox-source-images img {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .result-card .model-tag {
+            position: absolute;
+            bottom: var(--space-2xs);
+            left: var(--space-2xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .result-card .set-tag {
+            position: absolute;
+            top: var(--space-2xs);
+            left: var(--space-2xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Lightbox nav */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: var(--white);
+            padding: var(--space-sm);
+            z-index: 10;
+        }
+
+        .lightbox-nav.prev { left: var(--space-md); }
+        .lightbox-nav.next { right: 320px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Compact Header -->
+        <div class="header-row">
+            <h1>Batch Remix</h1>
+            <div class="sets-control">
+                <label>Sets:</label>
+                <input type="range" class="slider sets-slider" id="sets-slider" min="1" max="5" value="1">
+                <span class="sets-value" id="sets-value">1</span>
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="settings-compact">
+            <div class="setting-item">
+                <label>Model:</label>
+                <div class="btn-group-compact" id="model-buttons">
+                    <button class="active" data-model="nano">Nano</button>
+                    <button data-model="nanopro">Nano Pro</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Ratio:</label>
+                <div class="btn-group-compact" id="aspect-buttons">
+                    <button data-value="9:16">9:16</button>
+                    <button data-value="2:3">2:3</button>
+                    <button class="active" data-value="3:4">3:4</button>
+                    <button data-value="1:1">1:1</button>
+                    <button data-value="4:3">4:3</button>
+                </div>
+            </div>
+            <div class="setting-item" id="resolution-item" style="display: none;">
+                <label>Res:</label>
+                <div class="btn-group-compact" id="resolution-buttons">
+                    <button class="active" data-value="1K">1K</button>
+                    <button data-value="2K">2K</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Seeds:</label>
+                <div class="btn-group-compact" id="seeds-buttons">
+                    <button class="active" data-value="1">1</button>
+                    <button data-value="2">2</button>
+                    <button data-value="3">3</button>
+                    <button data-value="4">4</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sets Container -->
+        <div id="sets-container"></div>
+
+        <!-- Generate Section -->
+        <div class="generate-section">
+            <div class="calc-display" id="calc-display">0 images</div>
+            <button class="btn btn--primary" id="generate-btn" disabled>
+                Generate <span class="btn-cost" id="cost-value">$0.00</span>
+            </button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <button class="lightbox-nav prev" id="lightbox-prev">&larr;</button>
+            <button class="lightbox-nav next" id="lightbox-next">&rarr;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Set / Model</h3>
+                    <p class="lightbox-model-text" id="lightbox-model"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Source Images</h3>
+                    <div class="lightbox-source-images" id="lightbox-source-images"></div>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Loading...</p>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+
+    <script>
+        // Model configs
+        const REMIX_MODELS = {
+            nano: { name: 'Nano', endpoint: 'nano', costPerImage: 0.15, hasResolution: false },
+            nanopro: { name: 'Nano Pro', endpoint: 'nano-pro', costPerImage: 0.15, hasResolution: true }
+        };
+
+        // State
+        let sets = []; // Array of set data
+        let pasteTarget = null;  // { setIndex: number, type: 'primary'|'secondary', slotIndex: number }
+        let state = {
+            numSets: 1,
+            selectedModel: 'nano',
+            aspectRatio: '3:4',
+            resolution: '1K',
+            seeds: 1,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            setsContainer: document.getElementById('sets-container'),
+            setsSlider: document.getElementById('sets-slider'),
+            setsValue: document.getElementById('sets-value'),
+            seedsButtons: document.getElementById('seeds-buttons'),
+            modelButtons: document.getElementById('model-buttons'),
+            aspectButtons: document.getElementById('aspect-buttons'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            resolutionItem: document.getElementById('resolution-item'),
+            generateBtn: document.getElementById('generate-btn'),
+            costValue: document.getElementById('cost-value'),
+            calcDisplay: document.getElementById('calc-display'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxModel: document.getElementById('lightbox-model'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxSourceImages: document.getElementById('lightbox-source-images')
+        };
+
+        // Initialize a set
+        function createSetData() {
+            return {
+                primaryImages: new Array(5).fill(null),
+                secondaryImages: new Array(5).fill(null),
+                mode: 'single',
+                prompt: ''
+            };
+        }
+
+        // Render all sets
+        function renderSets() {
+            // Adjust sets array length
+            while (sets.length < state.numSets) {
+                sets.push(createSetData());
+            }
+
+            elements.setsContainer.innerHTML = '';
+            for (let i = 0; i < state.numSets; i++) {
+                elements.setsContainer.appendChild(createSetElement(i));
+            }
+            updateCalculator();
+        }
+
+        // Create set DOM element
+        function createSetElement(setIndex) {
+            const set = sets[setIndex];
+            const div = document.createElement('div');
+            div.className = 'remix-set';
+            div.dataset.setIndex = setIndex;
+
+            div.innerHTML = `
+                <div class="images-row">
+                    <div class="images-column">
+                        <div class="column-label">Primary</div>
+                        <div class="upload-grid" data-set="${setIndex}" data-type="primary"></div>
+                        <input type="file" class="file-input" data-set="${setIndex}" data-type="primary" accept="image/*" multiple>
+                    </div>
+                    <div class="images-column">
+                        <div class="column-label">Secondary</div>
+                        <div class="upload-grid" data-set="${setIndex}" data-type="secondary"></div>
+                        <input type="file" class="file-input" data-set="${setIndex}" data-type="secondary" accept="image/*" multiple>
+                    </div>
+                </div>
+                <div class="prompt-row">
+                    <input type="text" class="prompt-input" data-set="${setIndex}" placeholder="Describe the transformation (or click Analyze)..." value="${set.prompt}">
+                    <button class="btn-analyze" data-set="${setIndex}">Analyze</button>
+                    <div class="mode-toggle-mini" data-set="${setIndex}">
+                        <button class="${set.mode === 'single' ? 'active' : ''}" data-mode="single">1:1</button>
+                        <button class="${set.mode === 'batch' ? 'active' : ''}" data-mode="batch">Batch</button>
+                    </div>
+                </div>
+            `;
+
+            // Initialize grids
+            const primaryGrid = div.querySelector('.upload-grid[data-type="primary"]');
+            const secondaryGrid = div.querySelector('.upload-grid[data-type="secondary"]');
+
+            for (let i = 0; i < 5; i++) {
+                primaryGrid.appendChild(createUploadSlot(setIndex, i, 'primary'));
+                secondaryGrid.appendChild(createUploadSlot(setIndex, i, 'secondary'));
+            }
+
+            // Render existing images
+            renderSetImages(setIndex, div);
+
+            // Setup event listeners
+            setupSetListeners(div, setIndex);
+
+            return div;
+        }
+
+        function createUploadSlot(setIndex, slotIndex, type) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.innerHTML = '+';
+            slot.dataset.setIndex = setIndex;
+            slot.dataset.slotIndex = slotIndex;
+            slot.dataset.type = type;
+
+            slot.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const set = sets[setIndex];
+                const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+                if (images[slotIndex]) {
+                    // Toggle selection
+                    toggleImage(setIndex, slotIndex, type);
+                } else {
+                    // Single click: set as paste target (for Cmd+V)
+                    setPasteTarget(setIndex, type, slotIndex);
+                }
+            });
+
+            // Double-click opens file picker
+            slot.addEventListener('dblclick', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const set = sets[setIndex];
+                const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+                if (!images[slotIndex]) {
+                    const input = document.querySelector(`.file-input[data-set="${setIndex}"][data-type="${type}"]`);
+                    input.dataset.targetSlot = slotIndex;
+                    input.click();
+                }
+            });
+
+            return slot;
+        }
+
+        function setPasteTarget(setIndex, type, slotIndex) {
+            // Clear previous paste target
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+
+            // Set new paste target
+            pasteTarget = { setIndex, type, slotIndex };
+            const setContainer = document.querySelector(`.set-container[data-set="${setIndex}"]`);
+            if (setContainer) {
+                const grid = setContainer.querySelector(`.upload-grid[data-type="${type}"]`);
+                if (grid && grid.children[slotIndex]) {
+                    grid.children[slotIndex].classList.add('paste-ready');
+                }
+            }
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = null;
+        }
+
+        function renderSetImages(setIndex, container) {
+            const set = sets[setIndex];
+            const primaryGrid = container.querySelector('.upload-grid[data-type="primary"]');
+            const secondaryGrid = container.querySelector('.upload-grid[data-type="secondary"]');
+
+            renderGridImages(set.primaryImages, primaryGrid, setIndex, 'primary');
+            renderGridImages(set.secondaryImages, secondaryGrid, setIndex, 'secondary');
+        }
+
+        function renderGridImages(images, grid, setIndex, type) {
+            const slots = grid.querySelectorAll('.upload-slot');
+            slots.forEach((slot, i) => {
+                if (images[i]) {
+                    const isSelected = images[i].selected !== false;
+                    slot.className = 'upload-slot filled' + (isSelected ? '' : ' deselected');
+                    slot.innerHTML = `
+                        <img src="${images[i].url}" alt="Image">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${setIndex}, ${i}, '${type}')">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            });
+        }
+
+        function setupSetListeners(container, setIndex) {
+            // Mode toggle (button group)
+            const modeToggle = container.querySelector('.mode-toggle-mini');
+            modeToggle.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const mode = e.target.dataset.mode;
+                    sets[setIndex].mode = mode;
+                    modeToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    updateCalculator();
+                }
+            });
+
+            // Analyze button
+            const analyzeBtn = container.querySelector('.btn-analyze');
+            analyzeBtn.addEventListener('click', () => handleAnalyze(setIndex, analyzeBtn));
+
+            // File inputs
+            container.querySelectorAll('.file-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const type = e.target.dataset.type;
+                    const targetSlot = e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null;
+                    handleFileUpload(setIndex, Array.from(e.target.files), type, targetSlot);
+                    e.target.value = '';
+                });
+            });
+
+            // Prompt input
+            container.querySelector('.prompt-input').addEventListener('input', (e) => {
+                sets[setIndex].prompt = e.target.value;
+                updateCalculator();
+            });
+
+            // Drag and drop
+            container.querySelectorAll('.upload-grid').forEach(grid => {
+                const type = grid.dataset.type;
+                grid.addEventListener('dragover', (e) => { e.preventDefault(); grid.classList.add('drag-over'); });
+                grid.addEventListener('dragleave', () => grid.classList.remove('drag-over'));
+                grid.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    grid.classList.remove('drag-over');
+                    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    if (files.length > 0) handleFileUpload(setIndex, files, type, null);
+                });
+            });
+        }
+
+        function handleFileUpload(setIndex, files, type, startIndex) {
+            const set = sets[setIndex];
+            const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+
+            // Reserve slots synchronously first to avoid race conditions
+            const reservations = [];
+            files.forEach((file, i) => {
+                let index;
+                if (startIndex !== null) {
+                    index = startIndex + i;
+                } else {
+                    // Find next empty slot that hasn't been reserved
+                    index = images.findIndex((img, idx) =>
+                        !img && !reservations.some(r => r.index === idx)
+                    );
+                }
+                if (index === -1 || index >= 5) return;
+                reservations.push({ file, index });
+            });
+
+            // Now read files asynchronously
+            reservations.forEach(({ file, index }) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images[index] = { file, url: e.target.result };
+                    // Re-render this set's grid
+                    const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
+                    renderGridImages(images, grid, setIndex, type);
+                    updateCalculator();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.removeImage = function(setIndex, slotIndex, type) {
+            const set = sets[setIndex];
+            const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+            images.splice(slotIndex, 1);
+            images.push(null);
+            const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
+            renderGridImages(images, grid, setIndex, type);
+            updateCalculator();
+        };
+
+        function toggleImage(setIndex, slotIndex, type) {
+            const set = sets[setIndex];
+            const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+            if (images[slotIndex]) {
+                // Toggle selected state (default is true/undefined = selected)
+                images[slotIndex].selected = images[slotIndex].selected === false ? true : false;
+                const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
+                renderGridImages(images, grid, setIndex, type);
+                updateCalculator();
+            }
+        }
+
+        // Analyze images and generate smart prompt
+        async function handleAnalyze(setIndex, button) {
+            const set = sets[setIndex];
+            const primaryImgs = set.primaryImages.filter(img => img && img.selected !== false);
+            const secondaryImgs = set.secondaryImages.filter(img => img && img.selected !== false);
+
+            if (primaryImgs.length === 0) {
+                alert('Add at least one primary image to analyze');
+                return;
+            }
+
+            // Get existing prompt text (user guidance)
+            const promptInput = document.querySelector(`.prompt-input[data-set="${setIndex}"]`);
+            const userGuidance = promptInput.value.trim();
+
+            // Show loading state
+            const originalText = button.textContent;
+            button.textContent = 'Analyzing...';
+            button.classList.add('loading');
+            button.disabled = true;
+
+            const startTime = performance.now();
+
+            try {
+                const numPrimary = primaryImgs.length;
+                const numSecondary = secondaryImgs.length;
+
+                console.log(`🔍 Analyzing ${numPrimary} primary + ${numSecondary} secondary images...`);
+
+                // Upload images first to avoid payload size issues with base64
+                const allLocalUrls = [
+                    ...primaryImgs.map(img => img.url),
+                    ...secondaryImgs.map(img => img.url)
+                ];
+
+                const uploadPromises = allLocalUrls.map(url => api.uploadBase64(url));
+                const uploadResults = await Promise.all(uploadPromises);
+                const allImages = uploadResults.map(r => r.url);
+
+                console.log(`📤 Uploaded ${allImages.length} images for analysis`);
+
+                // Build the analysis prompt
+                let analysisPrompt = `You are helping create a concise prompt for an AI image remix/transformation tool.
+
+I'm showing you ${numPrimary} PRIMARY image(s)${numSecondary > 0 ? ` and ${numSecondary} SECONDARY image(s)` : ''}.
+The first ${numPrimary} images are PRIMARY (the main subjects to transform).
+${numSecondary > 0 ? `The remaining ${numSecondary} images are SECONDARY (reference images for style, background, or context).` : ''}
+
+Your task: Analyze what the user likely wants to do with these images and write a SHORT, DIRECT prompt (1-2 sentences max) that will guide the AI remix.
+
+Consider:
+- What are the primary images? (products, people, objects, scenes)
+- ${numSecondary > 0 ? 'What do the secondary images suggest? (backgrounds, styles, moods, settings)' : 'Without secondary images, focus on enhancing or transforming the primary subjects.'}
+- What transformation makes sense? (compositing, style transfer, background change, scene placement)
+
+${userGuidance ? `USER GUIDANCE: "${userGuidance}" - incorporate this direction into your prompt.` : ''}
+
+Return ONLY the prompt text, nothing else. Be concise and specific.`;
+
+                const result = await api.analyzeImages(allImages, analysisPrompt);
+
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                console.log(`✓ Analysis complete in ${elapsed}s`);
+
+                if (result.content) {
+                    // Clean up the response - remove quotes if present
+                    let prompt = result.content.trim();
+                    if ((prompt.startsWith('"') && prompt.endsWith('"')) ||
+                        (prompt.startsWith("'") && prompt.endsWith("'"))) {
+                        prompt = prompt.slice(1, -1);
+                    }
+
+                    console.log(`✎ Writing prompt: "${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''}"`);
+
+                    // Update the prompt input
+                    promptInput.value = prompt;
+                    sets[setIndex].prompt = prompt;
+                    updateCalculator();
+                }
+            } catch (error) {
+                console.error('✗ Analyze error:', error);
+                alert('Failed to analyze images: ' + error.message);
+            } finally {
+                button.textContent = originalText;
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        // Sets slider
+        elements.setsSlider.addEventListener('input', (e) => {
+            state.numSets = parseInt(e.target.value);
+            elements.setsValue.textContent = state.numSets;
+            renderSets();
+        });
+
+        // Seeds buttons
+        elements.seedsButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.seedsButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.seeds = parseInt(e.target.dataset.value);
+                updateCalculator();
+            }
+        });
+
+        // Model buttons
+        elements.modelButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.modelButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.selectedModel = e.target.dataset.model;
+                elements.resolutionItem.style.display = REMIX_MODELS[state.selectedModel].hasResolution ? 'flex' : 'none';
+                updateCalculator();
+            }
+        });
+
+        // Aspect ratio buttons
+        elements.aspectButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.aspectButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.aspectRatio = e.target.dataset.value;
+            }
+        });
+
+        // Resolution buttons
+        elements.resolutionButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.resolutionButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.resolution = e.target.dataset.value;
+                updateCalculator();
+            }
+        });
+
+        // Update calculator
+        function updateCalculator() {
+            let totalImages = 0;
+            let hasValidSet = false;
+
+            for (let i = 0; i < state.numSets; i++) {
+                const set = sets[i];
+                if (!set) continue;
+
+                const numPrimary = set.primaryImages.filter(img => img && img.selected !== false).length;
+                const numSecondary = set.secondaryImages.filter(img => img && img.selected !== false).length;
+                const hasPrompt = set.prompt.trim().length > 0;
+
+                if (numPrimary > 0 && hasPrompt) {
+                    hasValidSet = true;
+                    if (set.mode === 'single') {
+                        totalImages += numSecondary > 0 ? numPrimary * numSecondary : numPrimary;
+                    } else {
+                        totalImages += numPrimary;
+                    }
+                }
+            }
+
+            // Multiply by seeds
+            totalImages *= state.seeds;
+
+            const model = REMIX_MODELS[state.selectedModel];
+            const cost = totalImages * model.costPerImage;
+
+            const seedsText = state.seeds > 1 ? ` × ${state.seeds} seeds` : '';
+            elements.calcDisplay.textContent = `${totalImages} images from ${state.numSets} set${state.numSets > 1 ? 's' : ''}${seedsText}`;
+            elements.costValue.textContent = formatCost(cost);
+            elements.generateBtn.disabled = !hasValidSet;
+        }
+
+        // Generate
+        elements.generateBtn.addEventListener('click', handleGenerate);
+
+        async function handleGenerate() {
+            // Build all tasks from all sets
+            const allTasks = [];
+
+            for (let setIndex = 0; setIndex < state.numSets; setIndex++) {
+                const set = sets[setIndex];
+                if (!set) continue;
+
+                const primaryImgs = set.primaryImages.filter(img => img && img.selected !== false);
+                const secondaryImgs = set.secondaryImages.filter(img => img && img.selected !== false);
+                const prompt = set.prompt.trim();
+
+                if (primaryImgs.length === 0 || !prompt) continue;
+
+                if (set.mode === 'single') {
+                    if (secondaryImgs.length > 0) {
+                        for (const primary of primaryImgs) {
+                            for (const secondary of secondaryImgs) {
+                                allTasks.push({ setIndex, primary, secondaries: [secondary], prompt });
+                            }
+                        }
+                    } else {
+                        for (const primary of primaryImgs) {
+                            allTasks.push({ setIndex, primary, secondaries: [], prompt });
+                        }
+                    }
+                } else {
+                    for (const primary of primaryImgs) {
+                        allTasks.push({ setIndex, primary, secondaries: secondaryImgs, prompt });
+                    }
+                }
+            }
+
+            if (allTasks.length === 0) return;
+
+            // Duplicate tasks for each seed
+            const tasksWithSeeds = [];
+            for (let seed = 0; seed < state.seeds; seed++) {
+                for (const task of allTasks) {
+                    tasksWithSeeds.push({ ...task, seedIndex: seed });
+                }
+            }
+
+            // Show progress
+            elements.progressSection.classList.add('visible');
+            elements.generateBtn.disabled = true;
+            state.results = [];
+
+            let completed = 0;
+            const total = tasksWithSeeds.length;
+            elements.progressCount.textContent = `0 / ${total}`;
+            elements.progressBar.style.width = '0%';
+
+            // Process all tasks in parallel
+            const promises = tasksWithSeeds.map(async (task) => {
+                try {
+                    // Upload images
+                    const primaryResult = await api.uploadBase64(task.primary.url);
+                    const imageUrls = [primaryResult.url];
+
+                    for (const sec of task.secondaries) {
+                        const secResult = await api.uploadBase64(sec.url);
+                        imageUrls.push(secResult.url);
+                    }
+
+                    // Build params
+                    const params = {
+                        prompt: task.prompt,
+                        image_urls: imageUrls,
+                        num_images: 1,
+                        aspect_ratio: state.aspectRatio,
+                        output_format: 'png'
+                    };
+
+                    if (state.selectedModel === 'nanopro' && state.resolution === '2K') {
+                        params.image_size = { width: 2048, height: 2048 };
+                    }
+
+                    const model = REMIX_MODELS[state.selectedModel];
+                    const data = await api.remixImage(model.endpoint, params);
+
+                    if (data.images && data.images.length > 0) {
+                        state.results.push({
+                            url: data.images[0].url,
+                            prompt: task.prompt,
+                            model: model.name,
+                            setIndex: task.setIndex,
+                            sourceImages: imageUrls
+                        });
+                        renderResults();
+                    }
+                } catch (error) {
+                    console.error('Task failed:', error);
+                }
+
+                completed++;
+                elements.progressCount.textContent = `${completed} / ${total}`;
+                elements.progressBar.style.width = `${(completed / total) * 100}%`;
+            });
+
+            await Promise.all(promises);
+
+            // Done
+            elements.progressSection.classList.remove('visible');
+            elements.generateBtn.disabled = false;
+        }
+
+        // Render results
+        function renderResults() {
+            if (state.results.length === 0) {
+                elements.resultsSection.classList.remove('visible');
+                return;
+            }
+
+            elements.resultsSection.classList.add('visible');
+            elements.resultsGrid.innerHTML = state.results.map((result, index) => `
+                <div class="result-card" onclick="openLightbox(${index})">
+                    <img src="${result.url}" alt="Result ${index + 1}" class="result-image">
+                    <span class="set-tag">Set ${result.setIndex + 1}</span>
+                    <span class="model-tag">${result.model}</span>
+                </div>
+            `).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxModel.textContent = `Set ${result.setIndex + 1} / ${result.model}`;
+            elements.lightboxPrompt.textContent = result.prompt;
+            elements.lightboxSourceImages.innerHTML = result.sourceImages.map(url =>
+                `<img src="${url}" alt="Source">`
+            ).join('');
+        }
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
+
+        document.getElementById('lightbox-prev').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-next').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-download').addEventListener('click', () => {
+            const result = state.results[state.lightboxIndex];
+            downloadImage(result.url, `batch-remix-set${result.setIndex + 1}-${state.lightboxIndex + 1}.png`);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!elements.lightbox.classList.contains('visible')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') {
+                state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
+                updateLightboxContent();
+            }
+            if (e.key === 'ArrowRight') {
+                state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
+                updateLightboxContent();
+            }
+        });
+
+        // Clipboard paste handler
+        document.addEventListener('paste', async (e) => {
+            // Only handle if we have a paste target
+            if (!pasteTarget) return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        handleFileUpload(pasteTarget.setIndex, [file], pasteTarget.type, pasteTarget.slotIndex);
+                        clearPasteTarget();
+                    }
+                    break;
+                }
+            }
+        });
+
+        // Initialize
+        sets.push(createSetData());
+        renderSets();
+    </script>
+</body>
+</html>

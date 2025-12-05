@@ -8,39 +8,109 @@
       "documents": [
         {
           "title": "French Luxury Aesthetics",
-          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/FRENCH_LUXURY_AESTHETICS.md",
-          "summary": "Deep dive into French luxury brands: Chanel, Saint Laurent, Dior, Hermès, Celine. Analyzes lighting techniques (Rembrandt, high-contrast B&W), composition, color palettes, and mood across 2020-2024 photography campaigns.",
+          "file": "/research/01_AESTHETICS_RESEARCH/FRENCH_LUXURY_AESTHETICS.md",
+          "summary": "Deep dive into French luxury brands: Chanel, Saint Laurent, Dior, Hermès, Celine. Analyzes lighting techniques, composition, color palettes, and mood.",
           "tags": ["luxury", "french", "editorial"]
         },
         {
           "title": "Italian Luxury Aesthetics",
-          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/ITALIAN_LUXURY_AESTHETICS.md",
-          "summary": "Comprehensive analysis of Italian luxury: Prada, Gucci, Bottega Veneta, Valentino. Documents signature colors, photographer collaborations, and style evolution.",
+          "file": "/research/01_AESTHETICS_RESEARCH/ITALIAN_LUXURY_AESTHETICS.md",
+          "summary": "Analysis of Italian luxury: Prada, Gucci, Bottega Veneta, Valentino. Signature colors, photographer collaborations, and style evolution.",
           "tags": ["luxury", "italian", "editorial"]
         },
         {
           "title": "Avant-Garde Aesthetics",
-          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/AVANT_GARDE_AESTHETICS.md",
-          "summary": "Exploration of dark, experimental aesthetics: Maison Margiela, Comme des Garçons, Yohji Yamamoto, Rick Owens. Theatrical, brutalist, and moody photography techniques.",
+          "file": "/research/01_AESTHETICS_RESEARCH/AVANT_GARDE_AESTHETICS.md",
+          "summary": "Dark, experimental aesthetics: Maison Margiela, Comme des Garçons, Yohji Yamamoto, Rick Owens. Theatrical and moody photography.",
           "tags": ["avant-garde", "editorial", "dark"]
         },
         {
           "title": "Luxury Minimalist Aesthetics",
-          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/LUXURY_MINIMALIST_AESTHETICS.md",
-          "summary": "Quiet luxury and minimalism: Bottega Veneta, Jil Sander, Lemaire, The Row. Documentary realism, architectural precision, and understated elegance.",
+          "file": "/research/01_AESTHETICS_RESEARCH/LUXURY_MINIMALIST_AESTHETICS.md",
+          "summary": "Quiet luxury and minimalism: Bottega Veneta, Jil Sander, Lemaire, The Row. Documentary realism and understated elegance.",
           "tags": ["minimalist", "luxury", "quiet luxury"]
         },
         {
           "title": "Beauty & Skincare Aesthetics",
-          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/BEAUTY_SKINCARE_AESTHETICS.md",
-          "summary": "Five distinct skin rendering philosophies: Glossier (dewy), Charlotte Tilbury (glowy), Fenty Beauty (authentic), La Mer (luminous), Aesop (natural). Macro beauty specifications and lighting techniques.",
+          "file": "/research/01_AESTHETICS_RESEARCH/BEAUTY_SKINCARE_AESTHETICS.md",
+          "summary": "Five skin rendering philosophies: Glossier, Charlotte Tilbury, Fenty Beauty, La Mer, Aesop. Macro beauty and lighting techniques.",
           "tags": ["beauty", "skincare", "macro"]
         },
         {
           "title": "Additional Luxury Brands",
-          "file": "../SetCast/research/01_AESTHETICS_RESEARCH/ADDITIONAL_LUXURY_BRANDS.md",
-          "summary": "Extended brand analysis for future expansion covering additional luxury houses and contemporary designers.",
+          "file": "/research/01_AESTHETICS_RESEARCH/ADDITIONAL_LUXURY_BRANDS.md",
+          "summary": "Extended brand analysis covering additional luxury houses and contemporary designers.",
           "tags": ["luxury", "reference"]
+        },
+        {
+          "title": "Menswear Luxury Aesthetics",
+          "file": "/research/01_AESTHETICS_RESEARCH/MENSWEAR_LUXURY_AESTHETICS.md",
+          "summary": "Comprehensive guide to men's luxury fashion brands: Loro Piana, Brunello Cucinelli, Tom Ford, Zegna, and more. Styling archetypes, poses, and prompt templates.",
+          "tags": ["menswear", "luxury", "tailoring"]
+        },
+        {
+          "title": "Bottega Veneta Social Strategy",
+          "file": "/research/01_AESTHETICS_RESEARCH/BOTTEGA_VENETA_SOCIAL_STRATEGY.md",
+          "summary": "Bottega Veneta's radical anti-social media strategy: deleted Instagram (2.5M followers), launched 'Issue' digital journal, achieved 70% higher popularity through exclusivity, scarcity, and editorial-first content.",
+          "tags": ["social media", "strategy", "editorial", "luxury"]
+        }
+      ]
+    },
+    {
+      "id": "locations",
+      "name": "Location Research",
+      "icon": "📍",
+      "description": "Editorial location guides and environmental styling",
+      "documents": [
+        {
+          "title": "Urban Editorial Locations",
+          "file": "/research/URBAN_EDITORIAL_LOCATIONS_RESEARCH.md",
+          "summary": "Urban environments for editorial fashion photography - streets, architecture, cityscapes.",
+          "tags": ["urban", "locations", "editorial"]
+        },
+        {
+          "title": "Indoor Editorial Locations",
+          "file": "/research/INDOOR_EDITORIAL_LOCATIONS_GUIDE.md",
+          "summary": "Interior spaces for fashion editorials - studios, homes, galleries, hotels.",
+          "tags": ["indoor", "locations", "editorial"]
+        },
+        {
+          "title": "Desert & Minimal Locations",
+          "file": "/research/DESERT-MINIMAL-LOCATIONS-EDITORIAL-FASHION.md",
+          "summary": "Desert landscapes and minimal environments for high-fashion editorial shoots.",
+          "tags": ["desert", "minimal", "locations"]
+        },
+        {
+          "title": "Dramatic Landscape Locations",
+          "file": "/research/dramatic-landscape-locations-editorial-fashion.md",
+          "summary": "Dramatic natural landscapes - mountains, cliffs, dramatic skies for editorial fashion.",
+          "tags": ["landscape", "dramatic", "locations"]
+        },
+        {
+          "title": "Location Mapping System",
+          "file": "/research/03_LOCATION_PLANNING/LOCATION_MAPPING_SYSTEM.md",
+          "summary": "Similar-but-different location assignment strategy for variety while maintaining cohesion.",
+          "tags": ["locations", "strategy", "planning"]
+        }
+      ]
+    },
+    {
+      "id": "trends",
+      "name": "Trends & Forecast",
+      "icon": "📈",
+      "description": "Current editorial trends and future forecasts",
+      "documents": [
+        {
+          "title": "Editorial Trends 2024-2025",
+          "file": "/research/CURRENT_EDITORIAL_TRENDS_2024-2025.md",
+          "summary": "Current editorial photography trends, emerging styles, and industry direction.",
+          "tags": ["trends", "2024", "2025"]
+        },
+        {
+          "title": "Editorial Evolution & Forecast",
+          "file": "/research/EDITORIAL_EVOLUTION_AND_FORECAST.md",
+          "summary": "How editorial photography has evolved and where it's heading.",
+          "tags": ["forecast", "evolution", "trends"]
         }
       ]
     },
@@ -48,63 +118,49 @@
       "id": "system-guides",
       "name": "System & Methodology",
       "icon": "⚙️",
-      "description": "Technical frameworks and guides for prompt engineering and generation systems",
+      "description": "Technical frameworks for prompt engineering and generation systems",
       "documents": [
         {
           "title": "Prompt Building Guide",
-          "file": "../SetCast/research/02_SYSTEM_GUIDES/PROMPT_BUILDING_GUIDE.md",
-          "summary": "Core 9-component editorial prompt architecture: shot type, subject description, body framing, background, lighting, color grading, expression, styling, and technical specs.",
+          "file": "/research/02_SYSTEM_GUIDES/PROMPT_BUILDING_GUIDE.md",
+          "summary": "Core 9-component editorial prompt architecture: shot type, subject, framing, background, lighting, color, expression, styling, specs.",
           "tags": ["prompt engineering", "methodology", "core"]
         },
         {
           "title": "Variation Strategy Guide",
-          "file": "../SetCast/research/02_SYSTEM_GUIDES/VARIATION_STRATEGY_GUIDE.md",
-          "summary": "Multi-dimensional variation system across 6 dimensions: environment, lighting, shot type, pose, camera, and mood. Blueprint for 20-prompt structure with 5 lighting/mood categories.",
+          "file": "/research/02_SYSTEM_GUIDES/VARIATION_STRATEGY_GUIDE.md",
+          "summary": "Multi-dimensional variation system across 6 dimensions: environment, lighting, shot type, pose, camera, and mood.",
           "tags": ["variation", "methodology", "strategy"]
         },
         {
           "title": "Variable Prompt System",
-          "file": "../SetCast/research/02_SYSTEM_GUIDES/VARIABLE_PROMPT_SYSTEM.md",
-          "summary": "Component-based system for maximum composition variety: 26+ poses, 18+ backgrounds, 22+ lighting setups, 9 camera/lens combinations, 30+ clothing colors.",
+          "file": "/research/02_SYSTEM_GUIDES/VARIABLE_PROMPT_SYSTEM.md",
+          "summary": "Component-based system: 26+ poses, 18+ backgrounds, 22+ lighting setups, 9 camera combinations, 30+ colors.",
           "tags": ["variables", "system", "components"]
         },
         {
           "title": "Editorial Minimal System",
-          "file": "../SetCast/research/02_SYSTEM_GUIDES/EDITORIAL_MINIMAL_SYSTEM.md",
-          "summary": "Ultra-clean editorial photography system with 15+ fashion poses and super minimal background rules for high-end editorial aesthetic.",
+          "file": "/research/02_SYSTEM_GUIDES/EDITORIAL_MINIMAL_SYSTEM.md",
+          "summary": "Ultra-clean editorial photography with 15+ fashion poses and minimal background rules.",
           "tags": ["editorial", "minimal", "poses"]
         },
         {
           "title": "Brand Renaming Strategy",
-          "file": "../SetCast/research/02_SYSTEM_GUIDES/BRAND_RENAMING_STRATEGY.md",
-          "summary": "Generic aesthetic profiles to avoid brand/logo generation: 7 aesthetic profile remappings (The Row → Quiet Luxury, Rick Owens → Dark Avant-Garde, etc.).",
+          "file": "/research/02_SYSTEM_GUIDES/BRAND_RENAMING_STRATEGY.md",
+          "summary": "Generic aesthetic profiles to avoid brand/logo generation: 7 aesthetic profile remappings.",
           "tags": ["branding", "strategy", "aesthetics"]
         },
         {
-          "title": "Final Updates Summary",
-          "file": "../SetCast/research/02_SYSTEM_GUIDES/FINAL_UPDATES_SUMMARY.md",
-          "summary": "Implementation tracking and change records documenting system updates and improvements.",
-          "tags": ["changelog", "updates"]
-        }
-      ]
-    },
-    {
-      "id": "location-planning",
-      "name": "Location Planning",
-      "icon": "📍",
-      "description": "Strategic approaches to location assignment and environmental variety",
-      "documents": [
-        {
-          "title": "Location Mapping System",
-          "file": "../SetCast/research/03_LOCATION_PLANNING/LOCATION_MAPPING_SYSTEM.md",
-          "summary": "Similar-but-different location assignment strategy ensuring variety while maintaining cohesion across editorial shoots.",
-          "tags": ["locations", "strategy", "planning"]
+          "title": "Negative Prompts Library",
+          "file": "/research/02_SYSTEM_GUIDES/NEGATIVE_PROMPTS_LIBRARY.md",
+          "summary": "Comprehensive collection of negative prompts for AI image generation. Covers anatomy, fashion, skin, lighting, and model-specific syntax.",
+          "tags": ["negative prompts", "quality", "technical"]
         },
         {
-          "title": "Current Location Comparison",
-          "file": "../SetCast/research/03_LOCATION_PLANNING/CURRENT_LOCATION_COMPARISON.md",
-          "summary": "Analysis of location variation across models, documenting distribution and ensuring diverse environmental representation.",
-          "tags": ["locations", "analysis"]
+          "title": "Seedance Prompting Guide",
+          "file": "/research/02_SYSTEM_GUIDES/SEEDANCE_PROMPTING_GUIDE.md",
+          "summary": "Best practices for Seedance video generation: prompt structure, degree adverbs, camera terminology, cinematic styles, and fashion movement prompts.",
+          "tags": ["seedance", "video", "prompting"]
         }
       ]
     },
@@ -116,14 +172,14 @@
       "documents": [
         {
           "title": "Talent Roster",
-          "file": "../SetCast/research/04_TALENT_MODELS/TALENT_ROSTER.md",
-          "summary": "Comprehensive profiles of 25 diverse talent models with detailed specifications: gender, age, ethnicity, Fitzpatrick skin tone, physical descriptions, and aesthetic categories.",
+          "file": "/research/04_TALENT_MODELS/TALENT_ROSTER.md",
+          "summary": "25 diverse talent profiles: gender, age, ethnicity, Fitzpatrick skin tone, physical descriptions, aesthetic categories.",
           "tags": ["casting", "models", "diversity"]
         },
         {
           "title": "New Models Summary",
-          "file": "../SetCast/research/04_TALENT_MODELS/NEW_MODELS_SUMMARY.md",
-          "summary": "Recent model additions: Kai Thompson, Riley Morgan, Jordan Lee profiles with full casting details.",
+          "file": "/research/04_TALENT_MODELS/NEW_MODELS_SUMMARY.md",
+          "summary": "Recent model additions: Kai Thompson, Riley Morgan, Jordan Lee profiles.",
           "tags": ["models", "new", "profiles"]
         }
       ]
@@ -132,31 +188,37 @@
       "id": "social-media",
       "name": "Social Media Strategy",
       "icon": "📱",
-      "description": "Instagram strategy, content planning, PR angles, and social media best practices for fashion tech",
+      "description": "Instagram strategy, content planning, and PR for fashion tech",
       "documents": [
         {
-          "title": "Instagram Grid Aesthetics for Creative Portfolios",
-          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/Instagram_Grid_Aesthetics_Creative_Portfolios.md",
-          "summary": "Visual cohesion strategies, grid design principles (3x3, 6x6, 9x9), carousel vs single post strategies, fashion editorial grid case studies, and tools for maintaining aesthetic consistency.",
-          "tags": ["instagram", "grid", "aesthetics", "visual planning"]
+          "title": "Instagram Grid Aesthetics",
+          "file": "/research/05_SOCIAL_MEDIA_STRATEGY/Instagram_Grid_Aesthetics_Creative_Portfolios.md",
+          "summary": "Visual cohesion strategies, grid design principles, carousel vs single post strategies.",
+          "tags": ["instagram", "grid", "aesthetics"]
         },
         {
-          "title": "Content Calendar & Posting Strategy",
-          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/Content_Calendar_Posting_Strategy_Fashion_Tech.md",
-          "summary": "Optimal posting times for fashion/creative audiences, posting frequency recommendations, content pillars structure, weekly/monthly planning frameworks, seasonal strategies, and batch creation systems.",
-          "tags": ["content calendar", "posting strategy", "planning", "scheduling"]
+          "title": "Content Calendar & Posting",
+          "file": "/research/05_SOCIAL_MEDIA_STRATEGY/Content_Calendar_Posting_Strategy_Fashion_Tech.md",
+          "summary": "Optimal posting times, frequency, content pillars, weekly/monthly planning frameworks.",
+          "tags": ["content calendar", "posting", "planning"]
         },
         {
-          "title": "PR Strategy & Media Angles for Fashion Tech",
-          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/PR_Strategy_Fashion_Tech_AI_Tools.md",
-          "summary": "Positioning strategies for fashion tech innovation, press kit creation, pitch angles for fashion publications (Vogue, WWD, BoF), AI ethics storytelling, founder story development, and journalist relationship building.",
-          "tags": ["PR", "media", "press", "fashion tech", "positioning"]
+          "title": "PR Strategy for Fashion Tech",
+          "file": "/research/05_SOCIAL_MEDIA_STRATEGY/PR_Strategy_Fashion_Tech_AI_Tools.md",
+          "summary": "Positioning strategies, press kit creation, pitch angles for fashion publications.",
+          "tags": ["PR", "media", "fashion tech"]
         },
         {
-          "title": "Caption Writing & Storytelling for Fashion Tech",
-          "file": "../SetCast/research/05_SOCIAL_MEDIA_STRATEGY/Caption_Writing_Storytelling_Fashion_Tech_Content.md",
-          "summary": "30+ hook formulas, technical vs visual storytelling balance, hashtag research strategies, 50+ CTA examples, educational content formatting, behind-the-scenes frameworks, and voice/tone development.",
-          "tags": ["captions", "copywriting", "storytelling", "engagement", "hooks"]
+          "title": "Caption Writing & Storytelling",
+          "file": "/research/05_SOCIAL_MEDIA_STRATEGY/Caption_Writing_Storytelling_Fashion_Tech_Content.md",
+          "summary": "30+ hook formulas, hashtag strategies, 50+ CTA examples, voice development.",
+          "tags": ["captions", "copywriting", "storytelling"]
+        },
+        {
+          "title": "Carousel Post Sequence Strategy",
+          "file": "/research/05_SOCIAL_MEDIA_STRATEGY/CAROUSEL_POST_SEQUENCE_STRATEGY.md",
+          "summary": "Data-backed carousel sequence framework for fashion editorial: optimal slide counts (2-3 vs 8-10), slide-by-slide formulas, luxury vs fast fashion strategies, video vs static performance, engagement benchmarks (2.07% for 10-slide carousels).",
+          "tags": ["carousel", "instagram", "engagement", "strategy"]
         }
       ]
     },
@@ -164,13 +226,107 @@
       "id": "tool-docs",
       "name": "Tool Documentation",
       "icon": "🔧",
-      "description": "Technical documentation for Setset Playground tools and features",
+      "description": "Technical documentation for Setset Playground tools",
       "documents": [
         {
           "title": "Styling Studio Documentation",
-          "file": "../SetCast/research/06_TOOL_DOCUMENTATION/STYLING_STUDIO_DOCUMENTATION.md",
-          "summary": "Comprehensive documentation for the Styling Studio photorealistic paper doll generator. Covers architecture, API endpoints, prompt building logic, user flow, and technical specifications for multi-image AI styling.",
-          "tags": ["styling", "documentation", "technical", "nano banana", "multi-image"]
+          "file": "/research/06_TOOL_DOCUMENTATION/STYLING_STUDIO_DOCUMENTATION.md",
+          "summary": "Documentation for Styling Studio photorealistic paper doll generator. Architecture, API, prompt logic.",
+          "tags": ["styling", "documentation", "technical"]
+        }
+      ]
+    },
+    {
+      "id": "reference-frameworks",
+      "name": "Reference Frameworks",
+      "icon": "📖",
+      "description": "Foundational guides for casting, photography, beauty, and inclusive representation",
+      "documents": [
+        {
+          "title": "Fashion Casting Directors Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/Fashion_Casting_Directors_Guide.md",
+          "summary": "Comprehensive casting guidance, talent selection, diversity requirements, professional standards.",
+          "tags": ["casting", "diversity", "professional"]
+        },
+        {
+          "title": "Professional Photography Lighting Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/professional-photography-lighting-guide.md",
+          "summary": "Technical lighting specifications for studio and environmental setups, equipment references.",
+          "tags": ["lighting", "technical", "photography"]
+        },
+        {
+          "title": "Beauty & Makeup Reference Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/BEAUTY_MAKEUP_REFERENCE_GUIDE.md",
+          "summary": "Beauty aesthetics, makeup terminology, rendering styles for close-up shots.",
+          "tags": ["beauty", "makeup", "terminology"]
+        },
+        {
+          "title": "Hair Texture Classification Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/Hair_Texture_Classification_and_Styling_Terminology_Guide.md",
+          "summary": "Hair texture classification systems, styling terminology across all textures.",
+          "tags": ["hair", "texture", "styling"]
+        },
+        {
+          "title": "Age Diversity Fashion Editorial Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/age-diversity-fashion-editorial-guide.md",
+          "summary": "Age-positive fashion frameworks, casting and styling models 40+, 50+, 60+.",
+          "tags": ["age", "diversity", "inclusive"]
+        },
+        {
+          "title": "Inclusive Fashion Terminology Guide",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/inclusive-fashion-terminology-guide.md",
+          "summary": "Inclusive size and fit terminology, gender-neutral fashion language.",
+          "tags": ["inclusive", "terminology", "gender-neutral"]
+        },
+        {
+          "title": "Inclusive Body Type Framework",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/inclusive-body-type-framework.md",
+          "summary": "Body diversity framework, representation guidelines, inclusive casting.",
+          "tags": ["body", "diversity", "inclusive"]
+        },
+        {
+          "title": "AI Lighting Terminology",
+          "file": "/research/07_REFERENCE_FRAMEWORKS/AI_LIGHTING_TERMINOLOGY.md",
+          "summary": "Complete lighting vocabulary for AI image generation: natural light, studio setups, modifiers, cinematic styles, and fashion-specific lighting terms.",
+          "tags": ["lighting", "terminology", "technical"]
+        }
+      ]
+    },
+    {
+      "id": "setset",
+      "name": "Setset",
+      "icon": "🎬",
+      "description": "Technical documentation of the Setset app architecture, code logic, and systems",
+      "documents": [
+        {
+          "title": "Setset Overview",
+          "file": "/research/08_SETSET/README.md",
+          "summary": "Platform architecture, tech stack (Next.js, Supabase, FAL.ai, Seedance), tool descriptions, design philosophy.",
+          "tags": ["architecture", "overview", "setset"]
+        },
+        {
+          "title": "Prompt Architecture",
+          "file": "/research/08_SETSET/prompt-architecture/PROMPT_ARCHITECTURE.md",
+          "summary": "9-component prompt structure, modular system, GPT enhancement, three-variation structure, pose-specific builders.",
+          "tags": ["prompts", "architecture", "modular"]
+        },
+        {
+          "title": "Video Movements",
+          "file": "/research/08_SETSET/video-generation/VIDEO_MOVEMENTS.md",
+          "summary": "11 video movements (Spin, Walk, Hair Touch, etc.), Seedance API integration, cost calculations.",
+          "tags": ["video", "movements", "seedance"]
+        },
+        {
+          "title": "Pose Libraries",
+          "file": "/research/08_SETSET/pose-libraries/POSE_POOLS.md",
+          "summary": "80+ editorial poses across categories: front, 45-degree, lifestyle, gender-specific pools.",
+          "tags": ["poses", "editorial", "library"]
+        },
+        {
+          "title": "Styling Rules",
+          "file": "/research/08_SETSET/styling-system/STYLING_RULES.md",
+          "summary": "Product-category outfit rules, styling libraries, color coordination, safety rules.",
+          "tags": ["styling", "outfits", "rules"]
         }
       ]
     }

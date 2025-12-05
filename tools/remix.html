@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remix</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        /* Page-specific styles */
+        .container {
+            max-width: 700px;
+        }
+
+        /* Images Row */
+        .images-row {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .images-column {
+            flex: 1;
+        }
+
+        /* Upload Grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-2xs);
+            padding: var(--space-xs);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Idea Section */
+        .idea-section {
+            margin-bottom: var(--space-sm);
+        }
+
+        .idea-row {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .idea-input {
+            flex: 1;
+            height: 32px;
+        }
+
+        .idea-controls {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .idea-generate-btn {
+            height: 32px;
+            min-width: 100px;
+        }
+
+        /* Prompt Section */
+        .prompt-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .prompt-hint {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+            margin-top: var(--space-2xs);
+            text-align: center;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+            margin-top: var(--space-sm);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+            text-align: center;
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Results */
+        .result-image {
+            aspect-ratio: 3/4;
+        }
+
+        /* Source images in lightbox */
+        .lightbox-source-images {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .lightbox-source-images img {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .result-card .model-tag {
+            position: absolute;
+            bottom: var(--space-2xs);
+            left: var(--space-2xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Error */
+        .error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: var(--space-sm);
+            color: #991b1b;
+            margin-bottom: var(--space-md);
+            font-size: var(--text-base);
+            text-align: center;
+            border-radius: var(--radius-md);
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Batch Section */
+        .batch-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .section-hint {
+            font-weight: 400;
+            color: var(--ash-grey);
+            font-size: var(--text-xs);
+        }
+
+        .upload-grid--batch {
+            grid-template-columns: repeat(10, 1fr);
+        }
+
+        /* Reference Image Section */
+        .reference-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .reference-box {
+            width: 120px;
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: var(--space-2xs);
+        }
+
+        .reference-box:hover {
+            border-color: var(--jet);
+        }
+
+        .reference-box.filled {
+            border-style: solid;
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .reference-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .reference-box .placeholder-icon {
+            font-size: 24px;
+            color: var(--gainsboro);
+        }
+
+        .reference-box .placeholder-text {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+        }
+
+        .reference-box .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .reference-box.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        /* Dim secondary when batch has images */
+        .images-row.batch-active .images-column:last-child {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Custom lightbox overrides */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: var(--white);
+            padding: var(--space-sm);
+            z-index: 10;
+        }
+
+        .lightbox-nav.prev { left: var(--space-md); }
+        .lightbox-nav.next { right: 320px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Remix</h1>
+            <p class="hero-subtitle">Transform images with AI</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <!-- Images Row -->
+        <div class="images-row">
+            <div class="images-column">
+                <div class="section-label">Primary (Required)</div>
+                <div class="upload-grid" id="primaryGrid" data-type="primary"></div>
+                <input type="file" id="primaryInput" accept="image/*" multiple>
+            </div>
+            <div class="images-column">
+                <div class="section-label">Secondary (Optional)</div>
+                <div class="upload-grid" id="secondaryGrid" data-type="secondary"></div>
+                <input type="file" id="secondaryInput" accept="image/*" multiple>
+            </div>
+        </div>
+
+        <!-- Batch Row -->
+        <div class="batch-section">
+            <div class="section-label">Batch (Optional) <span class="section-hint">— All batch images are combined with each primary</span></div>
+            <div class="upload-grid upload-grid--batch" id="batchGrid" data-type="batch"></div>
+            <input type="file" id="batchInput" accept="image/*" multiple>
+        </div>
+
+        <!-- Reference Image -->
+        <div class="reference-section">
+            <div class="section-label">Lighting Reference (Optional) <span class="section-hint">— Match lighting & shadows from this image</span></div>
+            <div class="reference-box" id="referenceBox">
+                <span class="placeholder-icon">+</span>
+                <span class="placeholder-text">Add image</span>
+            </div>
+            <input type="file" id="referenceInput" accept="image/*">
+        </div>
+
+        <!-- Idea Section -->
+        <div class="idea-section">
+            <div class="section-label">Idea</div>
+            <div class="idea-row">
+                <input type="text" class="input idea-input" id="idea-input" placeholder="Describe what you want to create...">
+                <div class="idea-controls">
+                    <div class="slider-box slider-box--compact">
+                        <input type="range" class="slider" id="idea-prompts-slider" min="1" max="10" value="4">
+                        <span class="slider-value" id="idea-prompts-value">4</span>
+                    </div>
+                    <button class="btn idea-generate-btn" id="idea-generate-btn">Generate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompts -->
+        <div class="prompt-section">
+            <div class="section-label">Prompts</div>
+            <textarea class="textarea" id="promptTextarea" placeholder="Enter prompts, one per line... (or use the idea generator above)"></textarea>
+            <p class="prompt-hint">Each line creates a new prompt</p>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <!-- Models -->
+            <div class="settings-row">
+                <div class="setting-group flex-1">
+                    <label class="setting-label">Model</label>
+                    <div class="btn-group" id="model-buttons">
+                        <button class="btn btn--toggle" data-model="nano">Nano</button>
+                        <button class="btn btn--toggle active" data-model="nanopro">Nano Pro</button>
+                        <button class="btn btn--toggle" data-model="flux2">Flux 2</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aspect Ratio -->
+            <div class="settings-row">
+                <div class="setting-group flex-1">
+                    <label class="setting-label">Aspect Ratio</label>
+                    <div class="btn-group" id="aspect-buttons">
+                        <button class="btn btn--toggle" data-value="16:9">16:9</button>
+                        <button class="btn btn--toggle" data-value="9:16">9:16</button>
+                        <button class="btn btn--toggle" data-value="3:2">3:2</button>
+                        <button class="btn btn--toggle" data-value="2:3">2:3</button>
+                        <button class="btn btn--toggle active" data-value="3:4">3:4</button>
+                        <button class="btn btn--toggle" data-value="4:3">4:3</button>
+                        <button class="btn btn--toggle" data-value="1:1">1:1</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resolution (only for Nano Pro) -->
+            <div class="settings-row" id="resolution-row">
+                <div class="setting-group">
+                    <label class="setting-label">Resolution</label>
+                    <div class="btn-group" id="resolution-buttons">
+                        <button class="btn btn--toggle" data-value="1K">1K</button>
+                        <button class="btn btn--toggle active" data-value="2K">2K</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seeds -->
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label class="setting-label">Seeds</label>
+                    <div class="slider-box">
+                        <input type="range" class="slider" id="seeds-slider" min="1" max="4" value="1">
+                        <span class="slider-value" id="seeds-value">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate -->
+            <div class="generate-section">
+                <div class="calc-display" id="calc-display">0 images &times; 0 prompts &times; 1 model = 0 images</div>
+                <button class="btn btn--primary btn--lg btn--block" id="generate-btn" disabled>
+                    Generate Images <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <p class="results-subtitle">Click to view details</p>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <button class="lightbox-nav prev" id="lightbox-prev">&larr;</button>
+            <button class="lightbox-nav next" id="lightbox-next">&rarr;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Model</h3>
+                    <p class="lightbox-model-text" id="lightbox-model"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Source Images</h3>
+                    <div class="lightbox-source-images" id="lightbox-source-images"></div>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Loading...</p>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/models.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+
+    <script>
+        // Remix-specific model configs (image-to-image)
+        const REMIX_MODELS = {
+            nano: {
+                name: 'Nano',
+                endpoint: 'nanobanana-edit',
+                costPerImage: 0.15,
+                hasResolution: false,
+                hasAspectRatio: true
+            },
+            nanopro: {
+                name: 'Nano Pro',
+                endpoint: 'nanobanana-pro-edit',
+                costPerImage: 0.15,
+                hasResolution: true,  // 1K, 2K
+                hasAspectRatio: true
+            },
+            flux2: {
+                name: 'Flux 2',
+                endpoint: 'flux2-redux',
+                costPerImage: 0.15,
+                hasResolution: false,
+                hasAspectRatio: false
+            }
+        };
+
+        // State
+        let primaryImages = new Array(10).fill(null);
+        let secondaryImages = new Array(10).fill(null);
+        let batchImages = new Array(10).fill(null);
+        let referenceImage = null;  // Single lighting reference image
+        let pasteTarget = null;  // { type: 'primary'|'secondary'|'batch', index: number }
+        let state = {
+            selectedModel: 'nanopro',
+            aspectRatio: '3:4',
+            resolution: '2K',
+            seeds: 1,
+            ideaNumPrompts: 4,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            primaryGrid: document.getElementById('primaryGrid'),
+            secondaryGrid: document.getElementById('secondaryGrid'),
+            batchGrid: document.getElementById('batchGrid'),
+            primaryInput: document.getElementById('primaryInput'),
+            secondaryInput: document.getElementById('secondaryInput'),
+            batchInput: document.getElementById('batchInput'),
+            imagesRow: document.querySelector('.images-row'),
+            promptTextarea: document.getElementById('promptTextarea'),
+            modelButtons: document.getElementById('model-buttons'),
+            aspectButtons: document.getElementById('aspect-buttons'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            seedsSlider: document.getElementById('seeds-slider'),
+            seedsValue: document.getElementById('seeds-value'),
+            generateBtn: document.getElementById('generate-btn'),
+            costValue: document.getElementById('cost-value'),
+            calcDisplay: document.getElementById('calc-display'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            errorDiv: document.getElementById('error'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxModel: document.getElementById('lightbox-model'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxSourceImages: document.getElementById('lightbox-source-images'),
+            ideaInput: document.getElementById('idea-input'),
+            ideaPromptsSlider: document.getElementById('idea-prompts-slider'),
+            ideaPromptsValue: document.getElementById('idea-prompts-value'),
+            ideaGenerateBtn: document.getElementById('idea-generate-btn'),
+            referenceBox: document.getElementById('referenceBox'),
+            referenceInput: document.getElementById('referenceInput')
+        };
+
+        // Initialize grids
+        function initializeGrids() {
+            for (let i = 0; i < 10; i++) {
+                elements.primaryGrid.appendChild(createUploadSlot(i, 'primary'));
+                elements.secondaryGrid.appendChild(createUploadSlot(i, 'secondary'));
+                elements.batchGrid.appendChild(createUploadSlot(i, 'batch'));
+            }
+        }
+
+        function getImagesArray(type) {
+            if (type === 'primary') return primaryImages;
+            if (type === 'secondary') return secondaryImages;
+            if (type === 'batch') return batchImages;
+        }
+
+        function getGrid(type) {
+            if (type === 'primary') return elements.primaryGrid;
+            if (type === 'secondary') return elements.secondaryGrid;
+            if (type === 'batch') return elements.batchGrid;
+        }
+
+        function getInput(type) {
+            if (type === 'primary') return elements.primaryInput;
+            if (type === 'secondary') return elements.secondaryInput;
+            if (type === 'batch') return elements.batchInput;
+        }
+
+        function createUploadSlot(index, type) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.innerHTML = '+';
+            slot.dataset.index = index;
+            slot.dataset.type = type;
+            slot.addEventListener('click', (e) => {
+                const images = getImagesArray(type);
+                // If slot has image, toggle selection; otherwise set as paste target
+                if (images[index]) {
+                    // Don't toggle if clicking on remove button
+                    if (e.target.closest('.remove-btn')) return;
+                    toggleImage(index, type, !images[index].selected);
+                } else {
+                    // Single click: set as paste target (for Cmd+V)
+                    setPasteTarget(type, index);
+                }
+            });
+            // Double-click opens file picker
+            slot.addEventListener('dblclick', (e) => {
+                const images = getImagesArray(type);
+                if (!images[index]) {
+                    const input = getInput(type);
+                    input.click();
+                    input.dataset.targetSlot = index;
+                }
+            });
+            return slot;
+        }
+
+        function setPasteTarget(type, index) {
+            // Clear previous paste target
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+
+            // Set new paste target
+            pasteTarget = { type, index };
+            const grid = getGrid(type);
+            grid.children[index].classList.add('paste-ready');
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = null;
+        }
+
+        // Drag and drop
+        function setupDragAndDrop(grid, type) {
+            grid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                grid.classList.add('drag-over');
+            });
+            grid.addEventListener('dragleave', () => grid.classList.remove('drag-over'));
+            grid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                grid.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0) handleFileUpload(files, type, null);
+            });
+        }
+
+        elements.primaryInput.addEventListener('change', (e) => {
+            handleFileUpload(Array.from(e.target.files), 'primary', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
+            e.target.value = '';
+        });
+
+        elements.secondaryInput.addEventListener('change', (e) => {
+            handleFileUpload(Array.from(e.target.files), 'secondary', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
+            e.target.value = '';
+        });
+
+        elements.batchInput.addEventListener('change', (e) => {
+            handleFileUpload(Array.from(e.target.files), 'batch', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
+            e.target.value = '';
+        });
+
+        // Reference image handlers
+        elements.referenceBox.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-btn')) return;
+            if (referenceImage) {
+                // If already has image, clicking replaces it
+            }
+            elements.referenceInput.click();
+        });
+
+        elements.referenceInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                referenceImage = { file, url: ev.target.result };
+                elements.referenceBox.classList.add('filled');
+                elements.referenceBox.innerHTML = `
+                    <img src="${ev.target.result}" alt="Reference">
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeReferenceImage()">&times;</button>
+                `;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        window.removeReferenceImage = function() {
+            referenceImage = null;
+            elements.referenceBox.classList.remove('filled');
+            elements.referenceBox.innerHTML = `
+                <span class="placeholder-icon">+</span>
+                <span class="placeholder-text">Add image</span>
+            `;
+        };
+
+        function handleFileUpload(files, type, startIndex) {
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
+
+            files.forEach((file, i) => {
+                let index = startIndex !== null ? startIndex : images.findIndex((img, idx) => !img && idx >= i);
+                if (index === -1 || index >= 10) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images[index] = { file, url: e.target.result, selected: true };
+                    const slot = grid.children[index];
+                    slot.classList.add('filled');
+                    slot.innerHTML = `
+                        <img src="${e.target.result}" alt="Image ${index + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${index}, '${type}')">&times;</button>
+                    `;
+                    updateCalculator();
+                    updateBatchActiveState();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.toggleImage = function(index, type, checked) {
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
+            if (images[index]) {
+                images[index].selected = checked;
+                grid.children[index].classList.toggle('deselected', !checked);
+                updateCalculator();
+                updateBatchActiveState();
+            }
+        };
+
+        window.removeImage = function(index, type) {
+            const images = getImagesArray(type);
+            const grid = getGrid(type);
+            images.splice(index, 1);
+            images.push(null);
+            rerenderGrid(images, grid, type);
+            updateCalculator();
+            updateBatchActiveState();
+        };
+
+        function updateBatchActiveState() {
+            const hasBatchImages = batchImages.some(img => img && img.selected);
+            elements.imagesRow.classList.toggle('batch-active', hasBatchImages);
+        }
+
+        function rerenderGrid(images, grid, type) {
+            for (let i = 0; i < 10; i++) {
+                const slot = grid.children[i];
+                if (images[i]) {
+                    slot.className = 'upload-slot filled' + (images[i].selected ? '' : ' deselected');
+                    slot.innerHTML = `
+                        <img src="${images[i].url}" alt="Image ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i}, '${type}')">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            }
+        }
+
+        // Model buttons
+        elements.modelButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                const modelKey = e.target.dataset.model;
+                // Single selection - remove active from all, add to clicked
+                elements.modelButtons.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.selectedModel = modelKey;
+
+                // Show/hide resolution based on model
+                const model = REMIX_MODELS[modelKey];
+                const resolutionRow = document.getElementById('resolution-row');
+                if (resolutionRow) {
+                    resolutionRow.style.display = model.hasResolution ? 'flex' : 'none';
+                }
+
+                updateCalculator();
+            }
+        });
+
+        // Aspect ratio buttons
+        elements.aspectButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                elements.aspectButtons.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.aspectRatio = e.target.dataset.value;
+            }
+        });
+
+        // Resolution buttons
+        elements.resolutionButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                elements.resolutionButtons.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.resolution = e.target.dataset.value;
+                updateCalculator();
+            }
+        });
+
+        // Seeds slider
+        elements.seedsSlider.addEventListener('input', (e) => {
+            state.seeds = parseInt(e.target.value);
+            elements.seedsValue.textContent = state.seeds;
+            updateCalculator();
+        });
+
+        // Idea generator
+        elements.ideaPromptsSlider.addEventListener('input', (e) => {
+            state.ideaNumPrompts = parseInt(e.target.value);
+            elements.ideaPromptsValue.textContent = state.ideaNumPrompts;
+        });
+
+        elements.ideaGenerateBtn.addEventListener('click', generatePromptsFromIdea);
+        elements.ideaInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                generatePromptsFromIdea();
+            }
+        });
+
+        async function generatePromptsFromIdea() {
+            const idea = elements.ideaInput.value.trim();
+            if (!idea) return;
+
+            elements.ideaGenerateBtn.disabled = true;
+            elements.ideaGenerateBtn.textContent = 'Generating...';
+
+            try {
+                const data = await api.generatePrompts(idea, state.ideaNumPrompts);
+                elements.promptTextarea.value = data.prompts.join('\n\n');
+                updateCalculator();
+                elements.ideaInput.value = '';
+            } catch (error) {
+                console.error('Error generating prompts:', error);
+            } finally {
+                elements.ideaGenerateBtn.disabled = false;
+                elements.ideaGenerateBtn.textContent = 'Generate';
+            }
+        }
+
+        // Prompt textarea
+        elements.promptTextarea.addEventListener('input', updateCalculator);
+
+        function getValidPrompts() {
+            return elements.promptTextarea.value.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0);
+        }
+
+        // Update calculator
+        function updateCalculator() {
+            const selectedPrimary = primaryImages.filter(img => img && img.selected);
+            const selectedSecondary = secondaryImages.filter(img => img && img.selected);
+            const selectedBatch = batchImages.filter(img => img && img.selected);
+            const prompts = getValidPrompts();
+
+            const numPrimary = selectedPrimary.length;
+            const numPrompts = prompts.length;
+            const numSeeds = state.seeds;
+
+            // If batch has images, use batch mode (ignore secondary)
+            const useBatchMode = selectedBatch.length > 0;
+            let totalCombinations, displayLabel;
+
+            if (useBatchMode) {
+                // Batch mode: each primary + all batch images together × each prompt
+                totalCombinations = numPrimary * numPrompts;
+                displayLabel = `${numPrimary} primary (+ ${selectedBatch.length} batch refs) × ${numPrompts} prompts × ${numSeeds} seeds`;
+            } else {
+                // Normal mode: primary × secondary × prompts
+                const numSecondary = selectedSecondary.length > 0 ? selectedSecondary.length : 1;
+                totalCombinations = numPrimary * numSecondary * numPrompts;
+                const secondaryLabel = selectedSecondary.length > 0 ? `${numSecondary} secondary` : '(solo)';
+                displayLabel = `${numPrimary} primary × ${secondaryLabel} × ${numPrompts} prompts × ${numSeeds} seeds`;
+            }
+
+            const totalImages = totalCombinations * numSeeds;
+
+            // Calculate cost
+            const model = REMIX_MODELS[state.selectedModel];
+            const cost = totalCombinations * numSeeds * model.costPerImage;
+
+            // Update display
+            elements.calcDisplay.textContent = `${displayLabel} = ${totalImages} images`;
+            elements.costValue.textContent = formatCost(cost);
+
+            elements.generateBtn.disabled = numPrimary === 0 || numPrompts === 0;
+        }
+
+        // Generate
+        elements.generateBtn.addEventListener('click', handleGenerate);
+
+        // Helper to upload base64 image and get fal.ai URL
+        async function uploadImageToFal(dataUrl) {
+            const response = await api.uploadBase64(dataUrl);
+            return response.url;
+        }
+
+        async function handleGenerate() {
+            elements.errorDiv.classList.remove('show');
+
+            const prompts = getValidPrompts();
+            const selectedPrimary = primaryImages.filter(img => img && img.selected);
+            const selectedSecondary = secondaryImages.filter(img => img && img.selected);
+            const selectedBatch = batchImages.filter(img => img && img.selected);
+            const useBatchMode = selectedBatch.length > 0;
+
+            console.log('🎨 REMIX: Starting generation');
+            console.log(`  📷 Primary images: ${selectedPrimary.length}`);
+            if (useBatchMode) {
+                console.log(`  📦 Batch mode: ${selectedBatch.length} batch images`);
+            } else {
+                console.log(`  📷 Secondary images: ${selectedSecondary.length}`);
+            }
+            console.log(`  📝 Prompts: ${prompts.length}`);
+            console.log(`  🎯 Model: ${state.selectedModel}`);
+
+            if (prompts.length === 0 || selectedPrimary.length === 0) {
+                showError('Please add images and prompts');
+                return;
+            }
+
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+
+            // Upload all images to fal.ai first (convert base64 to hosted URLs)
+            console.log('📤 Uploading images to fal.ai...');
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = 'Uploading images...';
+            elements.progressBar.style.width = '0%';
+
+            try {
+                // Upload primary images
+                for (const img of selectedPrimary) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded primary image`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+
+                // Upload secondary images
+                for (const img of selectedSecondary) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded secondary image`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+
+                // Upload batch images
+                for (const img of selectedBatch) {
+                    if (img.url.startsWith('data:')) {
+                        img.hostedUrl = await uploadImageToFal(img.url);
+                        console.log(`  ✅ Uploaded batch image`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }
+
+                // Upload reference image if present
+                if (referenceImage) {
+                    if (referenceImage.url.startsWith('data:')) {
+                        referenceImage.hostedUrl = await uploadImageToFal(referenceImage.url);
+                        console.log(`  ✅ Uploaded reference image`);
+                    } else {
+                        referenceImage.hostedUrl = referenceImage.url;
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Image upload failed:', error);
+                showError('Failed to upload images: ' + error.message);
+                elements.progressSection.classList.remove('visible');
+                return;
+            }
+
+            console.log('📤 All images uploaded!');
+
+            // Build all tasks
+            const allTasks = [];
+            const modelKey = state.selectedModel;
+
+            if (useBatchMode) {
+                // Batch mode: each primary + ALL batch images together × each prompt
+                selectedPrimary.forEach((primaryImg, pIdx) => {
+                    // Combine primary with ALL batch images - use hostedUrl for API, url for display
+                    let imageUrls = [primaryImg.hostedUrl, ...selectedBatch.map(b => b.hostedUrl)];
+                    let sourceImages = [primaryImg.url, ...selectedBatch.map(b => b.url)];
+                    // Add reference image if present
+                    if (referenceImage && referenceImage.hostedUrl) {
+                        imageUrls.push(referenceImage.hostedUrl);
+                        sourceImages.push(referenceImage.url);
+                    }
+                    const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
+                    prompts.forEach((prompt, promptIdx) => {
+                        allTasks.push({
+                            modelKey,
+                            prompt,
+                            imageUrls,
+                            seeds: state.seeds,
+                            primaryFilename,
+                            sourceImages,
+                            primaryIndex: pIdx,
+                            batchCount: selectedBatch.length,
+                            promptIndex: promptIdx
+                        });
+                    });
+                });
+            } else {
+                // Normal mode: primary × secondary × prompts
+                selectedPrimary.forEach((primaryImg, pIdx) => {
+                    const secondaryToUse = selectedSecondary.length > 0 ? selectedSecondary : [null];
+                    secondaryToUse.forEach((secondaryImg, sIdx) => {
+                        // Use hostedUrl for API, url for display
+                        let imageUrls = secondaryImg ? [primaryImg.hostedUrl, secondaryImg.hostedUrl] : [primaryImg.hostedUrl];
+                        let sourceImages = secondaryImg ? [primaryImg.url, secondaryImg.url] : [primaryImg.url];
+                        // Add reference image if present
+                        if (referenceImage && referenceImage.hostedUrl) {
+                            imageUrls.push(referenceImage.hostedUrl);
+                            sourceImages.push(referenceImage.url);
+                        }
+                        const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
+                        prompts.forEach((prompt, promptIdx) => {
+                            allTasks.push({
+                                modelKey,
+                                prompt,
+                                imageUrls,
+                                seeds: state.seeds,
+                                primaryFilename,
+                                sourceImages,
+                                primaryIndex: pIdx,
+                                secondaryIndex: secondaryImg ? sIdx : null,
+                                promptIndex: promptIdx
+                            });
+                        });
+                    });
+                });
+            }
+
+            const totalTasks = allTasks.length;
+            const totalImages = totalTasks * state.seeds;
+            let imagesCompleted = 0;
+
+            console.log(`📋 Created ${totalTasks} tasks, expecting ${totalImages} images`);
+            console.log(useBatchMode ? '  Formula: primary × prompts × seeds' : '  Formula: primary × secondary × prompts × seeds');
+
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${totalImages}`;
+            elements.progressBar.style.width = '0%';
+            elements.generateBtn.disabled = true;
+
+            // Execute all in parallel
+            await Promise.all(allTasks.map(async (task, taskIdx) => {
+                const taskLabel = `Primary[${task.primaryIndex}]` +
+                    (task.batchCount ? ` + ${task.batchCount} batch refs` : '') +
+                    (task.secondaryIndex !== null && task.secondaryIndex !== undefined ? ` + Secondary[${task.secondaryIndex}]` : '') +
+                    ` + Prompt[${task.promptIndex}]`;
+                console.log(`🔄 [${taskIdx + 1}/${totalTasks}] ${task.modelKey}: ${taskLabel}`);
+
+                try {
+                    const model = REMIX_MODELS[task.modelKey];
+                    let params = {
+                        prompt: task.prompt,
+                        image_urls: task.imageUrls,
+                        num_images: task.seeds,
+                        output_format: 'png'
+                    };
+
+                    // Model-specific params
+                    if (task.modelKey === 'nano') {
+                        params.aspect_ratio = state.aspectRatio;
+                        // No resolution for nano
+                    } else if (task.modelKey === 'nanopro') {
+                        params.aspect_ratio = state.aspectRatio;
+                        params.resolution = state.resolution;
+                    } else if (task.modelKey === 'flux2') {
+                        params.enable_safety_checker = false;
+                    }
+
+                    const data = await api.remixImage(model.endpoint, params);
+
+                    if (data.images) {
+                        console.log(`  ✅ Got ${data.images.length} image(s)`);
+                        data.images.forEach((img, idx) => {
+                            state.results.push({
+                                url: img.url,
+                                prompt: task.prompt,
+                                modelKey: task.modelKey,
+                                modelName: model.name,
+                                primaryFilename: task.primaryFilename,
+                                sourceImages: task.sourceImages
+                            });
+                        });
+                        renderResults();
+
+                        // Update progress with actual images received
+                        imagesCompleted += data.images.length;
+                    }
+                } catch (error) {
+                    console.error(`  ❌ Task failed:`, error);
+                    // Still count expected images for progress even on failure
+                    imagesCompleted += state.seeds;
+                }
+
+                elements.progressCount.textContent = `${imagesCompleted} / ${totalImages}`;
+                elements.progressBar.style.width = `${(imagesCompleted / totalImages) * 100}%`;
+            }));
+
+            console.log(`🎉 REMIX: Complete! Generated ${state.results.length} images`);
+            elements.progressSection.classList.remove('visible');
+            elements.resultsSection.classList.add('visible');
+            updateCalculator();
+        }
+
+        function renderResults() {
+            elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
+                <div class="result-card" onclick="openLightbox(${idx})">
+                    <img src="${result.url}" alt="Result ${idx + 1}" class="result-image">
+                    <span class="model-tag">${result.modelName}</span>
+                </div>
+            `).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxModel.textContent = result.modelName;
+            elements.lightboxPrompt.textContent = result.prompt;
+
+            // Display source images
+            if (result.sourceImages && result.sourceImages.length > 0) {
+                elements.lightboxSourceImages.innerHTML = result.sourceImages.map((url, idx) =>
+                    `<img src="${url}" alt="${idx === 0 ? 'Primary' : 'Secondary'}" title="${idx === 0 ? 'Primary' : 'Secondary'}">`
+                ).join('');
+            } else {
+                elements.lightboxSourceImages.innerHTML = '<span style="color: var(--slate); font-size: var(--text-xs);">No source images</span>';
+            }
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
+
+        document.getElementById('lightbox-prev').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-next').addEventListener('click', () => {
+            state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
+            updateLightboxContent();
+        });
+
+        document.getElementById('lightbox-download').addEventListener('click', async () => {
+            const result = state.results[state.lightboxIndex];
+            const filename = result.primaryFilename || 'image';
+            downloadFile(result.url, `Remix_${filename}.png`);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!elements.lightbox.classList.contains('visible')) return;
+            if (e.key === 'Escape') closeLightbox();
+            else if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
+            else if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
+        });
+
+        // Clipboard paste handler
+        document.addEventListener('paste', async (e) => {
+            // Only handle if we have a paste target
+            if (!pasteTarget) return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        handleFileUpload([file], pasteTarget.type, pasteTarget.index);
+                        clearPasteTarget();
+                    }
+                    break;
+                }
+            }
+        });
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        function showError(message) {
+            elements.errorDiv.textContent = message;
+            elements.errorDiv.classList.add('show');
+        }
+
+        // Initialize
+        initializeGrids();
+        setupDragAndDrop(elements.primaryGrid, 'primary');
+        setupDragAndDrop(elements.secondaryGrid, 'secondary');
+        if (elements.batchGrid) {
+            setupDragAndDrop(elements.batchGrid, 'batch');
+        } else {
+            console.error('Batch grid not found!');
+        }
+        updateCalculator();
+    </script>
+</body>
+</html>
