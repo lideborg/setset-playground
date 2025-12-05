@@ -42,6 +42,7 @@ const state = {
 
     // Outfit selection
     gender: 'female',
+    selectedStyle: 'random',  // 'random' or specific style name
     enabledCategories: ['top', 'bottom', 'shoes'],  // Default enabled
     selectedProducts: {},  // { categoryId: productObject }
     availableProducts: {},  // Loaded from folders
@@ -84,7 +85,10 @@ const elements = {
     uploadPortrait: document.getElementById('upload-portrait'),
     uploadFullbody: document.getElementById('upload-fullbody'),
     portraitInput: document.getElementById('portrait-input'),
-    fullbodyInput: document.getElementById('fullbody-input')
+    fullbodyInput: document.getElementById('fullbody-input'),
+    loading: document.getElementById('loading'),
+    loadingText: document.getElementById('loading-text'),
+    lightboxSourceImages: document.getElementById('lightbox-source-images')
 };
 
 // Initialize Application
@@ -112,20 +116,35 @@ async function init() {
     console.log('SocialSet initialized');
 }
 
-// Load available products from folders
+// Load available products from folders via server endpoint
 async function loadAvailableProducts() {
-    // For now, initialize empty structure
-    // Products will be loaded from /tools/socialset/products/{category}/{gender}/
-    for (const category of PRODUCT_CATEGORIES) {
-        state.availableProducts[category.id] = {
-            female: [],
-            male: []
-        };
-    }
+    try {
+        const response = await fetch('/api/clothing');
+        if (!response.ok) {
+            throw new Error('Failed to fetch clothing');
+        }
 
-    // TODO: Implement actual folder scanning via server endpoint
-    // For now, products will be added manually or via upload
-    console.log('Product folders initialized');
+        const products = await response.json();
+        state.availableProducts = products;
+
+        // Ensure all categories exist
+        for (const category of PRODUCT_CATEGORIES) {
+            if (!state.availableProducts[category.id]) {
+                state.availableProducts[category.id] = { female: [], male: [] };
+            }
+        }
+
+        const totalProducts = Object.values(products).reduce((sum, cat) =>
+            sum + (cat.female?.length || 0) + (cat.male?.length || 0), 0
+        );
+        console.log(`Loaded ${totalProducts} products from clothing folders`);
+    } catch (error) {
+        console.error('Failed to load products:', error);
+        // Initialize empty structure as fallback
+        for (const category of PRODUCT_CATEGORIES) {
+            state.availableProducts[category.id] = { female: [], male: [] };
+        }
+    }
 }
 
 // Render Models Grid
@@ -293,9 +312,21 @@ function toggleCategory(categoryId) {
     updateUI();
 }
 
+// Get products filtered by current style
+function getFilteredProducts(categoryId) {
+    let products = state.availableProducts[categoryId]?.[state.gender] || [];
+
+    // Filter by style if not 'random'
+    if (state.selectedStyle !== 'random') {
+        products = products.filter(p => p.style === state.selectedStyle);
+    }
+
+    return products;
+}
+
 // Cycle through products in a category
 function cycleProduct(categoryId) {
-    const products = state.availableProducts[categoryId]?.[state.gender] || [];
+    const products = getFilteredProducts(categoryId);
     if (products.length === 0) return;
 
     const currentIndex = products.findIndex(p => p.url === state.selectedProducts[categoryId]?.url);
@@ -307,7 +338,7 @@ function cycleProduct(categoryId) {
 }
 
 function prevProduct(categoryId) {
-    const products = state.availableProducts[categoryId]?.[state.gender] || [];
+    const products = getFilteredProducts(categoryId);
     if (products.length === 0) return;
 
     const currentIndex = products.findIndex(p => p.url === state.selectedProducts[categoryId]?.url);
@@ -324,7 +355,20 @@ function nextProduct(categoryId) {
 
 // Randomize outfit
 function randomizeOutfit() {
-    const outfit = STYLING_RULES.generateRandomOutfit(state.availableProducts, state.gender);
+    // Filter products by selected style if not 'random'
+    let productsToUse = state.availableProducts;
+
+    if (state.selectedStyle !== 'random') {
+        productsToUse = {};
+        for (const [category, genderData] of Object.entries(state.availableProducts)) {
+            productsToUse[category] = {
+                female: (genderData.female || []).filter(p => p.style === state.selectedStyle),
+                male: (genderData.male || []).filter(p => p.style === state.selectedStyle)
+            };
+        }
+    }
+
+    const outfit = STYLING_RULES.generateRandomOutfit(productsToUse, state.gender);
 
     // Update enabled categories and selected products
     state.enabledCategories = Object.keys(outfit);
@@ -389,6 +433,16 @@ function setupEventListeners() {
             document.querySelectorAll('[data-res]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             state.resolution = btn.dataset.res;
+        });
+    });
+
+    // Style selector
+    document.querySelectorAll('[data-style]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-style]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.selectedStyle = btn.dataset.style;
+            clearOutfit();  // Clear outfit when changing style
         });
     });
 
@@ -513,6 +567,16 @@ function updateUI() {
     elements.generateBtn.disabled = !hasModel || poseCount === 0;
 }
 
+// Helper to convert blob to data URL
+function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
 // Generate Images
 async function generate() {
     if (!state.selectedModel && !state.uploadedPortrait) {
@@ -534,10 +598,20 @@ async function generate() {
 
     // Get model reference images
     let portraitUrl, fullbodyUrl;
+    console.log('Selected model:', state.selectedModel);
     if (state.selectedModel) {
-        // Use model from library
-        portraitUrl = `/shared/images/models/${state.selectedModel.id}-portrait.jpg`;
-        fullbodyUrl = `/shared/images/models/${state.selectedModel.id}-fullbody.jpg`;
+        // Use model from library - upload to FAL storage
+        try {
+            console.log('Uploading model image:', state.selectedModel.image);
+            const portraitResp = await fetch(state.selectedModel.image);
+            const portraitBlob = await portraitResp.blob();
+            const portraitDataUrl = await blobToDataUrl(portraitBlob);
+            const portraitUpload = await api.uploadBase64(portraitDataUrl);
+            portraitUrl = portraitUpload.url;
+            console.log('Uploaded model:', portraitUrl);
+        } catch (e) {
+            console.error('Failed to upload portrait:', e);
+        }
     } else {
         // Upload custom images
         if (state.uploadedPortrait) {
@@ -547,6 +621,24 @@ async function generate() {
         if (state.uploadedFullbody) {
             const uploadResult = await api.uploadBase64(state.uploadedFullbody);
             fullbodyUrl = uploadResult.url;
+        }
+    }
+
+    // Upload clothing product images
+    const clothingImageUrls = [];
+    for (const [category, product] of Object.entries(state.selectedProducts)) {
+        if (product && product.url) {
+            try {
+                // Product URLs are local paths like /shared/images/clothing/...
+                const resp = await fetch(product.url);
+                const blob = await resp.blob();
+                const dataUrl = await blobToDataUrl(blob);
+                const uploadResult = await api.uploadBase64(dataUrl);
+                clothingImageUrls.push(uploadResult.url);
+                console.log(`Uploaded ${category}:`, uploadResult.url);
+            } catch (e) {
+                console.error(`Failed to upload ${category}:`, e);
+            }
         }
     }
 
@@ -590,20 +682,23 @@ async function generate() {
 
         const promises = batch.map(async (task) => {
             try {
+                // Build image URLs array: model portrait + clothing items
+                const imageUrls = [];
+                if (portraitUrl) imageUrls.push(portraitUrl);
+                imageUrls.push(...clothingImageUrls);
+
                 const params = {
                     prompt: task.prompt,
+                    image_urls: imageUrls,
                     num_images: 1,
                     aspect_ratio: state.aspectRatio,
                     resolution: state.resolution,
                     output_format: 'png'
                 };
 
-                // Add subject reference
-                if (portraitUrl) {
-                    params.subject_image_url = portraitUrl;
-                }
-
-                const data = await api.generateImage(state.generationModel, params);
+                // Use edit endpoint for image-to-image with references
+                const editModel = state.generationModel === 'nanobanana' ? 'nano' : 'nano-pro';
+                const data = await api.remixImage(editModel, params);
 
                 if (data.images && data.images.length > 0) {
                     state.results.push({
@@ -611,7 +706,8 @@ async function generate() {
                         prompt: task.prompt,
                         poseName: task.poseName,
                         outfit: task.outfitDescription,
-                        model: state.selectedModel?.name || 'Custom'
+                        model: state.selectedModel?.name || 'Custom',
+                        sourceImages: imageUrls  // Model + clothing images
                     });
                     renderResults();
                 }
@@ -672,6 +768,15 @@ function updateLightboxContent() {
     elements.lightboxOutfit.textContent = result.outfit || 'N/A';
     elements.lightboxPrompt.textContent = result.prompt;
     elements.lightboxDownload.onclick = () => downloadFile(result.url, `socialset-${state.lightboxIndex + 1}.png`);
+
+    // Display source images
+    if (result.sourceImages && result.sourceImages.length > 0) {
+        elements.lightboxSourceImages.innerHTML = result.sourceImages.map((url, idx) =>
+            `<img src="${url}" alt="${idx === 0 ? 'Model' : 'Clothing'}" title="${idx === 0 ? 'Model' : 'Clothing item ' + idx}">`
+        ).join('');
+    } else {
+        elements.lightboxSourceImages.innerHTML = '<span style="color: var(--slate); font-size: var(--text-xs);">No source images</span>';
+    }
 }
 
 // Initialize on load

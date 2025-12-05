@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Campaign Generator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        /* Step Sections */
+        .step-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: var(--text-sm);
+        }
+
+        .step-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--carbon);
+        }
+
+        .step-subtitle {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-left: auto;
+        }
+
+        /* Upload Grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-xs);
+            padding: var(--space-xs);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            margin-bottom: var(--space-md);
+        }
+
+        /* Brand grid: show 2 rows, scroll when >10 images */
+        #brandGrid {
+            overflow-y: auto;
+        }
+
+        /* Hide empty slots beyond first 10 - they appear when filled */
+        #brandGrid .upload-slot:nth-child(n+11):not(.filled) {
+            display: none;
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        /* Group labels for ecom images */
+        .upload-slot .group-label {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            padding: 2px 8px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .upload-slot .group-label.group-1 { background: #4A90D9; }
+        .upload-slot .group-label.group-2 { background: #D94A4A; }
+        .upload-slot .group-label.group-3 { background: #4AD97A; }
+        .upload-slot .group-label.group-off { background: var(--slate); }
+
+        /* Brand Input Row */
+        .brand-row {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: flex-end;
+        }
+
+        .brand-input-group {
+            flex: 1;
+        }
+
+        .brand-input-group label {
+            display: block;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+            margin-bottom: var(--space-2xs);
+        }
+
+        .brand-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: var(--text-md);
+            font-family: var(--font-sans);
+            color: var(--carbon);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            height: 48px;
+        }
+
+        .brand-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .brand-row .btn {
+            height: 48px;
+            padding: 0 24px;
+        }
+
+        /* Analysis Output */
+        .analysis-section {
+            display: none;
+            margin-top: var(--space-md);
+        }
+
+        .analysis-section.visible {
+            display: block;
+        }
+
+        .analysis-box {
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            min-height: 150px;
+            font-size: var(--text-sm);
+            line-height: 1.6;
+            color: var(--carbon);
+            white-space: pre-wrap;
+        }
+
+        .analysis-box.loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-md);
+            color: var(--slate);
+            min-height: 200px;
+        }
+
+        .analysis-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .analysis-loader-message {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            background: linear-gradient(90deg,
+                rgba(0, 47, 167, 0.4) 0%,
+                rgba(0, 47, 167, 1) 50%,
+                rgba(0, 47, 167, 0.4) 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: sweep 2s ease-in-out infinite;
+        }
+
+        .analysis-loader-message.fade-out {
+            animation: fade-out 0.25s ease-out forwards;
+        }
+
+        .analysis-loader-message.fade-in {
+            animation: fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
+        }
+
+        @keyframes sweep {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .analysis-loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Feedback Input */
+        .feedback-section {
+            margin-top: var(--space-md);
+        }
+
+        .feedback-row {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: stretch;
+        }
+
+        .feedback-input {
+            flex: 1;
+            padding: 14px 16px;
+            font-size: var(--text-sm);
+            font-family: var(--font-sans);
+            color: var(--carbon);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            height: 48px;
+        }
+
+        .feedback-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .feedback-row .btn {
+            height: 48px;
+            padding: 0 24px;
+        }
+
+        /* E-commerce Upload (smaller grid) */
+        .ecom-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-xs);
+            padding: var(--space-xs);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            margin-bottom: var(--space-md);
+        }
+
+        .ecom-grid .upload-slot {
+            aspect-ratio: 3/4;
+        }
+
+        /* Settings Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .setting-group {
+            background: var(--off-white);
+            padding: var(--space-sm);
+            border-radius: var(--radius-md);
+        }
+
+        .setting-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .setting-group .btn-group {
+            display: flex;
+            gap: var(--space-2xs);
+            flex-wrap: wrap;
+        }
+
+        .setting-group .btn--toggle {
+            flex: 1;
+            min-width: 50px;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            padding-top: var(--space-md);
+            border-top: 1px solid var(--gainsboro);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+            text-align: center;
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            margin-top: var(--space-lg);
+            padding: var(--space-lg);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: var(--off-white);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+            margin-top: var(--space-lg);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-header h2 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .result-card:hover {
+            border-color: var(--jet);
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-card .source-tag {
+            position: absolute;
+            bottom: var(--space-2xs);
+            left: var(--space-2xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Disabled state for step 3 */
+        .step-section.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .step-section.disabled .step-number {
+            background: var(--slate);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Campaign Generator</h1>
+            <p class="hero-subtitle">Transform e-commerce shots into campaign imagery using brand visual DNA</p>
+        </div>
+
+        <!-- Step 1: Brand Analysis -->
+        <div class="step-section" id="step1">
+            <div class="step-header">
+                <span class="step-number">1</span>
+                <span class="step-title">Moodboard</span>
+                <span class="step-subtitle">Upload campaign/Instagram imagery</span>
+            </div>
+
+            <div class="upload-grid" id="brandGrid">
+                <!-- 10 slots will be created by JS -->
+            </div>
+            <input type="file" id="brandInput" multiple accept="image/*" style="display: none;">
+
+            <div class="brand-row">
+                <div class="brand-input-group">
+                    <label for="brandName">Brand Name</label>
+                    <input type="text" class="brand-input" id="brandName" placeholder="e.g., Rapha, Arc'teryx, Patagonia...">
+                </div>
+                <button class="btn btn--primary" id="analyzeBtn" disabled>Analyze Brand</button>
+            </div>
+
+            <div class="analysis-section" id="analysisSection">
+                <div class="analysis-box" id="analysisBox">
+                    <!-- Analysis content will go here -->
+                </div>
+                <div class="feedback-section">
+                    <div class="feedback-row">
+                        <input type="text" class="feedback-input" id="feedbackInput" placeholder="Add notes or corrections... e.g., 'focus more on the outdoor adventure aspect'">
+                        <button class="btn" id="refineBtn">Refine</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: E-commerce Images -->
+        <div class="step-section" id="step2">
+            <div class="step-header">
+                <span class="step-number">2</span>
+                <span class="step-title">Product Images</span>
+                <span class="step-subtitle">Upload e-commerce shots to transform</span>
+            </div>
+
+            <div class="ecom-grid" id="ecomGrid">
+                <!-- 5 slots will be created by JS -->
+            </div>
+            <input type="file" id="ecomInput" multiple accept="image/*" style="display: none;">
+        </div>
+
+        <!-- Step 3: Generate -->
+        <div class="step-section disabled" id="step3">
+            <div class="step-header">
+                <span class="step-number">3</span>
+                <span class="step-title">Generate Campaign</span>
+                <span class="step-subtitle">Configure and create</span>
+            </div>
+
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <div class="setting-label">Outputs per Image</div>
+                    <div class="btn-group" id="countButtons">
+                        <button class="btn btn--toggle" data-value="1">1</button>
+                        <button class="btn btn--toggle active" data-value="2">2</button>
+                        <button class="btn btn--toggle" data-value="3">3</button>
+                        <button class="btn btn--toggle" data-value="5">5</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <div class="setting-label">Aspect Ratio</div>
+                    <div class="btn-group" id="aspectButtons">
+                        <button class="btn btn--toggle" data-value="1:1">1:1</button>
+                        <button class="btn btn--toggle active" data-value="3:4">3:4</button>
+                        <button class="btn btn--toggle" data-value="4:3">4:3</button>
+                        <button class="btn btn--toggle" data-value="9:16">9:16</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <div class="setting-label">Resolution</div>
+                    <div class="btn-group" id="resolutionButtons">
+                        <button class="btn btn--toggle active" data-value="1K">1K</button>
+                        <button class="btn btn--toggle" data-value="2K">2K</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <div class="setting-label">Model</div>
+                    <div class="btn-group" id="modelButtons">
+                        <button class="btn btn--toggle" data-value="nano">Nano</button>
+                        <button class="btn btn--toggle active" data-value="nanopro">Nano Pro</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="generate-section">
+                <div class="calc-display" id="calcDisplay">0 images x 3 outputs = 0 total</div>
+                <button class="btn btn--primary btn--lg btn--block" id="generateBtn" disabled>Generate Campaign</button>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progressSection">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progressCount">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Campaign Results</h2>
+                <button class="btn" id="downloadAllBtn">Download All</button>
+            </div>
+            <div class="results-grid" id="resultsGrid"></div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loadingText">Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/shared/js/models.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/lightbox.js"></script>
+    <script>
+        // Studio messages for fun loader
+        const STUDIO_MESSAGES = [
+            "Setting up the Studio...",
+            "Adjusting the Key Light...",
+            "Loading the Film...",
+            "Warming up the Strobes...",
+            "Preparing the Backdrop...",
+            "Adjusting the Fill Light...",
+            "Checking the Framing...",
+            "Setting the Aperture...",
+            "Loading Color Profiles...",
+            "Positioning the C-Stand...",
+            "Focusing...",
+            "Checking Tethering...",
+            "Rolling...",
+            "Adjusting the Umbrella...",
+            "Metering...",
+            "Standby...",
+            "Loading the Presets...",
+            "Quiet on Set...",
+            "Final Touches...",
+            "Almost There...",
+        ];
+
+        let studioMessageInterval = null;
+        let currentMessageElement = null;
+
+        function startStudioMessages(messageEl, progressEl, totalImages) {
+            currentMessageElement = messageEl;
+            let lastIndex = -1;
+
+            const updateMessage = () => {
+                if (!currentMessageElement) return;
+
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastIndex && STUDIO_MESSAGES.length > 1);
+                lastIndex = idx;
+
+                // Fade out
+                currentMessageElement.classList.add('fade-out');
+                currentMessageElement.classList.remove('fade-in');
+
+                setTimeout(() => {
+                    if (!currentMessageElement) return;
+                    currentMessageElement.textContent = STUDIO_MESSAGES[idx];
+                    currentMessageElement.classList.remove('fade-out');
+                    currentMessageElement.classList.add('fade-in');
+                }, 250);
+            };
+
+            // Initial message
+            if (currentMessageElement) {
+                currentMessageElement.textContent = STUDIO_MESSAGES[Math.floor(Math.random() * STUDIO_MESSAGES.length)];
+            }
+
+            studioMessageInterval = setInterval(updateMessage, 2000);
+        }
+
+        function stopStudioMessages() {
+            if (studioMessageInterval) {
+                clearInterval(studioMessageInterval);
+                studioMessageInterval = null;
+            }
+            currentMessageElement = null;
+        }
+
+        // State
+        const state = {
+            brandImages: new Array(30).fill(null),  // Allow up to 30 brand images (scrollable)
+            ecomImages: new Array(10).fill(null),
+            brandName: '',
+            brandAnalysis: '',
+            outputsPerImage: 2,  // Default to 2 outputs
+            aspectRatio: '3:4',
+            resolution: '1K',
+            model: 'nanopro',
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // Model configs
+        const CAMPAIGN_MODELS = {
+            nano: {
+                name: 'Nano',
+                endpoint: 'nanobanana-edit',
+                costPerImage: 0.15,
+                hasResolution: false
+            },
+            nanopro: {
+                name: 'Nano Pro',
+                endpoint: 'nanobanana-pro-edit',
+                costPerImage: 0.15,
+                hasResolution: true
+            }
+        };
+
+        // DOM Elements
+        const elements = {
+            brandGrid: document.getElementById('brandGrid'),
+            brandInput: document.getElementById('brandInput'),
+            brandName: document.getElementById('brandName'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            analysisSection: document.getElementById('analysisSection'),
+            analysisBox: document.getElementById('analysisBox'),
+            feedbackInput: document.getElementById('feedbackInput'),
+            refineBtn: document.getElementById('refineBtn'),
+            ecomGrid: document.getElementById('ecomGrid'),
+            ecomInput: document.getElementById('ecomInput'),
+            step2: document.getElementById('step2'),
+            step3: document.getElementById('step3'),
+            countButtons: document.getElementById('countButtons'),
+            aspectButtons: document.getElementById('aspectButtons'),
+            resolutionButtons: document.getElementById('resolutionButtons'),
+            modelButtons: document.getElementById('modelButtons'),
+            calcDisplay: document.getElementById('calcDisplay'),
+            generateBtn: document.getElementById('generateBtn'),
+            progressSection: document.getElementById('progressSection'),
+            progressCount: document.getElementById('progressCount'),
+            progressBar: document.getElementById('progressBar'),
+            resultsSection: document.getElementById('resultsSection'),
+            resultsGrid: document.getElementById('resultsGrid'),
+            downloadAllBtn: document.getElementById('downloadAllBtn'),
+            loading: document.getElementById('loading'),
+            loadingText: document.getElementById('loadingText')
+        };
+
+        // Initialize
+        function init() {
+            // Create brand upload slots (30 - scrollable)
+            for (let i = 0; i < 30; i++) {
+                elements.brandGrid.appendChild(createUploadSlot(i, 'brand'));
+            }
+
+            // Create ecom upload slots (10)
+            for (let i = 0; i < 10; i++) {
+                elements.ecomGrid.appendChild(createUploadSlot(i, 'ecom'));
+            }
+
+            // Setup drag and drop
+            setupDragAndDrop(elements.brandGrid, 'brand');
+            setupDragAndDrop(elements.ecomGrid, 'ecom');
+
+            // File input handlers
+            elements.brandInput.addEventListener('change', (e) => {
+                handleFileUpload(Array.from(e.target.files), 'brand');
+                e.target.value = '';
+            });
+
+            elements.ecomInput.addEventListener('change', (e) => {
+                handleFileUpload(Array.from(e.target.files), 'ecom');
+                e.target.value = '';
+            });
+
+            // Brand name input
+            elements.brandName.addEventListener('input', () => {
+                state.brandName = elements.brandName.value;
+                updateAnalyzeButton();
+            });
+
+            // Analyze button
+            elements.analyzeBtn.addEventListener('click', analyzeBrand);
+
+            // Refine button
+            elements.refineBtn.addEventListener('click', refineBrand);
+
+            // Settings buttons
+            setupButtonGroup(elements.countButtons, (val) => {
+                state.outputsPerImage = parseInt(val);
+                updateCalculator();
+            });
+
+            setupButtonGroup(elements.aspectButtons, (val) => {
+                state.aspectRatio = val;
+            });
+
+            setupButtonGroup(elements.resolutionButtons, (val) => {
+                state.resolution = val;
+            });
+
+            setupButtonGroup(elements.modelButtons, (val) => {
+                state.model = val;
+                updateCalculator();
+            });
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', generateCampaign);
+
+            // Download all
+            elements.downloadAllBtn.addEventListener('click', downloadAll);
+
+            updateCalculator();
+        }
+
+        function createUploadSlot(index, type) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.innerHTML = '+';
+            slot.dataset.index = index;
+            slot.dataset.type = type;
+
+            slot.addEventListener('click', (e) => {
+                // Don't toggle if clicking remove button
+                if (e.target.closest('.remove-btn')) return;
+
+                const images = type === 'brand' ? state.brandImages : state.ecomImages;
+
+                // If slot has an image (check for url OR pending state)
+                if (images[index]) {
+                    if (images[index].url) {
+                        if (type === 'ecom') {
+                            // Cycle group: solo → 1 → 2 → 3 → off → solo
+                            const currentGroup = images[index].group || 'solo';
+                            const groupCycle = ['solo', '1', '2', '3', 'off'];
+                            const currentIdx = groupCycle.indexOf(currentGroup);
+                            const nextIdx = (currentIdx + 1) % groupCycle.length;
+                            images[index].group = groupCycle[nextIdx];
+                            renderEcomSlot(index);
+                            updateCalculator();
+                            updateSteps();
+                        } else {
+                            // Brand images: toggle selection
+                            images[index].selected = !images[index].selected;
+                            slot.classList.toggle('deselected', !images[index].selected);
+                            updateAnalyzeButton();
+                        }
+                    }
+                    // If pending, do nothing - wait for upload to complete
+                    return;
+                }
+
+                // Empty slot - open file picker
+                const input = type === 'brand' ? elements.brandInput : elements.ecomInput;
+                input.click();
+            });
+
+            return slot;
+        }
+
+        function setupDragAndDrop(grid, type) {
+            grid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                grid.classList.add('drag-over');
+            });
+
+            grid.addEventListener('dragleave', () => {
+                grid.classList.remove('drag-over');
+            });
+
+            grid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                grid.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0) handleFileUpload(files, type);
+            });
+        }
+
+        function handleFileUpload(files, type) {
+            const images = type === 'brand' ? state.brandImages : state.ecomImages;
+            const grid = type === 'brand' ? elements.brandGrid : elements.ecomGrid;
+            const maxSlots = type === 'brand' ? 30 : 10;  // Brand has 30 (scrollable), ecom has 10
+
+            // Find all empty slots first
+            let nextSlotIndex = 0;
+
+            files.forEach((file, fileIndex) => {
+                // Find the next empty slot starting from where we left off
+                while (nextSlotIndex < maxSlots && images[nextSlotIndex]) {
+                    nextSlotIndex++;
+                }
+
+                if (nextSlotIndex >= maxSlots) return;
+
+                const index = nextSlotIndex;
+                // Mark this slot as "pending" immediately so next iteration skips it
+                images[index] = { pending: true };
+                nextSlotIndex++;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images[index] = {
+                        file,
+                        url: e.target.result,
+                        selected: true,
+                        group: type === 'ecom' ? 'solo' : undefined  // Default group for ecom images
+                    };
+                    const slot = grid.children[index];
+                    slot.classList.add('filled');
+                    slot.classList.remove('deselected');
+
+                    if (type === 'ecom') {
+                        renderEcomSlot(index);
+                    } else {
+                        slot.innerHTML = `
+                            <img src="${e.target.result}" alt="Image ${index + 1}">
+                            <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${index}, '${type}')">&times;</button>
+                        `;
+                    }
+                    updateAnalyzeButton();
+                    updateCalculator();
+                    updateSteps();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.removeImage = function(index, type) {
+            const images = type === 'brand' ? state.brandImages : state.ecomImages;
+            const grid = type === 'brand' ? elements.brandGrid : elements.ecomGrid;
+
+            images[index] = null;
+            // Compact the array
+            const filled = images.filter(img => img);
+            for (let i = 0; i < images.length; i++) {
+                images[i] = filled[i] || null;
+            }
+
+            rerenderGrid(images, grid, type);
+            updateAnalyzeButton();
+            updateCalculator();
+            updateSteps();
+        };
+
+        function rerenderGrid(images, grid, type) {
+            for (let i = 0; i < grid.children.length; i++) {
+                const slot = grid.children[i];
+                if (images[i]) {
+                    slot.className = 'upload-slot filled';
+                    slot.innerHTML = `
+                        <img src="${images[i].url}" alt="Image ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i}, '${type}')">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            }
+        }
+
+        function setupButtonGroup(container, onChange) {
+            container.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn--toggle')) {
+                    container.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    onChange(e.target.dataset.value);
+                }
+            });
+        }
+
+        // Render an ecom slot with group label
+        function renderEcomSlot(index) {
+            const img = state.ecomImages[index];
+            const slot = elements.ecomGrid.children[index];
+            if (!img || !img.url) return;
+
+            const group = img.group || 'solo';
+            const isOff = group === 'off';
+            const groupClass = isOff ? 'group-off' : (group !== 'solo' ? `group-${group}` : '');
+            const groupLabel = isOff ? 'OFF' : (group === 'solo' ? 'SOLO' : `GROUP ${group}`);
+
+            slot.classList.toggle('deselected', isOff);
+            slot.innerHTML = `
+                <img src="${img.url}" alt="Image ${index + 1}">
+                <span class="group-label ${groupClass}">${groupLabel}</span>
+                <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${index}, 'ecom')">&times;</button>
+            `;
+        }
+
+        function updateAnalyzeButton() {
+            const hasBrandName = state.brandName.trim().length > 0;
+            // Only need brand name - images are optional (GPT will use its knowledge)
+            elements.analyzeBtn.disabled = !hasBrandName;
+        }
+
+        function updateSteps() {
+            // Check for active ecom images (not 'off')
+            const hasActiveEcomImages = state.ecomImages.some(img => img && img.url && img.group !== 'off');
+
+            // Step 2 always enabled - user can upload product images anytime
+            elements.step2.classList.remove('disabled');
+
+            // Step 3 enabled when we have active ecom images (brand analysis is optional)
+            elements.step3.classList.toggle('disabled', !hasActiveEcomImages);
+            elements.generateBtn.disabled = !hasActiveEcomImages;
+        }
+
+        function updateCalculator() {
+            const ecomImages = state.ecomImages.filter(img => img && img.url);
+
+            // Group images by their group property (exclude 'off' images)
+            const groups = { solo: [], '1': [], '2': [], '3': [] };
+            ecomImages.forEach(img => {
+                const group = img.group || 'solo';
+                if (group !== 'off') {
+                    groups[group].push(img);
+                }
+            });
+
+            // Count generation units (solo images + each filled group)
+            const soloCount = groups.solo.length;
+            const group1Count = groups['1'].length > 0 ? 1 : 0;
+            const group2Count = groups['2'].length > 0 ? 1 : 0;
+            const group3Count = groups['3'].length > 0 ? 1 : 0;
+            const numUnits = soloCount + group1Count + group2Count + group3Count;
+
+            const total = numUnits * state.outputsPerImage;
+            const model = CAMPAIGN_MODELS[state.model];
+            const cost = total * model.costPerImage;
+
+            // Build display text
+            let displayParts = [];
+            if (soloCount > 0) displayParts.push(`${soloCount} solo`);
+            if (groups['1'].length > 0) displayParts.push(`G1(${groups['1'].length})`);
+            if (groups['2'].length > 0) displayParts.push(`G2(${groups['2'].length})`);
+            if (groups['3'].length > 0) displayParts.push(`G3(${groups['3'].length})`);
+
+            const unitText = displayParts.length > 0 ? displayParts.join(' + ') : '0 images';
+            elements.calcDisplay.textContent = `${unitText} × ${state.outputsPerImage} outputs = ${total} total ($${cost.toFixed(2)})`;
+        }
+
+        async function analyzeBrand() {
+            const brandImages = state.brandImages.filter(img => img && img.url && img.selected !== false);
+            if (!state.brandName.trim()) return;
+
+            elements.analysisSection.classList.add('visible');
+            elements.analysisBox.classList.add('loading');
+
+            // Show the nice loader with rotating messages
+            const hasImages = brandImages.length > 0;
+            const progressText = hasImages
+                ? `Analyzing ${brandImages.length} moodboard image${brandImages.length > 1 ? 's' : ''}...`
+                : `Researching ${state.brandName}...`;
+            elements.analysisBox.innerHTML = `
+                <div class="analysis-loader">
+                    <div class="analysis-loader-message" id="loaderMessage">Setting up the Studio...</div>
+                    <div class="analysis-loader-progress" id="loaderProgress">${progressText}</div>
+                </div>
+            `;
+
+            const messageEl = document.getElementById('loaderMessage');
+            const progressEl = document.getElementById('loaderProgress');
+            startStudioMessages(messageEl, progressEl, brandImages.length);
+
+            elements.analyzeBtn.disabled = true;
+
+            try {
+                // Send images if available, otherwise just brand name
+                const imageUrls = brandImages.map(img => img.url);
+
+                // Call brand analysis API
+                const response = await fetch('/api/analyze-brand', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        images: imageUrls.length > 0 ? imageUrls : null,
+                        brandName: state.brandName
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+
+                const data = await response.json();
+                // Store full analysis for prompt generation, show summary to user
+                state.brandAnalysis = data.fullAnalysis || data.analysis;
+                const displayText = data.summary || data.analysis;
+
+                stopStudioMessages();
+                elements.analysisBox.classList.remove('loading');
+                elements.analysisBox.textContent = displayText;
+
+                updateSteps();
+            } catch (error) {
+                console.error('Brand analysis error:', error);
+                stopStudioMessages();
+                elements.analysisBox.classList.remove('loading');
+                elements.analysisBox.textContent = 'Error analyzing brand. Please try again.';
+            }
+
+            elements.analyzeBtn.disabled = false;
+            updateAnalyzeButton();
+        }
+
+        async function refineBrand() {
+            const feedback = elements.feedbackInput.value.trim();
+            if (!feedback || !state.brandAnalysis) return;
+
+            const brandImages = state.brandImages.filter(img => img && img.url && img.selected !== false);
+
+            elements.analysisBox.classList.add('loading');
+            elements.analysisBox.innerHTML = `
+                <div class="analysis-loader">
+                    <div class="analysis-loader-message" id="loaderMessage">Setting up the Studio...</div>
+                    <div class="analysis-loader-progress" id="loaderProgress">Refining analysis...</div>
+                </div>
+            `;
+
+            const messageEl = document.getElementById('loaderMessage');
+            startStudioMessages(messageEl);
+
+            elements.refineBtn.disabled = true;
+
+            try {
+                const imageUrls = brandImages.map(img => img.url);
+
+                const response = await fetch('/api/analyze-brand', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        images: imageUrls,
+                        brandName: state.brandName,
+                        previousAnalysis: state.brandAnalysis,
+                        feedback: feedback
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Refinement failed');
+                }
+
+                const data = await response.json();
+                // Store full analysis, show summary
+                state.brandAnalysis = data.fullAnalysis || data.analysis;
+                const displayText = data.summary || data.analysis;
+
+                stopStudioMessages();
+                elements.analysisBox.classList.remove('loading');
+                elements.analysisBox.textContent = displayText;
+                elements.feedbackInput.value = '';
+            } catch (error) {
+                console.error('Refinement error:', error);
+                stopStudioMessages();
+                elements.analysisBox.classList.remove('loading');
+                elements.analysisBox.textContent = state.brandAnalysis; // Restore previous
+            }
+
+            elements.refineBtn.disabled = false;
+        }
+
+        async function generateCampaign() {
+            const ecomImages = state.ecomImages.filter(img => img && img.url);
+            if (ecomImages.length === 0) return;
+
+            // Use brand analysis if available, otherwise use generic approach
+            const hasBrandAnalysis = state.brandAnalysis && state.brandAnalysis.length > 0;
+            const effectiveBrandName = state.brandName || 'Fashion Brand';
+            const effectiveAnalysis = hasBrandAnalysis
+                ? state.brandAnalysis
+                : 'High-end editorial fashion photography. Clean, modern aesthetic. Varied environments including urban settings, natural landscapes, architectural spaces, and lifestyle interiors. Mix of natural and studio lighting. Mood ranges from contemplative to energetic. Focus on authentic, aspirational imagery.';
+
+            const totalStart = performance.now();
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+
+            // Group images by their group property (exclude 'off' images)
+            const groups = { solo: [], '1': [], '2': [], '3': [] };
+            ecomImages.forEach(img => {
+                const group = img.group || 'solo';
+                if (group !== 'off') {
+                    groups[group].push(img);
+                }
+            });
+
+            // Build generation units (solo images + grouped images)
+            const generationUnits = [];
+
+            // Add solo images as individual units
+            groups.solo.forEach((img, i) => {
+                generationUnits.push({
+                    type: 'solo',
+                    images: [img],
+                    label: `Solo ${i + 1}`
+                });
+            });
+
+            // Add groups as multi-person units
+            ['1', '2', '3'].forEach(groupNum => {
+                if (groups[groupNum].length > 0) {
+                    generationUnits.push({
+                        type: 'group',
+                        groupNum,
+                        images: groups[groupNum],
+                        label: `Group ${groupNum} (${groups[groupNum].length} people)`
+                    });
+                }
+            });
+
+            const totalOutputs = generationUnits.length * state.outputsPerImage;
+
+            // Show progress section with studio loader
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${totalOutputs}`;
+            elements.progressBar.style.width = '0%';
+            elements.generateBtn.disabled = true;
+
+            // Add loader to progress section
+            const progressLoader = document.createElement('div');
+            progressLoader.className = 'analysis-loader';
+            progressLoader.innerHTML = `
+                <div class="analysis-loader-message" id="genLoaderMessage">Setting up the Studio...</div>
+                <div class="analysis-loader-progress" id="genLoaderProgress">Preparing ${totalOutputs} images...</div>
+            `;
+            elements.progressSection.insertBefore(progressLoader, elements.progressSection.firstChild);
+            startStudioMessages(document.getElementById('genLoaderMessage'));
+
+            console.log('═══════════════════════════════════════════');
+            console.log('📸 CAMPAIGN GENERATION START');
+            console.log(`   Units: ${generationUnits.length} | Outputs/unit: ${state.outputsPerImage} | Total: ${totalOutputs}`);
+            generationUnits.forEach((u, i) => console.log(`   [${i + 1}] ${u.label}`));
+            console.log('═══════════════════════════════════════════');
+
+            try {
+                // PHASE 1: Upload all e-commerce images IN PARALLEL
+                let phaseStart = performance.now();
+                console.log('\n📤 Phase 1: Uploading e-commerce images...');
+                document.getElementById('genLoaderProgress').textContent = `Uploading ${ecomImages.length} images...`;
+
+                await Promise.all(ecomImages.map(async (img, i) => {
+                    if (img.url.startsWith('data:')) {
+                        const response = await api.uploadBase64(img.url);
+                        img.hostedUrl = response.url;
+                        console.log(`   ✓ Image ${i + 1} uploaded`);
+                    } else {
+                        img.hostedUrl = img.url;
+                    }
+                }));
+
+                console.log(`   ⏱ Upload complete: ${((performance.now() - phaseStart) / 1000).toFixed(1)}s`);
+
+                // PHASE 2: Analyze each generation unit (parallel with progress)
+                phaseStart = performance.now();
+                console.log('\n🔍 Phase 2: Analyzing generation units...');
+                const totalUnits = generationUnits.length;
+                let analyzedCount = 0;
+                document.getElementById('genLoaderProgress').textContent = `Analyzed 0/${totalUnits} images...`;
+
+                const unitAnalyses = await Promise.all(generationUnits.map(async (unit, i) => {
+                    const imageUrls = unit.images.map(img => img.hostedUrl);
+                    const numImages = unit.images.length;
+
+                    // Smart analysis that detects image type (model vs product)
+                    const analysisPrompt = `Analyze this image and respond in this EXACT format:
+
+TYPE: [MODEL or PRODUCT]
+DESCRIPTION: [your description]
+
+Rules:
+- TYPE must be "MODEL" if the image shows a person/people wearing clothes
+- TYPE must be "PRODUCT" if the image shows products only (flat lay, still life, no people)
+- DESCRIPTION: ${numImages === 1
+    ? 'Briefly describe what you see in 2-3 sentences. For MODEL: gender, clothing, colors, pose. For PRODUCT: what product, colors, style.'
+    : `There are ${numImages} items/people. Describe each briefly.`}`;
+
+                    const analysis = await api.analyzeImages(imageUrls, analysisPrompt);
+
+                    // Parse the response to extract type and description
+                    const content = analysis.content;
+                    let imageType = 'model';  // default
+                    let description = content;
+
+                    if (content.includes('TYPE:')) {
+                        const typeMatch = content.match(/TYPE:\s*(MODEL|PRODUCT)/i);
+                        if (typeMatch) {
+                            imageType = typeMatch[1].toLowerCase();
+                        }
+                        const descMatch = content.match(/DESCRIPTION:\s*([\s\S]*)/i);
+                        if (descMatch) {
+                            description = descMatch[1].trim();
+                        }
+                    }
+
+                    // For groups, always treat as model (multiple people)
+                    const numPeople = imageType === 'model' ? numImages : 0;
+
+                    analyzedCount++;
+                    document.getElementById('genLoaderProgress').textContent = `Analyzed ${analyzedCount}/${totalUnits} images...`;
+                    console.log(`   ✓ ${unit.label} analyzed (${imageType})`);
+                    return { unit, index: i, description, numPeople, imageType };
+                }));
+
+                console.log(`   ⏱ Analysis complete: ${((performance.now() - phaseStart) / 1000).toFixed(1)}s`);
+
+                // PHASE 3: Generate prompts for each unit (sequential to avoid repetition)
+                phaseStart = performance.now();
+                console.log('\n📝 Phase 3: Generating campaign prompts (sequential for variety)...');
+                document.getElementById('genLoaderProgress').textContent = `Creating ${totalOutputs} unique prompts...`;
+
+                const promptResults = [];
+                const allGeneratedPrompts = [];  // Track all prompts to avoid repetition
+
+                for (const { unit, index, description, numPeople, imageType } of unitAnalyses) {
+                    const response = await fetch('/api/campaign-prompts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            brandAnalysis: effectiveAnalysis,
+                            brandName: effectiveBrandName,
+                            ecomDescription: description,
+                            numPrompts: state.outputsPerImage,
+                            imageIndex: index,
+                            numPeople: numPeople,
+                            imageType: imageType,  // 'model' or 'product'
+                            previousPrompts: allGeneratedPrompts
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to generate prompts');
+                    const data = await response.json();
+                    console.log(`   ✓ ${unit.label} (${imageType}): ${data.prompts.length} prompts generated`);
+
+                    // Track these prompts for next iteration
+                    allGeneratedPrompts.push(...data.prompts);
+                    promptResults.push({ unit, index, prompts: data.prompts, imageType });
+
+                    document.getElementById('genLoaderProgress').textContent = `Created ${allGeneratedPrompts.length}/${totalOutputs} prompts...`;
+                }
+
+                console.log(`   ⏱ Prompts complete: ${((performance.now() - phaseStart) / 1000).toFixed(1)}s`);
+
+                // Build all generation tasks
+                const allTasks = [];
+                promptResults.forEach(({ unit, index, prompts }) => {
+                    prompts.forEach((prompt, j) => {
+                        allTasks.push({
+                            unit,
+                            unitIndex: index,
+                            prompt: prompt,
+                            promptIndex: j,
+                            imageUrls: unit.images.map(img => img.hostedUrl),
+                            sourceUrls: unit.images.map(img => img.url)
+                        });
+                    });
+                });
+
+                console.log(`\n📋 Total tasks: ${allTasks.length}`);
+                allTasks.forEach((t, i) => {
+                    console.log(`   [${i + 1}] ${t.unit.label}-V${t.promptIndex + 1}: ${t.prompt.substring(0, 60)}...`);
+                });
+
+                // PHASE 4: Generate ALL images IN PARALLEL
+                phaseStart = performance.now();
+                console.log('\n🎨 Phase 4: Generating images (all in parallel)...');
+                document.getElementById('genLoaderProgress').textContent = `Generating ${totalOutputs} campaign images...`;
+
+                let completed = 0;
+
+                await Promise.all(allTasks.map(async (task, taskIndex) => {
+                    const taskStart = performance.now();
+                    try {
+                        const model = CAMPAIGN_MODELS[state.model];
+                        const params = {
+                            prompt: task.prompt,
+                            image_urls: task.imageUrls,  // All images in the unit
+                            num_images: 1,
+                            output_format: 'png',
+                            aspect_ratio: state.aspectRatio
+                        };
+
+                        if (state.model === 'nanopro') {
+                            params.resolution = state.resolution;
+                        }
+
+                        const data = await api.remixImage(model.endpoint, params);
+
+                        if (data.images && data.images.length > 0) {
+                            state.results.push({
+                                url: data.images[0].url,
+                                prompt: task.prompt,
+                                sourceUrls: task.sourceUrls,
+                                unitLabel: task.unit.label
+                            });
+                            renderResults();
+                            console.log(`   ✓ [${taskIndex + 1}/${allTasks.length}] ${task.unit.label}-V${task.promptIndex + 1} done (${((performance.now() - taskStart) / 1000).toFixed(1)}s)`);
+                        }
+                    } catch (error) {
+                        console.error(`   ✗ [${taskIndex + 1}] Failed:`, error.message);
+                    }
+
+                    completed++;
+                    elements.progressCount.textContent = `${completed} / ${totalOutputs}`;
+                    elements.progressBar.style.width = `${(completed / totalOutputs) * 100}%`;
+                    document.getElementById('genLoaderProgress').textContent = `Generated ${completed} of ${totalOutputs}...`;
+                }));
+
+                console.log(`   ⏱ Generation complete: ${((performance.now() - phaseStart) / 1000).toFixed(1)}s`);
+
+                const totalTime = ((performance.now() - totalStart) / 1000).toFixed(1);
+                console.log('\n═══════════════════════════════════════════');
+                console.log(`✅ CAMPAIGN COMPLETE: ${state.results.length}/${totalOutputs} images in ${totalTime}s`);
+                console.log('═══════════════════════════════════════════');
+
+            } catch (error) {
+                console.error('❌ Campaign generation error:', error);
+            }
+
+            stopStudioMessages();
+            progressLoader.remove();
+            elements.progressSection.classList.remove('visible');
+            elements.resultsSection.classList.add('visible');
+            elements.generateBtn.disabled = false;
+            updateCalculator();
+        }
+
+        // Build filename: Campaign_Brand_YYMMDD_HHMM_01.png
+        function buildFilename(idx) {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const num = String(idx + 1).padStart(2, '0');
+            const brand = state.brandName.replace(/[^a-zA-Z0-9]/g, '') || 'Brand';
+            return `Campaign_${brand}_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
+        }
+
+        function renderResults() {
+            elements.resultsGrid.innerHTML = state.results.map((result, idx) => `
+                <div class="result-card" onclick="openLightbox(${idx})">
+                    <img src="${result.url}" alt="Result ${idx + 1}">
+                    <span class="source-tag">${result.unitLabel || `Image ${idx + 1}`}</span>
+                </div>
+            `).join('');
+
+            elements.resultsSection.classList.add('visible');
+
+            // Update lightbox results with modelName for display
+            const lightboxResults = state.results.map((r, idx) => ({
+                ...r,
+                modelName: CAMPAIGN_MODELS[state.model]?.name || 'Nano Pro',
+                filename: buildFilename(idx)
+            }));
+            lightbox.setResults(lightboxResults);
+        }
+
+        // Initialize shared lightbox
+        const lightbox = new Lightbox({
+            onDownload: (url, filename) => {
+                downloadFile(url, filename);
+            }
+        });
+
+        window.openLightbox = function(index) {
+            lightbox.open(index);
+        };
+
+        function downloadAll() {
+            state.results.forEach((result, idx) => {
+                setTimeout(() => {
+                    downloadFile(result.url, buildFilename(idx));
+                }, idx * 500);
+            });
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
