@@ -6,6 +6,24 @@
 class API {
     constructor(baseUrl = '') {
         this.baseUrl = baseUrl || window.location.origin;
+        // Load saved key preference, default to 'setset'
+        this.falKey = localStorage.getItem('falKeyType') || 'setset';
+    }
+
+    /**
+     * Set the FAL API key type to use
+     * @param {'personal' | 'setset'} keyType
+     */
+    setFalKey(keyType) {
+        this.falKey = keyType;
+        localStorage.setItem('falKeyType', keyType);
+    }
+
+    /**
+     * Get the current FAL key type
+     */
+    getFalKey() {
+        return this.falKey;
     }
 
     /**
@@ -15,7 +33,7 @@ class API {
         const response = await fetch(`${this.baseUrl}/api/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model, ...params })
+            body: JSON.stringify({ model, falKey: this.falKey, ...params })
         });
 
         if (!response.ok) {
@@ -33,7 +51,7 @@ class API {
         const response = await fetch(`${this.baseUrl}/api/remix`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model, ...params })
+            body: JSON.stringify({ model, falKey: this.falKey, ...params })
         });
 
         if (!response.ok) {
@@ -69,7 +87,7 @@ class API {
         const formData = new FormData();
         formData.append('image', file);
 
-        const response = await fetch(`${this.baseUrl}/api/upload`, {
+        const response = await fetch(`${this.baseUrl}/api/upload?falKey=${this.falKey}`, {
             method: 'POST',
             body: formData
         });
@@ -90,7 +108,7 @@ class API {
         const response = await fetch(`${this.baseUrl}/api/upload-base64`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dataUrl })
+            body: JSON.stringify({ dataUrl, falKey: this.falKey })
         });
 
         if (!response.ok) {
@@ -108,7 +126,7 @@ class API {
         const response = await fetch(`${this.baseUrl}/api/bg-replace`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params)
+            body: JSON.stringify({ falKey: this.falKey, ...params })
         });
 
         if (!response.ok) {
@@ -142,3 +160,50 @@ class API {
 
 // Export singleton
 window.api = new API();
+
+// Listen for localStorage changes (from parent window toggle)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'falKeyType') {
+        window.api.falKey = e.newValue || 'setset';
+        console.log(`🔑 API key switched to: ${window.api.falKey}`);
+    }
+});
+
+/**
+ * API Key Switcher Component
+ * Creates a toggle UI to switch between personal and setset FAL keys
+ *
+ * Usage: Call createApiKeySwitcher() and append the returned element to your header
+ */
+function createApiKeySwitcher() {
+    const switcher = document.createElement('div');
+    switcher.className = 'api-key-switcher';
+    switcher.innerHTML = `
+        <span class="api-key-switcher__option" data-key="personal">Personal</span>
+        <span class="api-key-switcher__option" data-key="setset">Setset</span>
+    `;
+
+    const options = switcher.querySelectorAll('.api-key-switcher__option');
+
+    // Set initial state
+    const currentKey = window.api.getFalKey();
+    options.forEach(opt => {
+        if (opt.dataset.key === currentKey) {
+            opt.classList.add('active');
+        }
+    });
+
+    // Handle clicks
+    options.forEach(opt => {
+        opt.addEventListener('click', () => {
+            options.forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            window.api.setFalKey(opt.dataset.key);
+            console.log(`🔑 Switched to ${opt.dataset.key} FAL key`);
+        });
+    });
+
+    return switcher;
+}
+
+window.createApiKeySwitcher = createApiKeySwitcher;

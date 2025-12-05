@@ -6,6 +6,7 @@
     <title>Setset Playground</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
     <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
     <style>
         * {
             margin: 0;
@@ -50,11 +51,15 @@
 
         .sidebar-nav {
             flex: 1;
-            padding: 16px 0;
+            padding: 0;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 2px;
+        }
+
+        #apiKeySwitcher {
+            padding: 16px 20px 8px;
         }
 
         .nav-item {
@@ -191,6 +196,7 @@
         </div>
 
         <nav class="sidebar-nav">
+            <div id="apiKeySwitcher"></div>
             <div class="nav-section">Tools</div>
             <a class="nav-item" data-tool="generate">Generate</a>
             <a class="nav-item" data-tool="remix">Remix</a>
@@ -200,6 +206,7 @@
             <a class="nav-item" data-tool="socialset">SocialSet</a>
             <a class="nav-item" data-tool="productgen">Product Gen</a>
             <a class="nav-item" data-tool="envgen">Environment Gen</a>
+            <a class="nav-item" data-tool="campaign">Campaign Gen</a>
             <a class="nav-item" data-tool="research">Research</a>
 
             <div class="nav-divider"></div>
@@ -229,6 +236,11 @@
         <iframe id="content-frame" style="display: none;"></iframe>
     </main>
 
+    <script src="/shared/js/api.js"></script>
+    <script>
+        // Initialize API key switcher in sidebar
+        document.getElementById('apiKeySwitcher').appendChild(createApiKeySwitcher());
+    </script>
     <script>
         // All tools now live in /tools/
         const v = Date.now();
@@ -241,6 +253,7 @@
             'socialset': `/tools/socialset/index.html?v=${v}`,
             'productgen': `/tools/socialset/product-generator.html?v=${v}`,
             'envgen': `/tools/socialset/environment-generator.html?v=${v}`,
+            'campaign': `/tools/campaign-generator.html?v=${v}`,
             'research': `/tools/research.html?v=${v}`,
             // Legacy tools
             'looks': `/tools/legacy/looks.html?v=${v}`,

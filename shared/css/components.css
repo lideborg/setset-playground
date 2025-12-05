@@ -234,6 +234,39 @@
     color: var(--slate);
 }
 
+/* API Key Switcher */
+.api-key-switcher {
+    display: flex;
+}
+
+.api-key-switcher__option {
+    flex: 1;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--slate);
+    user-select: none;
+    font-weight: 500;
+    font-size: 11px;
+    text-align: center;
+    background: var(--white);
+    border: 1px solid var(--gainsboro);
+}
+
+.api-key-switcher__option:first-child {
+    border-right: none;
+}
+
+.api-key-switcher__option:hover:not(.active) {
+    background: var(--off-white);
+}
+
+.api-key-switcher__option.active {
+    background: var(--jet);
+    border-color: var(--jet);
+    color: var(--white);
+}
+
 /* ==========================================================================
    PROGRESS
    ========================================================================== */
@@ -478,6 +511,36 @@
 
 .lightbox-download:hover {
     background: var(--carbon);
+}
+
+.lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--white);
+    border: none;
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox-nav:hover {
+    background: var(--jet);
+    color: var(--white);
+}
+
+.lightbox-prev {
+    left: var(--space-lg);
+}
+
+.lightbox-next {
+    right: calc(33.333% + var(--space-lg));
 }
 
 /* ==========================================================================
