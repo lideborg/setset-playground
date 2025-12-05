@@ -71,14 +71,15 @@
             margin-bottom: var(--space-md);
         }
 
-        /* Brand grid: show 2 rows, scroll when >10 images */
-        #brandGrid {
-            overflow-y: auto;
-        }
-
         /* Hide empty slots beyond first 10 - they appear when filled */
         #brandGrid .upload-slot:nth-child(n+11):not(.filled) {
             display: none;
+        }
+
+        /* When >10 images, lock height to 2 rows and scroll */
+        #brandGrid.has-overflow {
+            max-height: var(--brand-grid-height);
+            overflow-y: auto;
         }
 
         .upload-grid.drag-over {
@@ -952,9 +953,31 @@
                     updateAnalyzeButton();
                     updateCalculator();
                     updateSteps();
+
+                    // Update brand grid overflow state
+                    if (type === 'brand') {
+                        updateBrandGridOverflow();
+                    }
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        // Sync brand grid height with ecom grid and handle overflow
+        function updateBrandGridOverflow() {
+            const filledCount = state.brandImages.filter(img => img && img.url).length;
+
+            // Get the ecom grid height (always 2 rows of 5)
+            const ecomGridHeight = elements.ecomGrid.offsetHeight;
+
+            if (filledCount > 10) {
+                // Lock to ecom grid height and enable scroll
+                elements.brandGrid.style.setProperty('--brand-grid-height', `${ecomGridHeight}px`);
+                elements.brandGrid.classList.add('has-overflow');
+            } else {
+                // Remove overflow, let it size naturally
+                elements.brandGrid.classList.remove('has-overflow');
+            }
         }
 
         window.removeImage = function(index, type) {
@@ -972,6 +995,11 @@
             updateAnalyzeButton();
             updateCalculator();
             updateSteps();
+
+            // Update brand grid overflow state
+            if (type === 'brand') {
+                updateBrandGridOverflow();
+            }
         };
 
         function rerenderGrid(images, grid, type) {
