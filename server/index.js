@@ -315,11 +315,12 @@ Return ONLY the prompts. Separate each prompt with TWO blank lines. No numbering
 
 /**
  * POST /api/analyze-brand
- * Deep brand visual analysis using GPT-4 Vision + web context
+ * Component Library System - extracts structured categories from moodboard
+ * Supports SSE streaming for progress updates
  */
 app.post('/api/analyze-brand', async (req, res) => {
     try {
-        const { images, brandName, previousAnalysis, feedback } = req.body;
+        const { images, brandName, previousAnalysis, feedback, stream } = req.body;
 
         if (!brandName) {
             return res.status(400).json({ error: 'Brand name is required' });
@@ -328,244 +329,573 @@ app.post('/api/analyze-brand', async (req, res) => {
         const hasImages = images && images.length > 0;
         console.log(`🎨 [Brand Analysis] ${hasImages ? `Analyzing ${images.length} images for` : 'Using GPT knowledge for'} brand: ${brandName}`);
 
-        // Build content array
-        const content = [];
-
-        // Add images if provided
-        if (hasImages) {
-            for (const url of images) {
-                content.push({
-                    type: 'image_url',
-                    image_url: {
-                        url: url,
-                        detail: 'high'
-                    }
-                });
+        // Helper to send SSE progress updates
+        const sendProgress = (phase, current, total, message) => {
+            if (stream) {
+                res.write(`data: ${JSON.stringify({ type: 'progress', phase, current, total, message })}\n\n`);
             }
+            console.log(`   ${message}`);
+        };
+
+        // Setup SSE if streaming requested
+        if (stream) {
+            res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
+            res.flushHeaders();
         }
 
-        // Build the analysis prompt
-        let analysisPrompt;
+        let fullResponse;
+        let componentLibrary = null;
 
         if (previousAnalysis && feedback) {
-            // Refinement mode
-            analysisPrompt = `You previously analyzed the visual identity of ${brandName} and produced this analysis:
+            // Refinement mode - single call
+            if (stream) sendProgress('refine', 0, 1, 'Refining analysis...');
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [{
+                        role: 'user',
+                        content: `You previously analyzed the visual identity of ${brandName} and produced this analysis:
 
 ${previousAnalysis}
 
 The user has provided this feedback for refinement:
 "${feedback}"
 
-Please update and refine your analysis based on this feedback. Keep the same structure but adjust the content based on the user's notes.`;
+Please update and refine your analysis based on this feedback. Keep the same structure but adjust the content based on the user's notes.`
+                    }],
+                    max_tokens: 2500,
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                console.error('❌ [Brand Analysis] API Error:', data);
+                if (stream) {
+                    res.write(`data: ${JSON.stringify({ type: 'error', error: data.error?.message || 'Analysis failed' })}\n\n`);
+                    return res.end();
+                }
+                return res.status(response.status).json({ error: data.error?.message || 'Analysis failed' });
+            }
+            fullResponse = data.choices[0].message.content;
+
+        } else if (hasImages && images.length > 1) {
+            // ═══════════════════════════════════════════════════════════════
+            // COMPONENT LIBRARY SYSTEM - Extract structured categories
+            // ═══════════════════════════════════════════════════════════════
+
+            // PHASE 1: Extract structured components from each image
+            console.log(`📸 [Brand Analysis] Phase 1: Extracting components from ${images.length} images...`);
+            sendProgress('analyze', 0, images.length, `Extracting components from ${images.length} images...`);
+
+            const componentExtractionPrompt = `Analyze this image and extract STRUCTURED COMPONENTS for a prompt library.
+Return ONLY valid JSON (no markdown, no backticks) with these exact fields:
+
+{
+  "lighting": {
+    "quality": "soft/hard/mixed",
+    "direction": "front/side/back/overhead/natural-window",
+    "source": "natural-daylight/flash/studio-softbox/ambient/golden-hour/overcast",
+    "mood": "warm/cool/neutral/dramatic/moody",
+    "specific": "detailed description like 'soft golden hour side light with long shadows'"
+  },
+  "composition": {
+    "angle": "eye-level/low-angle/high-angle/overhead-flat/dutch-angle",
+    "framing": "tight-crop/medium-shot/wide-environmental/extreme-close-up/full-body",
+    "style": "editorial-posed/candid-documentary/action-frozen/lifestyle-natural/studio-controlled",
+    "specific": "detailed description of the composition approach"
+  },
+  "environment": {
+    "type": "indoor-residential/indoor-commercial/outdoor-urban/outdoor-nature/studio",
+    "location": "very specific like 'basketball court with brutalist apartment buildings' or 'mid-century living room with designer furniture'",
+    "variations": ["3 similar but different locations that would have the same vibe"]
+  },
+  "atmosphere": {
+    "energy": "calm-serene/contemplative/playful-fun/dynamic-energetic/relaxed-casual/bold-confident",
+    "mood": "serious-editorial/playful-youthful/luxurious-elevated/street-raw/cozy-intimate/sporty-athletic",
+    "vibe_phrase": "a short phrase capturing the feeling like 'effortless urban cool' or 'sunday morning calm'"
+  },
+  "color": {
+    "temperature": "warm/cool/neutral/mixed",
+    "saturation": "bold-vibrant/muted-desaturated/natural/high-contrast",
+    "dominant_colors": ["4-5 SPECIFIC colors like 'dusty terracotta', 'slate blue', 'cream white'"],
+    "palette_name": "a name for this palette like 'autumn earth tones' or 'urban neutrals with pops'"
+  },
+  "texture_surface": {
+    "primary_surface": "main surface/backdrop like 'raw concrete floor' or 'worn leather couch'",
+    "textures_present": ["list all textures: 'brushed metal', 'soft knit', 'weathered brick'"],
+    "material_feel": "raw-industrial/polished-refined/organic-natural/soft-cozy/urban-gritty"
+  },
+  "movement_pose": {
+    "type": "static-posed/walking-motion/running-action/seated-relaxed/leaning-casual/holding-object/athletic-movement",
+    "energy": "still/subtle-movement/moderate-motion/high-energy-action",
+    "specific": "description like 'mid-stride walking confidently' or 'seated casually on floor'"
+  },
+  "props_context": {
+    "objects_present": ["list any props: 'basketball', 'vintage lamp', 'coffee cup', 'skateboard'"],
+    "context_category": "sports/lifestyle/fashion-editorial/urban-street/nature-outdoor/home-interior"
+  },
+  "time_weather": {
+    "time_of_day": "golden-hour-sunset/midday-harsh/blue-hour-dusk/overcast-soft/night-artificial/morning-soft",
+    "conditions": "clear-sunny/overcast-diffused/moody-dramatic/bright-airy/dim-atmospheric"
+  }
+}
+
+Be VERY specific and detailed. This will be used to generate variety. Return ONLY the JSON.`;
+
+            let completedCount = 0;
+            const extractedComponents = await Promise.all(images.map(async (url, i) => {
+                try {
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${OPENAI_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o',
+                            messages: [{
+                                role: 'user',
+                                content: [
+                                    { type: 'image_url', image_url: { url: url, detail: 'high' } },
+                                    { type: 'text', text: componentExtractionPrompt }
+                                ]
+                            }],
+                            max_tokens: 1000,
+                            temperature: 0.3
+                        })
+                    });
+
+                    const data = await response.json();
+                    completedCount++;
+
+                    if (!response.ok) {
+                        console.error(`❌ [Brand Analysis] Image ${i + 1} failed:`, data);
+                        sendProgress('analyze', completedCount, images.length, `Image ${i + 1} failed`);
+                        return null;
+                    }
+
+                    sendProgress('analyze', completedCount, images.length, `✓ Image ${completedCount}/${images.length} extracted`);
+
+                    // Parse JSON response
+                    try {
+                        let content = data.choices[0].message.content;
+                        // Remove markdown code blocks if present
+                        content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+                        const jsonMatch = content.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            return JSON.parse(jsonMatch[0]);
+                        }
+                    } catch (parseErr) {
+                        console.error(`   ⚠ Image ${i + 1} JSON parse failed:`, parseErr.message);
+                    }
+                    return null;
+                } catch (err) {
+                    completedCount++;
+                    console.error(`❌ [Brand Analysis] Image ${i + 1} error:`, err);
+                    sendProgress('analyze', completedCount, images.length, `Image ${i + 1} error`);
+                    return null;
+                }
+            }));
+
+            // Filter out failed extractions
+            const validComponents = extractedComponents.filter(c => c !== null);
+            console.log(`📊 [Brand Analysis] Phase 2: Building library from ${validComponents.length} extractions...`);
+            sendProgress('synthesize', 0, 1, 'Building component library...');
+
+            // PHASE 2: Build the component library by aggregating all extractions
+            componentLibrary = {
+                lighting: {
+                    qualities: [...new Set(validComponents.map(c => c.lighting?.quality).filter(Boolean))],
+                    directions: [...new Set(validComponents.map(c => c.lighting?.direction).filter(Boolean))],
+                    sources: [...new Set(validComponents.map(c => c.lighting?.source).filter(Boolean))],
+                    moods: [...new Set(validComponents.map(c => c.lighting?.mood).filter(Boolean))],
+                    specific_styles: [...new Set(validComponents.map(c => c.lighting?.specific).filter(Boolean))]
+                },
+                composition: {
+                    angles: [...new Set(validComponents.map(c => c.composition?.angle).filter(Boolean))],
+                    framings: [...new Set(validComponents.map(c => c.composition?.framing).filter(Boolean))],
+                    styles: [...new Set(validComponents.map(c => c.composition?.style).filter(Boolean))],
+                    specific_approaches: [...new Set(validComponents.map(c => c.composition?.specific).filter(Boolean))]
+                },
+                environment: {
+                    types: [...new Set(validComponents.map(c => c.environment?.type).filter(Boolean))],
+                    specific_locations: [...new Set(validComponents.map(c => c.environment?.location).filter(Boolean))],
+                    location_variations: [...new Set(validComponents.flatMap(c => c.environment?.variations || []).filter(Boolean))]
+                },
+                atmosphere: {
+                    energies: [...new Set(validComponents.map(c => c.atmosphere?.energy).filter(Boolean))],
+                    moods: [...new Set(validComponents.map(c => c.atmosphere?.mood).filter(Boolean))],
+                    vibe_phrases: [...new Set(validComponents.map(c => c.atmosphere?.vibe_phrase).filter(Boolean))]
+                },
+                color: {
+                    temperatures: [...new Set(validComponents.map(c => c.color?.temperature).filter(Boolean))],
+                    saturations: [...new Set(validComponents.map(c => c.color?.saturation).filter(Boolean))],
+                    specific_colors: [...new Set(validComponents.flatMap(c => c.color?.dominant_colors || []).filter(Boolean))],
+                    palette_names: [...new Set(validComponents.map(c => c.color?.palette_name).filter(Boolean))]
+                },
+                texture_surface: {
+                    primary_surfaces: [...new Set(validComponents.map(c => c.texture_surface?.primary_surface).filter(Boolean))],
+                    all_textures: [...new Set(validComponents.flatMap(c => c.texture_surface?.textures_present || []).filter(Boolean))],
+                    material_feels: [...new Set(validComponents.map(c => c.texture_surface?.material_feel).filter(Boolean))]
+                },
+                movement_pose: {
+                    types: [...new Set(validComponents.map(c => c.movement_pose?.type).filter(Boolean))],
+                    energy_levels: [...new Set(validComponents.map(c => c.movement_pose?.energy).filter(Boolean))],
+                    specific_poses: [...new Set(validComponents.map(c => c.movement_pose?.specific).filter(Boolean))]
+                },
+                props_context: {
+                    all_objects: [...new Set(validComponents.flatMap(c => c.props_context?.objects_present || []).filter(Boolean))],
+                    categories: [...new Set(validComponents.map(c => c.props_context?.context_category).filter(Boolean))]
+                },
+                time_weather: {
+                    times_of_day: [...new Set(validComponents.map(c => c.time_weather?.time_of_day).filter(Boolean))],
+                    conditions: [...new Set(validComponents.map(c => c.time_weather?.conditions).filter(Boolean))]
+                }
+            };
+
+            console.log(`📚 [Brand Analysis] Component Library built:`);
+            console.log(`   - ${componentLibrary.lighting.specific_styles.length} lighting styles`);
+            console.log(`   - ${componentLibrary.environment.specific_locations.length} specific locations`);
+            console.log(`   - ${componentLibrary.environment.location_variations.length} location variations`);
+            console.log(`   - ${componentLibrary.atmosphere.vibe_phrases.length} vibe phrases`);
+            console.log(`   - ${componentLibrary.color.specific_colors.length} specific colors`);
+
+            // PHASE 3: Generate human-readable summary
+            sendProgress('synthesize', 1, 2, 'Generating brand summary...');
+
+            const summaryPrompt = `Based on this component library extracted from ${brandName}'s moodboard, write a brief summary (6-8 sentences) of the brand's visual identity.
+
+EXTRACTED COMPONENTS:
+- Environments: ${componentLibrary.environment.specific_locations.join(', ')}
+- Lighting styles: ${componentLibrary.lighting.specific_styles.join(', ')}
+- Atmosphere vibes: ${componentLibrary.atmosphere.vibe_phrases.join(', ')}
+- Colors: ${componentLibrary.color.specific_colors.slice(0, 10).join(', ')}
+- Textures: ${componentLibrary.texture_surface.all_textures.slice(0, 8).join(', ')}
+
+Write a flowing, readable summary that captures the VARIETY in this brand's visual world. Mention the range of environments, lighting, and moods. What ties it together? Keep it concise and insightful. No bullet points, just prose.`;
+
+            const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [{ role: 'user', content: summaryPrompt }],
+                    max_tokens: 400,
+                    temperature: 0.7
+                })
+            });
+
+            const summaryData = await summaryResponse.json();
+            const summary = summaryData.choices?.[0]?.message?.content || 'Component library built successfully.';
+
+            // Store library in fullResponse for backward compatibility, but also return structured data
+            fullResponse = `===SUMMARY===\n${summary}\n\n===COMPONENT LIBRARY===\n${JSON.stringify(componentLibrary, null, 2)}`;
+
         } else {
-            // Initial analysis - with or without images
+            // Single image or no images - original behavior
+            const content = [];
+
+            if (hasImages) {
+                content.push({
+                    type: 'image_url',
+                    image_url: { url: images[0], detail: 'high' }
+                });
+            }
+
             const imageContext = hasImages
-                ? `Examine these campaign/Instagram images to understand the brand's visual language.`
+                ? `Examine this campaign/Instagram image to understand the brand's visual language.`
                 : `Based on your knowledge of ${brandName}'s visual identity, campaign imagery, and brand aesthetic, provide a comprehensive visual analysis. Think about their Instagram, campaigns, brand guidelines, and overall visual language.`;
 
-            analysisPrompt = `You are an expert creative director ${hasImages ? 'extracting' : 'with deep knowledge of fashion and lifestyle brands, analyzing'} the VISUAL PRINCIPLES and AESTHETIC QUALITIES of ${brandName}.
+            content.push({
+                type: 'text',
+                text: `You are an expert creative director ${hasImages ? 'extracting' : 'with deep knowledge of fashion and lifestyle brands, analyzing'} the VISUAL PRINCIPLES and AESTHETIC QUALITIES of ${brandName}.
 
 ${imageContext}
 
 Your response must have TWO parts, clearly separated:
 
 ===SUMMARY===
-Write a clear summary (6-10 lines) that captures the essence of the brand's visual identity. This is what the user sees to verify we understood the brand correctly. Include:
+Write a clear summary (6-10 lines) that captures the essence of the brand's visual identity. Include:
 - The overall brand feeling and emotional quality
 - Lighting style and how light is used
 - Types of environments and settings that feel on-brand
 - Color tendencies and tonal qualities
 - Mood and atmosphere
-- Any distinctive visual techniques or approaches
 Keep it readable and flowing - no bullet points or headers, just descriptive prose.
 
 ===FULL ANALYSIS===
 Now provide the detailed analysis for generating prompts:
 
-**LIGHTING PRINCIPLES**
-List 4-6 lighting approaches the brand uses:
-- e.g., "Soft diffused natural light - even, gentle, flattering"
-- e.g., "Dramatic directional side-light - sculptural shadows, depth"
+**AESTHETIC MODES** (identify 3-4 different directions)
+- Mode 1: [Name] - [description]
+- Mode 2: [Name] - [description]
+- Mode 3: [Name] - [description]
 
-**ENVIRONMENT CATEGORIES** (Abstract types, NOT specific locations)
-List 6-8 categories of environments that fit the brand:
-- e.g., "Natural landscapes with texture" (could be: desert, forest, coastline, mountains)
-- e.g., "Architectural minimalism" (could be: museums, galleries, modern homes)
+**LIGHTING PRINCIPLES**
+List 4-6 lighting approaches the brand uses
+
+**ENVIRONMENT CATEGORIES**
+List 6-8 categories of environments that fit the brand
 
 **MOOD SPECTRUM**
 - Primary emotional tone
 - 2-3 secondary moods
-- Energy level (calm ←→ dynamic)
+- Energy level range
 
 **COLOR PALETTE**
-List 5-8 specific colors (be precise - "dusty sage" not "green")
+List 5-8 specific colors
 
 **TEXTURE & SURFACE QUALITIES**
-What textures feel on-brand? (raw concrete, weathered wood, soft fabrics, etc.)
+What textures feel on-brand?
 
 **PROMPT BUILDING BLOCKS**
-15-20 short phrases that can be mixed/matched:
-- Lighting phrases (5-6)
-- Environment types (5-6)
-- Atmosphere phrases (4-5)
-- Camera/technique phrases (3-4)
+15-20 short phrases organized by mode
 
-The goal is to create NEW campaign images that FEEL like ${brandName}, not recreate reference photos.`;
+The goal is to create NEW campaign images that FEEL like ${brandName}, not recreate reference photos.`
+            });
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [{ role: 'user', content: content }],
+                    max_tokens: 2500,
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                console.error('❌ [Brand Analysis] API Error:', data);
+                return res.status(response.status).json({ error: data.error?.message || 'Analysis failed' });
+            }
+            fullResponse = data.choices[0].message.content;
         }
 
-        content.push({
-            type: 'text',
-            text: analysisPrompt
-        });
-
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o',
-                messages: [
-                    {
-                        role: 'user',
-                        content: content
-                    }
-                ],
-                max_tokens: 2000,
-                temperature: 0.7
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('❌ [Brand Analysis] API Error:', data);
-            return res.status(response.status).json({ error: data.error?.message || 'Analysis failed' });
-        }
-
-        const fullResponse = data.choices[0].message.content;
         console.log(`✅ [Brand Analysis] Complete for ${brandName}`);
+        sendProgress('complete', 1, 1, 'Analysis complete!');
 
-        // Parse out summary and full analysis
+        // Parse out summary and component library
         let summary = '';
         let fullAnalysis = fullResponse;
 
-        if (fullResponse.includes('===SUMMARY===') && fullResponse.includes('===FULL ANALYSIS===')) {
-            const summaryMatch = fullResponse.match(/===SUMMARY===\s*([\s\S]*?)===FULL ANALYSIS===/);
-            const fullMatch = fullResponse.match(/===FULL ANALYSIS===\s*([\s\S]*)/);
+        if (fullResponse.includes('===SUMMARY===')) {
+            if (fullResponse.includes('===COMPONENT LIBRARY===')) {
+                // New component library format
+                const summaryMatch = fullResponse.match(/===SUMMARY===\s*([\s\S]*?)===COMPONENT LIBRARY===/);
+                const libraryMatch = fullResponse.match(/===COMPONENT LIBRARY===\s*([\s\S]*)/);
 
-            if (summaryMatch) summary = summaryMatch[1].trim();
-            if (fullMatch) fullAnalysis = fullMatch[1].trim();
+                if (summaryMatch) summary = summaryMatch[1].trim();
+                if (libraryMatch) {
+                    try {
+                        // If we have the componentLibrary object, use it directly
+                        fullAnalysis = libraryMatch[1].trim();
+                    } catch (e) {
+                        fullAnalysis = libraryMatch[1].trim();
+                    }
+                }
+            } else if (fullResponse.includes('===FULL ANALYSIS===')) {
+                // Old format for backward compatibility
+                const summaryMatch = fullResponse.match(/===SUMMARY===\s*([\s\S]*?)===FULL ANALYSIS===/);
+                const fullMatch = fullResponse.match(/===FULL ANALYSIS===\s*([\s\S]*)/);
+
+                if (summaryMatch) summary = summaryMatch[1].trim();
+                if (fullMatch) fullAnalysis = fullMatch[1].trim();
+            }
         }
 
-        res.json({
-            summary: summary || fullAnalysis.substring(0, 500), // Fallback to truncated if parsing fails
+        const result = {
+            summary: summary || fullAnalysis.substring(0, 500),
             fullAnalysis: fullAnalysis,
-            // Keep 'analysis' for backward compatibility
-            analysis: fullAnalysis
-        });
+            analysis: fullAnalysis,
+            componentLibrary: componentLibrary // Include structured library if available
+        };
+
+        if (stream) {
+            res.write(`data: ${JSON.stringify({ type: 'result', ...result })}\n\n`);
+            res.end();
+        } else {
+            res.json(result);
+        }
     } catch (error) {
         console.error('❌ [Brand Analysis] Server error:', error);
-        res.status(500).json({ error: error.message });
+        if (req.body?.stream) {
+            res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+            res.end();
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     }
 });
 
 /**
  * POST /api/campaign-prompts
- * Generate campaign-style prompts based on brand analysis + e-commerce image
+ * COMPONENT LIBRARY MIXER - generates variety by mixing components
  * Handles both MODEL shots (people) and PRODUCT shots (flat lays)
  */
 app.post('/api/campaign-prompts', async (req, res) => {
     try {
-        const { brandAnalysis, brandName, ecomDescription, numPrompts = 3, imageIndex = 0, numPeople = 1, imageType = 'model', previousPrompts = [] } = req.body;
+        const { brandAnalysis, brandName, ecomDescription, numPrompts = 3, imageIndex = 0, numPeople = 1, imageType = 'model', previousPrompts = [], numProducts = 1, componentLibrary } = req.body;
 
-        console.log(`📝 [Campaign Prompts] Generating ${numPrompts} prompts for ${brandName} (unit ${imageIndex + 1}, type: ${imageType}, ${previousPrompts.length} previous)`);
+        console.log(`📝 [Campaign Prompts] Generating ${numPrompts} prompts for ${brandName} (unit ${imageIndex + 1}, type: ${imageType})`);
 
-        // Build context about previous prompts to avoid repetition
-        const avoidRepetitionContext = previousPrompts.length > 0
-            ? `\n\nALREADY USED (DO NOT REPEAT these settings):
-${previousPrompts.map((p, i) => `- ${p.substring(0, 100)}...`).join('\n')}
+        // Helper to pick random item from array, avoiding already used
+        const pickRandom = (arr, usedSet = new Set()) => {
+            if (!arr || arr.length === 0) return null;
+            const available = arr.filter(item => !usedSet.has(item));
+            if (available.length === 0) return arr[Math.floor(Math.random() * arr.length)];
+            return available[Math.floor(Math.random() * available.length)];
+        };
 
-You MUST create completely DIFFERENT settings from the above.`
+        // Context for grouped products
+        const isGroupedProducts = imageType === 'product' && numProducts > 1;
+        const groupedContext = isGroupedProducts
+            ? `Style all ${numProducts} products TOGETHER as a cohesive set.`
             : '';
 
         let systemPrompt, userPrompt;
 
-        if (imageType === 'product') {
-            // FLAT LAY / PRODUCT SHOT prompts
-            systemPrompt = `You are an expert at writing prompts for AI image-to-image generation that transforms e-commerce product shots into styled product photography.
+        // Check if we have a component library for mixing
+        const hasLibrary = componentLibrary && componentLibrary.environment;
 
-Your job: Based on the brand's visual identity, create ${numPrompts} prompts for PRODUCT/FLAT LAY photography that feels authentic to the brand.
+        if (hasLibrary) {
+            // ═══════════════════════════════════════════════════════════════
+            // COMPONENT MIXER APPROACH - Maximum variety
+            // ═══════════════════════════════════════════════════════════════
+
+            console.log(`   📚 Using Component Library mixing approach`);
+
+            // Track what we've used for each prompt to avoid repetition
+            const usedEnvironments = new Set();
+            const usedLighting = new Set();
+            const usedAtmosphere = new Set();
+
+            // Build component selections for each prompt
+            const componentSelections = [];
+            for (let i = 0; i < numPrompts; i++) {
+                // Pick different components for each prompt
+                const selection = {
+                    environment: pickRandom([
+                        ...componentLibrary.environment.specific_locations || [],
+                        ...componentLibrary.environment.location_variations || []
+                    ], usedEnvironments),
+                    lighting: pickRandom(componentLibrary.lighting?.specific_styles || [], usedLighting),
+                    atmosphere: pickRandom(componentLibrary.atmosphere?.vibe_phrases || [], usedAtmosphere),
+                    composition: pickRandom(componentLibrary.composition?.styles || []),
+                    color_palette: pickRandom(componentLibrary.color?.palette_names || []),
+                    time: pickRandom(componentLibrary.time_weather?.times_of_day || []),
+                    texture: pickRandom(componentLibrary.texture_surface?.primary_surfaces || []),
+                    props: pickRandom(componentLibrary.props_context?.all_objects || []),
+                    pose: pickRandom(componentLibrary.movement_pose?.specific_poses || [])
+                };
+
+                // Mark as used
+                if (selection.environment) usedEnvironments.add(selection.environment);
+                if (selection.lighting) usedLighting.add(selection.lighting);
+                if (selection.atmosphere) usedAtmosphere.add(selection.atmosphere);
+
+                componentSelections.push(selection);
+            }
+
+            // Build the prompt for GPT to compose these into natural prompts
+            const componentsDescription = componentSelections.map((sel, i) => `
+PROMPT ${i + 1} must combine:
+- ENVIRONMENT: ${sel.environment || 'any from the brand'}
+- LIGHTING: ${sel.lighting || 'natural lighting'}
+- ATMOSPHERE: ${sel.atmosphere || 'brand-appropriate mood'}
+- TIME: ${sel.time || 'any'}
+- TEXTURE/SURFACE: ${sel.texture || 'any'}
+${sel.props ? `- PROPS: ${sel.props}` : ''}
+${imageType === 'model' && sel.pose ? `- POSE/ACTION: ${sel.pose}` : ''}`).join('\n');
+
+            if (imageType === 'product') {
+                systemPrompt = `You are an expert product photographer creating styled product shot descriptions.
+
+Your task: Combine the SPECIFIC COMPONENTS provided into ${numPrompts} distinct product photography prompts.
+${isGroupedProducts ? `IMPORTANT: Style ${numProducts} products TOGETHER as a cohesive set.` : ''}
 
 RULES:
-1. Study the brand analysis - understand textures, colors, materials, and mood that define this brand
-2. Create styled product shots that are AUTHENTIC to the brand aesthetic
-3. MAXIMUM VARIETY: Each prompt MUST use completely different surfaces, props, and lighting
-4. DO NOT describe the product itself - only the surface, props, lighting, and styling. The AI preserves the product.
-5. Keep prompts to 2-3 sentences. Be specific and evocative.
-6. Use photography terms: soft diffused light, harsh shadows, warm tones, etc.
+1. Use the EXACT environment/surface, lighting, and atmosphere provided for each prompt
+2. Do NOT describe the product itself - only styling, surface, lighting, props
+3. Keep each prompt to 2-3 sentences, specific and evocative
+4. Each prompt MUST feel completely different because they use different components`;
 
-VARIETY DIMENSIONS FOR PRODUCT SHOTS - vary across ALL of these:
-- Surface/backdrop (marble, wood, linen, concrete, terrazzo, sand, stone, fabric)
-- Props/styling (botanicals, ceramics, paper, jewelry, food items, natural objects)
-- Lighting style (soft window light, dramatic side light, even diffused, dappled sunlight)
-- Color temperature (warm golden, cool blue, neutral, sunset tones)
-- Composition angle (overhead flat lay, 45-degree angle, low angle, detail macro)
-- Mood (minimal clean, rich layered, organic natural, architectural stark)
+                userPrompt = `Create ${numPrompts} product photography prompts.
 
-Return ONLY the prompts, one per line, no numbering or explanations.`;
+PRODUCT: ${ecomDescription}
+${groupedContext}
 
-            userPrompt = `BRAND: ${brandName}
+USE THESE SPECIFIC COMPONENTS FOR EACH PROMPT:
+${componentsDescription}
 
-BRAND VISUAL IDENTITY:
-${brandAnalysis}
+IMPORTANT: The components above were carefully selected to ensure MAXIMUM VARIETY.
+Each prompt must use its assigned components - do not swap them.
 
-PRODUCT TO STYLE: ${ecomDescription}
-${avoidRepetitionContext}
+Return ONLY the prompts, one per line, no numbering.`;
 
-Generate ${numPrompts} styled product photography prompts. Each should feel authentically like ${brandName}'s aesthetic. Make each prompt COMPLETELY DIFFERENT - different surface, different props, different lighting, different mood. Think editorial product photography for a luxury campaign.`;
+            } else {
+                // MODEL prompts
+                const peopleNote = numPeople > 1 ? `Feature ${numPeople} people together naturally.` : '';
+
+                systemPrompt = `You are an expert fashion photographer creating campaign shot descriptions.
+
+Your task: Combine the SPECIFIC COMPONENTS provided into ${numPrompts} distinct campaign prompts.
+${peopleNote}
+
+RULES:
+1. Use the EXACT environment, lighting, and atmosphere provided for each prompt
+2. Do NOT describe clothing - only environment, lighting, pose, atmosphere
+3. Keep each prompt to 2-3 sentences, specific and evocative
+4. Each prompt MUST feel completely different because they use different components`;
+
+                userPrompt = `Create ${numPrompts} campaign photography prompts.
+
+SUBJECT: ${ecomDescription}
+${peopleNote}
+
+USE THESE SPECIFIC COMPONENTS FOR EACH PROMPT:
+${componentsDescription}
+
+IMPORTANT: The components above were carefully selected to ensure MAXIMUM VARIETY.
+Each prompt must use its assigned components - this guarantees no two prompts feel similar.
+
+Return ONLY the prompts, one per line, no numbering.`;
+            }
 
         } else {
-            // MODEL / PERSON prompts (original behavior)
-            const peopleContext = numPeople > 1
-                ? `IMPORTANT: This scene will feature ${numPeople} people together. Describe how they should be positioned and interacting naturally.`
+            // ═══════════════════════════════════════════════════════════════
+            // FALLBACK - Old approach for backward compatibility
+            // ═══════════════════════════════════════════════════════════════
+
+            console.log(`   ⚠ No component library, using fallback approach`);
+
+            const avoidRepetitionContext = previousPrompts.length > 0
+                ? `\n\nDO NOT REPEAT: ${previousPrompts.map(p => p.substring(0, 80)).join('; ')}`
                 : '';
 
-            systemPrompt = `You are an expert at writing prompts for AI image-to-image generation that transforms e-commerce shots into campaign-style imagery.
-
-Your job: Based on the brand's visual identity, create ${numPrompts} prompts that place the subject${numPeople > 1 ? 's' : ''} in environments that FEEL true to the brand.
-
-${peopleContext}
-
-RULES:
-1. Study the brand analysis - understand environments, lighting, and moods that define this brand
-2. Create environments AUTHENTIC to the brand aesthetic - not generic
-3. MAXIMUM VARIETY: Each prompt MUST use completely different environment, time of day, and atmosphere
-4. DO NOT describe clothing - only environment, lighting, atmosphere, and pose. The AI preserves the subjects.
-5. Keep prompts to 2-3 sentences. Be specific and evocative.
-6. Use photography terms naturally.
-${numPeople > 1 ? `7. For ${numPeople} people: describe natural positioning (walking together, sitting nearby, conversing, etc.)` : ''}
-
-VARIETY DIMENSIONS FOR MODEL SHOTS - vary across ALL of these:
-- Location type (urban/nature/interior/architectural/industrial/coastal)
-- Time of day (golden hour/midday/blue hour/overcast/night)
-- Weather/atmosphere (misty/sunny/moody/crisp/dramatic/rainy)
-- Camera perspective (wide environmental/intimate close/dynamic angle/from below/from above)
-- Energy level (calm/active/contemplative/dynamic/playful)
-- Setting specificity (be SPECIFIC - not "urban" but "rain-slicked Tokyo side street at night")
-
-Return ONLY the prompts, one per line, no numbering or explanations.`;
-
-            userPrompt = `BRAND: ${brandName}
-
-BRAND VISUAL IDENTITY:
-${brandAnalysis}
-
-${numPeople > 1 ? `GROUP SCENE (${numPeople} people):` : 'MODEL/PERSON IMAGE:'} ${ecomDescription}
-${avoidRepetitionContext}
-
-Generate ${numPrompts} campaign-style prompts. Each should feel authentically like ${brandName}. Make each prompt COMPLETELY DIFFERENT - different location, different time, different mood, different energy. Be SPECIFIC with locations (not "beach" but "windswept Icelandic black sand beach at dusk").${numPeople > 1 ? ` Include natural positioning for ${numPeople} people.` : ''}`;
+            if (imageType === 'product') {
+                systemPrompt = `Create ${numPrompts} COMPLETELY DIFFERENT product photography prompts. Each must use different: surface, lighting, props, mood. ${groupedContext}`;
+                userPrompt = `PRODUCT: ${ecomDescription}\nBRAND STYLE: ${brandAnalysis}\n${avoidRepetitionContext}\n\nGenerate ${numPrompts} varied prompts, one per line.`;
+            } else {
+                systemPrompt = `Create ${numPrompts} COMPLETELY DIFFERENT campaign photography prompts. Each must use different: location, lighting, time of day, mood.`;
+                userPrompt = `SUBJECT: ${ecomDescription}\nBRAND STYLE: ${brandAnalysis}\n${avoidRepetitionContext}\n\nGenerate ${numPrompts} varied prompts, one per line.`;
+            }
         }
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -580,7 +910,7 @@ Generate ${numPrompts} campaign-style prompts. Each should feel authentically li
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                temperature: 0.9,
+                temperature: 0.8,
                 max_tokens: 1500
             })
         });
@@ -593,7 +923,10 @@ Generate ${numPrompts} campaign-style prompts. Each should feel authentically li
         }
 
         const content = data.choices[0].message.content.trim();
-        let prompts = content.split('\n').filter(line => line.trim()).slice(0, numPrompts);
+        let prompts = content.split('\n').filter(line => line.trim() && !line.match(/^(prompt\s*)?\d+[\.:]/i)).slice(0, numPrompts);
+
+        // Clean up prompts
+        prompts = prompts.map(p => p.replace(/^[-•*]\s*/, '').trim());
 
         console.log(`✅ [Campaign Prompts] Generated ${prompts.length} prompts`);
 
