@@ -79,6 +79,11 @@
             border-right: none;
         }
 
+        .mode-toggle-mini button:not(:first-child):not(:last-child) {
+            border-radius: 0;
+            border-right: none;
+        }
+
         .mode-toggle-mini button:last-child {
             border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         }
@@ -128,13 +133,13 @@
         /* Compact upload grid */
         .upload-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 4px;
             padding: 6px;
             border: 2px dashed var(--gainsboro);
             border-radius: var(--radius-sm);
             background: var(--white);
-            width: 320px;
+            width: 340px;
         }
 
         .upload-grid.drag-over {
@@ -210,7 +215,7 @@
         .prompt-row {
             display: flex;
             gap: var(--space-xs);
-            align-items: stretch;
+            align-items: flex-start;
         }
 
         .prompt-input {
@@ -219,9 +224,10 @@
             font-size: var(--text-sm);
             border: 1px solid var(--gainsboro);
             border-radius: var(--radius-sm);
-            resize: none;
-            height: 36px;
+            resize: vertical;
+            min-height: 80px;
             font-family: inherit;
+            line-height: 1.4;
         }
 
         .prompt-input:focus {
@@ -413,8 +419,8 @@
             <div class="setting-item">
                 <label>Model:</label>
                 <div class="btn-group-compact" id="model-buttons">
-                    <button class="active" data-model="nano">Nano</button>
-                    <button data-model="nanopro">Nano Pro</button>
+                    <button data-model="nano">Nano</button>
+                    <button class="active" data-model="nanopro">Nano Pro</button>
                 </div>
             </div>
             <div class="setting-item">
@@ -423,15 +429,21 @@
                     <button data-value="9:16">9:16</button>
                     <button data-value="2:3">2:3</button>
                     <button class="active" data-value="3:4">3:4</button>
+                    <button data-value="4:5">4:5</button>
                     <button data-value="1:1">1:1</button>
+                    <button data-value="5:4">5:4</button>
                     <button data-value="4:3">4:3</button>
+                    <button data-value="3:2">3:2</button>
+                    <button data-value="16:9">16:9</button>
+                    <button data-value="21:9">21:9</button>
                 </div>
             </div>
-            <div class="setting-item" id="resolution-item" style="display: none;">
+            <div class="setting-item" id="resolution-item">
                 <label>Res:</label>
                 <div class="btn-group-compact" id="resolution-buttons">
                     <button class="active" data-value="1K">1K</button>
                     <button data-value="2K">2K</button>
+                    <button data-value="4K">4K</button>
                 </div>
             </div>
             <div class="setting-item">
@@ -441,6 +453,13 @@
                     <button data-value="2">2</button>
                     <button data-value="3">3</button>
                     <button data-value="4">4</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Inputs:</label>
+                <div class="btn-group-compact" id="inputs-buttons">
+                    <button class="active" data-value="6">6</button>
+                    <button data-value="24">24</button>
                 </div>
             </div>
         </div>
@@ -525,10 +544,11 @@
         let pasteTarget = null;  // { setIndex: number, type: 'primary'|'secondary', slotIndex: number }
         let state = {
             numSets: 1,
-            selectedModel: 'nano',
+            selectedModel: 'nanopro',
             aspectRatio: '3:4',
             resolution: '1K',
             seeds: 1,
+            inputs: 6,
             results: [],
             lightboxIndex: 0
         };
@@ -543,6 +563,7 @@
             aspectButtons: document.getElementById('aspect-buttons'),
             resolutionButtons: document.getElementById('resolution-buttons'),
             resolutionItem: document.getElementById('resolution-item'),
+            inputsButtons: document.getElementById('inputs-buttons'),
             generateBtn: document.getElementById('generate-btn'),
             costValue: document.getElementById('cost-value'),
             calcDisplay: document.getElementById('calc-display'),
@@ -561,8 +582,8 @@
         // Initialize a set
         function createSetData() {
             return {
-                primaryImages: new Array(5).fill(null),
-                secondaryImages: new Array(5).fill(null),
+                primaryImages: new Array(state.inputs).fill(null),
+                secondaryImages: new Array(state.inputs).fill(null),
                 mode: 'single',
                 prompt: ''
             };
@@ -603,11 +624,12 @@
                     </div>
                 </div>
                 <div class="prompt-row">
-                    <input type="text" class="prompt-input" data-set="${setIndex}" placeholder="Describe the transformation (or click Analyze)..." value="${set.prompt}">
+                    <textarea class="prompt-input" data-set="${setIndex}" placeholder="Describe the transformation...&#10;&#10;TIP: Multiple lines = multiple prompts (one per line)">${set.prompt}</textarea>
                     <button class="btn-analyze" data-set="${setIndex}">Analyze</button>
                     <div class="mode-toggle-mini" data-set="${setIndex}">
                         <button class="${set.mode === 'single' ? 'active' : ''}" data-mode="single">1:1</button>
                         <button class="${set.mode === 'batch' ? 'active' : ''}" data-mode="batch">Batch</button>
+                        <button class="${set.mode === 'group' ? 'active' : ''}" data-mode="group">Group</button>
                     </div>
                 </div>
             `;
@@ -616,7 +638,7 @@
             const primaryGrid = div.querySelector('.upload-grid[data-type="primary"]');
             const secondaryGrid = div.querySelector('.upload-grid[data-type="secondary"]');
 
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < state.inputs; i++) {
                 primaryGrid.appendChild(createUploadSlot(setIndex, i, 'primary'));
                 secondaryGrid.appendChild(createUploadSlot(setIndex, i, 'secondary'));
             }
@@ -775,7 +797,7 @@
                         !img && !reservations.some(r => r.index === idx)
                     );
                 }
-                if (index === -1 || index >= 5) return;
+                if (index === -1 || index >= state.inputs) return;
                 reservations.push({ file, index });
             });
 
@@ -951,6 +973,25 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             }
         });
 
+        // Inputs buttons
+        elements.inputsButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.inputsButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const newInputs = parseInt(e.target.dataset.value);
+                state.inputs = newInputs;
+                // Resize existing sets' image arrays
+                sets.forEach(set => {
+                    // Expand or shrink arrays while preserving existing images
+                    while (set.primaryImages.length < newInputs) set.primaryImages.push(null);
+                    while (set.secondaryImages.length < newInputs) set.secondaryImages.push(null);
+                    set.primaryImages.length = newInputs;
+                    set.secondaryImages.length = newInputs;
+                });
+                renderSets();
+            }
+        });
+
         // Update calculator
         function updateCalculator() {
             let totalImages = 0;
@@ -962,14 +1003,21 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
 
                 const numPrimary = set.primaryImages.filter(img => img && img.selected !== false).length;
                 const numSecondary = set.secondaryImages.filter(img => img && img.selected !== false).length;
-                const hasPrompt = set.prompt.trim().length > 0;
+                const promptText = set.prompt.trim();
+                const numPrompts = promptText.split('\n').map(p => p.trim()).filter(p => p.length > 0).length;
 
-                if (numPrimary > 0 && hasPrompt) {
+                if (numPrimary > 0 && numPrompts > 0) {
                     hasValidSet = true;
                     if (set.mode === 'single') {
-                        totalImages += numSecondary > 0 ? numPrimary * numSecondary : numPrimary;
-                    } else {
-                        totalImages += numPrimary;
+                        // 1:1 mode: each primary × each secondary × each prompt
+                        const baseImages = numSecondary > 0 ? numPrimary * numSecondary : numPrimary;
+                        totalImages += baseImages * numPrompts;
+                    } else if (set.mode === 'batch') {
+                        // Batch mode: each primary (with all secondaries) × each prompt
+                        totalImages += numPrimary * numPrompts;
+                    } else if (set.mode === 'group') {
+                        // Group mode: all primaries combined = 1 output per prompt
+                        totalImages += numPrompts;
                     }
                 }
             }
@@ -978,7 +1026,9 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             totalImages *= state.seeds;
 
             const model = REMIX_MODELS[state.selectedModel];
-            const cost = totalImages * model.costPerImage;
+            // 4K resolution doubles the cost
+            const costPerImage = state.resolution === '4K' ? model.costPerImage * 2 : model.costPerImage;
+            const cost = totalImages * costPerImage;
 
             const seedsText = state.seeds > 1 ? ` × ${state.seeds} seeds` : '';
             elements.calcDisplay.textContent = `${totalImages} images from ${state.numSets} set${state.numSets > 1 ? 's' : ''}${seedsText}`;
@@ -999,25 +1049,42 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
 
                 const primaryImgs = set.primaryImages.filter(img => img && img.selected !== false);
                 const secondaryImgs = set.secondaryImages.filter(img => img && img.selected !== false);
-                const prompt = set.prompt.trim();
+                const fullPrompt = set.prompt.trim();
 
-                if (primaryImgs.length === 0 || !prompt) continue;
+                if (primaryImgs.length === 0 || !fullPrompt) continue;
 
-                if (set.mode === 'single') {
-                    if (secondaryImgs.length > 0) {
-                        for (const primary of primaryImgs) {
-                            for (const secondary of secondaryImgs) {
-                                allTasks.push({ setIndex, primary, secondaries: [secondary], prompt });
+                // Split prompt by line breaks - each line is a separate request
+                const prompts = fullPrompt.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+
+                for (const prompt of prompts) {
+                    if (set.mode === 'single') {
+                        // 1:1 mode: each primary paired with each secondary
+                        if (secondaryImgs.length > 0) {
+                            for (const primary of primaryImgs) {
+                                for (const secondary of secondaryImgs) {
+                                    allTasks.push({ setIndex, primary, secondaries: [secondary], prompt });
+                                }
+                            }
+                        } else {
+                            for (const primary of primaryImgs) {
+                                allTasks.push({ setIndex, primary, secondaries: [], prompt });
                             }
                         }
-                    } else {
+                    } else if (set.mode === 'batch') {
+                        // Batch mode: each primary with all secondaries
                         for (const primary of primaryImgs) {
-                            allTasks.push({ setIndex, primary, secondaries: [], prompt });
+                            allTasks.push({ setIndex, primary, secondaries: secondaryImgs, prompt });
                         }
-                    }
-                } else {
-                    for (const primary of primaryImgs) {
-                        allTasks.push({ setIndex, primary, secondaries: secondaryImgs, prompt });
+                    } else if (set.mode === 'group') {
+                        // Group mode: all primaries combined into one request per prompt
+                        allTasks.push({
+                            setIndex,
+                            primary: primaryImgs[0],  // First image as "primary"
+                            additionalPrimaries: primaryImgs.slice(1),  // Rest as additional
+                            secondaries: secondaryImgs,
+                            prompt,
+                            isGroup: true
+                        });
                     }
                 }
             }
@@ -1042,17 +1109,31 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             elements.progressCount.textContent = `0 / ${total}`;
             elements.progressBar.style.width = '0%';
 
-            // Process all tasks in parallel
-            const promises = tasksWithSeeds.map(async (task) => {
-                try {
-                    // Upload images
-                    const primaryResult = await api.uploadBase64(task.primary.url);
-                    const imageUrls = [primaryResult.url];
+            console.log(`🚀 Starting ${total} tasks in parallel`);
 
-                    for (const sec of task.secondaries) {
-                        const secResult = await api.uploadBase64(sec.url);
-                        imageUrls.push(secResult.url);
+            // Process all tasks in parallel
+            const promises = tasksWithSeeds.map(async (task, taskIndex) => {
+                const taskId = taskIndex + 1;
+                const startTime = performance.now();
+
+                try {
+                    // Collect all images to upload
+                    const imagesToUpload = [task.primary];
+                    if (task.isGroup && task.additionalPrimaries) {
+                        imagesToUpload.push(...task.additionalPrimaries);
                     }
+                    imagesToUpload.push(...task.secondaries);
+
+                    console.log(`[${taskId}/${total}] Uploading ${imagesToUpload.length} images...`);
+                    const uploadStart = performance.now();
+
+                    // Upload all images in parallel
+                    const uploadResults = await Promise.all(
+                        imagesToUpload.map(img => api.uploadBase64(img.url))
+                    );
+                    const imageUrls = uploadResults.map(r => r.url);
+
+                    console.log(`[${taskId}/${total}] Uploads done (${((performance.now() - uploadStart) / 1000).toFixed(1)}s) → Generating (${state.aspectRatio}, ${state.resolution})...`);
 
                     // Build params
                     const params = {
@@ -1063,14 +1144,18 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                         output_format: 'png'
                     };
 
-                    if (state.selectedModel === 'nanopro' && state.resolution === '2K') {
-                        params.image_size = { width: 2048, height: 2048 };
+                    // Add resolution for nano-pro (supports 1K, 2K, 4K)
+                    if (state.selectedModel === 'nanopro') {
+                        params.resolution = state.resolution;
                     }
 
                     const model = REMIX_MODELS[state.selectedModel];
                     const data = await api.remixImage(model.endpoint, params);
 
+                    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
                     if (data.images && data.images.length > 0) {
+                        console.log(`[${taskId}/${total}] ✓ Done (${elapsed}s total)`);
                         state.results.push({
                             url: data.images[0].url,
                             prompt: task.prompt,
@@ -1081,7 +1166,7 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                         renderResults();
                     }
                 } catch (error) {
-                    console.error('Task failed:', error);
+                    console.error(`[${taskId}/${total}] ✗ Failed:`, error.message);
                 }
 
                 completed++;
@@ -1140,30 +1225,42 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
         elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
 
         document.getElementById('lightbox-prev').addEventListener('click', () => {
-            state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
-            updateLightboxContent();
+            if (state.lightboxIndex > 0) {
+                state.lightboxIndex--;
+                updateLightboxContent();
+            }
         });
 
         document.getElementById('lightbox-next').addEventListener('click', () => {
-            state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
-            updateLightboxContent();
+            if (state.lightboxIndex < state.results.length - 1) {
+                state.lightboxIndex++;
+                updateLightboxContent();
+            }
         });
 
         document.getElementById('lightbox-download').addEventListener('click', () => {
             const result = state.results[state.lightboxIndex];
-            downloadImage(result.url, `batch-remix-set${result.setIndex + 1}-${state.lightboxIndex + 1}.png`);
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const num = String(state.lightboxIndex + 1).padStart(2, '0');
+            const filename = `Setset_Remix_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
+            downloadFile(result.url, filename);
         });
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (!elements.lightbox.classList.contains('visible')) return;
             if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowLeft') {
-                state.lightboxIndex = (state.lightboxIndex - 1 + state.results.length) % state.results.length;
+            if (e.key === 'ArrowLeft' && state.lightboxIndex > 0) {
+                state.lightboxIndex--;
                 updateLightboxContent();
             }
-            if (e.key === 'ArrowRight') {
-                state.lightboxIndex = (state.lightboxIndex + 1) % state.results.length;
+            if (e.key === 'ArrowRight' && state.lightboxIndex < state.results.length - 1) {
+                state.lightboxIndex++;
                 updateLightboxContent();
             }
         });

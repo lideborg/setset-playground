@@ -1125,33 +1125,102 @@
             elements.analyzeBtn.disabled = true;
 
             try {
-                // Send images if available, otherwise just brand name
                 const imageUrls = brandImages.map(img => img.url);
+                const useStreaming = hasImages && brandImages.length > 1;
 
-                // Call brand analysis API
-                const response = await fetch('/api/analyze-brand', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        images: imageUrls.length > 0 ? imageUrls : null,
-                        brandName: state.brandName
-                    })
-                });
+                if (useStreaming) {
+                    // Use SSE for real-time progress updates
+                    const response = await fetch('/api/analyze-brand', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            images: imageUrls,
+                            brandName: state.brandName,
+                            stream: true
+                        })
+                    });
 
-                if (!response.ok) {
-                    throw new Error('Analysis failed');
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // Keep incomplete line in buffer
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+
+                                    if (data.type === 'progress') {
+                                        // Update progress display
+                                        if (data.phase === 'analyze') {
+                                            progressEl.textContent = `Analyzing image ${data.current}/${data.total}...`;
+                                        } else if (data.phase === 'synthesize') {
+                                            progressEl.textContent = `Synthesizing brand identity...`;
+                                        } else if (data.phase === 'complete') {
+                                            progressEl.textContent = `Analysis complete!`;
+                                        }
+                                    } else if (data.type === 'result') {
+                                        // Final result
+                                        state.brandAnalysis = data.fullAnalysis || data.analysis;
+                                        state.componentLibrary = data.componentLibrary || null; // Store component library
+                                        const displayText = data.summary || data.analysis;
+
+                                        stopStudioMessages();
+                                        elements.analysisBox.classList.remove('loading');
+                                        elements.analysisBox.textContent = displayText;
+                                        updateSteps();
+
+                                        // Log library stats if available
+                                        if (state.componentLibrary) {
+                                            console.log('📚 Component Library loaded:', {
+                                                environments: state.componentLibrary.environment?.specific_locations?.length || 0,
+                                                lighting: state.componentLibrary.lighting?.specific_styles?.length || 0,
+                                                atmosphere: state.componentLibrary.atmosphere?.vibe_phrases?.length || 0
+                                            });
+                                        }
+                                    } else if (data.type === 'error') {
+                                        throw new Error(data.error);
+                                    }
+                                } catch (e) {
+                                    if (e.message !== 'Unexpected end of JSON input') {
+                                        console.error('SSE parse error:', e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Standard request for single image or no images
+                    const response = await fetch('/api/analyze-brand', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            images: imageUrls.length > 0 ? imageUrls : null,
+                            brandName: state.brandName
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Analysis failed');
+                    }
+
+                    const data = await response.json();
+                    state.brandAnalysis = data.fullAnalysis || data.analysis;
+                    state.componentLibrary = data.componentLibrary || null;
+                    const displayText = data.summary || data.analysis;
+
+                    stopStudioMessages();
+                    elements.analysisBox.classList.remove('loading');
+                    elements.analysisBox.textContent = displayText;
+                    updateSteps();
                 }
-
-                const data = await response.json();
-                // Store full analysis for prompt generation, show summary to user
-                state.brandAnalysis = data.fullAnalysis || data.analysis;
-                const displayText = data.summary || data.analysis;
-
-                stopStudioMessages();
-                elements.analysisBox.classList.remove('loading');
-                elements.analysisBox.textContent = displayText;
-
-                updateSteps();
             } catch (error) {
                 console.error('Brand analysis error:', error);
                 stopStudioMessages();
@@ -1351,13 +1420,14 @@ Rules:
                         }
                     }
 
-                    // For groups, always treat as model (multiple people)
+                    // For groups: track numPeople (for models) or numProducts (for products)
                     const numPeople = imageType === 'model' ? numImages : 0;
+                    const numProducts = imageType === 'product' ? numImages : 0;
 
                     analyzedCount++;
                     document.getElementById('genLoaderProgress').textContent = `Analyzed ${analyzedCount}/${totalUnits} images...`;
-                    console.log(`   ✓ ${unit.label} analyzed (${imageType})`);
-                    return { unit, index: i, description, numPeople, imageType };
+                    console.log(`   ✓ ${unit.label} analyzed (${imageType}, ${numImages} items)`);
+                    return { unit, index: i, description, numPeople, numProducts, imageType };
                 }));
 
                 console.log(`   ⏱ Analysis complete: ${((performance.now() - phaseStart) / 1000).toFixed(1)}s`);
@@ -1370,7 +1440,7 @@ Rules:
                 const promptResults = [];
                 const allGeneratedPrompts = [];  // Track all prompts to avoid repetition
 
-                for (const { unit, index, description, numPeople, imageType } of unitAnalyses) {
+                for (const { unit, index, description, numPeople, numProducts, imageType } of unitAnalyses) {
                     const response = await fetch('/api/campaign-prompts', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1381,8 +1451,10 @@ Rules:
                             numPrompts: state.outputsPerImage,
                             imageIndex: index,
                             numPeople: numPeople,
+                            numProducts: numProducts,  // For grouped product shots
                             imageType: imageType,  // 'model' or 'product'
-                            previousPrompts: allGeneratedPrompts
+                            previousPrompts: allGeneratedPrompts,
+                            componentLibrary: state.componentLibrary  // Pass component library for mixing
                         })
                     });
 
