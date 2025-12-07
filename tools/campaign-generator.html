@@ -537,6 +537,7 @@
                     <input type="text" class="brand-input" id="brandName" placeholder="e.g., Rapha, Arc'teryx, Patagonia...">
                 </div>
                 <button class="btn btn--primary" id="analyzeBtn" disabled>Analyze Brand</button>
+                <button class="btn" id="analyzeImagesBtn" disabled>Analyze Images Only</button>
             </div>
 
             <div class="analysis-section" id="analysisSection">
@@ -725,6 +726,7 @@
             ecomImages: new Array(10).fill(null),
             brandName: '',
             brandAnalysis: '',
+            imagesOnlyMode: false,  // True when using "Analyze Images Only" - stricter visual replication
             outputsPerImage: 2,  // Default to 2 outputs
             aspectRatio: '3:4',
             resolution: '1K',
@@ -755,6 +757,7 @@
             brandInput: document.getElementById('brandInput'),
             brandName: document.getElementById('brandName'),
             analyzeBtn: document.getElementById('analyzeBtn'),
+            analyzeImagesBtn: document.getElementById('analyzeImagesBtn'),
             analysisSection: document.getElementById('analysisSection'),
             analysisBox: document.getElementById('analysisBox'),
             feedbackInput: document.getElementById('feedbackInput'),
@@ -814,6 +817,7 @@
 
             // Analyze button
             elements.analyzeBtn.addEventListener('click', analyzeBrand);
+            elements.analyzeImagesBtn.addEventListener('click', analyzeImagesOnly);
 
             // Refine button
             elements.refineBtn.addEventListener('click', refineBrand);
@@ -1049,20 +1053,24 @@
 
         function updateAnalyzeButton() {
             const hasBrandName = state.brandName.trim().length > 0;
-            // Only need brand name - images are optional (GPT will use its knowledge)
+            const hasImages = state.brandImages.length > 0;
+            // Analyze Brand needs brand name - images are optional
             elements.analyzeBtn.disabled = !hasBrandName;
+            // Analyze Images Only just needs images
+            elements.analyzeImagesBtn.disabled = !hasImages;
         }
 
         function updateSteps() {
             // Check for active ecom images (not 'off')
             const hasActiveEcomImages = state.ecomImages.some(img => img && img.url && img.group !== 'off');
+            const hasAnalysis = state.brandAnalysis && state.brandAnalysis.trim().length > 0;
 
             // Step 2 always enabled - user can upload product images anytime
             elements.step2.classList.remove('disabled');
 
-            // Step 3 enabled when we have active ecom images (brand analysis is optional)
-            elements.step3.classList.toggle('disabled', !hasActiveEcomImages);
-            elements.generateBtn.disabled = !hasActiveEcomImages;
+            // Step 3 enabled when we have active ecom images AND analysis is done
+            elements.step3.classList.toggle('disabled', !hasActiveEcomImages || !hasAnalysis);
+            elements.generateBtn.disabled = !hasActiveEcomImages || !hasAnalysis;
         }
 
         function updateCalculator() {
@@ -1169,6 +1177,7 @@
                                     } else if (data.type === 'result') {
                                         // Final result
                                         state.brandAnalysis = data.fullAnalysis || data.analysis;
+                                        state.imagesOnlyMode = false;  // Brand analysis uses creative prompts
                                         state.componentLibrary = data.componentLibrary || null; // Store component library
                                         const displayText = data.summary || data.analysis;
 
@@ -1213,6 +1222,7 @@
 
                     const data = await response.json();
                     state.brandAnalysis = data.fullAnalysis || data.analysis;
+                    state.imagesOnlyMode = false;  // Brand analysis uses creative prompts
                     state.componentLibrary = data.componentLibrary || null;
                     const displayText = data.summary || data.analysis;
 
@@ -1229,6 +1239,52 @@
             }
 
             elements.analyzeBtn.disabled = false;
+            updateAnalyzeButton();
+        }
+
+        async function analyzeImagesOnly() {
+            const brandImages = state.brandImages.filter(img => img && img.url && img.selected !== false);
+            if (brandImages.length === 0) return;
+
+            elements.analysisSection.style.display = 'block';
+            elements.analysisBox.classList.add('loading');
+            elements.analysisBox.innerHTML = `
+                <div class="analysis-loader">
+                    <div class="analysis-spinner"></div>
+                    <div class="analysis-loader-text" id="analysisLoaderText">Analyzing ${brandImages.length} image${brandImages.length > 1 ? 's' : ''} for visual inspiration...</div>
+                </div>
+            `;
+
+            elements.analyzeImagesBtn.disabled = true;
+
+            try {
+                const imageUrls = brandImages.map(img => img.url);
+
+                // Simple visual-only analysis
+                const response = await fetch('/api/analyze-images-inspiration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrls })
+                });
+
+                if (!response.ok) throw new Error('Analysis failed');
+                const data = await response.json();
+
+                state.brandAnalysis = data.analysis;
+                state.brandName = 'Visual Inspiration'; // Set a placeholder name
+                state.imagesOnlyMode = true;  // Enable strict visual replication mode
+                elements.brandName.value = 'Visual Inspiration';
+
+                elements.analysisBox.classList.remove('loading');
+                elements.analysisBox.textContent = data.analysis;
+                updateSteps();
+            } catch (error) {
+                console.error('Image analysis error:', error);
+                elements.analysisBox.classList.remove('loading');
+                elements.analysisBox.textContent = 'Error analyzing images. Please try again.';
+            }
+
+            elements.analyzeImagesBtn.disabled = false;
             updateAnalyzeButton();
         }
 
@@ -1454,7 +1510,8 @@ Rules:
                             numProducts: numProducts,  // For grouped product shots
                             imageType: imageType,  // 'model' or 'product'
                             previousPrompts: allGeneratedPrompts,
-                            componentLibrary: state.componentLibrary  // Pass component library for mixing
+                            componentLibrary: state.componentLibrary,  // Pass component library for mixing
+                            imagesOnlyMode: state.imagesOnlyMode  // Strict visual replication mode
                         })
                     });
 

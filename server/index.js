@@ -79,6 +79,9 @@ app.post('/api/generate', async (req, res) => {
         const { model, ...params } = req.body;
         const endpoint = MODEL_ENDPOINTS[model];
 
+        console.log(`📤 [Generate] Model: ${model}`);
+        console.log(`📤 [Generate] Params:`, JSON.stringify(params, null, 2));
+
         if (!endpoint) {
             return res.status(400).json({ error: `Unknown model: ${model}` });
         }
@@ -745,13 +748,79 @@ The goal is to create NEW campaign images that FEEL like ${brandName}, not recre
 });
 
 /**
+ * POST /api/analyze-images-inspiration
+ * Simple visual-only analysis - extracts inspiration from images without brand context
+ */
+app.post('/api/analyze-images-inspiration', async (req, res) => {
+    try {
+        const { imageUrls } = req.body;
+
+        if (!imageUrls || imageUrls.length === 0) {
+            return res.status(400).json({ error: 'Images are required' });
+        }
+
+        console.log(`🎨 [Image Inspiration] Analyzing ${imageUrls.length} images for visual inspiration`);
+
+        // Build content array with images
+        const content = [
+            {
+                type: 'text',
+                text: `Describe these images in detail so they can be recreated.
+
+Write a 2-3 sentence description covering:
+- The exact background (what type of wall? texture? color? any visible floor/rug?)
+- The lighting (direction, quality, shadows, warmth)
+- The overall mood and atmosphere
+
+Be specific. For example: "Model stands in front of a warm beige stucco wall with rough, sandy texture. A woven jute rug is visible on the wooden floor. Soft golden hour sunlight streams from the left, casting long gentle shadows and creating a relaxed, earthy Mediterranean mood."
+
+Just write the description, nothing else.`
+            },
+            ...imageUrls.map(url => ({
+                type: 'image_url',
+                image_url: { url }
+            }))
+        ];
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [{ role: 'user', content }],
+                max_tokens: 2000,
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            console.error('❌ [Image Inspiration] API Error:', data);
+            return res.status(response.status).json({ error: data.error?.message || 'Analysis failed' });
+        }
+
+        const analysis = data.choices[0].message.content;
+        console.log(`✅ [Image Inspiration] Analysis complete`);
+
+        res.json({ analysis });
+
+    } catch (error) {
+        console.error('❌ [Image Inspiration] Error:', error);
+        res.status(500).json({ error: 'Failed to analyze images' });
+    }
+});
+
+/**
  * POST /api/campaign-prompts
  * COMPONENT LIBRARY MIXER - generates variety by mixing components
  * Handles both MODEL shots (people) and PRODUCT shots (flat lays)
  */
 app.post('/api/campaign-prompts', async (req, res) => {
     try {
-        const { brandAnalysis, brandName, ecomDescription, numPrompts = 3, imageIndex = 0, numPeople = 1, imageType = 'model', previousPrompts = [], numProducts = 1, componentLibrary } = req.body;
+        const { brandAnalysis, brandName, ecomDescription, numPrompts = 3, imageIndex = 0, numPeople = 1, imageType = 'model', previousPrompts = [], numProducts = 1, componentLibrary, imagesOnlyMode = false } = req.body;
 
         console.log(`📝 [Campaign Prompts] Generating ${numPrompts} prompts for ${brandName} (unit ${imageIndex + 1}, type: ${imageType})`);
 
@@ -880,21 +949,55 @@ Return ONLY the prompts, one per line, no numbering.`;
 
         } else {
             // ═══════════════════════════════════════════════════════════════
-            // FALLBACK - Old approach for backward compatibility
+            // FALLBACK - Different approaches for brand vs images-only mode
             // ═══════════════════════════════════════════════════════════════
 
-            console.log(`   ⚠ No component library, using fallback approach`);
+            console.log(`   ⚠ No component library, using fallback approach (imagesOnlyMode: ${imagesOnlyMode})`);
 
             const avoidRepetitionContext = previousPrompts.length > 0
                 ? `\n\nDO NOT REPEAT: ${previousPrompts.map(p => p.substring(0, 80)).join('; ')}`
                 : '';
 
-            if (imageType === 'product') {
-                systemPrompt = `Create ${numPrompts} COMPLETELY DIFFERENT product photography prompts. Each must use different: surface, lighting, props, mood. ${groupedContext}`;
-                userPrompt = `PRODUCT: ${ecomDescription}\nBRAND STYLE: ${brandAnalysis}\n${avoidRepetitionContext}\n\nGenerate ${numPrompts} varied prompts, one per line.`;
+            if (imagesOnlyMode) {
+                // ═══════════════════════════════════════════════════════════════
+                // IMAGES ONLY MODE - Scene replication with mood
+                // ═══════════════════════════════════════════════════════════════
+                const peopleText = numPeople > 1 ? `${numPeople} models together` : 'Model';
+
+                if (imageType === 'product') {
+                    systemPrompt = `Create product photo prompts that match a specific scene.`;
+                    userPrompt = `Scene to replicate: ${brandAnalysis}
+
+Product: ${ecomDescription}
+
+Write ${numPrompts} prompts placing this product in that exact scene with the same mood and lighting.
+One prompt per line, no numbering.`;
+                } else {
+                    systemPrompt = `Create fashion photo prompts. Combine the subject with the scene description naturally.`;
+                    userPrompt = `Scene to replicate:
+${brandAnalysis}
+
+Subject: ${ecomDescription}
+Number of people in shot: ${numPeople}
+
+Write ${numPrompts} prompts that place ${peopleText} in this exact scene.
+Include: the outfit description, the background/wall details, the lighting, and the mood.
+${numPeople > 1 ? `IMPORTANT: The image must show ${numPeople} people together in the same shot.` : ''}
+${avoidRepetitionContext}
+
+One prompt per line, no numbering. Each prompt should be 2-3 sentences.`;
+                }
             } else {
-                systemPrompt = `Create ${numPrompts} COMPLETELY DIFFERENT campaign photography prompts. Each must use different: location, lighting, time of day, mood.`;
-                userPrompt = `SUBJECT: ${ecomDescription}\nBRAND STYLE: ${brandAnalysis}\n${avoidRepetitionContext}\n\nGenerate ${numPrompts} varied prompts, one per line.`;
+                // ═══════════════════════════════════════════════════════════════
+                // BRAND MODE - Creative variety within brand aesthetic
+                // ═══════════════════════════════════════════════════════════════
+                if (imageType === 'product') {
+                    systemPrompt = `Create ${numPrompts} COMPLETELY DIFFERENT product photography prompts. Each must use different: surface, lighting, props, mood. ${groupedContext}`;
+                    userPrompt = `PRODUCT: ${ecomDescription}\nBRAND STYLE: ${brandAnalysis}\n${avoidRepetitionContext}\n\nGenerate ${numPrompts} varied prompts, one per line.`;
+                } else {
+                    systemPrompt = `Create ${numPrompts} COMPLETELY DIFFERENT campaign photography prompts. Each must use different: location, lighting, time of day, mood.`;
+                    userPrompt = `SUBJECT: ${ecomDescription}\nBRAND STYLE: ${brandAnalysis}\n${avoidRepetitionContext}\n\nGenerate ${numPrompts} varied prompts, one per line.`;
+                }
             }
         }
 

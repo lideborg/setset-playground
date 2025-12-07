@@ -598,12 +598,23 @@
             }
         }
 
+        function buildFilename(index) {
+            const now = new Date();
+            const YY = String(now.getFullYear()).slice(-2);
+            const MM = String(now.getMonth() + 1).padStart(2, '0');
+            const DD = String(now.getDate()).padStart(2, '0');
+            const HH = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const num = String(index + 1).padStart(2, '0');
+            return `Setset_Generate_${YY}${MM}${DD}_${HH}${mm}_${num}.png`;
+        }
+
         function updateLightboxContent() {
             const result = state.results[state.lightboxIndex];
             elements.lightboxImage.src = result.url;
             elements.lightboxModel.textContent = result.modelName || 'Unknown';
             elements.lightboxPrompt.textContent = result.prompt;
-            elements.lightboxDownload.onclick = () => downloadFile(result.url, `generate-${state.lightboxIndex + 1}.png`);
+            elements.lightboxDownload.onclick = () => downloadFile(result.url, buildFilename(state.lightboxIndex));
         }
 
         // Initialize
