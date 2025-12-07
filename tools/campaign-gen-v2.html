@@ -50,11 +50,17 @@
             color: var(--white);
         }
 
-        /* Talent Grid */
+        /* Talent Grid - 12 columns, responsive */
         .talent-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
             gap: var(--space-xs);
+        }
+
+        @media (min-width: 800px) {
+            .talent-grid {
+                grid-template-columns: repeat(12, 1fr);
+            }
         }
 
         .talent-card {
@@ -102,28 +108,24 @@
             cursor: not-allowed;
         }
 
-        .talent-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 4px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
-            color: var(--white);
-            font-size: var(--text-2xs);
-            text-align: center;
-        }
+        /* Talent names removed per user request */
 
-        /* Mood Board Grid */
+        /* Mood Board Grid - 12 columns, responsive */
         .moodboard-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
             gap: var(--space-xs);
+        }
+
+        @media (min-width: 800px) {
+            .moodboard-grid {
+                grid-template-columns: repeat(12, 1fr);
+            }
         }
 
         .upload-slot {
             aspect-ratio: 3/4;
-            border: 2px dashed var(--gainsboro);
+            border: 1px dashed var(--gainsboro);
             border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
@@ -136,12 +138,12 @@
         }
 
         .upload-slot:hover {
-            border-color: var(--jet);
+            border-color: var(--ash-grey);
         }
 
         .upload-slot.filled {
             border-style: solid;
-            border-color: var(--jet);
+            border-color: transparent;
         }
 
         .upload-slot.filled img {
@@ -151,8 +153,9 @@
         }
 
         .upload-slot .plus {
-            font-size: 24px;
-            color: var(--gainsboro);
+            font-size: 18px;
+            font-weight: 300;
+            color: var(--ash-grey);
         }
 
         .upload-slot .remove-btn {
@@ -184,23 +187,187 @@
             filter: grayscale(100%);
         }
 
-        /* Product Grid */
+        /* Product Grid - 12 columns, responsive */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
             gap: var(--space-xs);
         }
 
-        /* Output Grid */
+        @media (min-width: 800px) {
+            .product-grid {
+                grid-template-columns: repeat(12, 1fr);
+            }
+        }
+
+        /* Output Grid - 12 columns, responsive */
         .output-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
             gap: var(--space-xs);
+        }
+
+        @media (min-width: 900px) {
+            .output-grid {
+                grid-template-columns: repeat(12, 1fr);
+            }
+        }
+
+        /* Output tabs */
+        .output-tabs {
+            display: flex;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-sm);
+        }
+
+        .output-tab {
+            padding: 6px 16px;
+            font-size: var(--text-xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--off-white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .output-tab:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .output-tab.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Aspect ratio buttons */
+        .aspect-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .aspect-btn {
+            padding: 6px 12px;
+            font-size: var(--text-xs);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--off-white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .aspect-btn:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .aspect-btn.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Product count slider in product mode */
+        .product-count-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .product-count-row label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .product-count-row input[type="range"] {
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .product-count-row .count-value {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            min-width: 20px;
+        }
+
+        /* Drag hover state */
+        .moodboard-grid.drag-over,
+        .product-grid.drag-over {
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: var(--radius-md);
+        }
+
+        .moodboard-grid.drag-over .upload-slot:not(.filled),
+        .product-grid.drag-over .upload-slot:not(.filled) {
+            border-color: var(--jet);
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Inline loader with studio messages */
+        .inline-loader {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .inline-loader.visible {
+            display: flex;
+        }
+
+        .loader-message {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            background: linear-gradient(90deg,
+                rgba(0, 47, 167, 0.4) 0%,
+                rgba(0, 47, 167, 1) 50%,
+                rgba(0, 47, 167, 0.4) 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: sweep 2s ease-in-out infinite;
+        }
+
+        .loader-message.fade-out {
+            animation: fade-out 0.25s ease-out forwards;
+        }
+
+        .loader-message.fade-in {
+            animation: fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
+        }
+
+        @keyframes sweep {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-top: var(--space-xs);
         }
 
         .output-slot {
             aspect-ratio: 3/4;
-            border: 2px solid var(--gainsboro);
+            border: 1px solid var(--gainsboro);
             border-radius: var(--radius-sm);
             display: flex;
             flex-direction: column;
@@ -218,7 +385,7 @@
         }
 
         .output-slot.active {
-            border-color: var(--jet);
+            border-color: var(--ash-grey);
             background: var(--white);
         }
 
@@ -275,6 +442,12 @@
             text-align: center;
         }
 
+        .output-count-display {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--carbon);
+        }
+
         /* Actions */
         .actions-row {
             display: flex;
@@ -285,6 +458,27 @@
             border: 1px solid var(--gainsboro);
             border-radius: var(--radius-md);
             margin-bottom: var(--space-md);
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .setting-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            font-weight: 500;
         }
 
         .calc-display {
@@ -297,10 +491,28 @@
             gap: var(--space-sm);
         }
 
+        .action-btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            min-width: 180px;
+            text-align: center;
+        }
+
         .btn-cost {
             opacity: 0.7;
             margin-left: 6px;
             font-weight: 400;
+        }
+
+        .btn.analyzed {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: var(--white);
+        }
+
+        .btn.analyzed:hover {
+            background: #16a34a;
+            border-color: #16a34a;
         }
 
         /* Analysis Box */
@@ -320,9 +532,87 @@
             display: block;
         }
 
-        /* Results Grid */
+        /* Results section - full width */
+        .results-section {
+            margin-left: calc(-50vw + 50%);
+            margin-right: calc(-50vw + 50%);
+            padding-left: var(--space-lg);
+            padding-right: var(--space-lg);
+            max-width: 100vw;
+        }
+
+        /* Results Grid - 3 columns, full width */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--space-md);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 900px) {
+            .results-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         .result-image {
             aspect-ratio: 3/4;
+        }
+
+        .result-card {
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: transform var(--transition-fast);
+        }
+
+        .result-card:hover {
+            transform: scale(1.02);
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Output slot with slider underneath */
+        .output-slot-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 0 2px 8px;
+        }
+
+        .output-slider {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gainsboro);
+            border-radius: 2px;
+            outline: none;
+            margin-top: 2px;
+        }
+
+        .output-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .output-slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
         }
 
         input[type="file"] {
@@ -354,6 +644,7 @@
             <div class="section-header">
                 <span class="section-title">2. Mood Board</span>
                 <span class="section-badge required">Required</span>
+                <button class="btn btn--sm" id="clear-moodboard" style="margin-left: auto; font-size: 11px; padding: 4px 10px;">Clear All</button>
             </div>
             <div class="moodboard-grid" id="moodboard-grid"></div>
             <input type="file" id="moodboard-input" accept="image/*" multiple>
@@ -375,25 +666,42 @@
                 <span class="section-title">4. Output Configuration</span>
                 <span class="section-badge required">Required</span>
             </div>
-            <p style="font-size: var(--text-xs); color: var(--ash-grey); margin-bottom: var(--space-sm);">
-                Click to cycle: None → E-commerce → Close-up → Campaign. Use +/- to set number of subjects (0-4).
+            <div class="output-tabs">
+                <button class="output-tab active" data-mode="people">People</button>
+                <button class="output-tab" data-mode="product">Product</button>
+            </div>
+            <p id="output-hint" style="font-size: var(--text-xs); color: var(--ash-grey); margin-bottom: var(--space-sm);">
+                Click to cycle type. Drag slider to set people count (0-4).
             </p>
             <div class="output-grid" id="output-grid"></div>
         </div>
 
-        <!-- Actions -->
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Settings & Actions -->
         <div class="actions-row">
-            <div class="calc-display" id="calc-display">0 images to generate</div>
+            <div class="settings-row">
+                <div class="setting-group">
+                    <div class="aspect-buttons" id="aspect-buttons">
+                        <button class="aspect-btn active" data-ratio="3:4">3:4</button>
+                        <button class="aspect-btn" data-ratio="4:3">4:3</button>
+                        <button class="aspect-btn" data-ratio="1:1">1:1</button>
+                        <button class="aspect-btn" data-ratio="9:16">9:16</button>
+                        <button class="aspect-btn" data-ratio="16:9">16:9</button>
+                    </div>
+                </div>
+            </div>
             <div class="action-buttons">
-                <button class="btn" id="analyze-btn" disabled>Analyze Mood Board</button>
-                <button class="btn btn--primary" id="generate-btn" disabled>
-                    Generate <span class="btn-cost" id="cost-value">$0.00</span>
+                <button class="btn action-btn" id="analyze-btn" disabled>Analyze Mood Board</button>
+                <button class="btn btn--primary action-btn" id="generate-btn" disabled>
+                    <span id="generate-btn-text">Generate 0 images</span>
                 </button>
             </div>
         </div>
-
-        <!-- Analysis Result -->
-        <div class="analysis-box" id="analysis-box"></div>
 
         <!-- Progress -->
         <div class="progress-section" id="progress-section">
@@ -436,11 +744,6 @@
         </div>
     </div>
 
-    <!-- Loading -->
-    <div class="loading-overlay" id="loading">
-        <div class="spinner"></div>
-        <p class="loading-text" id="loading-text">Analyzing...</p>
-    </div>
 
     <!-- Shared JS -->
     <script src="/shared/js/utils.js"></script>
@@ -475,8 +778,9 @@
             { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' }
         ];
 
-        // Output types cycle
-        const OUTPUT_TYPES = ['none', 'ecom', 'closeup', 'campaign'];
+        // Output types cycle - different for people vs product mode
+        const OUTPUT_TYPES_PEOPLE = ['none', 'ecom', 'closeup', 'campaign'];
+        const OUTPUT_TYPES_PRODUCT = ['none', 'ecom', 'campaign']; // No close-up for product
         const OUTPUT_LABELS = {
             none: 'None',
             ecom: 'E-Commerce',
@@ -493,10 +797,13 @@
         // State
         const state = {
             selectedTalent: [],       // Array of talent IDs
-            moodboardImages: new Array(18).fill(null),
-            productImages: new Array(6).fill(null),
-            outputs: new Array(12).fill(null).map(() => ({ type: 'none', count: 1 })),
-            analysis: null,
+            moodboardImages: new Array(24).fill(null),  // 12x2 grid
+            productImages: new Array(12).fill(null),    // 12x1 grid
+            outputs: new Array(12).fill(null).map(() => ({ type: 'none', count: 1, productCount: 1 })),
+            outputMode: 'people',     // 'people' or 'product'
+            aspectRatio: '3:4',
+            analysis: null,           // Moodboard + talent analysis
+            productAnalysis: null,    // Product descriptions (what the products are)
             results: [],
             lightboxIndex: 0
         };
@@ -507,14 +814,18 @@
             talentCount: document.getElementById('talent-count'),
             moodboardGrid: document.getElementById('moodboard-grid'),
             moodboardInput: document.getElementById('moodboard-input'),
+            clearMoodboard: document.getElementById('clear-moodboard'),
             productGrid: document.getElementById('product-grid'),
             productInput: document.getElementById('product-input'),
             outputGrid: document.getElementById('output-grid'),
+            outputHint: document.getElementById('output-hint'),
+            aspectButtons: document.getElementById('aspect-buttons'),
             analyzeBtn: document.getElementById('analyze-btn'),
             generateBtn: document.getElementById('generate-btn'),
-            calcDisplay: document.getElementById('calc-display'),
-            costValue: document.getElementById('cost-value'),
-            analysisBox: document.getElementById('analysis-box'),
+            generateBtnText: document.getElementById('generate-btn-text'),
+            inlineLoader: document.getElementById('inline-loader'),
+            loaderMessage: document.getElementById('loader-message'),
+            loaderProgress: document.getElementById('loader-progress'),
             progressSection: document.getElementById('progress-section'),
             progressCount: document.getElementById('progress-count'),
             progressBar: document.getElementById('progress-bar'),
@@ -523,10 +834,34 @@
             lightbox: document.getElementById('lightbox'),
             lightboxImage: document.getElementById('lightbox-image'),
             lightboxType: document.getElementById('lightbox-type'),
-            lightboxPrompt: document.getElementById('lightbox-prompt'),
-            loading: document.getElementById('loading'),
-            loadingText: document.getElementById('loading-text')
+            lightboxPrompt: document.getElementById('lightbox-prompt')
         };
+
+        // Studio messages for the loader (like old campaign gen)
+        const STUDIO_MESSAGES = [
+            "Setting up the Studio...",
+            "Adjusting the Key Light...",
+            "Loading the Film...",
+            "Warming up the Strobes...",
+            "Preparing the Backdrop...",
+            "Adjusting the Fill Light...",
+            "Checking the Framing...",
+            "Setting the Aperture...",
+            "Loading Color Profiles...",
+            "Positioning the C-Stand...",
+            "Focusing...",
+            "Checking Tethering...",
+            "Rolling...",
+            "Adjusting the Umbrella...",
+            "Metering...",
+            "Standby...",
+            "Loading the Presets...",
+            "Quiet on Set...",
+            "Final Touches...",
+            "Almost There..."
+        ];
+        let loadingInterval = null;
+        let lastMessageIndex = -1;
 
         // Initialize
         function init() {
@@ -545,9 +880,8 @@
                 const isDisabled = !isSelected && state.selectedTalent.length >= 4;
                 return `
                     <div class="talent-card ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}"
-                         data-id="${talent.id}">
+                         data-id="${talent.id}" title="${talent.name}">
                         <img src="${talent.image}" alt="${talent.name}">
-                        <div class="talent-name">${talent.name}</div>
                     </div>
                 `;
             }).join('');
@@ -614,19 +948,30 @@
 
         // Render Output Grid
         function renderOutputGrid() {
+            const isPeopleMode = state.outputMode === 'people';
+            const outputTypes = isPeopleMode ? OUTPUT_TYPES_PEOPLE : OUTPUT_TYPES_PRODUCT;
+            const maxProducts = state.productImages.filter(img => img && img.selected !== false).length;
+
+            // Update hint text based on mode
+            if (isPeopleMode) {
+                elements.outputHint.textContent = 'Click to cycle: None → E-commerce → Close-up → Campaign. Use slider to set number of people (0-4).';
+            } else {
+                elements.outputHint.textContent = 'Click to cycle: None → E-commerce → Campaign. Use slider to set number of products per shot.';
+            }
+
             elements.outputGrid.innerHTML = state.outputs.map((output, i) => {
                 const isActive = output.type !== 'none';
-                const countLabel = output.count === 0 ? 'No people' : `${output.count} ${output.count === 1 ? 'person' : 'people'}`;
+                const sliderValue = isPeopleMode ? output.count : output.productCount;
+                const sliderMax = isPeopleMode ? 4 : Math.max(1, maxProducts);
                 return `
-                    <div class="output-slot ${isActive ? 'active' : ''}" data-index="${i}">
-                        <div class="output-icon">${OUTPUT_ICONS[output.type]}</div>
-                        <div class="output-type ${output.type}">${OUTPUT_LABELS[output.type]}</div>
+                    <div class="output-slot-wrapper">
+                        <div class="output-slot ${isActive ? 'active' : ''}" data-index="${i}">
+                            <div class="output-icon">${OUTPUT_ICONS[output.type]}</div>
+                            <div class="output-type ${output.type}">${OUTPUT_LABELS[output.type]}</div>
+                            ${isActive ? `<div class="output-count-display">${sliderValue}</div>` : ''}
+                        </div>
                         ${isActive ? `
-                            <div class="output-count">
-                                <button data-action="dec">−</button>
-                                <span title="${countLabel}">${output.count}</span>
-                                <button data-action="inc">+</button>
-                            </div>
+                            <input type="range" class="output-slider" data-index="${i}" min="${isPeopleMode ? 0 : 1}" max="${sliderMax}" value="${sliderValue}">
                         ` : ''}
                     </div>
                 `;
@@ -636,30 +981,33 @@
                 const index = parseInt(slot.dataset.index);
 
                 // Click to cycle type
-                slot.addEventListener('click', (e) => {
-                    if (e.target.closest('button')) return;
+                slot.addEventListener('click', () => {
                     const currentType = state.outputs[index].type;
-                    const currentIdx = OUTPUT_TYPES.indexOf(currentType);
-                    const nextIdx = (currentIdx + 1) % OUTPUT_TYPES.length;
-                    state.outputs[index].type = OUTPUT_TYPES[nextIdx];
+                    const currentIdx = outputTypes.indexOf(currentType);
+                    const nextIdx = (currentIdx + 1) % outputTypes.length;
+                    state.outputs[index].type = outputTypes[nextIdx];
                     renderOutputGrid();
                     updateUI();
                 });
+            });
 
-                // +/- buttons for count
-                slot.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const action = btn.dataset.action;
-                        if (action === 'inc' && state.outputs[index].count < 4) {
-                            state.outputs[index].count++;
-                        } else if (action === 'dec' && state.outputs[index].count > 0) {
-                            state.outputs[index].count--;
-                        }
-                        renderOutputGrid();
-                        updateUI();
-                    });
+            // Slider events for count (works for both people and product modes)
+            elements.outputGrid.querySelectorAll('.output-slider').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(slider.dataset.index);
+                    if (isPeopleMode) {
+                        state.outputs[index].count = parseInt(slider.value);
+                    } else {
+                        state.outputs[index].productCount = parseInt(slider.value);
+                    }
+                    // Update display without full re-render
+                    const wrapper = slider.closest('.output-slot-wrapper');
+                    const display = wrapper.querySelector('.output-count-display');
+                    if (display) display.textContent = slider.value;
+                    updateUI();
                 });
+                slider.addEventListener('click', (e) => e.stopPropagation());
             });
         }
 
@@ -667,13 +1015,19 @@
         function setupGridListeners(grid, type) {
             const images = type === 'moodboard' ? state.moodboardImages : state.productImages;
             const input = type === 'moodboard' ? elements.moodboardInput : elements.productInput;
+            const maxSlots = type === 'moodboard' ? 24 : 12;
 
             grid.querySelectorAll('.upload-slot').forEach(slot => {
                 const index = parseInt(slot.dataset.index);
 
                 slot.addEventListener('click', (e) => {
                     if (e.target.dataset.action === 'remove') {
+                        // Remove image and collapse/shift remaining images to the left
                         images[index] = null;
+                        const filled = images.filter(img => img);
+                        for (let i = 0; i < maxSlots; i++) {
+                            images[i] = filled[i] || null;
+                        }
                         if (type === 'moodboard') renderMoodboardGrid();
                         else renderProductGrid();
                         updateUI();
@@ -718,6 +1072,76 @@
                 e.target.value = '';
             });
 
+            // Clear all moodboard button
+            elements.clearMoodboard.addEventListener('click', () => {
+                state.moodboardImages = new Array(24).fill(null);
+                state.analysis = null;
+                state.productAnalysis = null;
+                elements.analyzeBtn.textContent = 'Analyze Mood Board';
+                elements.analyzeBtn.classList.remove('analyzed');
+                renderMoodboardGrid();
+                updateUI();
+            });
+
+            // Output mode tabs
+            document.querySelectorAll('.output-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const newMode = tab.dataset.mode;
+                    if (newMode === state.outputMode) return;
+
+                    state.outputMode = newMode;
+                    // Reset any closeup outputs when switching to product mode
+                    if (newMode === 'product') {
+                        state.outputs.forEach(output => {
+                            if (output.type === 'closeup') output.type = 'none';
+                            output.count = 0; // Product mode has no people
+                        });
+                    }
+
+                    // Update tab styling
+                    document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    renderOutputGrid();
+                    updateUI();
+                });
+            });
+
+            // Aspect ratio buttons
+            elements.aspectButtons.querySelectorAll('.aspect-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    elements.aspectButtons.querySelectorAll('.aspect-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.aspectRatio = btn.dataset.ratio;
+                });
+            });
+
+            // Drag hover events for moodboard
+            elements.moodboardGrid.addEventListener('dragenter', () => {
+                elements.moodboardGrid.classList.add('drag-over');
+            });
+            elements.moodboardGrid.addEventListener('dragleave', (e) => {
+                if (!elements.moodboardGrid.contains(e.relatedTarget)) {
+                    elements.moodboardGrid.classList.remove('drag-over');
+                }
+            });
+            elements.moodboardGrid.addEventListener('drop', () => {
+                elements.moodboardGrid.classList.remove('drag-over');
+            });
+
+            // Drag hover events for product grid
+            elements.productGrid.addEventListener('dragenter', () => {
+                elements.productGrid.classList.add('drag-over');
+            });
+            elements.productGrid.addEventListener('dragleave', (e) => {
+                if (!elements.productGrid.contains(e.relatedTarget)) {
+                    elements.productGrid.classList.remove('drag-over');
+                }
+            });
+            elements.productGrid.addEventListener('drop', () => {
+                elements.productGrid.classList.remove('drag-over');
+            });
+
             // Buttons
             elements.analyzeBtn.addEventListener('click', handleAnalyze);
             elements.generateBtn.addEventListener('click', handleGenerate);
@@ -758,15 +1182,34 @@
         // Handle file upload
         function handleFileUpload(files, type, startIndex) {
             const images = type === 'moodboard' ? state.moodboardImages : state.productImages;
-            const maxSlots = type === 'moodboard' ? 18 : 6;
+            const maxSlots = type === 'moodboard' ? 24 : 12;
 
+            // Pre-calculate all target indices to avoid async race conditions
+            const targetIndices = [];
+            if (startIndex !== null) {
+                // Starting from a specific slot, fill sequentially
+                for (let i = 0; i < files.length; i++) {
+                    const idx = startIndex + i;
+                    if (idx < maxSlots) targetIndices.push(idx);
+                }
+            } else {
+                // Find all empty slots first
+                for (let i = 0; i < files.length; i++) {
+                    const emptyIdx = images.findIndex((img, idx) => !img && !targetIndices.includes(idx));
+                    if (emptyIdx !== -1 && emptyIdx < maxSlots) {
+                        targetIndices.push(emptyIdx);
+                    }
+                }
+            }
+
+            // Now read files and place them in pre-calculated slots
             files.forEach((file, i) => {
-                let index = startIndex !== null ? startIndex + i : images.findIndex(img => !img);
-                if (index === -1 || index >= maxSlots) return;
+                if (i >= targetIndices.length) return;
+                const targetIndex = targetIndices[i];
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    images[index] = { file, url: e.target.result, selected: true };
+                    images[targetIndex] = { file, url: e.target.result, selected: true };
                     if (type === 'moodboard') renderMoodboardGrid();
                     else renderProductGrid();
                     updateUI();
@@ -782,9 +1225,10 @@
             const hasMoodboard = state.moodboardImages.some(img => img && img.selected !== false);
             const activeOutputs = state.outputs.filter(o => o.type !== 'none');
             const hasOutputs = activeOutputs.length > 0;
+            const isPeopleMode = state.outputMode === 'people';
 
-            // Check if any output requires people (count > 0)
-            const needsPeople = activeOutputs.some(o => o.count > 0);
+            // Check if any output requires people (count > 0) - only relevant in people mode
+            const needsPeople = isPeopleMode && activeOutputs.some(o => o.count > 0);
 
             // Calculate total images
             let totalImages = activeOutputs.length;
@@ -793,16 +1237,75 @@
             elements.analyzeBtn.disabled = !hasMoodboard;
 
             // Generate requires: mood board + outputs + analysis
-            // If any output has count > 0, we need talent selected
-            const canGenerate = hasMoodboard && hasOutputs && state.analysis &&
-                (!needsPeople || hasTalent);
+            // In people mode: if any output has count > 0, we need talent selected
+            // In product mode: we need products (no talent needed)
+            let canGenerate = hasMoodboard && hasOutputs && state.analysis;
+            if (isPeopleMode) {
+                canGenerate = canGenerate && (!needsPeople || hasTalent);
+            } else {
+                canGenerate = canGenerate && hasProducts;
+            }
             elements.generateBtn.disabled = !canGenerate;
 
-            // Update display
-            elements.calcDisplay.textContent = `${totalImages} image${totalImages !== 1 ? 's' : ''} to generate`;
+            // Update generate button text with context
+            let btnText = `Generate ${totalImages} image${totalImages !== 1 ? 's' : ''}`;
+            if (totalImages > 0) {
+                if (isPeopleMode) {
+                    const talentCount = state.selectedTalent.length;
+                    if (talentCount > 0) {
+                        btnText += ` with ${talentCount} model${talentCount !== 1 ? 's' : ''}`;
+                    }
+                } else {
+                    const availableProducts = state.productImages.filter(img => img && img.selected !== false).length;
+                    if (availableProducts > 0) {
+                        btnText += ` with ${availableProducts} product${availableProducts !== 1 ? 's' : ''}`;
+                    }
+                }
+            }
+            elements.generateBtnText.textContent = btnText;
+        }
 
-            const cost = totalImages * 0.15;
-            elements.costValue.textContent = formatCost(cost);
+        // Loading animation helpers - studio style
+        function startLoadingAnimation(progressText = 'Preparing...') {
+            elements.inlineLoader.classList.add('visible');
+            elements.loaderProgress.textContent = progressText;
+
+            // Set initial message
+            const initialIdx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+            elements.loaderMessage.textContent = STUDIO_MESSAGES[initialIdx];
+            lastMessageIndex = initialIdx;
+
+            // Rotate messages every 2 seconds with fade effect
+            loadingInterval = setInterval(() => {
+                // Pick a random message different from the last one
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastMessageIndex && STUDIO_MESSAGES.length > 1);
+                lastMessageIndex = idx;
+
+                // Fade out
+                elements.loaderMessage.classList.add('fade-out');
+                elements.loaderMessage.classList.remove('fade-in');
+
+                setTimeout(() => {
+                    elements.loaderMessage.textContent = STUDIO_MESSAGES[idx];
+                    elements.loaderMessage.classList.remove('fade-out');
+                    elements.loaderMessage.classList.add('fade-in');
+                }, 250);
+            }, 2000);
+        }
+
+        function updateLoadingProgress(text) {
+            elements.loaderProgress.textContent = text;
+        }
+
+        function stopLoadingAnimation() {
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            elements.inlineLoader.classList.remove('visible');
         }
 
         // Handle Analyze
@@ -810,41 +1313,94 @@
             const moodImages = state.moodboardImages.filter(img => img && img.selected !== false);
             if (moodImages.length === 0) return;
 
-            elements.loading.classList.add('visible');
-            elements.loadingText.textContent = 'Analyzing mood board...';
+            // Also get selected talent images for clothing analysis
+            const talentImages = state.selectedTalent.map(id => {
+                const talent = TALENT.find(t => t.id === id);
+                return talent ? talent.image : null;
+            }).filter(Boolean);
+
+            // Get product images for product identification
+            const productImages = state.productImages.filter(img => img && img.selected !== false);
+
+            startLoadingAnimation(`Analyzing ${moodImages.length} moodboard image${moodImages.length > 1 ? 's' : ''}...`);
 
             try {
-                // Upload images
+                // Upload moodboard images
                 const uploadPromises = moodImages.map(img => api.uploadBase64(img.url));
                 const uploadResults = await Promise.all(uploadPromises);
-                const imageUrls = uploadResults.map(r => r.url);
+                const moodboardUrls = uploadResults.map(r => r.url);
 
-                // Analyze
-                const analysisPrompt = `Analyze these mood board images and extract:
+                // Upload talent images for clothing analysis
+                const talentUploadPromises = talentImages.map(async (url) => {
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+                    const file = new File([blob], 'talent.png', { type: blob.type });
+                    return api.uploadImage(file);
+                });
+                const talentUploadResults = await Promise.all(talentUploadPromises);
+                const talentUrls = talentUploadResults.map(r => r.url);
 
-1. CLOTHING AESTHETIC: What style of clothing is shown? (e.g., minimalist, luxury, streetwear, bohemian, etc.)
-2. COLOR PALETTE: What are the dominant colors and tones?
-3. LIGHTING: Describe the lighting style (e.g., soft natural, dramatic, high-key studio, golden hour)
-4. ENVIRONMENTS: What kinds of settings/backgrounds are shown?
-5. MOOD/ATMOSPHERE: What's the overall feeling? (e.g., sophisticated, playful, moody, energetic)
-6. POSES/COMPOSITION: How are subjects typically positioned?
+                // Upload product images for identification
+                const productUploadPromises = productImages.map(img => api.uploadBase64(img.url));
+                const productUploadResults = await Promise.all(productUploadPromises);
+                const productUrls = productUploadResults.map(r => r.url);
 
-Be specific and concise. This will be used to generate similar imagery.`;
+                // Combine moodboard and talent for style analysis
+                const styleImageUrls = [...moodboardUrls, ...talentUrls];
 
-                const result = await api.analyzeImages(imageUrls, analysisPrompt);
+                // Enhanced analysis prompt that covers all requested aspects
+                const analysisPrompt = `Analyze these images and create a comprehensive style guide for image generation. Write as a single flowing paragraph that can be used directly in prompts. Include:
+
+1. CLOTHING: Describe the specific clothing items, styles, and aesthetics visible (minimalist, luxury, streetwear, bohemian, etc.). Note textures, fits, and silhouettes.
+
+2. PHOTOGRAPHY STYLE: Is it analog/film-like or digital? Note any grain, color grading, filters, or processing effects. Describe color palette and tones (warm, cool, muted, saturated).
+
+3. LIGHTING: Describe the lighting approach (natural, studio, dramatic, soft, harsh, backlit, etc.).
+
+4. POSES & COMPOSITION: Note typical body language, poses, framing, and compositional elements.
+
+5. MOOD & ENVIRONMENT: Describe the atmosphere, settings, and overall mood.
+
+IMPORTANT: Do NOT mention any brand names, designer labels, or logos. Describe the style without naming specific brands. Write one cohesive paragraph that flows naturally.`;
+
+                const result = await api.analyzeImages(styleImageUrls, analysisPrompt);
 
                 if (result.content) {
                     state.analysis = result.content;
-                    elements.analysisBox.textContent = result.content;
-                    elements.analysisBox.classList.add('visible');
+                    console.log('Style analysis stored:', state.analysis);
                 }
+
+                // Analyze products separately if there are any
+                if (productUrls.length > 0) {
+                    updateLoadingProgress(`Identifying ${productUrls.length} product${productUrls.length > 1 ? 's' : ''}...`);
+
+                    const productPrompt = `Identify each product in these images. For each product, provide a brief description of what it is (e.g., "white cotton t-shirt", "wooden dining chair", "leather handbag", "ceramic vase").
+
+Format your response as a simple numbered list like:
+1. [description of first product]
+2. [description of second product]
+etc.
+
+Be specific about material, color, and type. Do NOT mention brand names.`;
+
+                    const productResult = await api.analyzeImages(productUrls, productPrompt);
+
+                    if (productResult.content) {
+                        state.productAnalysis = productResult.content;
+                        console.log('Product analysis stored:', state.productAnalysis);
+                    }
+                }
+
+                // Update button to show analysis is complete
+                elements.analyzeBtn.textContent = 'Re-analyze';
+                elements.analyzeBtn.classList.add('analyzed');
 
                 updateUI();
             } catch (error) {
                 console.error('Analysis error:', error);
                 alert('Failed to analyze mood board: ' + error.message);
             } finally {
-                elements.loading.classList.remove('visible');
+                stopLoadingAnimation();
             }
         }
 
@@ -861,38 +1417,67 @@ Be specific and concise. This will be used to generate similar imagery.`;
             state.results = [];
             elements.resultsGrid.innerHTML = '';
             elements.progressSection.classList.add('visible');
+            startLoadingAnimation(`Generating ${activeOutputs.length} campaign images...`);
 
             let completed = 0;
             const total = activeOutputs.length;
             elements.progressCount.textContent = `0 / ${total}`;
             elements.progressBar.style.width = '0%';
 
-            // Get all talent images available
-            const allTalentImages = state.selectedTalent.map(id => {
+            const isPeopleMode = state.outputMode === 'people';
+
+            // Get all talent data available (only used in people mode)
+            const allTalentData = state.selectedTalent.map(id => {
                 const talent = TALENT.find(t => t.id === id);
-                return talent ? talent.image : null;
+                return talent ? { id: talent.id, name: talent.name, image: talent.image } : null;
             }).filter(Boolean);
 
-            // Get product images
-            const productImages = state.productImages
+            // Helper to shuffle and pick random talent
+            function getRandomTalent(count) {
+                const shuffled = [...allTalentData].sort(() => Math.random() - 0.5);
+                return shuffled.slice(0, Math.min(count, shuffled.length));
+            }
+
+            // Get all product images
+            const allProductImages = state.productImages
                 .filter(img => img && img.selected !== false)
                 .map(img => img.url);
+
+            // Helper to shuffle and pick random products
+            function getRandomProducts(count) {
+                const shuffled = [...allProductImages].sort(() => Math.random() - 0.5);
+                return shuffled.slice(0, Math.min(count, shuffled.length));
+            }
 
             // Generate for each active output
             const promises = activeOutputs.map(async (output, index) => {
                 try {
-                    // Select talent images based on count (use first N from selected)
-                    const numPeople = Math.min(output.count, allTalentImages.length);
-                    const talentForThisOutput = output.count > 0 ? allTalentImages.slice(0, numPeople) : [];
+                    let refImages = [];
+                    let numTalent = 0;
+                    let numProducts = 0;
+
+                    if (isPeopleMode) {
+                        // People mode: Select RANDOM talent for each output
+                        const randomTalent = getRandomTalent(output.count);
+                        const talentForThisOutput = randomTalent.map(t => t.image);
+                        numTalent = talentForThisOutput.length;
+
+                        // Collect reference images - talent first, then products
+                        refImages = [...talentForThisOutput];
+                        if (allProductImages.length > 0) {
+                            refImages.push(...allProductImages);
+                            numProducts = allProductImages.length;
+                        }
+                    } else {
+                        // Product mode: Select products based on per-slot productCount
+                        const productsForThisOutput = getRandomProducts(output.productCount);
+                        refImages = [...productsForThisOutput];
+                        numProducts = productsForThisOutput.length;
+                        numTalent = 0;
+                    }
 
                     // Build prompt based on output type and count
-                    const prompt = buildPrompt(output, talentForThisOutput.length, productImages.length);
-
-                    // Collect reference images - talent first, then products
-                    const refImages = [...talentForThisOutput];
-                    if (productImages.length > 0) {
-                        refImages.push(...productImages);
-                    }
+                    const prompt = buildPrompt(output, numTalent, numProducts, isPeopleMode);
 
                     // If no reference images at all, skip
                     if (refImages.length === 0) {
@@ -900,22 +1485,31 @@ Be specific and concise. This will be used to generate similar imagery.`;
                         return;
                     }
 
-                    // Upload reference images
-                    const uploadPromises = refImages.map(url => {
+                    // Upload reference images - handle base64, local paths, and hosted URLs
+                    const uploadPromises = refImages.map(async (url) => {
                         if (url.startsWith('data:')) {
+                            // Base64 data URL - upload directly
                             return api.uploadBase64(url);
+                        } else if (url.startsWith('/') || url.startsWith('./')) {
+                            // Local path - fetch and upload
+                            const response = await fetch(url);
+                            const blob = await response.blob();
+                            const file = new File([blob], 'image.png', { type: blob.type });
+                            return api.uploadImage(file);
+                        } else {
+                            // Already a hosted URL
+                            return { url };
                         }
-                        return Promise.resolve({ url });
                     });
                     const uploadResults = await Promise.all(uploadPromises);
                     const imageUrls = uploadResults.map(r => r.url);
 
-                    // Generate
+                    // Generate with settings
                     const params = {
                         prompt,
                         image_urls: imageUrls,
                         num_images: 1,
-                        aspect_ratio: '3:4',
+                        aspect_ratio: state.aspectRatio,
                         output_format: 'png'
                     };
 
@@ -940,38 +1534,71 @@ Be specific and concise. This will be used to generate similar imagery.`;
             });
 
             await Promise.all(promises);
+            stopLoadingAnimation();
             elements.progressSection.classList.remove('visible');
         }
 
         // Build prompt based on output type
-        function buildPrompt(output, numTalent, numProducts) {
-            const subjectCount = output.count;
+        function buildPrompt(output, numTalent, numProducts, isPeopleMode = true) {
+            const subjectCount = isPeopleMode ? output.count : 0;
             const hasProducts = numProducts > 0;
 
-            // Extract key elements from analysis
-            const analysis = state.analysis || '';
+            // Extract key elements from analysis and sanitize brand names
+            let analysis = state.analysis || '';
+            let productDesc = state.productAnalysis || '';
+
+            // Remove common luxury brand names that might slip through
+            const brandBlacklist = [
+                'Gucci', 'Louis Vuitton', 'LV', 'Prada', 'Chanel', 'Dior', 'Hermès', 'Hermes',
+                'Burberry', 'Balenciaga', 'Versace', 'Fendi', 'Givenchy', 'Saint Laurent', 'YSL',
+                'Bottega Veneta', 'Valentino', 'Alexander McQueen', 'Celine', 'Loewe', 'Moncler',
+                'Off-White', 'Supreme', 'Nike', 'Adidas', 'Zara', 'H&M', 'Uniqlo', 'Reformation',
+                'Rolex', 'Cartier', 'Tiffany', 'Bulgari', 'Van Cleef', 'Armani', 'Dolce & Gabbana',
+                'Tom Ford', 'Marc Jacobs', 'Coach', 'Michael Kors', 'Kate Spade', 'Ralph Lauren',
+                'Calvin Klein', 'Tommy Hilfiger', 'Hugo Boss', 'Stella McCartney', 'Acne Studios'
+            ];
+            brandBlacklist.forEach(brand => {
+                const regex = new RegExp(`\\b${brand}\\b`, 'gi');
+                analysis = analysis.replace(regex, '');
+                productDesc = productDesc.replace(regex, '');
+            });
+            // Clean up any double spaces from removals
+            analysis = analysis.replace(/\s{2,}/g, ' ').trim();
+            productDesc = productDesc.replace(/\s{2,}/g, ' ').trim();
+
+            // Build product description for prompts
+            const productInfo = hasProducts && productDesc
+                ? `Products: ${productDesc}.`
+                : '';
 
             let prompt = '';
 
-            if (subjectCount === 0) {
-                // No people - product/environment only
+            if (!isPeopleMode || subjectCount === 0) {
+                // Product mode OR no people - product/environment only
+                const productCountText = numProducts === 1
+                    ? 'ONLY this exact product from the reference image'
+                    : `ONLY these exact ${numProducts} products from the reference images`;
+                const noExtraItems = 'Do NOT add any extra items, objects, or products that are not in the reference images.';
+
                 if (output.type === 'ecom') {
                     prompt = hasProducts
-                        ? `Place this exact product on a clean white studio background. Professional e-commerce product photography. ${analysis}`
+                        ? `Place ${productCountText} on a clean white studio background. ${productInfo} Professional e-commerce product photography. ${noExtraItems} ${analysis}`
                         : `Product photography on white studio background. ${analysis}. Clean, professional e-commerce style.`;
                 } else if (output.type === 'closeup') {
                     prompt = hasProducts
-                        ? `Close-up detail shot of this exact product. ${analysis}. Soft studio lighting, shallow depth of field, focus on texture and details.`
+                        ? `Close-up detail shot of ${productCountText}. ${productInfo} ${analysis}. Soft studio lighting, shallow depth of field, focus on texture and details. ${noExtraItems}`
                         : `Close-up product detail shot. ${analysis}. Soft studio lighting, shallow depth of field.`;
                 } else if (output.type === 'campaign') {
                     prompt = hasProducts
-                        ? `Place this exact product in an editorial campaign setting. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`
+                        ? `Place ${productCountText} in an editorial campaign setting. ${productInfo} ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic. ${noExtraItems}`
                         : `Editorial campaign photo. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
                 }
             } else {
-                // With people
+                // People mode with people
                 const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people together in the same shot`;
-                const productText = hasProducts ? ' Feature the product prominently.' : '';
+                const productText = hasProducts && productInfo
+                    ? ` Feature ONLY the exact product from the reference image prominently. ${productInfo} Do NOT add extra items.`
+                    : '';
 
                 if (output.type === 'ecom') {
                     prompt = `Place ${peopleText} in a white studio. Full-body e-commerce fashion photo. ${analysis}. Clean white background, professional studio lighting, fashion e-commerce style.${productText}`;
