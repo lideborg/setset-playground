@@ -616,6 +616,7 @@
         function renderOutputGrid() {
             elements.outputGrid.innerHTML = state.outputs.map((output, i) => {
                 const isActive = output.type !== 'none';
+                const countLabel = output.count === 0 ? 'No people' : `${output.count} ${output.count === 1 ? 'person' : 'people'}`;
                 return `
                     <div class="output-slot ${isActive ? 'active' : ''}" data-index="${i}">
                         <div class="output-icon">${OUTPUT_ICONS[output.type]}</div>
@@ -623,7 +624,7 @@
                         ${isActive ? `
                             <div class="output-count">
                                 <button data-action="dec">−</button>
-                                <span>${output.count}</span>
+                                <span title="${countLabel}">${output.count}</span>
                                 <button data-action="inc">+</button>
                             </div>
                         ` : ''}
@@ -777,19 +778,25 @@
         // Update UI state
         function updateUI() {
             const hasTalent = state.selectedTalent.length > 0;
+            const hasProducts = state.productImages.some(img => img && img.selected !== false);
             const hasMoodboard = state.moodboardImages.some(img => img && img.selected !== false);
             const activeOutputs = state.outputs.filter(o => o.type !== 'none');
             const hasOutputs = activeOutputs.length > 0;
 
+            // Check if any output requires people (count > 0)
+            const needsPeople = activeOutputs.some(o => o.count > 0);
+
             // Calculate total images
-            let totalImages = 0;
-            activeOutputs.forEach(output => {
-                totalImages += 1; // Each output slot generates 1 image
-            });
+            let totalImages = activeOutputs.length;
 
             // Enable/disable buttons
             elements.analyzeBtn.disabled = !hasMoodboard;
-            elements.generateBtn.disabled = !hasTalent || !hasMoodboard || !hasOutputs || !state.analysis;
+
+            // Generate requires: mood board + outputs + analysis
+            // If any output has count > 0, we need talent selected
+            const canGenerate = hasMoodboard && hasOutputs && state.analysis &&
+                (!needsPeople || hasTalent);
+            elements.generateBtn.disabled = !canGenerate;
 
             // Update display
             elements.calcDisplay.textContent = `${totalImages} image${totalImages !== 1 ? 's' : ''} to generate`;
@@ -860,8 +867,8 @@ Be specific and concise. This will be used to generate similar imagery.`;
             elements.progressCount.textContent = `0 / ${total}`;
             elements.progressBar.style.width = '0%';
 
-            // Get talent images
-            const talentImages = state.selectedTalent.map(id => {
+            // Get all talent images available
+            const allTalentImages = state.selectedTalent.map(id => {
                 const talent = TALENT.find(t => t.id === id);
                 return talent ? talent.image : null;
             }).filter(Boolean);
@@ -874,13 +881,23 @@ Be specific and concise. This will be used to generate similar imagery.`;
             // Generate for each active output
             const promises = activeOutputs.map(async (output, index) => {
                 try {
-                    // Build prompt based on output type and count
-                    const prompt = buildPrompt(output, talentImages.length, productImages.length);
+                    // Select talent images based on count (use first N from selected)
+                    const numPeople = Math.min(output.count, allTalentImages.length);
+                    const talentForThisOutput = output.count > 0 ? allTalentImages.slice(0, numPeople) : [];
 
-                    // Collect reference images
-                    const refImages = [...talentImages];
+                    // Build prompt based on output type and count
+                    const prompt = buildPrompt(output, talentForThisOutput.length, productImages.length);
+
+                    // Collect reference images - talent first, then products
+                    const refImages = [...talentForThisOutput];
                     if (productImages.length > 0) {
                         refImages.push(...productImages);
+                    }
+
+                    // If no reference images at all, skip
+                    if (refImages.length === 0) {
+                        console.log('No reference images for output, skipping...');
+                        return;
                     }
 
                     // Upload reference images
@@ -928,40 +945,41 @@ Be specific and concise. This will be used to generate similar imagery.`;
 
         // Build prompt based on output type
         function buildPrompt(output, numTalent, numProducts) {
-            const baseAnalysis = state.analysis || '';
             const subjectCount = output.count;
+            const hasProducts = numProducts > 0;
+
+            // Extract key elements from analysis
+            const analysis = state.analysis || '';
 
             let prompt = '';
 
-            if (output.type === 'ecom') {
-                // E-commerce: white studio background
-                if (subjectCount === 0) {
-                    prompt = `Product photography on white studio background. ${baseAnalysis}. Clean, professional e-commerce style.`;
-                } else {
-                    const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people together`;
-                    prompt = `Full-body e-commerce photo of ${peopleText} in white studio. ${baseAnalysis}. Clean white background, professional studio lighting, fashion e-commerce style.`;
+            if (subjectCount === 0) {
+                // No people - product/environment only
+                if (output.type === 'ecom') {
+                    prompt = hasProducts
+                        ? `Place this exact product on a clean white studio background. Professional e-commerce product photography. ${analysis}`
+                        : `Product photography on white studio background. ${analysis}. Clean, professional e-commerce style.`;
+                } else if (output.type === 'closeup') {
+                    prompt = hasProducts
+                        ? `Close-up detail shot of this exact product. ${analysis}. Soft studio lighting, shallow depth of field, focus on texture and details.`
+                        : `Close-up product detail shot. ${analysis}. Soft studio lighting, shallow depth of field.`;
+                } else if (output.type === 'campaign') {
+                    prompt = hasProducts
+                        ? `Place this exact product in an editorial campaign setting. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`
+                        : `Editorial campaign photo. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
                 }
-            } else if (output.type === 'closeup') {
-                // Close-up: portrait focus
-                if (subjectCount === 0) {
-                    prompt = `Close-up product detail shot. ${baseAnalysis}. Soft studio lighting, shallow depth of field.`;
-                } else {
-                    const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people`;
-                    prompt = `Close-up portrait of ${peopleText}. ${baseAnalysis}. Editorial beauty shot, soft lighting, focus on face and upper body.`;
-                }
-            } else if (output.type === 'campaign') {
-                // Campaign: editorial/creative
-                if (subjectCount === 0) {
-                    prompt = `Editorial product campaign photo. ${baseAnalysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
-                } else {
-                    const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people together`;
-                    prompt = `Editorial campaign photo of ${peopleText}. ${baseAnalysis}. Fashion editorial style, creative composition, dramatic lighting.`;
-                }
-            }
+            } else {
+                // With people
+                const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people together in the same shot`;
+                const productText = hasProducts ? ' Feature the product prominently.' : '';
 
-            // Add product context if available
-            if (numProducts > 0) {
-                prompt += ' Feature the product prominently in the shot.';
+                if (output.type === 'ecom') {
+                    prompt = `Place ${peopleText} in a white studio. Full-body e-commerce fashion photo. ${analysis}. Clean white background, professional studio lighting, fashion e-commerce style.${productText}`;
+                } else if (output.type === 'closeup') {
+                    prompt = `Close-up portrait of ${peopleText}. ${analysis}. Editorial beauty shot, soft lighting, focus on face and expression, chest-up framing.${productText}`;
+                } else if (output.type === 'campaign') {
+                    prompt = `Place ${peopleText} in an editorial campaign setting. ${analysis}. Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.${productText}`;
+                }
             }
 
             return prompt;
