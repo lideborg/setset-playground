@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Gen v2</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1200px;
+        }
+
+        /* Section styling */
+        .section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .section-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--carbon);
+        }
+
+        .section-badge {
+            font-size: var(--text-2xs);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            background: var(--off-white);
+            color: var(--slate);
+        }
+
+        .section-badge.required {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        /* Talent Grid */
+        .talent-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .talent-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .talent-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .talent-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .talent-card.selected {
+            border-color: var(--jet);
+        }
+
+        .talent-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .talent-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .talent-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: var(--white);
+            font-size: var(--text-2xs);
+            text-align: center;
+        }
+
+        /* Mood Board Grid */
+        .moodboard-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            transition: all var(--transition-fast);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-style: solid;
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .plus {
+            font-size: 24px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+        }
+
+        /* Output Grid */
+        .output-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .output-slot {
+            aspect-ratio: 3/4;
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            background: var(--off-white);
+            transition: all var(--transition-fast);
+            padding: var(--space-xs);
+        }
+
+        .output-slot:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .output-slot.active {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .output-type {
+            font-size: var(--text-2xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ash-grey);
+            margin-bottom: var(--space-2xs);
+        }
+
+        .output-slot.active .output-type {
+            color: var(--carbon);
+        }
+
+        .output-type.ecom { color: #2563eb; }
+        .output-type.closeup { color: #7c3aed; }
+        .output-type.campaign { color: #dc2626; }
+
+        .output-icon {
+            font-size: 24px;
+            margin-bottom: var(--space-2xs);
+        }
+
+        .output-count {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: var(--space-2xs);
+        }
+
+        .output-count button {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .output-count button:hover {
+            border-color: var(--jet);
+        }
+
+        .output-count span {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Actions */
+        .actions-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Analysis Box */
+        .analysis-box {
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm);
+            margin-top: var(--space-sm);
+            font-size: var(--text-sm);
+            color: var(--slate);
+            line-height: 1.5;
+            display: none;
+        }
+
+        .analysis-box.visible {
+            display: block;
+        }
+
+        /* Results Grid */
+        .result-image {
+            aspect-ratio: 3/4;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Campaign Generator</h1>
+            <p class="hero-subtitle">Create campaign imagery from talent, mood boards, and products</p>
+        </div>
+
+        <!-- Section 1: Talent Selection -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">1. Select Talent</span>
+                <span class="section-badge required">Required</span>
+            </div>
+            <div class="talent-grid" id="talent-grid"></div>
+            <p class="section-hint" style="margin-top: var(--space-xs); font-size: var(--text-xs); color: var(--ash-grey);">
+                Select up to 4 models. Selected: <span id="talent-count">0</span>/4
+            </p>
+        </div>
+
+        <!-- Section 2: Mood Board -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">2. Mood Board</span>
+                <span class="section-badge required">Required</span>
+            </div>
+            <div class="moodboard-grid" id="moodboard-grid"></div>
+            <input type="file" id="moodboard-input" accept="image/*" multiple>
+        </div>
+
+        <!-- Section 3: Product Images (Optional) -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">3. Product Images</span>
+                <span class="section-badge">Optional</span>
+            </div>
+            <div class="product-grid" id="product-grid"></div>
+            <input type="file" id="product-input" accept="image/*" multiple>
+        </div>
+
+        <!-- Section 4: Output Configuration -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">4. Output Configuration</span>
+                <span class="section-badge required">Required</span>
+            </div>
+            <p style="font-size: var(--text-xs); color: var(--ash-grey); margin-bottom: var(--space-sm);">
+                Click to cycle: None → E-commerce → Close-up → Campaign. Use +/- to set number of subjects (0-4).
+            </p>
+            <div class="output-grid" id="output-grid"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-row">
+            <div class="calc-display" id="calc-display">0 images to generate</div>
+            <div class="action-buttons">
+                <button class="btn" id="analyze-btn" disabled>Analyze Mood Board</button>
+                <button class="btn btn--primary" id="generate-btn" disabled>
+                    Generate <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Analysis Result -->
+        <div class="analysis-box" id="analysis-box"></div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Type</h3>
+                    <p class="lightbox-model-text" id="lightbox-type"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Analyzing...</p>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+
+    <script>
+        // Setset Talent Library
+        const TALENT = [
+            { id: 'james', name: 'James Wilson', image: '/shared/images/talent/talent-01_JamesWilson.png' },
+            { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png' },
+            { id: 'river', name: 'River Blake', image: '/shared/images/talent/talent-03_RiverBlake.png' },
+            { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png' },
+            { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/talent-05_MarcusBrown.png' },
+            { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png' },
+            { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png' },
+            { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/talent-08_LiamGarcia.png' },
+            { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png' },
+            { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
+            { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png' },
+            { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png' },
+            { id: 'kai', name: 'Kai Thompson', image: '/shared/images/talent/talent-13_KaiThompson.png' },
+            { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
+            { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png' },
+            { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
+            { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/talent-17_QuinnSantos.png' },
+            { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png' },
+            { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png' },
+            { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/talent-20_DrewMartinez.png' },
+            { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png' },
+            { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png' },
+            { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png' },
+            { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' }
+        ];
+
+        // Output types cycle
+        const OUTPUT_TYPES = ['none', 'ecom', 'closeup', 'campaign'];
+        const OUTPUT_LABELS = {
+            none: 'None',
+            ecom: 'E-Commerce',
+            closeup: 'Close-Up',
+            campaign: 'Campaign'
+        };
+        const OUTPUT_ICONS = {
+            none: '○',
+            ecom: '🏪',
+            closeup: '👤',
+            campaign: '📸'
+        };
+
+        // State
+        const state = {
+            selectedTalent: [],       // Array of talent IDs
+            moodboardImages: new Array(18).fill(null),
+            productImages: new Array(6).fill(null),
+            outputs: new Array(12).fill(null).map(() => ({ type: 'none', count: 1 })),
+            analysis: null,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            talentGrid: document.getElementById('talent-grid'),
+            talentCount: document.getElementById('talent-count'),
+            moodboardGrid: document.getElementById('moodboard-grid'),
+            moodboardInput: document.getElementById('moodboard-input'),
+            productGrid: document.getElementById('product-grid'),
+            productInput: document.getElementById('product-input'),
+            outputGrid: document.getElementById('output-grid'),
+            analyzeBtn: document.getElementById('analyze-btn'),
+            generateBtn: document.getElementById('generate-btn'),
+            calcDisplay: document.getElementById('calc-display'),
+            costValue: document.getElementById('cost-value'),
+            analysisBox: document.getElementById('analysis-box'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxType: document.getElementById('lightbox-type'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            loading: document.getElementById('loading'),
+            loadingText: document.getElementById('loading-text')
+        };
+
+        // Initialize
+        function init() {
+            renderTalentGrid();
+            renderMoodboardGrid();
+            renderProductGrid();
+            renderOutputGrid();
+            setupEventListeners();
+            updateUI();
+        }
+
+        // Render Talent Grid
+        function renderTalentGrid() {
+            elements.talentGrid.innerHTML = TALENT.map(talent => {
+                const isSelected = state.selectedTalent.includes(talent.id);
+                const isDisabled = !isSelected && state.selectedTalent.length >= 4;
+                return `
+                    <div class="talent-card ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}"
+                         data-id="${talent.id}">
+                        <img src="${talent.image}" alt="${talent.name}">
+                        <div class="talent-name">${talent.name}</div>
+                    </div>
+                `;
+            }).join('');
+
+            elements.talentGrid.querySelectorAll('.talent-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = card.dataset.id;
+                    if (card.classList.contains('disabled')) return;
+
+                    if (state.selectedTalent.includes(id)) {
+                        state.selectedTalent = state.selectedTalent.filter(t => t !== id);
+                    } else if (state.selectedTalent.length < 4) {
+                        state.selectedTalent.push(id);
+                    }
+                    renderTalentGrid();
+                    updateUI();
+                });
+            });
+
+            elements.talentCount.textContent = state.selectedTalent.length;
+        }
+
+        // Render Moodboard Grid
+        function renderMoodboardGrid() {
+            elements.moodboardGrid.innerHTML = state.moodboardImages.map((img, i) => {
+                if (img) {
+                    return `
+                        <div class="upload-slot filled ${img.selected === false ? 'deselected' : ''}" data-index="${i}">
+                            <img src="${img.url}" alt="Moodboard ${i + 1}">
+                            <button class="remove-btn" data-action="remove">&times;</button>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="upload-slot" data-index="${i}">
+                        <span class="plus">+</span>
+                    </div>
+                `;
+            }).join('');
+
+            setupGridListeners(elements.moodboardGrid, 'moodboard');
+        }
+
+        // Render Product Grid
+        function renderProductGrid() {
+            elements.productGrid.innerHTML = state.productImages.map((img, i) => {
+                if (img) {
+                    return `
+                        <div class="upload-slot filled ${img.selected === false ? 'deselected' : ''}" data-index="${i}">
+                            <img src="${img.url}" alt="Product ${i + 1}">
+                            <button class="remove-btn" data-action="remove">&times;</button>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="upload-slot" data-index="${i}">
+                        <span class="plus">+</span>
+                    </div>
+                `;
+            }).join('');
+
+            setupGridListeners(elements.productGrid, 'product');
+        }
+
+        // Render Output Grid
+        function renderOutputGrid() {
+            elements.outputGrid.innerHTML = state.outputs.map((output, i) => {
+                const isActive = output.type !== 'none';
+                return `
+                    <div class="output-slot ${isActive ? 'active' : ''}" data-index="${i}">
+                        <div class="output-icon">${OUTPUT_ICONS[output.type]}</div>
+                        <div class="output-type ${output.type}">${OUTPUT_LABELS[output.type]}</div>
+                        ${isActive ? `
+                            <div class="output-count">
+                                <button data-action="dec">−</button>
+                                <span>${output.count}</span>
+                                <button data-action="inc">+</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            elements.outputGrid.querySelectorAll('.output-slot').forEach(slot => {
+                const index = parseInt(slot.dataset.index);
+
+                // Click to cycle type
+                slot.addEventListener('click', (e) => {
+                    if (e.target.closest('button')) return;
+                    const currentType = state.outputs[index].type;
+                    const currentIdx = OUTPUT_TYPES.indexOf(currentType);
+                    const nextIdx = (currentIdx + 1) % OUTPUT_TYPES.length;
+                    state.outputs[index].type = OUTPUT_TYPES[nextIdx];
+                    renderOutputGrid();
+                    updateUI();
+                });
+
+                // +/- buttons for count
+                slot.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const action = btn.dataset.action;
+                        if (action === 'inc' && state.outputs[index].count < 4) {
+                            state.outputs[index].count++;
+                        } else if (action === 'dec' && state.outputs[index].count > 0) {
+                            state.outputs[index].count--;
+                        }
+                        renderOutputGrid();
+                        updateUI();
+                    });
+                });
+            });
+        }
+
+        // Setup grid listeners for upload slots
+        function setupGridListeners(grid, type) {
+            const images = type === 'moodboard' ? state.moodboardImages : state.productImages;
+            const input = type === 'moodboard' ? elements.moodboardInput : elements.productInput;
+
+            grid.querySelectorAll('.upload-slot').forEach(slot => {
+                const index = parseInt(slot.dataset.index);
+
+                slot.addEventListener('click', (e) => {
+                    if (e.target.dataset.action === 'remove') {
+                        images[index] = null;
+                        if (type === 'moodboard') renderMoodboardGrid();
+                        else renderProductGrid();
+                        updateUI();
+                        return;
+                    }
+
+                    if (images[index]) {
+                        // Toggle selection
+                        images[index].selected = images[index].selected === false ? true : false;
+                        if (type === 'moodboard') renderMoodboardGrid();
+                        else renderProductGrid();
+                        updateUI();
+                    } else {
+                        // Open file picker
+                        input.dataset.startIndex = index;
+                        input.click();
+                    }
+                });
+            });
+
+            // Drag and drop
+            grid.addEventListener('dragover', (e) => e.preventDefault());
+            grid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                handleFileUpload(files, type, null);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // File inputs
+            elements.moodboardInput.addEventListener('change', (e) => {
+                const startIndex = e.target.dataset.startIndex ? parseInt(e.target.dataset.startIndex) : null;
+                handleFileUpload(Array.from(e.target.files), 'moodboard', startIndex);
+                e.target.value = '';
+            });
+
+            elements.productInput.addEventListener('change', (e) => {
+                const startIndex = e.target.dataset.startIndex ? parseInt(e.target.dataset.startIndex) : null;
+                handleFileUpload(Array.from(e.target.files), 'product', startIndex);
+                e.target.value = '';
+            });
+
+            // Buttons
+            elements.analyzeBtn.addEventListener('click', handleAnalyze);
+            elements.generateBtn.addEventListener('click', handleGenerate);
+
+            // Lightbox
+            document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+            elements.lightbox.addEventListener('click', (e) => {
+                if (e.target === elements.lightbox) closeLightbox();
+            });
+
+            document.getElementById('lightbox-download').addEventListener('click', () => {
+                const result = state.results[state.lightboxIndex];
+                const now = new Date();
+                const yy = String(now.getFullYear()).slice(-2);
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const num = String(state.lightboxIndex + 1).padStart(2, '0');
+                downloadFile(result.url, `Setset_Campaign_${yy}${mm}${dd}_${hh}${min}_${num}.png`);
+            });
+
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                if (!elements.lightbox.classList.contains('visible')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft' && state.lightboxIndex > 0) {
+                    state.lightboxIndex--;
+                    updateLightboxContent();
+                }
+                if (e.key === 'ArrowRight' && state.lightboxIndex < state.results.length - 1) {
+                    state.lightboxIndex++;
+                    updateLightboxContent();
+                }
+            });
+        }
+
+        // Handle file upload
+        function handleFileUpload(files, type, startIndex) {
+            const images = type === 'moodboard' ? state.moodboardImages : state.productImages;
+            const maxSlots = type === 'moodboard' ? 18 : 6;
+
+            files.forEach((file, i) => {
+                let index = startIndex !== null ? startIndex + i : images.findIndex(img => !img);
+                if (index === -1 || index >= maxSlots) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images[index] = { file, url: e.target.result, selected: true };
+                    if (type === 'moodboard') renderMoodboardGrid();
+                    else renderProductGrid();
+                    updateUI();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Update UI state
+        function updateUI() {
+            const hasTalent = state.selectedTalent.length > 0;
+            const hasMoodboard = state.moodboardImages.some(img => img && img.selected !== false);
+            const activeOutputs = state.outputs.filter(o => o.type !== 'none');
+            const hasOutputs = activeOutputs.length > 0;
+
+            // Calculate total images
+            let totalImages = 0;
+            activeOutputs.forEach(output => {
+                totalImages += 1; // Each output slot generates 1 image
+            });
+
+            // Enable/disable buttons
+            elements.analyzeBtn.disabled = !hasMoodboard;
+            elements.generateBtn.disabled = !hasTalent || !hasMoodboard || !hasOutputs || !state.analysis;
+
+            // Update display
+            elements.calcDisplay.textContent = `${totalImages} image${totalImages !== 1 ? 's' : ''} to generate`;
+
+            const cost = totalImages * 0.15;
+            elements.costValue.textContent = formatCost(cost);
+        }
+
+        // Handle Analyze
+        async function handleAnalyze() {
+            const moodImages = state.moodboardImages.filter(img => img && img.selected !== false);
+            if (moodImages.length === 0) return;
+
+            elements.loading.classList.add('visible');
+            elements.loadingText.textContent = 'Analyzing mood board...';
+
+            try {
+                // Upload images
+                const uploadPromises = moodImages.map(img => api.uploadBase64(img.url));
+                const uploadResults = await Promise.all(uploadPromises);
+                const imageUrls = uploadResults.map(r => r.url);
+
+                // Analyze
+                const analysisPrompt = `Analyze these mood board images and extract:
+
+1. CLOTHING AESTHETIC: What style of clothing is shown? (e.g., minimalist, luxury, streetwear, bohemian, etc.)
+2. COLOR PALETTE: What are the dominant colors and tones?
+3. LIGHTING: Describe the lighting style (e.g., soft natural, dramatic, high-key studio, golden hour)
+4. ENVIRONMENTS: What kinds of settings/backgrounds are shown?
+5. MOOD/ATMOSPHERE: What's the overall feeling? (e.g., sophisticated, playful, moody, energetic)
+6. POSES/COMPOSITION: How are subjects typically positioned?
+
+Be specific and concise. This will be used to generate similar imagery.`;
+
+                const result = await api.analyzeImages(imageUrls, analysisPrompt);
+
+                if (result.content) {
+                    state.analysis = result.content;
+                    elements.analysisBox.textContent = result.content;
+                    elements.analysisBox.classList.add('visible');
+                }
+
+                updateUI();
+            } catch (error) {
+                console.error('Analysis error:', error);
+                alert('Failed to analyze mood board: ' + error.message);
+            } finally {
+                elements.loading.classList.remove('visible');
+            }
+        }
+
+        // Handle Generate
+        async function handleGenerate() {
+            if (!state.analysis) {
+                alert('Please analyze the mood board first');
+                return;
+            }
+
+            const activeOutputs = state.outputs.filter(o => o.type !== 'none');
+            if (activeOutputs.length === 0) return;
+
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+            elements.progressSection.classList.add('visible');
+
+            let completed = 0;
+            const total = activeOutputs.length;
+            elements.progressCount.textContent = `0 / ${total}`;
+            elements.progressBar.style.width = '0%';
+
+            // Get talent images
+            const talentImages = state.selectedTalent.map(id => {
+                const talent = TALENT.find(t => t.id === id);
+                return talent ? talent.image : null;
+            }).filter(Boolean);
+
+            // Get product images
+            const productImages = state.productImages
+                .filter(img => img && img.selected !== false)
+                .map(img => img.url);
+
+            // Generate for each active output
+            const promises = activeOutputs.map(async (output, index) => {
+                try {
+                    // Build prompt based on output type and count
+                    const prompt = buildPrompt(output, talentImages.length, productImages.length);
+
+                    // Collect reference images
+                    const refImages = [...talentImages];
+                    if (productImages.length > 0) {
+                        refImages.push(...productImages);
+                    }
+
+                    // Upload reference images
+                    const uploadPromises = refImages.map(url => {
+                        if (url.startsWith('data:')) {
+                            return api.uploadBase64(url);
+                        }
+                        return Promise.resolve({ url });
+                    });
+                    const uploadResults = await Promise.all(uploadPromises);
+                    const imageUrls = uploadResults.map(r => r.url);
+
+                    // Generate
+                    const params = {
+                        prompt,
+                        image_urls: imageUrls,
+                        num_images: 1,
+                        aspect_ratio: '3:4',
+                        output_format: 'png'
+                    };
+
+                    const data = await api.remixImage('nano-pro', params);
+
+                    if (data.images && data.images.length > 0) {
+                        state.results.push({
+                            url: data.images[0].url,
+                            prompt,
+                            type: OUTPUT_LABELS[output.type],
+                            count: output.count
+                        });
+                        renderResults();
+                    }
+                } catch (error) {
+                    console.error('Generation error:', error);
+                }
+
+                completed++;
+                elements.progressCount.textContent = `${completed} / ${total}`;
+                elements.progressBar.style.width = `${(completed / total) * 100}%`;
+            });
+
+            await Promise.all(promises);
+            elements.progressSection.classList.remove('visible');
+        }
+
+        // Build prompt based on output type
+        function buildPrompt(output, numTalent, numProducts) {
+            const baseAnalysis = state.analysis || '';
+            const subjectCount = output.count;
+
+            let prompt = '';
+
+            if (output.type === 'ecom') {
+                // E-commerce: white studio background
+                if (subjectCount === 0) {
+                    prompt = `Product photography on white studio background. ${baseAnalysis}. Clean, professional e-commerce style.`;
+                } else {
+                    const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people together`;
+                    prompt = `Full-body e-commerce photo of ${peopleText} in white studio. ${baseAnalysis}. Clean white background, professional studio lighting, fashion e-commerce style.`;
+                }
+            } else if (output.type === 'closeup') {
+                // Close-up: portrait focus
+                if (subjectCount === 0) {
+                    prompt = `Close-up product detail shot. ${baseAnalysis}. Soft studio lighting, shallow depth of field.`;
+                } else {
+                    const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people`;
+                    prompt = `Close-up portrait of ${peopleText}. ${baseAnalysis}. Editorial beauty shot, soft lighting, focus on face and upper body.`;
+                }
+            } else if (output.type === 'campaign') {
+                // Campaign: editorial/creative
+                if (subjectCount === 0) {
+                    prompt = `Editorial product campaign photo. ${baseAnalysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
+                } else {
+                    const peopleText = subjectCount === 1 ? 'this exact person' : `these exact ${subjectCount} people together`;
+                    prompt = `Editorial campaign photo of ${peopleText}. ${baseAnalysis}. Fashion editorial style, creative composition, dramatic lighting.`;
+                }
+            }
+
+            // Add product context if available
+            if (numProducts > 0) {
+                prompt += ' Feature the product prominently in the shot.';
+            }
+
+            return prompt;
+        }
+
+        // Render results
+        function renderResults() {
+            if (state.results.length === 0) {
+                elements.resultsSection.classList.remove('visible');
+                return;
+            }
+
+            elements.resultsSection.classList.add('visible');
+            elements.resultsGrid.innerHTML = state.results.map((result, index) => `
+                <div class="result-card" onclick="openLightbox(${index})">
+                    <img src="${result.url}" alt="Result ${index + 1}" class="result-image">
+                </div>
+            `).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+        };
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxType.textContent = result.type;
+            elements.lightboxPrompt.textContent = result.prompt;
+        }
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
