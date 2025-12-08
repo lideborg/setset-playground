@@ -1426,32 +1426,34 @@
                 const styleImageUrls = [...moodboardUrls, ...talentUrls];
 
                 // Enhanced analysis prompt - extracts variety from moodboard as structured lists
-                const analysisPrompt = `Analyze these mood board images and extract the following as a structured guide. For each category, list MULTIPLE options seen across the images (not just one).
+                // Key: ask for SPECIFIC DESCRIPTIVE environments, not generic labels
+                const analysisPrompt = `Analyze these mood board images and extract the following as a structured guide. For each category, list MULTIPLE specific options seen across the images.
 
 Return your response in this EXACT format:
 
-LIGHTING: [list 3-5 lighting styles seen, e.g. "soft natural window light, dramatic side lighting, golden hour glow, diffused overcast"]
+LIGHTING: [list 3-5 SPECIFIC lighting setups, e.g. "soft diffused light through sheer curtains, warm afternoon sun casting long shadows, overcast day with even soft light, dramatic single window light from the left"]
 
-COLORS: [list the color palette/tones, e.g. "muted earth tones, warm browns, soft creams, occasional navy accents"]
+COLORS: [describe the color palette with specifics, e.g. "warm terracotta and sand tones, deep forest green accents, soft cream whites, weathered wood browns"]
 
-ENVIRONMENTS: [list 3-5 settings/locations seen, e.g. "minimalist studio, urban street, cozy interior, outdoor terrace, industrial loft"]
+ENVIRONMENTS: [list 4-6 SPECIFIC DETAILED locations - be descriptive like a set designer, e.g. "sunlit Scandinavian living room with oak furniture and linen curtains, weathered Mediterranean terrace with terracotta tiles and olive trees, modern concrete gallery space with large windows, cozy cafe corner with velvet seating and brass fixtures, airy beach house with whitewashed walls and natural textures"]
 
-CLOTHING_STYLES: [list 4-6 outfit types/aesthetics seen, e.g. "relaxed tailoring, oversized knitwear, crisp shirting, layered textures"]
+CLOTHING_STYLES: [list 4-6 outfit descriptions, e.g. "relaxed tailored linen suit, chunky cable-knit sweater with wide trousers, crisp white oxford shirt with raw denim, draped midi dress in natural fabric"]
 
-TEXTURES: [list 3-5 fabric/material textures seen, e.g. "soft wool knit, crisp cotton, smooth leather, raw denim, flowing silk"]
+TEXTURES: [list 3-5 fabric/material textures, e.g. "nubby boucle wool, washed linen, soft brushed cotton, smooth aged leather, raw silk"]
 
-POSES: [list 4-6 poses/body language seen, e.g. "walking naturally, seated casually, leaning on furniture, standing relaxed"]
+POSES: [list 4-6 specific poses with context, e.g. "walking through a doorway mid-stride, seated on floor leaning against wall, standing by window looking out, reclining on sofa reading, perched on stool at counter"]
 
-EXPRESSIONS: [list 3-5 facial expressions/moods seen, e.g. "candid laugh, serious gaze, looking away pensively, subtle smile, contemplative"]
+EXPRESSIONS: [list 3-5 expressions, e.g. "genuine mid-laugh, thoughtful gaze into distance, serene closed-eye moment, curious glance over shoulder, relaxed half-smile"]
 
-FOCAL_LENGTH: [list 2-4 apparent focal lengths/lens looks, e.g. "wide environmental 24mm, standard 50mm, compressed telephoto 85mm, intimate portrait 135mm"]
+FOCAL_LENGTH: [list 2-4 lens looks, e.g. "wide environmental 28mm showing full room, classic portrait 85mm with soft background, intimate close 135mm with shallow depth"]
 
-MOOD: [1-2 sentences about the overall feeling/vibe]
+MOOD: [1-2 sentences capturing the emotional quality and atmosphere]
 
 IMPORTANT:
 - Do NOT mention any brand names
-- List VARIETY - the goal is to have options to choose from
-- Keep each list concise but with multiple options`;
+- Be SPECIFIC and DESCRIPTIVE - not generic labels
+- Think like a location scout and set designer
+- Environments should be complete scene descriptions that could guide a photographer`;
 
                 const result = await api.analyzeImages(styleImageUrls, analysisPrompt);
 
