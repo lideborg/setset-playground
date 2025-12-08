@@ -802,11 +802,87 @@
             outputs: new Array(12).fill(null).map(() => ({ type: 'none', count: 1, productCount: 1 })),
             outputMode: 'people',     // 'people' or 'product'
             aspectRatio: '3:4',
-            analysis: null,           // Moodboard + talent analysis
+            analysis: null,           // Raw analysis text
+            parsedAnalysis: null,     // Parsed structured analysis with arrays
             productAnalysis: null,    // Product descriptions (what the products are)
             results: [],
             lightboxIndex: 0
         };
+
+        // Parse structured analysis into arrays for variety
+        function parseAnalysis(text) {
+            const parsed = {
+                lighting: [],
+                colors: '',
+                environments: [],
+                clothing: [],
+                textures: [],
+                poses: [],
+                expressions: [],
+                focalLength: [],
+                mood: ''
+            };
+
+            try {
+                // Extract LIGHTING
+                const lightingMatch = text.match(/LIGHTING:\s*\[?([^\]\n]+)/i);
+                if (lightingMatch) {
+                    parsed.lighting = lightingMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+                }
+
+                // Extract COLORS
+                const colorsMatch = text.match(/COLORS:\s*\[?([^\]\n]+)/i);
+                if (colorsMatch) {
+                    parsed.colors = colorsMatch[1].trim();
+                }
+
+                // Extract ENVIRONMENTS
+                const envMatch = text.match(/ENVIRONMENTS:\s*\[?([^\]\n]+)/i);
+                if (envMatch) {
+                    parsed.environments = envMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+                }
+
+                // Extract CLOTHING_STYLES
+                const clothingMatch = text.match(/CLOTHING_STYLES:\s*\[?([^\]\n]+)/i);
+                if (clothingMatch) {
+                    parsed.clothing = clothingMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+                }
+
+                // Extract TEXTURES
+                const texturesMatch = text.match(/TEXTURES:\s*\[?([^\]\n]+)/i);
+                if (texturesMatch) {
+                    parsed.textures = texturesMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+                }
+
+                // Extract POSES
+                const posesMatch = text.match(/POSES:\s*\[?([^\]\n]+)/i);
+                if (posesMatch) {
+                    parsed.poses = posesMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+                }
+
+                // Extract EXPRESSIONS
+                const expressionsMatch = text.match(/EXPRESSIONS:\s*\[?([^\]\n]+)/i);
+                if (expressionsMatch) {
+                    parsed.expressions = expressionsMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+                }
+
+                // Extract FOCAL_LENGTH
+                const focalMatch = text.match(/FOCAL_LENGTH:\s*\[?([^\]\n]+)/i);
+                if (focalMatch) {
+                    parsed.focalLength = focalMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+                }
+
+                // Extract MOOD
+                const moodMatch = text.match(/MOOD:\s*\[?([^\]\n]+)/i);
+                if (moodMatch) {
+                    parsed.mood = moodMatch[1].trim();
+                }
+            } catch (e) {
+                console.error('Error parsing analysis:', e);
+            }
+
+            return parsed;
+        }
 
         // DOM Elements
         const elements = {
@@ -1076,6 +1152,7 @@
             elements.clearMoodboard.addEventListener('click', () => {
                 state.moodboardImages = new Array(24).fill(null);
                 state.analysis = null;
+                state.parsedAnalysis = null;
                 state.productAnalysis = null;
                 elements.analyzeBtn.textContent = 'Analyze Mood Board';
                 elements.analyzeBtn.classList.remove('analyzed');
@@ -1348,26 +1425,41 @@
                 // Combine moodboard and talent for style analysis
                 const styleImageUrls = [...moodboardUrls, ...talentUrls];
 
-                // Enhanced analysis prompt that covers all requested aspects
-                const analysisPrompt = `Analyze these images and create a comprehensive style guide for image generation. Write as a single flowing paragraph that can be used directly in prompts. Include:
+                // Enhanced analysis prompt - extracts variety from moodboard as structured lists
+                const analysisPrompt = `Analyze these mood board images and extract the following as a structured guide. For each category, list MULTIPLE options seen across the images (not just one).
 
-1. CLOTHING: Describe the specific clothing items, styles, and aesthetics visible (minimalist, luxury, streetwear, bohemian, etc.). Note textures, fits, and silhouettes.
+Return your response in this EXACT format:
 
-2. PHOTOGRAPHY STYLE: Is it analog/film-like or digital? Note any grain, color grading, filters, or processing effects. Describe color palette and tones (warm, cool, muted, saturated).
+LIGHTING: [list 3-5 lighting styles seen, e.g. "soft natural window light, dramatic side lighting, golden hour glow, diffused overcast"]
 
-3. LIGHTING: Describe the lighting approach (natural, studio, dramatic, soft, harsh, backlit, etc.).
+COLORS: [list the color palette/tones, e.g. "muted earth tones, warm browns, soft creams, occasional navy accents"]
 
-4. POSES & COMPOSITION: Note typical body language, poses, framing, and compositional elements.
+ENVIRONMENTS: [list 3-5 settings/locations seen, e.g. "minimalist studio, urban street, cozy interior, outdoor terrace, industrial loft"]
 
-5. MOOD & ENVIRONMENT: Describe the atmosphere, settings, and overall mood.
+CLOTHING_STYLES: [list 4-6 outfit types/aesthetics seen, e.g. "relaxed tailoring, oversized knitwear, crisp shirting, layered textures"]
 
-IMPORTANT: Do NOT mention any brand names, designer labels, or logos. Describe the style without naming specific brands. Write one cohesive paragraph that flows naturally.`;
+TEXTURES: [list 3-5 fabric/material textures seen, e.g. "soft wool knit, crisp cotton, smooth leather, raw denim, flowing silk"]
+
+POSES: [list 4-6 poses/body language seen, e.g. "walking naturally, seated casually, leaning on furniture, standing relaxed"]
+
+EXPRESSIONS: [list 3-5 facial expressions/moods seen, e.g. "candid laugh, serious gaze, looking away pensively, subtle smile, contemplative"]
+
+FOCAL_LENGTH: [list 2-4 apparent focal lengths/lens looks, e.g. "wide environmental 24mm, standard 50mm, compressed telephoto 85mm, intimate portrait 135mm"]
+
+MOOD: [1-2 sentences about the overall feeling/vibe]
+
+IMPORTANT:
+- Do NOT mention any brand names
+- List VARIETY - the goal is to have options to choose from
+- Keep each list concise but with multiple options`;
 
                 const result = await api.analyzeImages(styleImageUrls, analysisPrompt);
 
                 if (result.content) {
                     state.analysis = result.content;
+                    state.parsedAnalysis = parseAnalysis(result.content);
                     console.log('Style analysis stored:', state.analysis);
+                    console.log('Parsed analysis:', state.parsedAnalysis);
                 }
 
                 // Analyze products separately if there are any
@@ -1538,16 +1630,71 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
             elements.progressSection.classList.remove('visible');
         }
 
+        // Pose and composition variety pools
+        const SOLO_POSES = [
+            'standing confidently with hands in pockets',
+            'walking mid-stride',
+            'leaning against a wall casually',
+            'sitting on a stool',
+            'turning to look over shoulder',
+            'adjusting jacket or sleeve',
+            'standing with arms crossed',
+            'candid laugh or smile',
+            'looking down thoughtfully',
+            'standing with weight on one leg',
+            'hands on hips',
+            'running fingers through hair'
+        ];
+
+        const DUO_POSES = [
+            'standing side by side looking at camera',
+            'one person slightly behind the other',
+            'walking together in conversation',
+            'sitting next to each other',
+            'back to back',
+            'one seated, one standing',
+            'looking at each other',
+            'casual interaction, laughing together',
+            'shoulder to shoulder facing forward',
+            'one leaning on the other casually'
+        ];
+
+        const GROUP_POSES = [
+            'arranged in a staggered formation',
+            'walking together as a group',
+            'sitting and standing mixed',
+            'in a casual huddle',
+            'spread out across the frame',
+            'lined up but with varied poses',
+            'interacting naturally with each other',
+            'some facing camera, some in profile'
+        ];
+
+        const OUTFIT_VARIETY = [
+            'casual streetwear',
+            'relaxed tailored pieces',
+            'layered textures',
+            'bold color accent piece',
+            'minimal monochrome',
+            'mixed formal and casual',
+            'oversized silhouettes',
+            'fitted contemporary style'
+        ];
+
+        // Helper to pick random item from array with fallback
+        function pickRandom(arr, fallback = '') {
+            if (!arr || arr.length === 0) return fallback;
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
         // Build prompt based on output type
         function buildPrompt(output, numTalent, numProducts, isPeopleMode = true) {
             const subjectCount = isPeopleMode ? output.count : 0;
             const hasProducts = numProducts > 0;
+            const parsed = state.parsedAnalysis || {};
 
-            // Extract key elements from analysis and sanitize brand names
-            let analysis = state.analysis || '';
+            // Sanitize product description from brand names
             let productDesc = state.productAnalysis || '';
-
-            // Remove common luxury brand names that might slip through
             const brandBlacklist = [
                 'Gucci', 'Louis Vuitton', 'LV', 'Prada', 'Chanel', 'Dior', 'Hermès', 'Hermes',
                 'Burberry', 'Balenciaga', 'Versace', 'Fendi', 'Givenchy', 'Saint Laurent', 'YSL',
@@ -1559,11 +1706,8 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
             ];
             brandBlacklist.forEach(brand => {
                 const regex = new RegExp(`\\b${brand}\\b`, 'gi');
-                analysis = analysis.replace(regex, '');
                 productDesc = productDesc.replace(regex, '');
             });
-            // Clean up any double spaces from removals
-            analysis = analysis.replace(/\s{2,}/g, ' ').trim();
             productDesc = productDesc.replace(/\s{2,}/g, ' ').trim();
 
             // Build product description for prompts
@@ -1571,27 +1715,63 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                 ? `Products: ${productDesc}.`
                 : '';
 
+            // Pick random elements from parsed analysis for variety
+            // Use moodboard-derived options first, fallback to defaults
+            const randomLighting = pickRandom(parsed.lighting, 'soft natural light');
+            const randomEnv = pickRandom(parsed.environments, 'minimalist studio');
+            const colorPalette = parsed.colors || 'neutral tones';
+            const mood = parsed.mood || 'sophisticated and elegant';
+            const randomTexture = pickRandom(parsed.textures, '');
+            const randomExpression = pickRandom(parsed.expressions, 'natural expression');
+            const randomFocal = pickRandom(parsed.focalLength, '');
+
+            // Pick random pose - prefer moodboard-derived, fallback to hardcoded
+            let randomPose;
+            if (parsed.poses && parsed.poses.length > 0) {
+                randomPose = pickRandom(parsed.poses);
+            } else {
+                randomPose = subjectCount === 1
+                    ? SOLO_POSES[Math.floor(Math.random() * SOLO_POSES.length)]
+                    : subjectCount === 2
+                        ? DUO_POSES[Math.floor(Math.random() * DUO_POSES.length)]
+                        : GROUP_POSES[Math.floor(Math.random() * GROUP_POSES.length)];
+            }
+
+            // Pick random outfit - prefer moodboard-derived, fallback to hardcoded
+            // Combine clothing style with texture if available
+            let randomOutfit = parsed.clothing && parsed.clothing.length > 0
+                ? pickRandom(parsed.clothing)
+                : OUTFIT_VARIETY[Math.floor(Math.random() * OUTFIT_VARIETY.length)];
+            if (randomTexture) {
+                randomOutfit = `${randomOutfit} in ${randomTexture}`;
+            }
+
             let prompt = '';
+
+            // Build a style descriptor from the parsed elements
+            const styleDesc = `${randomLighting}, ${colorPalette}, ${mood}`;
+            const focalDesc = randomFocal ? `, shot on ${randomFocal}` : '';
 
             if (!isPeopleMode || subjectCount === 0) {
                 // Product mode OR no people - product/environment only
                 const productCountText = numProducts === 1
                     ? 'ONLY this exact product from the reference image'
                     : `ONLY these exact ${numProducts} products from the reference images`;
+                const scaleNote = 'Maintain realistic product scale and proportions. Products should look natural in their environment.';
                 const noExtraItems = 'Do NOT add any extra items, objects, or products that are not in the reference images.';
 
                 if (output.type === 'ecom') {
                     prompt = hasProducts
-                        ? `Place ${productCountText} on a clean white studio background. ${productInfo} Professional e-commerce product photography. ${noExtraItems} ${analysis}`
-                        : `Product photography on white studio background. ${analysis}. Clean, professional e-commerce style.`;
+                        ? `Place ${productCountText} on a clean white studio background. ${productInfo} Professional e-commerce product photography. ${scaleNote} ${noExtraItems} ${styleDesc}${focalDesc}.`
+                        : `Product photography on white studio background. ${styleDesc}. Clean, professional e-commerce style${focalDesc}.`;
                 } else if (output.type === 'closeup') {
                     prompt = hasProducts
-                        ? `Close-up detail shot of ${productCountText}. ${productInfo} ${analysis}. Soft studio lighting, shallow depth of field, focus on texture and details. ${noExtraItems}`
-                        : `Close-up product detail shot. ${analysis}. Soft studio lighting, shallow depth of field.`;
+                        ? `Close-up detail shot of ${productCountText}. ${productInfo} ${styleDesc}. Soft studio lighting, shallow depth of field, focus on texture and details${focalDesc}. ${scaleNote} ${noExtraItems}`
+                        : `Close-up product detail shot. ${styleDesc}. Soft studio lighting, shallow depth of field${focalDesc}.`;
                 } else if (output.type === 'campaign') {
                     prompt = hasProducts
-                        ? `Place ${productCountText} in an editorial campaign setting. ${productInfo} ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic. ${noExtraItems}`
-                        : `Editorial campaign photo. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
+                        ? `Place ${productCountText} in ${randomEnv}. ${productInfo} ${styleDesc}. Lifestyle product photography, natural placement. ${scaleNote} ${noExtraItems}${focalDesc}.`
+                        : `Editorial campaign photo in ${randomEnv}. ${styleDesc}. Creative composition, luxury aesthetic${focalDesc}.`;
                 }
             } else {
                 // People mode with people
@@ -1601,11 +1781,11 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                     : '';
 
                 if (output.type === 'ecom') {
-                    prompt = `Place ${peopleText} in a white studio. Full-body e-commerce fashion photo. ${analysis}. Clean white background, professional studio lighting, fashion e-commerce style.${productText}`;
+                    prompt = `Place ${peopleText} in a white studio, ${randomPose}, ${randomExpression}. Full-body e-commerce fashion photo. Wearing ${randomOutfit}. ${styleDesc}. Clean white background, professional studio lighting${focalDesc}.${productText}`;
                 } else if (output.type === 'closeup') {
-                    prompt = `Close-up portrait of ${peopleText}. ${analysis}. Editorial beauty shot, soft lighting, focus on face and expression, chest-up framing.${productText}`;
+                    prompt = `Close-up portrait of ${peopleText}, ${randomExpression}. Wearing ${randomOutfit}. ${randomLighting}, ${colorPalette}. Editorial beauty shot, focus on face and expression, chest-up framing${focalDesc}.${productText}`;
                 } else if (output.type === 'campaign') {
-                    prompt = `Place ${peopleText} in an editorial campaign setting. ${analysis}. Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.${productText}`;
+                    prompt = `Place ${peopleText} in ${randomEnv}, ${randomPose}, ${randomExpression}. Wearing ${randomOutfit}. ${styleDesc}. Fashion editorial style, creative composition${focalDesc}.${productText}`;
                 }
             }
 
