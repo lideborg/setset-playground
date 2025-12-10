@@ -189,6 +189,72 @@ app.post('/api/bg-replace', async (req, res) => {
 });
 
 /**
+ * POST /api/video
+ * Generate video from images using Kling video models
+ * Supports v1.6 Pro (first/last frame) and v2.6 Pro (better quality + audio)
+ */
+app.post('/api/video', async (req, res) => {
+    try {
+        const { model, image_url, tail_image_url, prompt, duration, aspect_ratio, generate_audio, negative_prompt, cfg_scale } = req.body;
+
+        if (!image_url || !prompt) {
+            return res.status(400).json({ error: 'image_url and prompt are required' });
+        }
+
+        // Configure fal with the appropriate key
+        fal.config({ credentials: getFalKey(req) });
+
+        // Determine endpoint based on model
+        let endpoint;
+        if (model === 'v2.6') {
+            endpoint = 'fal-ai/kling-video/v2.6/pro/image-to-video';
+        } else {
+            endpoint = 'fal-ai/kling-video/v1.6/pro/image-to-video';
+        }
+
+        // Build params based on model
+        const params = {
+            prompt,
+            image_url,
+            duration: duration || '5'
+        };
+
+        if (model === 'v2.6') {
+            // v2.6 specific params
+            if (generate_audio !== undefined) params.generate_audio = generate_audio;
+            if (negative_prompt) params.negative_prompt = negative_prompt;
+        } else {
+            // v1.6 specific params
+            if (tail_image_url) params.tail_image_url = tail_image_url;
+            if (aspect_ratio) params.aspect_ratio = aspect_ratio;
+            if (cfg_scale !== undefined) params.cfg_scale = cfg_scale;
+            if (negative_prompt) params.negative_prompt = negative_prompt;
+        }
+
+        console.log(`🎬 [Video] Model: ${model}, Endpoint: ${endpoint}`);
+        console.log(`🎬 [Video] Params:`, JSON.stringify(params, null, 2));
+
+        // Use fal.subscribe for long-running video generation
+        const result = await fal.subscribe(endpoint, {
+            input: params,
+            logs: true,
+            onQueueUpdate: (update) => {
+                if (update.status === 'IN_PROGRESS') {
+                    console.log(`🎬 [Video] Progress: ${update.logs?.map(l => l.message).join(', ') || 'processing...'}`);
+                }
+            }
+        });
+
+        console.log(`✅ [Video] Complete:`, JSON.stringify(result.data, null, 2));
+
+        res.json(result.data);
+    } catch (error) {
+        console.error('❌ [Video] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/prompts
  * Generate prompts using OpenAI
  */

@@ -50,10 +50,10 @@
             color: var(--white);
         }
 
-        /* Talent Grid - 12 columns, responsive */
+        /* Talent Grid - 12 columns x 2 rows */
         .talent-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            grid-template-columns: repeat(6, 1fr);
             gap: var(--space-xs);
         }
 
@@ -110,10 +110,10 @@
 
         /* Talent names removed per user request */
 
-        /* Mood Board Grid - 12 columns, responsive */
+        /* Mood Board Grid - 12 columns x 2 rows */
         .moodboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            grid-template-columns: repeat(6, 1fr);
             gap: var(--space-xs);
         }
 
@@ -187,29 +187,29 @@
             filter: grayscale(100%);
         }
 
-        /* Product Grid - 12 columns, responsive */
+        /* Product Grid - 6 columns x 2 rows */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: var(--space-xs);
         }
 
-        @media (min-width: 800px) {
+        @media (min-width: 600px) {
             .product-grid {
-                grid-template-columns: repeat(12, 1fr);
+                grid-template-columns: repeat(6, 1fr);
             }
         }
 
-        /* Output Grid - 12 columns, responsive */
+        /* Output Grid - 6 columns x 2 rows */
         .output-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: var(--space-xs);
         }
 
-        @media (min-width: 900px) {
+        @media (min-width: 600px) {
             .output-grid {
-                grid-template-columns: repeat(12, 1fr);
+                grid-template-columns: repeat(6, 1fr);
             }
         }
 
@@ -373,20 +373,66 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             position: relative;
             background: var(--off-white);
             transition: all var(--transition-fast);
             padding: var(--space-xs);
         }
 
-        .output-slot:hover {
-            border-color: var(--ash-grey);
-        }
-
         .output-slot.active {
             border-color: var(--ash-grey);
             background: var(--white);
+        }
+
+        .output-type-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 100%;
+        }
+
+        .output-type-btn {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: 500;
+            text-align: center;
+            transition: all var(--transition-fast);
+            color: var(--ash-grey);
+            white-space: nowrap;
+        }
+
+        .output-type-btn:hover {
+            border-color: var(--slate);
+            color: var(--carbon);
+        }
+
+        .output-type-btn.active {
+            color: var(--white);
+        }
+
+        .output-type-btn.ecom.active {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .output-type-btn.closeup.active {
+            background: #7c3aed;
+            border-color: #7c3aed;
+        }
+
+        .output-type-btn.campaign.active {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .output-type-btn.product.active {
+            background: #059669;
+            border-color: #059669;
         }
 
         .output-type {
@@ -778,20 +824,22 @@
             { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' }
         ];
 
-        // Output types cycle - different for people vs product mode
-        const OUTPUT_TYPES_PEOPLE = ['none', 'ecom', 'closeup', 'campaign'];
-        const OUTPUT_TYPES_PRODUCT = ['none', 'ecom', 'campaign']; // No close-up for product
+        // Output types - different for people vs product mode
+        const OUTPUT_TYPES_PEOPLE = ['ecom', 'closeup', 'campaign', 'product'];
+        const OUTPUT_TYPES_PRODUCT = ['ecom', 'campaign', 'product'];
         const OUTPUT_LABELS = {
             none: 'None',
-            ecom: 'E-Commerce',
-            closeup: 'Close-Up',
-            campaign: 'Campaign'
+            ecom: 'Studio',
+            closeup: 'Portrait',
+            campaign: 'Campaign',
+            product: 'Product'
         };
         const OUTPUT_ICONS = {
             none: '○',
             ecom: '🏪',
             closeup: '👤',
-            campaign: '📸'
+            campaign: '📸',
+            product: '👕'
         };
 
         // State
@@ -949,25 +997,32 @@
         // Render Output Grid
         function renderOutputGrid() {
             const isPeopleMode = state.outputMode === 'people';
-            const outputTypes = isPeopleMode ? OUTPUT_TYPES_PEOPLE : OUTPUT_TYPES_PRODUCT;
             const maxProducts = state.productImages.filter(img => img && img.selected !== false).length;
+            const availableTypes = isPeopleMode ? OUTPUT_TYPES_PEOPLE : OUTPUT_TYPES_PRODUCT;
 
             // Update hint text based on mode
             if (isPeopleMode) {
-                elements.outputHint.textContent = 'Click to cycle: None → E-commerce → Close-up → Campaign. Use slider to set number of people (0-4).';
+                elements.outputHint.textContent = 'Select output type. Use slider to set number of people (0-4).';
             } else {
-                elements.outputHint.textContent = 'Click to cycle: None → E-commerce → Campaign. Use slider to set number of products per shot.';
+                elements.outputHint.textContent = 'Select output type. Use slider to set number of products per shot.';
             }
 
             elements.outputGrid.innerHTML = state.outputs.map((output, i) => {
                 const isActive = output.type !== 'none';
                 const sliderValue = isPeopleMode ? output.count : output.productCount;
                 const sliderMax = isPeopleMode ? 4 : Math.max(1, maxProducts);
+
+                // Build type buttons with full labels
+                const typeButtons = availableTypes.map(type => `
+                    <button class="output-type-btn ${type} ${output.type === type ? 'active' : ''}" data-type="${type}">${OUTPUT_LABELS[type]}</button>
+                `).join('');
+
                 return `
                     <div class="output-slot-wrapper">
                         <div class="output-slot ${isActive ? 'active' : ''}" data-index="${i}">
-                            <div class="output-icon">${OUTPUT_ICONS[output.type]}</div>
-                            <div class="output-type ${output.type}">${OUTPUT_LABELS[output.type]}</div>
+                            <div class="output-type-buttons">
+                                ${typeButtons}
+                            </div>
                             ${isActive ? `<div class="output-count-display">${sliderValue}</div>` : ''}
                         </div>
                         ${isActive ? `
@@ -977,15 +1032,17 @@
                 `;
             }).join('');
 
-            elements.outputGrid.querySelectorAll('.output-slot').forEach(slot => {
-                const index = parseInt(slot.dataset.index);
-
-                // Click to cycle type
-                slot.addEventListener('click', () => {
+            // Type button click events
+            elements.outputGrid.querySelectorAll('.output-type-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const slot = btn.closest('.output-slot');
+                    const index = parseInt(slot.dataset.index);
+                    const clickedType = btn.dataset.type;
                     const currentType = state.outputs[index].type;
-                    const currentIdx = outputTypes.indexOf(currentType);
-                    const nextIdx = (currentIdx + 1) % outputTypes.length;
-                    state.outputs[index].type = outputTypes[nextIdx];
+
+                    // Toggle: if clicking active type, set to none. Otherwise set to clicked type.
+                    state.outputs[index].type = (currentType === clickedType) ? 'none' : clickedType;
                     renderOutputGrid();
                     updateUI();
                 });
@@ -1592,6 +1649,22 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                     prompt = hasProducts
                         ? `Place ${productCountText} in an editorial campaign setting. ${productInfo} ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic. ${noExtraItems}`
                         : `Editorial campaign photo. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
+                } else if (output.type === 'product') {
+                    // Product shots: flat lays, on hangers, on tables/floors, lifestyle arrangements
+                    const productStyles = [
+                        'flat lay arrangement on textured surface',
+                        'hanging on a minimalist clothing rack',
+                        'draped casually on a wooden table',
+                        'laid out on concrete floor',
+                        'arranged on a bed with linen sheets',
+                        'hanging against a neutral wall',
+                        'folded neatly on a marble surface',
+                        'displayed on a vintage wooden chair'
+                    ];
+                    const randomStyle = productStyles[Math.floor(Math.random() * productStyles.length)];
+                    prompt = hasProducts
+                        ? `${productCountText} shown as ${randomStyle}. ${productInfo} ${analysis}. Lifestyle product photography, editorial aesthetic, natural lighting. ${noExtraItems}`
+                        : `Product photography as ${randomStyle}. ${analysis}. Lifestyle product photography, editorial aesthetic, natural lighting.`;
                 }
             } else {
                 // People mode with people
@@ -1606,6 +1679,16 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                     prompt = `Close-up portrait of ${peopleText}. ${analysis}. Editorial beauty shot, soft lighting, focus on face and expression, chest-up framing.${productText}`;
                 } else if (output.type === 'campaign') {
                     prompt = `Place ${peopleText} in an editorial campaign setting. ${analysis}. Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.${productText}`;
+                } else if (output.type === 'product') {
+                    // Product shots with people - focus on the product with model holding/wearing
+                    const productStyles = [
+                        'holding the product in a lifestyle setting',
+                        'wearing the product in an editorial pose',
+                        'presenting the product in a casual lifestyle scene',
+                        'showcasing the product with natural interaction'
+                    ];
+                    const randomStyle = productStyles[Math.floor(Math.random() * productStyles.length)];
+                    prompt = `${peopleText} ${randomStyle}. ${analysis}. Focus on the product while maintaining fashion editorial aesthetic.${productText}`;
                 }
             }
 
