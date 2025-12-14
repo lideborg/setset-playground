@@ -61,9 +61,19 @@
             border-color: var(--jet);
         }
 
+        .upload-slot.selected {
+            border: 3px solid #000 !important;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+            background: #f0f0f0;
+        }
+
         .upload-slot.filled {
             border-color: var(--jet);
             background: var(--white);
+        }
+
+        .upload-slot.filled.selected {
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.25);
         }
 
         .upload-slot img {
@@ -101,12 +111,6 @@
 
         .upload-slot.deselected img {
             filter: grayscale(100%);
-        }
-
-        .upload-slot.paste-ready {
-            border-color: #2563eb;
-            border-width: 2px;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
         }
 
         /* Idea Section */
@@ -624,41 +628,34 @@
             slot.dataset.index = index;
             slot.dataset.type = type;
             slot.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent document click from clearing selection
+
+                // Don't do anything if clicking on remove button
+                if (e.target.closest('.remove-btn')) return;
+
                 const images = getImagesArray(type);
-                // If slot has image, toggle selection; otherwise set as paste target
                 if (images[index]) {
-                    // Don't toggle if clicking on remove button
-                    if (e.target.closest('.remove-btn')) return;
+                    // If slot has image, toggle deselection for generation
                     toggleImage(index, type, !images[index].selected);
-                } else {
-                    // Single click: set as paste target (for Cmd+V)
-                    setPasteTarget(type, index);
                 }
-            });
-            // Double-click opens file picker
-            slot.addEventListener('dblclick', (e) => {
-                const images = getImagesArray(type);
-                if (!images[index]) {
-                    const input = getInput(type);
-                    input.click();
-                    input.dataset.targetSlot = index;
-                }
+                // Always select slot for paste target (works for both empty and filled)
+                setSelectedSlot(type, index);
             });
             return slot;
         }
 
-        function setPasteTarget(type, index) {
-            // Clear previous paste target
-            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+        function setSelectedSlot(type, index) {
+            // Clear previous selection
+            document.querySelectorAll('.upload-slot.selected').forEach(el => el.classList.remove('selected'));
 
-            // Set new paste target
+            // Set new selection
             pasteTarget = { type, index };
             const grid = getGrid(type);
-            grid.children[index].classList.add('paste-ready');
+            grid.children[index].classList.add('selected');
         }
 
-        function clearPasteTarget() {
-            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+        function clearSelectedSlot() {
+            document.querySelectorAll('.upload-slot.selected').forEach(el => el.classList.remove('selected'));
             pasteTarget = null;
         }
 
@@ -677,20 +674,8 @@
             });
         }
 
-        elements.primaryInput.addEventListener('change', (e) => {
-            handleFileUpload(Array.from(e.target.files), 'primary', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
-            e.target.value = '';
-        });
-
-        elements.secondaryInput.addEventListener('change', (e) => {
-            handleFileUpload(Array.from(e.target.files), 'secondary', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
-            e.target.value = '';
-        });
-
-        elements.batchInput.addEventListener('change', (e) => {
-            handleFileUpload(Array.from(e.target.files), 'batch', e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null);
-            e.target.value = '';
-        });
+        // File inputs kept for potential future use but not actively used
+        // Images are added via drag & drop or clipboard paste
 
         // Reference image handlers
         elements.referenceBox.addEventListener('click', (e) => {
@@ -1206,9 +1191,9 @@
             else if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
         });
 
-        // Clipboard paste handler
+        // Clipboard paste handler (Ctrl/Cmd + V)
         document.addEventListener('paste', async (e) => {
-            // Only handle if we have a paste target
+            // Only handle if we have a selected slot
             if (!pasteTarget) return;
 
             const items = e.clipboardData?.items;
@@ -1219,11 +1204,29 @@
                     e.preventDefault();
                     const file = item.getAsFile();
                     if (file) {
-                        handleFileUpload([file], pasteTarget.type, pasteTarget.index);
-                        clearPasteTarget();
+                        const currentType = pasteTarget.type;
+                        const currentIndex = pasteTarget.index;
+                        handleFileUpload([file], currentType, currentIndex);
+
+                        // After paste, move selection to next empty slot
+                        const images = getImagesArray(currentType);
+                        const nextEmpty = images.findIndex((img, idx) => idx > currentIndex && !img);
+                        if (nextEmpty !== -1) {
+                            setSelectedSlot(currentType, nextEmpty);
+                        } else {
+                            // No more empty slots, just clear selection
+                            clearSelectedSlot();
+                        }
                     }
                     break;
                 }
+            }
+        });
+
+        // Click outside grids clears selection
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.upload-grid') && !e.target.closest('.upload-slot')) {
+                clearSelectedSlot();
             }
         });
 

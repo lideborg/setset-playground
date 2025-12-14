@@ -1703,6 +1703,38 @@
             margin-left: auto;
         }
 
+        /* Outfit Input */
+        .outfit-input-section {
+            margin-top: var(--space-sm);
+            padding-left: 52px; /* Align with toggle label */
+        }
+
+        .outfit-input {
+            width: 100%;
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-family: inherit;
+            transition: border-color var(--transition-fast);
+        }
+
+        .outfit-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .outfit-input::placeholder {
+            color: var(--ash-grey);
+        }
+
+        .outfit-hint {
+            display: block;
+            margin-top: var(--space-xs);
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
         /* Reference Image Upload */
         .reference-upload-area {
             width: 140px;
@@ -2007,10 +2039,15 @@
                 </div>
 
                 <!-- Same Clothing Toggle -->
-                <div class="toggle-option" style="margin-bottom: var(--space-md);">
+                <div class="toggle-option">
                     <div class="toggle-switch" id="sameClothingToggle"></div>
-                    <span class="toggle-label">Keep model's current outfit</span>
-                    <span class="toggle-hint">Only swap the uploaded product, keep other clothing</span>
+                    <span class="toggle-label">Keep consistent outfit</span>
+                    <span class="toggle-hint">All images use the same base outfit + uploaded product</span>
+                </div>
+                <div class="outfit-input-section" id="outfitInputSection" style="display: none; margin-bottom: var(--space-md);">
+                    <label class="setting-label">Base Outfit (worn with the product)</label>
+                    <input type="text" id="outfitInput" class="outfit-input" placeholder="e.g., black slim-fit trousers, white leather sneakers, silver watch">
+                    <small class="outfit-hint">Describe the clothing/accessories the model wears (excluding the uploaded product)</small>
                 </div>
 
                 <!-- Reference Image for Lighting/Shadows -->
@@ -2317,7 +2354,8 @@
                 front: [null, null, null], // 3 slots for front images
                 back: [null, null, null]   // 3 slots for back images
             },
-            sameClothing: false, // Toggle for keeping model's current outfit
+            sameClothing: false, // Toggle for keeping consistent outfit
+            baseOutfit: '', // Description of base outfit (pants, shoes, etc.) when sameClothing is true
             looks: [], // Array of { name, id, selected, heroImages: [], looksImages: [] }
             poseCounts: {}, // { poseId: count }
             aspectRatio: '3:4',
@@ -3186,6 +3224,10 @@ Keep it under 100 words total. Focus on the actual products only.`;
             const manualBackCount = state.manualProducts.back.filter(p => p !== null).length;
             const hasManualProducts = manualFrontCount > 0 || manualBackCount > 0;
 
+            // Count uploaded models (each creates separate images)
+            const uploadedModelCount = state.uploadedModels.length;
+            const modelMultiplier = uploadedModelCount > 0 ? uploadedModelCount : 1;
+
             // Count total selected product images from folder
             const totalSelectedImages = selectedLooks.reduce((sum, look) => {
                 const heroCount = look.heroImages.filter(i => i.selectionType && i.selectionType !== 'none').length;
@@ -3193,12 +3235,12 @@ Keep it under 100 words total. Focus on the actual products only.`;
                 return sum + heroCount + looksCount;
             }, 0);
 
-            // Total generated images = looks × poses (from folder) OR just poses (manual products)
+            // Total generated images = models × looks × poses (from folder) OR models × poses (manual products)
             let totalImages;
             if (selectedLooks.length > 0) {
-                totalImages = selectedLooks.length * totalPoses;
+                totalImages = modelMultiplier * selectedLooks.length * totalPoses;
             } else if (hasManualProducts) {
-                totalImages = totalPoses; // One set of images per pose when using manual products
+                totalImages = modelMultiplier * totalPoses;
             } else {
                 totalImages = 0;
             }
@@ -3209,9 +3251,17 @@ Keep it under 100 words total. Focus on the actual products only.`;
 
             // Build display
             if (selectedLooks.length > 0 && totalPoses > 0) {
-                elements.calcDisplay.textContent = `${selectedLooks.length} looks × ${totalPoses} poses = ${totalImages} images`;
+                if (uploadedModelCount > 1) {
+                    elements.calcDisplay.textContent = `${uploadedModelCount} models × ${selectedLooks.length} looks × ${totalPoses} poses = ${totalImages} images`;
+                } else {
+                    elements.calcDisplay.textContent = `${selectedLooks.length} looks × ${totalPoses} poses = ${totalImages} images`;
+                }
             } else if (hasManualProducts && totalPoses > 0) {
-                elements.calcDisplay.textContent = `${totalPoses} poses = ${totalImages} images`;
+                if (uploadedModelCount > 1) {
+                    elements.calcDisplay.textContent = `${uploadedModelCount} models × ${totalPoses} poses = ${totalImages} images`;
+                } else {
+                    elements.calcDisplay.textContent = `${totalPoses} poses = ${totalImages} images`;
+                }
             } else {
                 elements.calcDisplay.textContent = 'Upload products and select poses to generate';
             }
@@ -3257,71 +3307,98 @@ Keep it under 100 words total. Focus on the actual products only.`;
             // Build tasks: each look × each pose × pose count (or manual products × poses)
             const tasks = [];
 
-            if (useManualProducts) {
-                // Manual products mode - create tasks for each pose
-                for (const [poseId, count] of Object.entries(state.poseCounts)) {
-                    if (count === 0) continue;
+            // Determine which models to use - for Upload Multiple, create task per model
+            const useUploadedModels = state.uploadedModels.length > 0;
+            const modelsToUse = useUploadedModels ? state.uploadedModels : [null]; // null means use all model sources
 
-                    const pose = POSES.find(p => p.id === poseId);
-                    const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'] || [];
-                    const productView = pose?.productView || 'front';
+            // Track prompt index per pose to ensure variety across models
+            const promptIndexByPose = {};
 
-                    for (let i = 0; i < count; i++) {
-                        const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
+            // Helper to get next prompt for a pose (cycles through available prompts)
+            function getNextPromptForPose(poseId) {
+                const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'] || [];
+                if (prompts.length === 0) return '';
 
-                        tasks.push({
-                            lookId: 'manual',
-                            lookName: 'Manual Product',
-                            poseId,
-                            poseName: pose?.name || poseId,
-                            productView,  // 'front' or 'back'
-                            promptTemplate,
-                            customPrompt: '',
-                            analysis: null,
-                            isManualProduct: true,
-                            manualFrontProducts,
-                            manualBackProducts
-                        });
-                    }
+                if (promptIndexByPose[poseId] === undefined) {
+                    promptIndexByPose[poseId] = 0;
                 }
-            } else {
-                // Folder looks mode - original behavior
-                for (const look of selectedLooks) {
-                    // Front poses get: front + all images
-                    const frontImages = [
-                        ...look.heroImages.filter(i => i.selectionType === 'front' || i.selectionType === 'all'),
-                        ...look.looksImages.filter(i => i.selectionType === 'front' || i.selectionType === 'all')
-                    ];
-                    // Back pose gets: back + all images
-                    const backImages = [
-                        ...look.heroImages.filter(i => i.selectionType === 'back' || i.selectionType === 'all'),
-                        ...look.looksImages.filter(i => i.selectionType === 'back' || i.selectionType === 'all')
-                    ];
 
-                    if (frontImages.length === 0 && backImages.length === 0) continue;
+                const promptTemplate = prompts[promptIndexByPose[poseId] % prompts.length];
+                promptIndexByPose[poseId]++;
+                return promptTemplate;
+            }
 
+            if (useManualProducts) {
+                // Manual products mode - create tasks for each model × pose
+                for (const model of modelsToUse) {
                     for (const [poseId, count] of Object.entries(state.poseCounts)) {
                         if (count === 0) continue;
 
                         const pose = POSES.find(p => p.id === poseId);
-                        const prompts = POSE_PROMPTS[poseId] || POSE_PROMPTS['pose-pdp-front'] || [];
                         const productView = pose?.productView || 'front';
 
                         for (let i = 0; i < count; i++) {
-                            const promptTemplate = prompts[Math.floor(Math.random() * prompts.length)];
+                            // Each task gets a unique prompt by cycling through available prompts
+                            const promptTemplate = getNextPromptForPose(poseId);
 
                             tasks.push({
-                                lookId: look.id,
-                                lookName: look.name,
+                                lookId: 'manual',
+                                lookName: model ? model.name : 'Manual Product',
                                 poseId,
                                 poseName: pose?.name || poseId,
                                 productView,  // 'front' or 'back'
                                 promptTemplate,
-                                customPrompt: look.customPrompt || '',
-                                analysis: look.analysis || null,
-                                frontImages,
-                                backImages
+                                customPrompt: '',
+                                analysis: null,
+                                isManualProduct: true,
+                                manualFrontProducts,
+                                manualBackProducts,
+                                singleModel: model // specific model to use, or null for all
                             });
+                        }
+                    }
+                }
+            } else {
+                // Folder looks mode - create tasks for each model × look × pose
+                for (const model of modelsToUse) {
+                    for (const look of selectedLooks) {
+                        // Front poses get: front + all images
+                        const frontImages = [
+                            ...look.heroImages.filter(i => i.selectionType === 'front' || i.selectionType === 'all'),
+                            ...look.looksImages.filter(i => i.selectionType === 'front' || i.selectionType === 'all')
+                        ];
+                        // Back pose gets: back + all images
+                        const backImages = [
+                            ...look.heroImages.filter(i => i.selectionType === 'back' || i.selectionType === 'all'),
+                            ...look.looksImages.filter(i => i.selectionType === 'back' || i.selectionType === 'all')
+                        ];
+
+                        if (frontImages.length === 0 && backImages.length === 0) continue;
+
+                        for (const [poseId, count] of Object.entries(state.poseCounts)) {
+                            if (count === 0) continue;
+
+                            const pose = POSES.find(p => p.id === poseId);
+                            const productView = pose?.productView || 'front';
+
+                            for (let i = 0; i < count; i++) {
+                                // Each task gets a unique prompt by cycling through available prompts
+                                const promptTemplate = getNextPromptForPose(poseId);
+
+                                tasks.push({
+                                    lookId: look.id,
+                                    lookName: model ? `${model.name} - ${look.name}` : look.name,
+                                    poseId,
+                                    poseName: pose?.name || poseId,
+                                    productView,  // 'front' or 'back'
+                                    promptTemplate,
+                                    customPrompt: look.customPrompt || '',
+                                    analysis: look.analysis || null,
+                                    frontImages,
+                                    backImages,
+                                    singleModel: model // specific model to use, or null for all
+                                });
+                            }
                         }
                     }
                 }
@@ -3344,6 +3421,7 @@ Keep it under 100 words total. Focus on the actual products only.`;
             elements.loading.classList.add('visible');
 
             const modelUrls = [];
+            const uploadedModelUrls = {}; // { modelId: url } - for per-model tasks
             try {
                 // Handle manually uploaded model images (old method)
                 if (state.modelImage && state.modelImage.url) {
@@ -3397,12 +3475,14 @@ Keep it under 100 words total. Focus on the actual products only.`;
                     }
                 }
 
-                // Handle uploaded multiple models
+                // Handle uploaded multiple models - store by ID for per-model tasks
                 if (state.uploadedModels.length > 0) {
                     console.log(`📤 Uploading ${state.uploadedModels.length} custom models (compressing to 2300px)...`);
                     for (const model of state.uploadedModels) {
                         const compressedDataUrl = await compressImageForUpload(model.file, 2300);
                         const result = await api.uploadBase64(compressedDataUrl);
+                        uploadedModelUrls[model.id] = result.url;
+                        // Also add to modelUrls for non-single-model tasks
                         modelUrls.push(result.url);
                         console.log(`  ✅ Uploaded: ${model.name}`);
                     }
@@ -3575,25 +3655,44 @@ Keep it under 100 words total. Focus on the actual products only.`;
 
                     // Build final prompt
                     const lightingPreset = LIGHTING_PRESETS[state.selectedLighting] || LIGHTING_PRESETS['default'];
+
+                    // Format product description - include base outfit if consistent outfit mode is on
+                    let wearingDescription;
+                    if (state.sameClothing && state.baseOutfit.trim()) {
+                        // Consistent outfit mode: product + base outfit
+                        wearingDescription = `Wearing: ${productDescription}. Also wearing: ${state.baseOutfit.trim()}. IMPORTANT: The model must wear exactly this outfit in every image - the uploaded product combined with ${state.baseOutfit.trim()}. Do not change or vary the clothing.`;
+                    } else {
+                        wearingDescription = `Wearing: ${productDescription}`;
+                    }
+
                     let finalPrompt = task.promptTemplate
-                        .replace('[PRODUCT_DESCRIPTION]', productDescription)
+                        .replace('[PRODUCT_DESCRIPTION]', wearingDescription)
                         .replace('[LIGHTING]', lightingPreset.lighting);
+
+                    // Add full body reinforcement for front, angle, and back poses
+                    if (['pose-pdp-front', 'pose-pdp-angle', 'pose-pdp-back'].includes(task.poseId)) {
+                        finalPrompt += `. IMPORTANT: Full body shot from head to toe, showing complete figure including feet.`;
+                    }
+
                     if (task.customPrompt) {
                         finalPrompt += `. ${task.customPrompt}`;
-                    }
-                    // Add same clothing instruction if toggle is enabled
-                    if (state.sameClothing) {
-                        finalPrompt += `. The model should keep their current outfit and clothing, only wearing/holding/showcasing the uploaded product.`;
                     }
 
                     // Generate image - include reference image if provided for lighting/shadows consistency
                     // For back poses, put product images first so back view dominates over front-facing model images
+                    // If task has singleModel, use only that model's URL
+                    let taskModelUrls = modelUrls;
+                    if (task.singleModel && uploadedModelUrls[task.singleModel.id]) {
+                        taskModelUrls = [uploadedModelUrls[task.singleModel.id]];
+                        console.log(`  👤 Using single model: ${task.singleModel.name}`);
+                    }
+
                     let imageUrls;
                     if (task.productView === 'back') {
-                        imageUrls = [...productUrls, ...modelUrls];  // Product (back) first for back poses
+                        imageUrls = [...productUrls, ...taskModelUrls];  // Product (back) first for back poses
                         console.log(`  🔄 Back pose: product images first`);
                     } else {
-                        imageUrls = [...modelUrls, ...productUrls];  // Model first for front poses
+                        imageUrls = [...taskModelUrls, ...productUrls];  // Model first for front poses
                     }
                     if (referenceUrl) {
                         imageUrls.push(referenceUrl);
@@ -4242,6 +4341,25 @@ Keep it under 100 words total. Focus on the actual products only.`;
             renderProductSlots();
         };
 
+        // Helper to add product to slot
+        async function addProductToSlot(slotId, file) {
+            const [type, idx] = slotId.split('-');
+
+            const thumbnail = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+
+            state.manualProducts[type][parseInt(idx)] = {
+                thumbnail,
+                file,
+                name: file.name
+            };
+
+            renderProductSlots();
+        }
+
         // Click handlers for product slots
         document.querySelectorAll('.product-upload-slot').forEach(slot => {
             slot.addEventListener('click', (e) => {
@@ -4251,26 +4369,35 @@ Keep it under 100 words total. Focus on the actual products only.`;
                 currentProductSlot = slot.dataset.slot;
                 productSlotInput.click();
             });
+
+            // Drag and drop for each slot
+            slot.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                slot.style.borderColor = 'var(--jet)';
+                slot.style.background = 'var(--white)';
+            });
+
+            slot.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                slot.style.borderColor = '';
+                slot.style.background = '';
+            });
+
+            slot.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                slot.style.borderColor = '';
+                slot.style.background = '';
+
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0 && slot.dataset.slot) {
+                    await addProductToSlot(slot.dataset.slot, files[0]);
+                }
+            });
         });
 
         productSlotInput.addEventListener('change', async (e) => {
             if (e.target.files.length > 0 && currentProductSlot) {
-                const file = e.target.files[0];
-                const [type, idx] = currentProductSlot.split('-');
-
-                const thumbnail = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(file);
-                });
-
-                state.manualProducts[type][parseInt(idx)] = {
-                    thumbnail,
-                    file,
-                    name: file.name
-                };
-
-                renderProductSlots();
+                await addProductToSlot(currentProductSlot, e.target.files[0]);
                 e.target.value = '';
                 currentProductSlot = null;
             }
@@ -4278,9 +4405,17 @@ Keep it under 100 words total. Focus on the actual products only.`;
 
         // Same clothing toggle
         const sameClothingToggle = document.getElementById('sameClothingToggle');
+        const outfitInputSection = document.getElementById('outfitInputSection');
+        const outfitInput = document.getElementById('outfitInput');
+
         sameClothingToggle.addEventListener('click', () => {
             state.sameClothing = !state.sameClothing;
             sameClothingToggle.classList.toggle('active', state.sameClothing);
+            outfitInputSection.style.display = state.sameClothing ? 'block' : 'none';
+        });
+
+        outfitInput.addEventListener('input', (e) => {
+            state.baseOutfit = e.target.value;
         });
 
         // Initialize
