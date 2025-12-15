@@ -1001,7 +1001,7 @@
             const modelKey = state.selectedModel;
 
             if (useBatchMode) {
-                // Batch mode: each primary + ALL batch images together × each prompt
+                // Batch mode: each primary + ALL batch images together × each prompt × each seed
                 selectedPrimary.forEach((primaryImg, pIdx) => {
                     // Combine primary with ALL batch images - use hostedUrl for API, url for display
                     let imageUrls = [primaryImg.hostedUrl, ...selectedBatch.map(b => b.hostedUrl)];
@@ -1013,21 +1013,24 @@
                     }
                     const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
                     prompts.forEach((prompt, promptIdx) => {
-                        allTasks.push({
-                            modelKey,
-                            prompt,
-                            imageUrls,
-                            seeds: state.seeds,
-                            primaryFilename,
-                            sourceImages,
-                            primaryIndex: pIdx,
-                            batchCount: selectedBatch.length,
-                            promptIndex: promptIdx
-                        });
+                        // Create one task per seed for parallel execution
+                        for (let seedIdx = 0; seedIdx < state.seeds; seedIdx++) {
+                            allTasks.push({
+                                modelKey,
+                                prompt,
+                                imageUrls,
+                                primaryFilename,
+                                sourceImages,
+                                primaryIndex: pIdx,
+                                batchCount: selectedBatch.length,
+                                promptIndex: promptIdx,
+                                seedIndex: seedIdx
+                            });
+                        }
                     });
                 });
             } else {
-                // Normal mode: primary × secondary × prompts
+                // Normal mode: primary × secondary × prompts × seeds
                 selectedPrimary.forEach((primaryImg, pIdx) => {
                     const secondaryToUse = selectedSecondary.length > 0 ? selectedSecondary : [null];
                     secondaryToUse.forEach((secondaryImg, sIdx) => {
@@ -1041,24 +1044,27 @@
                         }
                         const primaryFilename = primaryImg.file?.name?.replace(/\.[^/.]+$/, '') || 'remix';
                         prompts.forEach((prompt, promptIdx) => {
-                            allTasks.push({
-                                modelKey,
-                                prompt,
-                                imageUrls,
-                                seeds: state.seeds,
-                                primaryFilename,
-                                sourceImages,
-                                primaryIndex: pIdx,
-                                secondaryIndex: secondaryImg ? sIdx : null,
-                                promptIndex: promptIdx
-                            });
+                            // Create one task per seed for parallel execution
+                            for (let seedIdx = 0; seedIdx < state.seeds; seedIdx++) {
+                                allTasks.push({
+                                    modelKey,
+                                    prompt,
+                                    imageUrls,
+                                    primaryFilename,
+                                    sourceImages,
+                                    primaryIndex: pIdx,
+                                    secondaryIndex: secondaryImg ? sIdx : null,
+                                    promptIndex: promptIdx,
+                                    seedIndex: seedIdx
+                                });
+                            }
                         });
                     });
                 });
             }
 
             const totalTasks = allTasks.length;
-            const totalImages = totalTasks * state.seeds;
+            const totalImages = totalTasks; // Now 1 image per task
             let imagesCompleted = 0;
 
             console.log(`📋 Created ${totalTasks} tasks, expecting ${totalImages} images`);
@@ -1082,7 +1088,7 @@
                     let params = {
                         prompt: task.prompt,
                         image_urls: task.imageUrls,
-                        num_images: task.seeds,
+                        num_images: 1, // One image per task for parallel execution
                         output_format: 'png'
                     };
 
@@ -1118,8 +1124,8 @@
                     }
                 } catch (error) {
                     console.error(`  ❌ Task failed:`, error);
-                    // Still count expected images for progress even on failure
-                    imagesCompleted += state.seeds;
+                    // Still count for progress even on failure
+                    imagesCompleted += 1;
                 }
 
                 elements.progressCount.textContent = `${imagesCompleted} / ${totalImages}`;
