@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upscaler</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        /* Upload Grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .upload-slot {
+            aspect-ratio: 1;
+            background: var(--off-white);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .upload-slot:hover {
+            border-color: var(--slate);
+        }
+
+        .upload-slot.has-image {
+            border-style: solid;
+            border-color: var(--gainsboro);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .placeholder {
+            color: var(--slate);
+            font-size: var(--text-sm);
+            text-align: center;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .upload-slot:hover .remove-btn {
+            opacity: 1;
+        }
+
+        /* Inline loader with studio messages */
+        .inline-loader {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .inline-loader.visible {
+            display: flex;
+        }
+
+        .loader-message {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            background: linear-gradient(90deg,
+                rgba(0, 47, 167, 0.4) 0%,
+                rgba(0, 47, 167, 1) 50%,
+                rgba(0, 47, 167, 0.4) 100%);
+            background-size: 200% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: sweep 2s ease-in-out infinite;
+        }
+
+        .loader-message.fade-out {
+            animation: fade-out 0.25s ease-out forwards;
+        }
+
+        .loader-message.fade-in {
+            animation: fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
+        }
+
+        @keyframes sweep {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-top: var(--space-xs);
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            background: white;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .result-card img {
+            width: 100%;
+            display: block;
+        }
+
+        .result-card .result-info {
+            padding: var(--space-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-card .result-meta {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .result-card .download-btn {
+            padding: var(--space-2xs) var(--space-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            cursor: pointer;
+        }
+
+        .result-card .download-btn:hover {
+            background: var(--gainsboro);
+        }
+
+        /* Settings */
+        .settings-row {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-sm);
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2xs);
+        }
+
+        .setting-group.flex-1 {
+            flex: 1;
+        }
+
+        .setting-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Slider */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-row .slider-value {
+            min-width: 30px;
+            text-align: center;
+            font-size: var(--text-sm);
+            font-weight: 500;
+        }
+
+        /* Generate section */
+        .generate-section {
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+            margin-top: var(--space-sm);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Upscaler</h1>
+            <p class="hero-subtitle">Upscale images using Magnific AI (2x, 4x, 8x, 16x)</p>
+        </div>
+
+        <!-- Upload Grid -->
+        <div class="section-label">Images</div>
+        <div class="upload-grid" id="upload-grid"></div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label class="setting-label">Scale Factor</label>
+                    <div class="btn-group" id="scale-buttons">
+                        <button class="btn btn--toggle active" data-scale="2x">2x</button>
+                        <button class="btn btn--toggle" data-scale="4x">4x</button>
+                        <button class="btn btn--toggle" data-scale="8x">8x</button>
+                        <button class="btn btn--toggle" data-scale="16x">16x</button>
+                    </div>
+                </div>
+
+                <div class="setting-group flex-1">
+                    <label class="setting-label">Optimized For</label>
+                    <div class="btn-group" id="optimized-buttons">
+                        <button class="btn btn--toggle active" data-opt="standard">Standard</button>
+                        <button class="btn btn--toggle" data-opt="soft_portraits">Portraits (Soft)</button>
+                        <button class="btn btn--toggle" data-opt="hard_portraits">Portraits (Sharp)</button>
+                        <button class="btn btn--toggle" data-opt="films_n_photography">Photography</button>
+                        <button class="btn btn--toggle" data-opt="art_n_illustration">Art</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label class="setting-label">Creativity (-10 to 10)</label>
+                    <div class="slider-row">
+                        <input type="range" id="creativity-slider" min="-10" max="10" value="0">
+                        <span class="slider-value" id="creativity-value">0</span>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">HDR / Detail (-10 to 10)</label>
+                    <div class="slider-row">
+                        <input type="range" id="hdr-slider" min="-10" max="10" value="0">
+                        <span class="slider-value" id="hdr-value">0</span>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Resemblance (-10 to 10)</label>
+                    <div class="slider-row">
+                        <input type="range" id="resemblance-slider" min="-10" max="10" value="0">
+                        <span class="slider-value" id="resemblance-value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-row">
+                <div class="setting-group flex-1">
+                    <label class="setting-label">Prompt (optional - guides upscaling)</label>
+                    <input type="text" class="input" id="prompt-input" placeholder="e.g., high fashion portrait, detailed skin texture...">
+                </div>
+            </div>
+
+            <div class="generate-section">
+                <div class="calc-display" id="calc-display">0 images selected</div>
+                <button class="btn btn--primary btn--lg btn--block" id="upscale-btn" disabled>
+                    Upscale Images
+                </button>
+            </div>
+        </div>
+
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Upscaling</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <p class="results-subtitle">Click to download</p>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <div class="lightbox-left">
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Original</h3>
+                    <img src="" alt="" id="lightbox-original" style="max-width: 200px; border-radius: 8px;">
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Settings</h3>
+                    <p id="lightbox-settings" style="font-size: 14px; color: #666;"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">
+                    Download Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/utils.js"></script>
+
+    <script>
+        // State
+        const state = {
+            images: [], // Array of { dataUrl, file }
+            scaleFactor: '2x',
+            optimizedFor: 'standard',
+            creativity: 0,
+            hdr: 0,
+            resemblance: 0,
+            prompt: '',
+            results: [],
+            lightboxIndex: 0
+        };
+
+        const NUM_SLOTS = 8;
+
+        // DOM Elements
+        const elements = {
+            uploadGrid: document.getElementById('upload-grid'),
+            scaleButtons: document.getElementById('scale-buttons'),
+            optimizedButtons: document.getElementById('optimized-buttons'),
+            creativitySlider: document.getElementById('creativity-slider'),
+            creativityValue: document.getElementById('creativity-value'),
+            hdrSlider: document.getElementById('hdr-slider'),
+            hdrValue: document.getElementById('hdr-value'),
+            resemblanceSlider: document.getElementById('resemblance-slider'),
+            resemblanceValue: document.getElementById('resemblance-value'),
+            promptInput: document.getElementById('prompt-input'),
+            calcDisplay: document.getElementById('calc-display'),
+            upscaleBtn: document.getElementById('upscale-btn'),
+            inlineLoader: document.getElementById('inline-loader'),
+            loaderMessage: document.getElementById('loader-message'),
+            loaderProgress: document.getElementById('loader-progress'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxOriginal: document.getElementById('lightbox-original'),
+            lightboxSettings: document.getElementById('lightbox-settings'),
+            lightboxClose: document.getElementById('lightbox-close'),
+            lightboxDownload: document.getElementById('lightbox-download')
+        };
+
+        // Studio messages for the loader
+        const STUDIO_MESSAGES = [
+            "Enhancing Details...",
+            "Analyzing Textures...",
+            "Upscaling Pixels...",
+            "Refining Edges...",
+            "Boosting Resolution...",
+            "Processing Highlights...",
+            "Sharpening Features...",
+            "Reconstructing Details...",
+            "Magnifying Beauty...",
+            "Adding Clarity...",
+            "Perfecting Tones...",
+            "Almost There..."
+        ];
+        let loadingInterval = null;
+        let lastMessageIndex = -1;
+
+        // Loading animation functions
+        function startLoadingAnimation(progressText = 'Preparing...') {
+            elements.inlineLoader.classList.add('visible');
+            elements.loaderProgress.textContent = progressText;
+
+            const initialIdx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+            elements.loaderMessage.textContent = STUDIO_MESSAGES[initialIdx];
+            lastMessageIndex = initialIdx;
+
+            loadingInterval = setInterval(() => {
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastMessageIndex && STUDIO_MESSAGES.length > 1);
+                lastMessageIndex = idx;
+
+                elements.loaderMessage.classList.add('fade-out');
+                elements.loaderMessage.classList.remove('fade-in');
+
+                setTimeout(() => {
+                    elements.loaderMessage.textContent = STUDIO_MESSAGES[idx];
+                    elements.loaderMessage.classList.remove('fade-out');
+                    elements.loaderMessage.classList.add('fade-in');
+                }, 250);
+            }, 2000);
+        }
+
+        function updateLoadingProgress(text) {
+            elements.loaderProgress.textContent = text;
+        }
+
+        function stopLoadingAnimation() {
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            elements.inlineLoader.classList.remove('visible');
+        }
+
+        // Initialize upload grid
+        function initUploadGrid() {
+            elements.uploadGrid.innerHTML = '';
+            for (let i = 0; i < NUM_SLOTS; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'upload-slot';
+                slot.dataset.index = i;
+                slot.innerHTML = `<span class="placeholder">+</span>`;
+                slot.addEventListener('click', () => handleSlotClick(i));
+                elements.uploadGrid.appendChild(slot);
+            }
+        }
+
+        function handleSlotClick(index) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => handleFileSelect(e, index);
+            input.click();
+        }
+
+        function handleFileSelect(e, index) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                state.images[index] = {
+                    dataUrl: event.target.result,
+                    file: file
+                };
+                renderUploadGrid();
+                updateCalc();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(index) {
+            state.images[index] = null;
+            renderUploadGrid();
+            updateCalc();
+        }
+
+        function renderUploadGrid() {
+            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+            slots.forEach((slot, i) => {
+                const img = state.images[i];
+                if (img) {
+                    slot.className = 'upload-slot has-image';
+                    slot.innerHTML = `
+                        <img src="${img.dataUrl}" alt="Image ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i})">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = `<span class="placeholder">+</span>`;
+                }
+            });
+        }
+
+        function updateCalc() {
+            const count = state.images.filter(img => img).length;
+            elements.calcDisplay.textContent = `${count} image${count !== 1 ? 's' : ''} selected`;
+            elements.upscaleBtn.disabled = count === 0;
+        }
+
+        // Event listeners
+        elements.scaleButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                elements.scaleButtons.querySelectorAll('.btn--toggle').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                state.scaleFactor = e.target.dataset.scale;
+            }
+        });
+
+        elements.optimizedButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn--toggle')) {
+                elements.optimizedButtons.querySelectorAll('.btn--toggle').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                state.optimizedFor = e.target.dataset.opt;
+            }
+        });
+
+        elements.creativitySlider.addEventListener('input', (e) => {
+            state.creativity = parseInt(e.target.value);
+            elements.creativityValue.textContent = state.creativity;
+        });
+
+        elements.hdrSlider.addEventListener('input', (e) => {
+            state.hdr = parseInt(e.target.value);
+            elements.hdrValue.textContent = state.hdr;
+        });
+
+        elements.resemblanceSlider.addEventListener('input', (e) => {
+            state.resemblance = parseInt(e.target.value);
+            elements.resemblanceValue.textContent = state.resemblance;
+        });
+
+        elements.promptInput.addEventListener('input', (e) => {
+            state.prompt = e.target.value;
+        });
+
+        // Upscale function
+        elements.upscaleBtn.addEventListener('click', handleUpscale);
+
+        async function handleUpscale() {
+            const imagesToUpscale = state.images.filter(img => img);
+            if (imagesToUpscale.length === 0) return;
+
+            state.results = [];
+            elements.resultsGrid.innerHTML = '';
+
+            const total = imagesToUpscale.length;
+            let completed = 0;
+
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${total}`;
+            elements.progressBar.style.width = '0%';
+            elements.upscaleBtn.disabled = true;
+
+            startLoadingAnimation('Starting upscale...');
+
+            // Process all images in parallel
+            const promises = imagesToUpscale.map(async (img, index) => {
+                try {
+                    updateLoadingProgress(`${completed}/${total} complete · processing ${total - completed}`);
+
+                    // Extract base64 data (remove data:image/xxx;base64, prefix)
+                    const base64Data = img.dataUrl.split(',')[1];
+
+                    // Start upscale task
+                    const startResponse = await fetch('/api/upscale', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image: base64Data,
+                            scale_factor: state.scaleFactor,
+                            optimized_for: state.optimizedFor,
+                            creativity: state.creativity,
+                            hdr: state.hdr,
+                            resemblance: state.resemblance,
+                            prompt: state.prompt || undefined
+                        })
+                    });
+
+                    const startData = await startResponse.json();
+                    if (!startResponse.ok) {
+                        throw new Error(startData.error || 'Failed to start upscale');
+                    }
+
+                    const taskId = startData.data.task_id;
+                    console.log(`[${index + 1}/${total}] Task started: ${taskId}`);
+
+                    // Poll for completion
+                    let result = null;
+                    while (!result) {
+                        await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds
+
+                        const statusResponse = await fetch(`/api/upscale/${taskId}`);
+                        const statusData = await statusResponse.json();
+
+                        if (statusData.data.status === 'COMPLETED') {
+                            result = statusData.data.generated[0];
+                            console.log(`[${index + 1}/${total}] Completed!`);
+                        } else if (statusData.data.status === 'FAILED') {
+                            throw new Error('Upscale task failed');
+                        }
+                        // Otherwise still IN_PROGRESS, keep polling
+                    }
+
+                    state.results.push({
+                        url: result,
+                        originalUrl: img.dataUrl,
+                        scaleFactor: state.scaleFactor,
+                        optimizedFor: state.optimizedFor
+                    });
+                    renderResults();
+
+                } catch (error) {
+                    console.error(`[${index + 1}/${total}] Error:`, error.message);
+                }
+
+                completed++;
+                elements.progressCount.textContent = `${completed} / ${total}`;
+                elements.progressBar.style.width = `${(completed / total) * 100}%`;
+                updateLoadingProgress(`${completed}/${total} complete`);
+            });
+
+            await Promise.all(promises);
+
+            stopLoadingAnimation();
+            elements.progressSection.classList.remove('visible');
+            elements.upscaleBtn.disabled = false;
+        }
+
+        function renderResults() {
+            if (state.results.length === 0) {
+                elements.resultsSection.classList.remove('visible');
+                return;
+            }
+
+            elements.resultsSection.classList.add('visible');
+            elements.resultsGrid.innerHTML = state.results.map((result, index) => `
+                <div class="result-card" onclick="openLightbox(${index})">
+                    <img src="${result.url}" alt="Upscaled ${index + 1}">
+                    <div class="result-info">
+                        <span class="result-meta">${result.scaleFactor} · ${result.optimizedFor}</span>
+                        <button class="download-btn" onclick="event.stopPropagation(); downloadResult(${index})">Download</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            const result = state.results[index];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxOriginal.src = result.originalUrl;
+            elements.lightboxSettings.textContent = `Scale: ${result.scaleFactor}, Optimized: ${result.optimizedFor}`;
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        elements.lightboxClose.addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => {
+            if (e.target === elements.lightbox) closeLightbox();
+        });
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        elements.lightboxDownload.addEventListener('click', () => {
+            downloadResult(state.lightboxIndex);
+        });
+
+        window.downloadResult = async function(index) {
+            const result = state.results[index];
+            const filename = `upscaled_${state.scaleFactor}_${index + 1}.png`;
+            downloadFile(result.url, filename);
+        };
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Paste handler
+        document.addEventListener('paste', async (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        // Find first empty slot
+                        let targetIndex = state.images.findIndex(img => !img);
+                        if (targetIndex === -1 && state.images.length < NUM_SLOTS) {
+                            targetIndex = state.images.length;
+                        }
+                        if (targetIndex !== -1) {
+                            state.images[targetIndex] = {
+                                dataUrl: event.target.result,
+                                file: file
+                            };
+                            renderUploadGrid();
+                            updateCalc();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    break;
+                }
+            }
+        });
+
+        // Initialize
+        initUploadGrid();
+        updateCalc();
+    </script>
+</body>
+</html>

@@ -821,15 +821,22 @@
             { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png' },
             { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png' },
             { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png' },
-            { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' }
+            { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' },
+            { id: 'damon', name: 'Damon Carter', image: '/shared/images/talent/talent-25_DamonCarter.png' },
+            { id: 'nikolai', name: 'Nikolai Volkov', image: '/shared/images/talent/talent-26_NikolaiVolkov.png' },
+            { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/talent-27_SofiaRodriguez.png' },
+            { id: 'finn', name: 'Finn O\'Connor', image: '/shared/images/talent/talent-28_FinnOConnor.png' },
+            { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/talent-29_ClaraDevereaux.png' },
+            { id: 'zoe', name: 'Zoe Washington', image: '/shared/images/talent/talent-30_ZoeWashington.png' }
         ];
 
         // Output types - different for people vs product mode
-        const OUTPUT_TYPES_PEOPLE = ['ecom', 'closeup', 'campaign', 'product'];
+        const OUTPUT_TYPES_PEOPLE = ['ecom', 'portrait_studio', 'closeup', 'campaign', 'product'];
         const OUTPUT_TYPES_PRODUCT = ['ecom', 'campaign', 'product'];
         const OUTPUT_LABELS = {
             none: 'None',
             ecom: 'Studio',
+            portrait_studio: 'Portrait Studio',
             closeup: 'Portrait',
             campaign: 'Campaign',
             product: 'Product'
@@ -837,6 +844,7 @@
         const OUTPUT_ICONS = {
             none: '○',
             ecom: '🏪',
+            portrait_studio: '😊',
             closeup: '👤',
             campaign: '📸',
             product: '👕'
@@ -1408,7 +1416,7 @@
                 // Enhanced analysis prompt that covers all requested aspects
                 const analysisPrompt = `Analyze these images and create a comprehensive style guide for image generation. Write as a single flowing paragraph that can be used directly in prompts. Include:
 
-1. CLOTHING: Describe the specific clothing items, styles, and aesthetics visible (minimalist, luxury, streetwear, bohemian, etc.). Note textures, fits, and silhouettes.
+1. CLOTHING AESTHETIC: Describe the overall fashion aesthetic and vibe (minimalist, luxury, streetwear, bohemian, tailored, relaxed, etc.). Focus on the STYLE and MOOD of the clothing rather than specific items. Mention textures, fits, silhouettes, and color palettes that define the look. Do NOT list specific garments - describe the fashion direction instead.
 
 2. PHOTOGRAPHY STYLE: Is it analog/film-like or digital? Note any grain, color grading, filters, or processing effects. Describe color palette and tones (warm, cool, muted, saturated).
 
@@ -1418,7 +1426,11 @@
 
 5. MOOD & ENVIRONMENT: Describe the atmosphere, settings, and overall mood.
 
-IMPORTANT: Do NOT mention any brand names, designer labels, or logos. Describe the style without naming specific brands. Write one cohesive paragraph that flows naturally.`;
+IMPORTANT:
+- Do NOT mention specific clothing items like "paisley jacket" or "blue dress" - instead describe the style aesthetic
+- Do NOT mention any brand names, designer labels, or logos
+- Focus on the VIBE and AESTHETIC rather than specific pieces
+- Write one cohesive paragraph that flows naturally and can generate VARIED outfits in the same style`;
 
                 const result = await api.analyzeImages(styleImageUrls, analysisPrompt);
 
@@ -1628,6 +1640,9 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                 ? `Products: ${productDesc}.`
                 : '';
 
+            // Anti-splitting instruction - must be included in all prompts
+            const noSplitting = 'Generate ONE SINGLE unified image only. Do NOT create a collage, grid, triptych, diptych, split screen, or multiple panels. The output must be one continuous photograph.';
+
             let prompt = '';
 
             if (!isPeopleMode || subjectCount === 0) {
@@ -1639,16 +1654,16 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
 
                 if (output.type === 'ecom') {
                     prompt = hasProducts
-                        ? `Place ${productCountText} on a clean white studio background. ${productInfo} Professional e-commerce product photography. ${noExtraItems} ${analysis}`
-                        : `Product photography on white studio background. ${analysis}. Clean, professional e-commerce style.`;
+                        ? `${noSplitting} Place ${productCountText} on a clean white studio background. ${productInfo} Professional e-commerce product photography. ${noExtraItems} ${analysis}`
+                        : `${noSplitting} Product photography on white studio background. ${analysis}. Clean, professional e-commerce style.`;
                 } else if (output.type === 'closeup') {
                     prompt = hasProducts
-                        ? `Close-up detail shot of ${productCountText}. ${productInfo} ${analysis}. Soft studio lighting, shallow depth of field, focus on texture and details. ${noExtraItems}`
-                        : `Close-up product detail shot. ${analysis}. Soft studio lighting, shallow depth of field.`;
+                        ? `${noSplitting} Close-up detail shot of ${productCountText}. ${productInfo} ${analysis}. Soft studio lighting, shallow depth of field, focus on texture and details. ${noExtraItems}`
+                        : `${noSplitting} Close-up product detail shot. ${analysis}. Soft studio lighting, shallow depth of field.`;
                 } else if (output.type === 'campaign') {
                     prompt = hasProducts
-                        ? `Place ${productCountText} in an editorial campaign setting. ${productInfo} ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic. ${noExtraItems}`
-                        : `Editorial campaign photo. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
+                        ? `${noSplitting} Place ${productCountText} in an editorial campaign setting. ${productInfo} ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic. ${noExtraItems}`
+                        : `${noSplitting} Editorial campaign photo. ${analysis}. Creative composition, dramatic lighting, luxury brand aesthetic.`;
                 } else if (output.type === 'product') {
                     // Product shots: flat lays, on hangers, on tables/floors, lifestyle arrangements
                     const productStyles = [
@@ -1663,8 +1678,8 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                     ];
                     const randomStyle = productStyles[Math.floor(Math.random() * productStyles.length)];
                     prompt = hasProducts
-                        ? `${productCountText} shown as ${randomStyle}. ${productInfo} ${analysis}. Lifestyle product photography, editorial aesthetic, natural lighting. ${noExtraItems}`
-                        : `Product photography as ${randomStyle}. ${analysis}. Lifestyle product photography, editorial aesthetic, natural lighting.`;
+                        ? `${noSplitting} ${productCountText} shown as ${randomStyle}. ${productInfo} ${analysis}. Lifestyle product photography, editorial aesthetic, natural lighting. ${noExtraItems}`
+                        : `${noSplitting} Product photography as ${randomStyle}. ${analysis}. Lifestyle product photography, editorial aesthetic, natural lighting.`;
                 }
             } else {
                 // People mode with people
@@ -1673,12 +1688,51 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                     ? ` Feature ONLY the exact product from the reference image prominently. ${productInfo} Do NOT add extra items.`
                     : '';
 
+                // Add clothing variety instruction - different outfit each time in the same aesthetic
+                const clothingVariety = 'Dress them in a NEW, DIFFERENT outfit that fits the aesthetic - vary the garment types, colors, and combinations while staying true to the style direction.';
+
                 if (output.type === 'ecom') {
-                    prompt = `Place ${peopleText} in a white studio. Full-body e-commerce fashion photo. ${analysis}. Clean white background, professional studio lighting, fashion e-commerce style.${productText}`;
+                    // For solo or duo shots, sometimes have back facing camera
+                    const backFacingVariations = [
+                        'facing camera',
+                        'facing camera',
+                        'facing camera',
+                        'back facing camera, looking over shoulder',
+                        'back facing camera, head turned slightly'
+                    ];
+                    const poseVariation = (subjectCount <= 2)
+                        ? backFacingVariations[Math.floor(Math.random() * backFacingVariations.length)]
+                        : 'facing camera';
+
+                    // 70% subtle/neutral poses, 30% dynamic with motion blur
+                    const isDynamic = Math.random() < 0.3;
+                    let ecomPoseStyle;
+                    if (isDynamic) {
+                        ecomPoseStyle = 'Capture with MOVEMENT and MOTION BLUR - walking, mid-stride, or gentle movement. Dynamic but still elegant and fashion-forward.';
+                    } else {
+                        ecomPoseStyle = 'Use a subtle, relaxed pose - natural standing, gentle lean, or soft movement. Keep it effortless and not overly athletic or intense.';
+                    }
+                    prompt = `${noSplitting} Place ${peopleText} in a white studio, ${poseVariation}. ${clothingVariety} Full-body e-commerce fashion photo. ${ecomPoseStyle} ${analysis}. Clean white background, professional studio lighting, fashion e-commerce style.${productText}`;
+                } else if (output.type === 'portrait_studio') {
+                    // Portrait studio - waist up with fun expressions
+                    const expressions = [
+                        'laughing naturally',
+                        'genuine warm smile',
+                        'looking away with soft smile',
+                        'playful expression',
+                        'candid mid-laugh',
+                        'eyes closed smiling',
+                        'looking down smiling',
+                        'joyful expression'
+                    ];
+                    const randomExpression = expressions[Math.floor(Math.random() * expressions.length)];
+                    // Portrait needs relaxed poses - override dynamic moodboard poses
+                    const portraitPoseOverride = 'IMPORTANT: Relaxed, natural upper body pose - NOT athletic or dynamic. Simple and effortless.';
+                    prompt = `${noSplitting} Portrait of ${peopleText} in a white studio, ${randomExpression}. ${clothingVariety} Waist-up framing only. ${portraitPoseOverride} ${analysis}. Clean white background, soft flattering studio lighting, fashion portrait style, natural authentic expression.${productText}`;
                 } else if (output.type === 'closeup') {
-                    prompt = `Close-up portrait of ${peopleText}. ${analysis}. Editorial beauty shot, soft lighting, focus on face and expression, chest-up framing.${productText}`;
+                    prompt = `${noSplitting} Close-up portrait of ${peopleText}. ${clothingVariety} ${analysis}. Editorial beauty shot, soft lighting, focus on face and expression, chest-up framing.${productText}`;
                 } else if (output.type === 'campaign') {
-                    prompt = `Place ${peopleText} in an editorial campaign setting. ${analysis}. Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.${productText}`;
+                    prompt = `${noSplitting} Place ${peopleText} in an editorial campaign setting. ${clothingVariety} ${analysis}. Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.${productText}`;
                 } else if (output.type === 'product') {
                     // Product shots with people - focus on the product with model holding/wearing
                     const productStyles = [
@@ -1688,7 +1742,7 @@ Be specific about material, color, and type. Do NOT mention brand names.`;
                         'showcasing the product with natural interaction'
                     ];
                     const randomStyle = productStyles[Math.floor(Math.random() * productStyles.length)];
-                    prompt = `${peopleText} ${randomStyle}. ${analysis}. Focus on the product while maintaining fashion editorial aesthetic.${productText}`;
+                    prompt = `${noSplitting} ${peopleText} ${randomStyle}. ${clothingVariety} ${analysis}. Focus on the product while maintaining fashion editorial aesthetic.${productText}`;
                 }
             }
 

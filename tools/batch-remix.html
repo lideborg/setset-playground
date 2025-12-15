@@ -345,6 +345,65 @@
             font-weight: 400;
         }
 
+        /* Inline loader with studio messages */
+        .inline-loader {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .inline-loader.visible {
+            display: flex;
+        }
+
+        .loader-message {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            background: linear-gradient(90deg,
+                rgba(0, 47, 167, 0.4) 0%,
+                rgba(0, 47, 167, 1) 50%,
+                rgba(0, 47, 167, 0.4) 100%);
+            background-size: 200% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: sweep 2s ease-in-out infinite;
+        }
+
+        .loader-message.fade-out {
+            animation: fade-out 0.25s ease-out forwards;
+        }
+
+        .loader-message.fade-in {
+            animation: fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
+        }
+
+        @keyframes sweep {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-top: var(--space-xs);
+        }
+
         /* Results */
         .result-image {
             aspect-ratio: 3/4;
@@ -481,10 +540,16 @@
             </button>
         </div>
 
-        <!-- Progress -->
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress Bar -->
         <div class="progress-section" id="progress-section">
             <div class="progress-header">
-                <span class="progress-title">Generating</span>
+                <span class="progress-title" id="progress-title">Generating</span>
                 <span class="progress-count" id="progress-count">0 / 0</span>
             </div>
             <div class="progress-bar-container">
@@ -574,8 +639,12 @@
             costValue: document.getElementById('cost-value'),
             calcDisplay: document.getElementById('calc-display'),
             progressSection: document.getElementById('progress-section'),
+            progressTitle: document.getElementById('progress-title'),
             progressCount: document.getElementById('progress-count'),
             progressBar: document.getElementById('progress-bar'),
+            inlineLoader: document.getElementById('inline-loader'),
+            loaderMessage: document.getElementById('loader-message'),
+            loaderProgress: document.getElementById('loader-progress'),
             resultsSection: document.getElementById('results-section'),
             resultsGrid: document.getElementById('results-grid'),
             lightbox: document.getElementById('lightbox'),
@@ -584,6 +653,73 @@
             lightboxPrompt: document.getElementById('lightbox-prompt'),
             lightboxSourceImages: document.getElementById('lightbox-source-images')
         };
+
+        // Studio messages for the loader
+        const STUDIO_MESSAGES = [
+            "Setting up the Studio...",
+            "Adjusting the Key Light...",
+            "Loading the Film...",
+            "Warming up the Strobes...",
+            "Preparing the Backdrop...",
+            "Adjusting the Fill Light...",
+            "Checking the Framing...",
+            "Setting the Aperture...",
+            "Loading Color Profiles...",
+            "Positioning the C-Stand...",
+            "Focusing...",
+            "Checking Tethering...",
+            "Rolling...",
+            "Adjusting the Umbrella...",
+            "Metering...",
+            "Standby...",
+            "Loading the Presets...",
+            "Quiet on Set...",
+            "Final Touches...",
+            "Almost There..."
+        ];
+        let loadingInterval = null;
+        let lastMessageIndex = -1;
+
+        // Loading animation functions
+        function startLoadingAnimation(progressText = 'Preparing...') {
+            elements.inlineLoader.classList.add('visible');
+            elements.loaderProgress.textContent = progressText;
+
+            // Set initial message
+            const initialIdx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+            elements.loaderMessage.textContent = STUDIO_MESSAGES[initialIdx];
+            lastMessageIndex = initialIdx;
+
+            // Rotate messages every 2 seconds with fade effect
+            loadingInterval = setInterval(() => {
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastMessageIndex && STUDIO_MESSAGES.length > 1);
+                lastMessageIndex = idx;
+
+                elements.loaderMessage.classList.add('fade-out');
+                elements.loaderMessage.classList.remove('fade-in');
+
+                setTimeout(() => {
+                    elements.loaderMessage.textContent = STUDIO_MESSAGES[idx];
+                    elements.loaderMessage.classList.remove('fade-out');
+                    elements.loaderMessage.classList.add('fade-in');
+                }, 250);
+            }, 2000);
+        }
+
+        function updateLoadingProgress(text) {
+            elements.loaderProgress.textContent = text;
+        }
+
+        function stopLoadingAnimation() {
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            elements.inlineLoader.classList.remove('visible');
+        }
 
         // Initialize a set
         function createSetData() {
@@ -1119,9 +1255,22 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             state.results = [];
 
             let completed = 0;
+            let uploading = 0;
+            let generating = 0;
             const total = tasksWithSeeds.length;
+            elements.progressTitle.textContent = 'Processing';
             elements.progressCount.textContent = `0 / ${total}`;
             elements.progressBar.style.width = '0%';
+
+            // Start the studio loading animation
+            startLoadingAnimation('Starting batch processing...');
+
+            function updateStatus() {
+                const parts = [];
+                if (uploading > 0) parts.push(`uploading ${uploading}`);
+                if (generating > 0) parts.push(`generating ${generating}`);
+                updateLoadingProgress(`${completed}/${total} complete` + (parts.length ? ` · ${parts.join(', ')}` : ''));
+            }
 
             console.log(`🚀 Starting ${total} tasks in parallel`);
 
@@ -1138,6 +1287,8 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                     }
                     imagesToUpload.push(...task.secondaries);
 
+                    uploading++;
+                    updateStatus();
                     console.log(`[${taskId}/${total}] Uploading ${imagesToUpload.length} images...`);
                     const uploadStart = performance.now();
 
@@ -1147,6 +1298,9 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                     );
                     const imageUrls = uploadResults.map(r => r.url);
 
+                    uploading--;
+                    generating++;
+                    updateStatus();
                     console.log(`[${taskId}/${total}] Uploads done (${((performance.now() - uploadStart) / 1000).toFixed(1)}s) → Generating (${state.aspectRatio}, ${state.resolution})...`);
 
                     // Build params
@@ -1166,6 +1320,7 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                     const model = REMIX_MODELS[state.selectedModel];
                     const data = await api.remixImage(model.endpoint, params);
 
+                    generating--;
                     const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
 
                     if (data.images && data.images.length > 0) {
@@ -1180,17 +1335,21 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                         renderResults();
                     }
                 } catch (error) {
+                    uploading = Math.max(0, uploading - 1);
+                    generating = Math.max(0, generating - 1);
                     console.error(`[${taskId}/${total}] ✗ Failed:`, error.message);
                 }
 
                 completed++;
                 elements.progressCount.textContent = `${completed} / ${total}`;
                 elements.progressBar.style.width = `${(completed / total) * 100}%`;
+                updateStatus();
             });
 
             await Promise.all(promises);
 
             // Done
+            stopLoadingAnimation();
             elements.progressSection.classList.remove('visible');
             elements.generateBtn.disabled = false;
         }

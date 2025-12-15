@@ -43,6 +43,7 @@ const FAL_API_KEYS = {
     setset: process.env.FAL_API_KEY_SETSET
 };
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY;
 
 // Helper to get the right FAL key based on request
 function getFalKey(req) {
@@ -1160,12 +1161,14 @@ app.post('/api/analyze', async (req, res) => {
         const data = await response.json();
 
         if (!response.ok) {
+            console.error('❌ [Analyze] OpenAI error:', data.error);
             return res.status(response.status).json({ error: data.error?.message || 'Analysis failed' });
         }
 
+        console.log('✅ [Analyze] Success');
         res.json({ content: data.choices[0].message.content });
     } catch (error) {
-        console.error('Analyze error:', error);
+        console.error('❌ [Analyze] Server error:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1238,6 +1241,88 @@ app.post('/api/upload-base64', async (req, res) => {
         res.json({ url });
     } catch (error) {
         console.error('Upload error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/upscale
+ * Start an upscale task using Freepik Magnific API
+ */
+app.post('/api/upscale', async (req, res) => {
+    try {
+        const { image, scale_factor, optimized_for, prompt, creativity, hdr, resemblance, fractality, engine } = req.body;
+
+        if (!image) {
+            return res.status(400).json({ error: 'Image is required' });
+        }
+
+        console.log(`🔍 [Upscale] Starting upscale task, scale: ${scale_factor || '2x'}, optimized: ${optimized_for || 'standard'}`);
+
+        // Build request body
+        const requestBody = {
+            image: image // Base64 image (without data:image prefix)
+        };
+
+        // Add optional parameters
+        if (scale_factor) requestBody.scale_factor = scale_factor;
+        if (optimized_for) requestBody.optimized_for = optimized_for;
+        if (prompt) requestBody.prompt = prompt;
+        if (creativity !== undefined) requestBody.creativity = creativity;
+        if (hdr !== undefined) requestBody.hdr = hdr;
+        if (resemblance !== undefined) requestBody.resemblance = resemblance;
+        if (fractality !== undefined) requestBody.fractality = fractality;
+        if (engine) requestBody.engine = engine;
+
+        const response = await fetch('https://api.freepik.com/v1/ai/image-upscaler', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-freepik-api-key': FREEPIK_API_KEY
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Upscale] API Error:', data);
+            return res.status(response.status).json({ error: data.message || 'Upscale failed' });
+        }
+
+        console.log(`✅ [Upscale] Task started:`, data.data?.task_id);
+        res.json(data);
+    } catch (error) {
+        console.error('❌ [Upscale] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/upscale/:taskId
+ * Check status of an upscale task
+ */
+app.get('/api/upscale/:taskId', async (req, res) => {
+    try {
+        const { taskId } = req.params;
+
+        const response = await fetch(`https://api.freepik.com/v1/ai/image-upscaler/${taskId}`, {
+            method: 'GET',
+            headers: {
+                'x-freepik-api-key': FREEPIK_API_KEY
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Upscale Status] API Error:', data);
+            return res.status(response.status).json({ error: data.message || 'Status check failed' });
+        }
+
+        res.json(data);
+    } catch (error) {
+        console.error('❌ [Upscale Status] Server error:', error);
         res.status(500).json({ error: error.message });
     }
 });

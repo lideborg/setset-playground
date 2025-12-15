@@ -67,6 +67,65 @@
             font-weight: 400;
         }
 
+        /* Inline loader with studio messages */
+        .inline-loader {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .inline-loader.visible {
+            display: flex;
+        }
+
+        .loader-message {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            background: linear-gradient(90deg,
+                rgba(0, 47, 167, 0.4) 0%,
+                rgba(0, 47, 167, 1) 50%,
+                rgba(0, 47, 167, 0.4) 100%);
+            background-size: 200% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: sweep 2s ease-in-out infinite;
+        }
+
+        .loader-message.fade-out {
+            animation: fade-out 0.25s ease-out forwards;
+        }
+
+        .loader-message.fade-in {
+            animation: fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
+        }
+
+        @keyframes sweep {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-top: var(--space-xs);
+        }
+
         /* Custom size container */
         .custom-size-container {
             display: flex;
@@ -185,6 +244,12 @@
             </div>
         </div>
 
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
         <!-- Progress -->
         <div class="progress-section" id="progress-section">
             <div class="progress-header">
@@ -287,8 +352,78 @@
             ideaInput: document.getElementById('idea-input'),
             ideaPromptsSlider: document.getElementById('idea-prompts-slider'),
             ideaPromptsValue: document.getElementById('idea-prompts-value'),
-            ideaGenerateBtn: document.getElementById('idea-generate-btn')
+            ideaGenerateBtn: document.getElementById('idea-generate-btn'),
+            inlineLoader: document.getElementById('inline-loader'),
+            loaderMessage: document.getElementById('loader-message'),
+            loaderProgress: document.getElementById('loader-progress')
         };
+
+        // Studio messages for the loader
+        const STUDIO_MESSAGES = [
+            "Setting up the Studio...",
+            "Adjusting the Key Light...",
+            "Loading the Film...",
+            "Warming up the Strobes...",
+            "Preparing the Backdrop...",
+            "Adjusting the Fill Light...",
+            "Checking the Framing...",
+            "Setting the Aperture...",
+            "Loading Color Profiles...",
+            "Positioning the C-Stand...",
+            "Focusing...",
+            "Checking Tethering...",
+            "Rolling...",
+            "Adjusting the Umbrella...",
+            "Metering...",
+            "Standby...",
+            "Loading the Presets...",
+            "Quiet on Set...",
+            "Final Touches...",
+            "Almost There..."
+        ];
+        let loadingInterval = null;
+        let lastMessageIndex = -1;
+
+        // Loading animation functions
+        function startLoadingAnimation(progressText = 'Preparing...') {
+            elements.inlineLoader.classList.add('visible');
+            elements.loaderProgress.textContent = progressText;
+
+            // Set initial message
+            const initialIdx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+            elements.loaderMessage.textContent = STUDIO_MESSAGES[initialIdx];
+            lastMessageIndex = initialIdx;
+
+            // Rotate messages every 2 seconds with fade effect
+            loadingInterval = setInterval(() => {
+                let idx;
+                do {
+                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
+                } while (idx === lastMessageIndex && STUDIO_MESSAGES.length > 1);
+                lastMessageIndex = idx;
+
+                elements.loaderMessage.classList.add('fade-out');
+                elements.loaderMessage.classList.remove('fade-in');
+
+                setTimeout(() => {
+                    elements.loaderMessage.textContent = STUDIO_MESSAGES[idx];
+                    elements.loaderMessage.classList.remove('fade-out');
+                    elements.loaderMessage.classList.add('fade-in');
+                }, 250);
+            }, 2000);
+        }
+
+        function updateLoadingProgress(text) {
+            elements.loaderProgress.textContent = text;
+        }
+
+        function stopLoadingAnimation() {
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            elements.inlineLoader.classList.remove('visible');
+        }
 
         // Initialize
         function init() {
@@ -487,6 +622,9 @@
             const totalTasks = promptsToGenerate.length * state.selectedModels.length;
             let completed = 0;
 
+            // Start the studio loading animation
+            startLoadingAnimation('Starting generation...');
+
             elements.progressSection.classList.add('visible');
             elements.progressCount.textContent = `0 / ${totalTasks}`;
             elements.progressBar.style.width = '0%';
@@ -547,6 +685,7 @@
                             completed++;
                             elements.progressCount.textContent = `${completed} / ${totalTasks}`;
                             elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+                            updateLoadingProgress(`${completed}/${totalTasks} complete`);
                             renderResults();
 
                             return { success: true };
@@ -555,6 +694,7 @@
                             completed++;
                             elements.progressCount.textContent = `${completed} / ${totalTasks}`;
                             elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+                            updateLoadingProgress(`${completed}/${totalTasks} complete`);
                             return { success: false };
                         }
                     })();
@@ -564,6 +704,7 @@
             });
 
             await Promise.all(allPromises);
+            stopLoadingAnimation();
             elements.progressSection.classList.remove('visible');
             elements.resultsSection.classList.add('visible');
         }

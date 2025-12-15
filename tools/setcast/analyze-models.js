@@ -32,7 +32,13 @@ const models = [
   { name: "Avery Taylor", image: path.join(__dirname, "../images/talent-21_AveryTaylor.png"), id: "avery" },
   { name: "Parker Miller", image: path.join(__dirname, "../images/talent-22_ParkerMiller.png"), id: "parker" },
   { name: "Morgan Kim", image: path.join(__dirname, "../images/talent-23_MorganKim.png"), id: "morgan" },
-  { name: "Andre Jackson", image: path.join(__dirname, "../images/talent-24_AndreJackson.png"), id: "andre" }
+  { name: "Andre Jackson", image: path.join(__dirname, "../images/talent-24_AndreJackson.png"), id: "andre" },
+  { name: "Damon Carter", image: path.join(__dirname, "../images/talent-25_DamonCarter.png"), id: "damon" },
+  { name: "Nikolai Volkov", image: path.join(__dirname, "../images/talent-26_NikolaiVolkov.png"), id: "nikolai" },
+  { name: "Sofia Rodriguez", image: path.join(__dirname, "../images/talent-27_SofiaRodriguez.png"), id: "sofia" },
+  { name: "Finn O'Connor", image: path.join(__dirname, "../images/talent-28_FinnOConnor.png"), id: "finn" },
+  { name: "Clara Devereaux", image: path.join(__dirname, "../images/talent-29_ClaraDevereaux.png"), id: "clara" },
+  { name: "Zoe Washington", image: path.join(__dirname, "../images/talent-30_ZoeWashington.png"), id: "zoe" }
 ];
 
 async function analyzeModel(model) {
