@@ -1767,8 +1767,8 @@
     <script src="/shared/js/loader.js"></script>
 
     <script>
-        // Studio messages for fun loader
-        const STUDIO_MESSAGES = [
+        // Extended studio messages for this tool (more than shared loader)
+        const EXTENDED_STUDIO_MESSAGES = [
             "Setting up the Studio...",
             "Adjusting the Key Light...",
             "Loading the Film...",
@@ -1835,8 +1835,8 @@
 
                 let idx;
                 do {
-                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-                } while (idx === lastIndex && STUDIO_MESSAGES.length > 1);
+                    idx = Math.floor(Math.random() * EXTENDED_STUDIO_MESSAGES.length);
+                } while (idx === lastIndex && EXTENDED_STUDIO_MESSAGES.length > 1);
                 lastIndex = idx;
 
                 // Fade out
@@ -1845,7 +1845,7 @@
 
                 setTimeout(() => {
                     if (!currentMessageElement) return;
-                    currentMessageElement.textContent = STUDIO_MESSAGES[idx];
+                    currentMessageElement.textContent = EXTENDED_STUDIO_MESSAGES[idx];
                     currentMessageElement.classList.remove('fade-out');
                     currentMessageElement.classList.add('fade-in');
 
@@ -1860,7 +1860,7 @@
 
             // Initial message
             if (currentMessageElement) {
-                currentMessageElement.textContent = STUDIO_MESSAGES[Math.floor(Math.random() * STUDIO_MESSAGES.length)];
+                currentMessageElement.textContent = EXTENDED_STUDIO_MESSAGES[Math.floor(Math.random() * EXTENDED_STUDIO_MESSAGES.length)];
             }
 
             studioMessageInterval = setInterval(updateMessage, 2500);
@@ -2592,10 +2592,10 @@ Keep it under 100 words total. Focus on the actual products only.`;
             const updateMessage = () => {
                 let idx;
                 do {
-                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-                } while (idx === lastIndex && STUDIO_MESSAGES.length > 1);
+                    idx = Math.floor(Math.random() * EXTENDED_STUDIO_MESSAGES.length);
+                } while (idx === lastIndex && EXTENDED_STUDIO_MESSAGES.length > 1);
                 lastIndex = idx;
-                loaderText.textContent = STUDIO_MESSAGES[idx];
+                loaderText.textContent = EXTENDED_STUDIO_MESSAGES[idx];
             };
 
             // Initial message
@@ -3335,10 +3335,10 @@ Keep it under 100 words total. Focus on the actual products only.`;
             const updateMessage = () => {
                 let idx;
                 do {
-                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-                } while (idx === lastIndex && STUDIO_MESSAGES.length > 1);
+                    idx = Math.floor(Math.random() * EXTENDED_STUDIO_MESSAGES.length);
+                } while (idx === lastIndex && EXTENDED_STUDIO_MESSAGES.length > 1);
                 lastIndex = idx;
-                loaderText.textContent = STUDIO_MESSAGES[idx];
+                loaderText.textContent = EXTENDED_STUDIO_MESSAGES[idx];
             };
             updateMessage();
             lightboxLoaderInterval = setInterval(updateMessage, 2000);
