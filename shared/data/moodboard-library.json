@@ -220,48 +220,6 @@
         "/assets/moodboards/Nike/e93df57f08b725f262131b6be52103a6.jpg",
         "/assets/moodboards/Nike/f5a1397f8bee5f3aad97a3264f8300db.jpg"
       ]
-    },
-    {
-      "id": "noon",
-      "name": "Noon",
-      "description": "Wellness product photography, clean lifestyle",
-      "thumbnail": "/assets/moodboards/Noon/470944676_18030287306579422_6820391390020591181_n.jpg",
-      "tags": ["wellness", "product", "clean", "lifestyle"],
-      "styleAnalysis": {
-        "aesthetic": "Modern wellness brand aesthetic. Clean, premium product photography with natural ingredient storytelling. Science meets nature positioning.",
-        "clothing": "N/A - product-focused content",
-        "photography": "Bright, clean studio photography. Soft shadows on white/cream backgrounds. Floating product compositions with ingredient elements. High-key lighting with subtle gradients. Sharp product focus with soft background elements.",
-        "poses": "N/A - product photography",
-        "environments": "Minimal white/cream studio backdrops. Natural ingredients as props - mushrooms, berries, dried fruits, ice. Metal vessels and premium containers. Clean, uncluttered compositions.",
-        "mood": "Fresh, premium, trustworthy. Science-backed wellness. Clean living without pretension. Modern apothecary aesthetic."
-      },
-      "environmentPool": {
-        "indoor": [
-          "bright minimal spa bathroom with stone and wood textures, soft morning light, wide shot",
-          "spa bathroom from different angle near the wooden vanity",
-          "spa bathroom corner with linen towels and natural elements",
-          "spa bathroom interior with steam and soft diffused light",
-          "spa bathroom alcove with botanical accents"
-        ],
-        "outdoor": [
-          "serene zen garden corner with natural materials and soft daylight, wide shot",
-          "zen garden from different angle with gravel and stones",
-          "zen garden pathway with bamboo and morning light",
-          "zen garden seating area with minimal wooden bench",
-          "zen garden entrance with clean architectural lines"
-        ]
-      },
-      "images": [
-        "/assets/moodboards/Noon/470944676_18030287306579422_6820391390020591181_n.jpg",
-        "/assets/moodboards/Noon/473047675_18032785439579422_4869508212687488136_n.jpg",
-        "/assets/moodboards/Noon/473708785_18033139745579422_7732512238865929860_n.jpg",
-        "/assets/moodboards/Noon/480806421_18037375412579422_4366630919825995534_n.jpg",
-        "/assets/moodboards/Noon/491440638_18043824770579422_7953467481615028751_n.jpg",
-        "/assets/moodboards/Noon/504494228_18049472537579422_16274055699984310_n.jpg",
-        "/assets/moodboards/Noon/514223553_18051254198579422_8030440659519971059_n.jpg",
-        "/assets/moodboards/Noon/531821881_18056331995579422_5082997435975866330_n.jpg",
-        "/assets/moodboards/Noon/584111718_18067525049579422_5152466859317003832_n.jpg"
-      ]
     }
   ]
 }
