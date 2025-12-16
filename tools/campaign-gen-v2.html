@@ -794,6 +794,7 @@
     <!-- Shared JS -->
     <script src="/shared/js/utils.js"></script>
     <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
 
     <script>
         // Setset Talent Library
@@ -893,31 +894,7 @@
             lightboxPrompt: document.getElementById('lightbox-prompt')
         };
 
-        // Studio messages for the loader (like old campaign gen)
-        const STUDIO_MESSAGES = [
-            "Setting up the Studio...",
-            "Adjusting the Key Light...",
-            "Loading the Film...",
-            "Warming up the Strobes...",
-            "Preparing the Backdrop...",
-            "Adjusting the Fill Light...",
-            "Checking the Framing...",
-            "Setting the Aperture...",
-            "Loading Color Profiles...",
-            "Positioning the C-Stand...",
-            "Focusing...",
-            "Checking Tethering...",
-            "Rolling...",
-            "Adjusting the Umbrella...",
-            "Metering...",
-            "Standby...",
-            "Loading the Presets...",
-            "Quiet on Set...",
-            "Final Touches...",
-            "Almost There..."
-        ];
-        let loadingInterval = null;
-        let lastMessageIndex = -1;
+        // Loading animation uses shared loader.js (STUDIO_MESSAGES defined there)
 
         // Initialize
         function init() {
@@ -1331,47 +1308,8 @@
         }
 
         // Loading animation helpers - studio style
-        function startLoadingAnimation(progressText = 'Preparing...') {
-            elements.inlineLoader.classList.add('visible');
-            elements.loaderProgress.textContent = progressText;
-
-            // Set initial message
-            const initialIdx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-            elements.loaderMessage.textContent = STUDIO_MESSAGES[initialIdx];
-            lastMessageIndex = initialIdx;
-
-            // Rotate messages every 2 seconds with fade effect
-            loadingInterval = setInterval(() => {
-                // Pick a random message different from the last one
-                let idx;
-                do {
-                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-                } while (idx === lastMessageIndex && STUDIO_MESSAGES.length > 1);
-                lastMessageIndex = idx;
-
-                // Fade out
-                elements.loaderMessage.classList.add('fade-out');
-                elements.loaderMessage.classList.remove('fade-in');
-
-                setTimeout(() => {
-                    elements.loaderMessage.textContent = STUDIO_MESSAGES[idx];
-                    elements.loaderMessage.classList.remove('fade-out');
-                    elements.loaderMessage.classList.add('fade-in');
-                }, 250);
-            }, 2000);
-        }
-
-        function updateLoadingProgress(text) {
-            elements.loaderProgress.textContent = text;
-        }
-
-        function stopLoadingAnimation() {
-            if (loadingInterval) {
-                clearInterval(loadingInterval);
-                loadingInterval = null;
-            }
-            elements.inlineLoader.classList.remove('visible');
-        }
+        // Loading animation functions now use shared loader.js
+        // startLoadingAnimation, updateLoadingProgress, stopLoadingAnimation are global from loader.js
 
         // Handle Analyze
         async function handleAnalyze() {
