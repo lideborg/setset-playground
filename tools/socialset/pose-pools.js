@@ -10,22 +10,10 @@
 
 const POSE_POOLS = {
     // ═══════════════════════════════════════════════════════════════
-    // E-COMMERCE: Clean studio poses
+    // E-COMMERCE: Editorial studio poses with subtle body language
     // ═══════════════════════════════════════════════════════════════
 
-    // Classic front-facing, minimal movement
-    'ecom-classic': [
-        'standing straight facing camera, arms relaxed at sides, weight evenly distributed, calm direct gaze',
-        'standing with shoulders back, arms naturally at sides, slight weight shift to one leg, composed expression',
-        'standing tall with feet together, arms hanging loosely, head straight, professional neutral gaze',
-        'standing with good posture, one foot slightly forward, arms at sides with soft hands, direct eye contact',
-        'standing centered, shoulders squared, arms relaxed with natural hand position, confident but approachable gaze',
-        'standing still with minimal movement, weight balanced, arms down with fingers slightly curved, steady gaze',
-        'standing with spine straight, arms loosely at sides, chin level, quiet confidence in expression',
-        'standing with feet hip-width apart, arms naturally hanging, slight head tilt, relaxed professional look'
-    ],
-
-    // Editorial e-commerce: subtle body language
+    // Editorial e-commerce: subtle body language, alive poses
     'ecom-editorial': [
         'standing with weight shifted to one leg, one hand grazing thigh lightly, confident gaze with subtle chin lift',
         'standing with one knee slightly bent, arms relaxed at sides with natural hand placement, direct but relaxed gaze',
@@ -170,23 +158,20 @@ function getRandomPose(poolName) {
 }
 
 /**
- * Get pose based on mode and style
+ * Get pose based on mode
  * @param {string} mode - 'ecommerce', 'campaign', or 'casting'
- * @param {string} style - 'classic' or 'editorial' (for ecommerce)
  * @param {string} poseType - specific pose type like 'sitting', 'walking' etc (optional)
  * @returns {string} A pose description
  */
-function getPoseForMode(mode, style = 'classic', poseType = null) {
+function getPoseForMode(mode, poseType = null) {
     // If specific pose type requested
     if (poseType && POSE_POOLS[poseType]) {
         return getRandomPose(poseType);
     }
 
-    // Mode-based selection
+    // Mode-based selection - always editorial for e-commerce
     if (mode === 'ecommerce') {
-        return style === 'editorial'
-            ? getRandomPose('ecom-editorial')
-            : getRandomPose('ecom-classic');
+        return getRandomPose('ecom-editorial');
     }
 
     if (mode === 'campaign' || mode === 'casting') {
@@ -196,8 +181,8 @@ function getPoseForMode(mode, style = 'classic', poseType = null) {
         return getRandomPose(randomPool);
     }
 
-    // Default
-    return getRandomPose('ecom-classic');
+    // Default - always editorial
+    return getRandomPose('ecom-editorial');
 }
 
 // Export for use in HTML

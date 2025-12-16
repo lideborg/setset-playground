@@ -1,0 +1,267 @@
+{
+  "collections": [
+    {
+      "id": "bottega",
+      "name": "Bottega",
+      "description": "Quiet luxury, Italian craftsmanship",
+      "thumbnail": "/assets/moodboards/Bottega/05c4357e458927354dd2c12aced524c0.jpg",
+      "tags": ["luxury", "minimalist", "editorial", "campaign"],
+      "styleAnalysis": {
+        "aesthetic": "Quiet luxury with understated elegance. Emphasis on craftsmanship, texture, and material quality over logos. Sophisticated, intellectual fashion sensibility with architectural influence.",
+        "clothing": "Oversized tailoring, relaxed suiting, ribbed knits, leather goods, woven intrecciato details. Earth tones, navy, burgundy, cream, sage green. Premium materials like cashmere, fine wool, supple leather. Gender-fluid silhouettes.",
+        "photography": "Editorial campaign style with cinematic quality. Mix of studio and environmental location shoots. Soft natural light mixed with controlled studio lighting. Slightly desaturated color grading with warm undertones.",
+        "poses": "Relaxed, contemplative poses. Models often seated or leaning. Unconventional positioning - laying on furniture, casual sprawling. Confident but not confrontational gaze.",
+        "environments": "Architectural spaces, natural landscapes (snow, pink stucco walls), wood-paneled interiors. Clean, minimal backdrops that don't compete with clothing.",
+        "mood": "Cerebral, calm, sophisticated. Quiet confidence without flash. Art-house film aesthetic."
+      },
+      "environmentPool": {
+        "indoor": [
+          "minimalist wood-paneled study with warm afternoon light through tall windows, shot from corner angle",
+          "minimalist wood-paneled study with warm afternoon light, close-up near the window",
+          "minimalist wood-paneled study, wide shot showing full room with natural light",
+          "minimalist wood-paneled interior, different angle showing doorway and paneling details",
+          "minimalist wood-paneled room with soft shadows, intimate framing near furniture"
+        ],
+        "outdoor": [
+          "pink stucco Mediterranean courtyard with soft afternoon light, wide establishing shot",
+          "pink stucco Mediterranean wall in warm sunlight, close-up architectural detail",
+          "pink stucco Mediterranean terrace from different angle, golden hour",
+          "pink stucco Mediterranean archway with dappled shadows",
+          "pink stucco Mediterranean corner with climbing bougainvillea, intimate framing"
+        ]
+      },
+      "images": [
+        "/assets/moodboards/Bottega/05c4357e458927354dd2c12aced524c0.jpg",
+        "/assets/moodboards/Bottega/147025fe6e0383627f6274bd52c64d58.jpg",
+        "/assets/moodboards/Bottega/19e009d1a8ee8e45d90b1574d56e70f6.jpg",
+        "/assets/moodboards/Bottega/1c5591aad5ee5fd9850ea5fa3c18b4cd.jpg",
+        "/assets/moodboards/Bottega/2356d5a761f6f1a3e98192922aa92575.jpg",
+        "/assets/moodboards/Bottega/240bb0ae2f4805688a3aa530c39813cc.jpg",
+        "/assets/moodboards/Bottega/543b0a88688255944fc7c18837d0e408.jpg",
+        "/assets/moodboards/Bottega/67762d88c20a08fe33a509f42dee83f2.jpg",
+        "/assets/moodboards/Bottega/8fd54f47310c95f8c0b881f047302937.jpg",
+        "/assets/moodboards/Bottega/9c148faf2dda02d4b46bef77ba3f8b0b.jpg",
+        "/assets/moodboards/Bottega/ada11a99d5759cc22541b016257f9b09.jpg",
+        "/assets/moodboards/Bottega/e5dfa156f6bdd028f395f0a6babfd818.jpg"
+      ]
+    },
+    {
+      "id": "exhibition",
+      "name": "Exhibition",
+      "description": "Gallery spaces, sculptural minimalism",
+      "thumbnail": "/assets/moodboards/Exhibition/5075196f880c929aeee331d1db7a1c2b.jpg",
+      "tags": ["art", "minimalist", "sculptural", "gallery"],
+      "styleAnalysis": {
+        "aesthetic": "Contemporary art gallery and exhibition aesthetic. Focus on sculptural forms, negative space, and material contrast. Wabi-sabi influence with raw, organic textures meeting refined geometric shapes.",
+        "clothing": "Not fashion-focused - primarily environments and objects. When clothing appears: neutral tones, architectural cuts, sculptural silhouettes. Linen, raw cotton, natural fibers.",
+        "photography": "Clean, architectural photography. Emphasis on form, shadow, and space. Natural daylight through gallery windows. Muted, desaturated tones. Stone, plaster, and wood textures.",
+        "poses": "N/A - primarily still life and environmental imagery",
+        "environments": "White-walled galleries with exposed brick accents. Concrete floors, plaster walls, minimalist exhibition spaces. Sculptural furniture and art objects. Natural wood, stone, metal materials.",
+        "mood": "Contemplative, serene, intellectual. Museum-quality stillness. Balance between organic warmth and geometric precision."
+      },
+      "environmentPool": {
+        "indoor": [
+          "white-walled gallery with exposed brick archway and natural daylight, wide shot",
+          "white-walled gallery space near the brick arch, different angle with soft shadows",
+          "white-walled gallery interior, intimate corner with textured plaster wall",
+          "white-walled gallery room, shot from entrance showing depth",
+          "white-walled gallery with polished concrete floor, low angle perspective"
+        ],
+        "outdoor": [
+          "serene sculpture courtyard with gravel floor and stone elements, wide establishing shot",
+          "sculpture courtyard from different angle, afternoon light on gravel",
+          "sculpture courtyard corner with weathered stone wall backdrop",
+          "sculpture courtyard near wooden bench, intimate framing",
+          "sculpture courtyard pathway with geometric shadows"
+        ]
+      },
+      "images": [
+        "/assets/moodboards/Exhibition/4ded784d7e4cb0729fcc470f763c862e.jpg",
+        "/assets/moodboards/Exhibition/5075196f880c929aeee331d1db7a1c2b.jpg",
+        "/assets/moodboards/Exhibition/580e693d4e77e9a7b42337e3c0a76826.jpg",
+        "/assets/moodboards/Exhibition/702c143b06b4ef14453f4c5a67bc8ea5.jpg",
+        "/assets/moodboards/Exhibition/7df96fab3b922e2f9671fa365968f2cf.jpg",
+        "/assets/moodboards/Exhibition/8b932eb930b4f3ed4068d4bd294ecb6e.jpg",
+        "/assets/moodboards/Exhibition/9259a848d582cf47340a8d715a4ac116.jpg",
+        "/assets/moodboards/Exhibition/aileenjdelareev-IMG_5557-800x533.webp",
+        "/assets/moodboards/Exhibition/aroundthestudio-34-800x654.webp",
+        "/assets/moodboards/Exhibition/c9f904fb7cf6ca4cc499729d7394703f.jpg",
+        "/assets/moodboards/Exhibition/cb619405681d78d00e67ae72f8ecde69.jpg",
+        "/assets/moodboards/Exhibition/ceb22cafeffbe80a6fdf1dc84043d9d4.jpg",
+        "/assets/moodboards/Exhibition/studioformbart.se-83FEE3B3-6829-4B0A-B168-F56CFA8E43EB_1_105_c.webp"
+      ]
+    },
+    {
+      "id": "gucci",
+      "name": "Gucci",
+      "description": "Maximalist, retro-eclectic glamour",
+      "thumbnail": "/assets/moodboards/Gucci/03fc7407f494f73e90dfa0178056666c.jpg",
+      "tags": ["luxury", "maximalist", "retro", "bold"],
+      "styleAnalysis": {
+        "aesthetic": "Bold maximalism with vintage references. 70s California meets Italian glamour. Eclectic pattern mixing, playful irreverence, and unapologetic excess. Camp sensibility with high fashion execution.",
+        "clothing": "Pattern mixing - checks, stripes, monogram prints. Vintage-inspired silhouettes - wide-leg trousers, knit polos, cardigans, structured jackets. Bold color combinations - red and green, mustard and burgundy. Logo-heavy accessories, statement footwear.",
+        "photography": "Saturated, warm color palette. Golden hour lighting, sunset tones. Film-like grain and processing. Cinematic wide shots with environmental context. Pop art influence in framing.",
+        "poses": "Relaxed, casual poses. Sitting on vintage cars, leaning against colorful walls. Group shots with easy chemistry. Playful interaction with props and environment.",
+        "environments": "Retro locations - vintage cars, tiled bathrooms, beach boardwalks at dusk. Saturated color backdrops - mint green, coral pink. Mid-century architecture and interiors.",
+        "mood": "Playful, nostalgic, glamorous. California dreaming with Italian flair. Youthful energy with vintage soul."
+      },
+      "environmentPool": {
+        "indoor": [
+          "mid-century modern living room with bold patterned wallpaper and velvet furniture, wide shot",
+          "mid-century living room from different angle, near the vintage lamp",
+          "mid-century living room corner with ornate mirror and warm lighting",
+          "mid-century living room by the window with golden afternoon light",
+          "mid-century living room intimate shot near patterned armchair"
+        ],
+        "outdoor": [
+          "1970s Palm Springs poolside with palm trees at golden hour, wide establishing shot",
+          "Palm Springs poolside from different angle, loungers and turquoise water",
+          "Palm Springs poolside corner near the diving board, sunset light",
+          "Palm Springs poolside cabana area with retro furniture",
+          "Palm Springs poolside walkway with long shadows, warm evening"
+        ]
+      },
+      "images": [
+        "/assets/moodboards/Gucci/03fc7407f494f73e90dfa0178056666c.jpg",
+        "/assets/moodboards/Gucci/1662af598f25c036631711816aa82467.jpg",
+        "/assets/moodboards/Gucci/4cd94504dc6ffe4e1a8f088825c435d9.jpg",
+        "/assets/moodboards/Gucci/517b3cf0e29c01a0d71258d048ef73c5.jpg",
+        "/assets/moodboards/Gucci/556ff05e1d4fc7d159eed3e864675c7c.jpg",
+        "/assets/moodboards/Gucci/78f70b37ce83c3e8b505267df82e3206.jpg",
+        "/assets/moodboards/Gucci/9d6004f10523a4f0f8dbf9ea123db3e6.jpg",
+        "/assets/moodboards/Gucci/acdffd6b833cfc51807aa48086d59d29.jpg",
+        "/assets/moodboards/Gucci/b99793af1286eccf99a7de814ad6fd83.jpg",
+        "/assets/moodboards/Gucci/eb4b5d0ac63362614a5db81a04c62deb.jpg"
+      ]
+    },
+    {
+      "id": "khaite",
+      "name": "Khaite",
+      "description": "Modern American luxury, refined minimalism",
+      "thumbnail": "/assets/moodboards/Khaite/1b7a2451205ed1004cdaa5035e5c14cf.jpg",
+      "tags": ["luxury", "minimalist", "american", "editorial"],
+      "styleAnalysis": {
+        "aesthetic": "Modern American luxury with downtown New York sensibility. Refined minimalism meets utilitarian edge. Sophisticated ease - clothes that feel expensive but not precious.",
+        "clothing": "Elevated basics with interesting proportions. Oversized blazers, wide-leg trousers, cashmere knits, leather boots. Monochromatic palette - black, white, cream, camel, chocolate. Focus on cut and fabric over embellishment. Tabi-style boots, sculptural heels.",
+        "photography": "High contrast black and white mixed with muted color. Studio lighting with dramatic shadows. Clean, sharp focus on garment details. Some experimental fragmented compositions.",
+        "poses": "Confident, architectural poses. Strong silhouettes emphasizing garment shape. Detail shots of accessories - boots, bags. Movement captured mid-stride.",
+        "environments": "Stark white or black studio backdrops. Minimal distractions - focus entirely on clothing and form. Occasional raw concrete or industrial spaces.",
+        "mood": "Powerful, refined, intelligent. Downtown cool with uptown quality. Modern woman in command."
+      },
+      "environmentPool": {
+        "indoor": [
+          "raw concrete loft with industrial steel windows and diffused light, wide shot",
+          "raw concrete loft from different angle near the windows",
+          "raw concrete loft corner with dramatic shadow play",
+          "raw concrete loft interior, intimate framing by exposed beam",
+          "raw concrete loft space with morning light streaming in"
+        ],
+        "outdoor": [
+          "minimalist urban rooftop at twilight with city skyline silhouette, wide shot",
+          "urban rooftop from different angle, concrete and steel elements",
+          "urban rooftop corner near the edge with dramatic sky",
+          "urban rooftop with architectural details and evening light",
+          "urban rooftop walkway with long urban shadows"
+        ]
+      },
+      "images": [
+        "/assets/moodboards/Khaite/0183c0da7c898443550d9b1258bdbc07.jpg",
+        "/assets/moodboards/Khaite/1b7a2451205ed1004cdaa5035e5c14cf.jpg",
+        "/assets/moodboards/Khaite/1e0ac38af6d2c480e8fc339c44b14de4.jpg",
+        "/assets/moodboards/Khaite/3ff25c4622393b98ec600e1907d4e904.jpg",
+        "/assets/moodboards/Khaite/5dc047384a0f0ce00e18ed9dd23c2a70.jpg",
+        "/assets/moodboards/Khaite/66a62f31d640ce0648ab5d78f6c7d024.jpg",
+        "/assets/moodboards/Khaite/777766304923623f882983c74e4ebe72.jpg",
+        "/assets/moodboards/Khaite/9c803ca6f580787d68f81247ce2d67d6.jpg",
+        "/assets/moodboards/Khaite/c40f160ab7b46b37e50ddf394051d810.jpg",
+        "/assets/moodboards/Khaite/d967dc875e236240a3afdb6b3fb19cff.jpg",
+        "/assets/moodboards/Khaite/f3ebc334ae0ce309085ce09e97b79c85.jpg"
+      ]
+    },
+    {
+      "id": "nike",
+      "name": "Nike",
+      "description": "Athletic performance, bold energy",
+      "thumbnail": "/assets/moodboards/Nike/4a4bfc94f4bd5a203004a5126715cac3.jpg",
+      "tags": ["athletic", "sportswear", "bold", "performance"],
+      "styleAnalysis": {
+        "aesthetic": "High-performance athleticism meets street style. Bold, monochromatic color blocking. Technical innovation as visual language. Power and movement as central themes.",
+        "clothing": "Technical athletic wear - track suits, compression gear, sports bras, performance shorts. Monochromatic color stories - all blue, all red. Tech fleece textures, moisture-wicking fabrics. Clean lines with functional details.",
+        "photography": "Dramatic studio lighting with strong color gels - blue, red, amber. High contrast with deep shadows. Motion blur and multiple exposure effects. Athletes captured in powerful moments.",
+        "poses": "Dynamic athletic poses - lifting, training, in motion. Strong, muscular bodies in action. Power stances with confident presence. Silhouettes emphasizing form and movement.",
+        "environments": "Colored studio backdrops - monochromatic red, blue, black. Minimalist gym equipment as props - weights, bars. Dark, moody atmospheres with dramatic spotlight.",
+        "mood": "Powerful, intense, aspirational. Peak performance energy. Sweat and determination. Just Do It embodied."
+      },
+      "environmentPool": {
+        "indoor": [
+          "dark industrial gym with dramatic single spotlight and blue color gel, wide shot",
+          "dark gym from different angle with equipment silhouettes",
+          "dark gym corner near the weight rack with rim lighting",
+          "dark gym interior with moody blue atmosphere, intimate framing",
+          "dark gym space with dramatic overhead light beam"
+        ],
+        "outdoor": [
+          "urban basketball court at night with harsh overhead lights, wide shot",
+          "basketball court from different angle, concrete and chain-link fence",
+          "basketball court corner near the hoop with dramatic shadows",
+          "basketball court sideline with city lights in background",
+          "basketball court entrance with gritty urban texture"
+        ]
+      },
+      "images": [
+        "/assets/moodboards/Nike/4a4bfc94f4bd5a203004a5126715cac3.jpg",
+        "/assets/moodboards/Nike/64582d79a3e35ff38b62b8033ef81699.jpg",
+        "/assets/moodboards/Nike/65285db7ed5bbc5557c5f8f10b20a798.jpg",
+        "/assets/moodboards/Nike/80a24906205b0c7a3a8f1f65c670f874.jpg",
+        "/assets/moodboards/Nike/ab9647a8a74c129e6fc2b05d22779409.jpg",
+        "/assets/moodboards/Nike/bb08375989bc7760bfb1a3eae71922f1.jpg",
+        "/assets/moodboards/Nike/c0b92d1c4938c3170cbb4bd11a92a91e.jpg",
+        "/assets/moodboards/Nike/d074d4da6e86fc8158234c020500e1f8.jpg",
+        "/assets/moodboards/Nike/e93df57f08b725f262131b6be52103a6.jpg",
+        "/assets/moodboards/Nike/f5a1397f8bee5f3aad97a3264f8300db.jpg"
+      ]
+    },
+    {
+      "id": "noon",
+      "name": "Noon",
+      "description": "Wellness product photography, clean lifestyle",
+      "thumbnail": "/assets/moodboards/Noon/470944676_18030287306579422_6820391390020591181_n.jpg",
+      "tags": ["wellness", "product", "clean", "lifestyle"],
+      "styleAnalysis": {
+        "aesthetic": "Modern wellness brand aesthetic. Clean, premium product photography with natural ingredient storytelling. Science meets nature positioning.",
+        "clothing": "N/A - product-focused content",
+        "photography": "Bright, clean studio photography. Soft shadows on white/cream backgrounds. Floating product compositions with ingredient elements. High-key lighting with subtle gradients. Sharp product focus with soft background elements.",
+        "poses": "N/A - product photography",
+        "environments": "Minimal white/cream studio backdrops. Natural ingredients as props - mushrooms, berries, dried fruits, ice. Metal vessels and premium containers. Clean, uncluttered compositions.",
+        "mood": "Fresh, premium, trustworthy. Science-backed wellness. Clean living without pretension. Modern apothecary aesthetic."
+      },
+      "environmentPool": {
+        "indoor": [
+          "bright minimal spa bathroom with stone and wood textures, soft morning light, wide shot",
+          "spa bathroom from different angle near the wooden vanity",
+          "spa bathroom corner with linen towels and natural elements",
+          "spa bathroom interior with steam and soft diffused light",
+          "spa bathroom alcove with botanical accents"
+        ],
+        "outdoor": [
+          "serene zen garden corner with natural materials and soft daylight, wide shot",
+          "zen garden from different angle with gravel and stones",
+          "zen garden pathway with bamboo and morning light",
+          "zen garden seating area with minimal wooden bench",
+          "zen garden entrance with clean architectural lines"
+        ]
+      },
+      "images": [
+        "/assets/moodboards/Noon/470944676_18030287306579422_6820391390020591181_n.jpg",
+        "/assets/moodboards/Noon/473047675_18032785439579422_4869508212687488136_n.jpg",
+        "/assets/moodboards/Noon/473708785_18033139745579422_7732512238865929860_n.jpg",
+        "/assets/moodboards/Noon/480806421_18037375412579422_4366630919825995534_n.jpg",
+        "/assets/moodboards/Noon/491440638_18043824770579422_7953467481615028751_n.jpg",
+        "/assets/moodboards/Noon/504494228_18049472537579422_16274055699984310_n.jpg",
+        "/assets/moodboards/Noon/514223553_18051254198579422_8030440659519971059_n.jpg",
+        "/assets/moodboards/Noon/531821881_18056331995579422_5082997435975866330_n.jpg",
+        "/assets/moodboards/Noon/584111718_18067525049579422_5152466859317003832_n.jpg"
+      ]
+    }
+  ]
+}

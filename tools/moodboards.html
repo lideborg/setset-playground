@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moodboard Library</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        .page-header {
+            margin-bottom: var(--space-xl);
+        }
+
+        .page-header h1 {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .page-header p {
+            color: var(--slate);
+            font-size: var(--text-sm);
+        }
+
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .collection-card {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .collection-card:hover {
+            border-color: var(--ash-grey);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .collection-card.expanded {
+            grid-column: 1 / -1;
+        }
+
+        .collection-thumbnail {
+            aspect-ratio: 16/9;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .collection-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .collection-preview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .collection-card:hover .collection-preview {
+            opacity: 1;
+        }
+
+        .collection-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .collection-info {
+            padding: var(--space-md);
+        }
+
+        .collection-name {
+            font-size: var(--text-md);
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .collection-description {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+        }
+
+        .collection-meta {
+            display: flex;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .collection-tag {
+            font-size: 10px;
+            padding: 3px 8px;
+            background: var(--off-white);
+            border-radius: var(--radius-sm);
+            color: var(--slate);
+        }
+
+        .collection-count {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+        }
+
+        /* Expanded View */
+        .collection-expanded {
+            display: none;
+            padding: var(--space-md);
+            border-top: 1px solid var(--gainsboro);
+        }
+
+        .collection-card.expanded .collection-expanded {
+            display: block;
+        }
+
+        .expanded-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .expanded-grid img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .expanded-grid img:hover {
+            transform: scale(1.05);
+        }
+
+        .style-analysis {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+        }
+
+        .style-analysis h4 {
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ash-grey);
+            margin-bottom: var(--space-xs);
+        }
+
+        .style-analysis p {
+            color: var(--carbon);
+            margin-bottom: var(--space-sm);
+        }
+
+        .style-analysis p:last-child {
+            margin-bottom: 0;
+        }
+
+        .style-label {
+            font-weight: 600;
+            color: var(--slate);
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-xl);
+        }
+
+        .lightbox.visible {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity var(--transition-fast);
+        }
+
+        .lightbox-close:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Moodboard Library</h1>
+            <p>Pre-curated moodboard collections with style analysis. Click to expand and view all images.</p>
+        </div>
+
+        <div class="collections-grid" id="collections-grid"></div>
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img id="lightbox-img" src="" alt="">
+    </div>
+
+    <script>
+        let library = null;
+
+        async function loadLibrary() {
+            try {
+                const response = await fetch('/shared/data/moodboard-library.json');
+                library = await response.json();
+                renderCollections();
+            } catch (error) {
+                console.error('Failed to load moodboard library:', error);
+            }
+        }
+
+        function renderCollections() {
+            const grid = document.getElementById('collections-grid');
+
+            grid.innerHTML = library.collections.map(collection => `
+                <div class="collection-card" data-id="${collection.id}">
+                    <div class="collection-thumbnail">
+                        <img src="${collection.thumbnail}" alt="${collection.name}">
+                        <div class="collection-preview">
+                            ${collection.images.slice(0, 4).map(img => `<img src="${img}" alt="">`).join('')}
+                        </div>
+                    </div>
+                    <div class="collection-info">
+                        <div class="collection-name">${collection.name}</div>
+                        <div class="collection-description">${collection.description}</div>
+                        <div class="collection-meta">
+                            ${collection.tags?.map(tag => `<span class="collection-tag">${tag}</span>`).join('') || ''}
+                            <span class="collection-count">${collection.images.length} images</span>
+                        </div>
+                    </div>
+                    <div class="collection-expanded">
+                        <div class="expanded-grid">
+                            ${collection.images.map(img => `<img src="${img}" alt="" onclick="openLightbox('${img}')">`).join('')}
+                        </div>
+                        ${collection.styleAnalysis ? `
+                            <div class="style-analysis">
+                                <h4>Style Analysis</h4>
+                                <p><span class="style-label">Aesthetic:</span> ${collection.styleAnalysis.aesthetic}</p>
+                                <p><span class="style-label">Clothing:</span> ${collection.styleAnalysis.clothing}</p>
+                                <p><span class="style-label">Photography:</span> ${collection.styleAnalysis.photography}</p>
+                                <p><span class="style-label">Mood:</span> ${collection.styleAnalysis.mood}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers for expand/collapse
+            grid.querySelectorAll('.collection-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Don't toggle if clicking on an image in expanded view
+                    if (e.target.closest('.expanded-grid')) return;
+
+                    const wasExpanded = card.classList.contains('expanded');
+
+                    // Collapse all cards first
+                    grid.querySelectorAll('.collection-card').forEach(c => c.classList.remove('expanded'));
+
+                    // Toggle clicked card
+                    if (!wasExpanded) {
+                        card.classList.add('expanded');
+                        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+        }
+
+        function openLightbox(src) {
+            event.stopPropagation();
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('visible');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('visible');
+        }
+
+        // Close lightbox on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeLightbox();
+        });
+
+        loadLibrary();
+    </script>
+</body>
+</html>

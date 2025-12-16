@@ -51,20 +51,22 @@
 
         .sidebar-nav {
             flex: 1;
-            padding: 0;
+            padding: 12px 0;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 0;
         }
 
         #apiKeySwitcher {
-            padding: 16px 20px 8px;
+            padding: 0 20px 12px;
+            border-bottom: 1px solid var(--gainsboro);
+            margin-bottom: 8px;
         }
 
         .nav-item {
             display: block;
-            padding: 10px 20px;
+            padding: 8px 20px 8px 32px;
             color: var(--slate);
             text-decoration: none;
             transition: all var(--transition-fast);
@@ -85,46 +87,30 @@
             border-left-color: var(--jet);
         }
 
-        .nav-section {
-            padding: 16px 20px 8px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--ash-grey);
-        }
-
-        .nav-section:first-child {
-            padding-top: 0;
-        }
-
-        .nav-divider {
-            height: 1px;
-            background: var(--gainsboro);
-            margin: 12px 20px;
-        }
-
         .nav-collapsible {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 20px 8px;
-            font-size: 10px;
+            padding: 10px 20px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--ash-grey);
+            letter-spacing: 0.04em;
+            color: var(--carbon);
             cursor: pointer;
             user-select: none;
+            background: transparent;
+            transition: all var(--transition-fast);
         }
 
         .nav-collapsible:hover {
-            color: var(--slate);
+            background: var(--off-white);
         }
 
         .nav-collapsible .chevron {
             font-size: 8px;
             transition: transform 0.2s ease;
+            color: var(--ash-grey);
         }
 
         .nav-collapsible.collapsed .chevron {
@@ -139,6 +125,18 @@
 
         .nav-group.collapsed {
             max-height: 0;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--gainsboro);
+            margin: 8px 20px;
+        }
+
+        /* Legacy section - muted */
+        .nav-collapsible.legacy {
+            color: var(--ash-grey);
+            font-weight: 500;
         }
 
         /* Main Content */
@@ -197,27 +195,62 @@
 
         <nav class="sidebar-nav">
             <div id="apiKeySwitcher"></div>
-            <div class="nav-section">Tools</div>
-            <a class="nav-item" data-tool="generate">Generate</a>
-            <a class="nav-item" data-tool="remix">Remix</a>
-            <a class="nav-item" data-tool="batch-remix">Batch Remix</a>
-            <a class="nav-item" data-tool="bg-replace">BG Replace</a>
-            <a class="nav-item" data-tool="lockgroup">LockGroup</a>
-            <a class="nav-item" data-tool="styling">Styling</a>
-            <a class="nav-item" data-tool="socialset">SocialSet</a>
-            <a class="nav-item" data-tool="productgen">Product Gen</a>
-            <a class="nav-item" data-tool="envgen">Environment Gen</a>
-            <a class="nav-item" data-tool="campaign">Campaign Gen</a>
-            <a class="nav-item" data-tool="video">Video</a>
-            <a class="nav-item" data-tool="pose-library">Pose Library</a>
-            <a class="nav-item" data-tool="research">Research</a>
+
+            <!-- STUDIO -->
+            <div class="nav-collapsible collapsed" data-group="studio">
+                <span>Studio</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="studio-group">
+                <a class="nav-item" data-tool="socialset">SocialSet</a>
+                <a class="nav-item" data-tool="lockgroup">LockGroup</a>
+                <a class="nav-item" data-tool="campaign">Campaign Gen</a>
+                <a class="nav-item" data-tool="styling">Styling</a>
+            </div>
+
+            <!-- TRANSFORM -->
+            <div class="nav-collapsible collapsed" data-group="transform">
+                <span>Transform</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="transform-group">
+                <a class="nav-item" data-tool="remix">Remix</a>
+                <a class="nav-item" data-tool="batch-remix">Batch Remix</a>
+                <a class="nav-item" data-tool="bg-replace">BG Replace</a>
+                <a class="nav-item" data-tool="upscaler">Upscaler</a>
+            </div>
+
+            <!-- CREATE -->
+            <div class="nav-collapsible collapsed" data-group="create">
+                <span>Create</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="create-group">
+                <a class="nav-item" data-tool="generate">Generate</a>
+                <a class="nav-item" data-tool="video">Video</a>
+            </div>
+
+            <!-- LIBRARY -->
+            <div class="nav-collapsible collapsed" data-group="library">
+                <span>Library</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="library-group">
+                <a class="nav-item" data-tool="pose-library">Poses</a>
+                <a class="nav-item" data-tool="moodboards">Moodboards</a>
+                <a class="nav-item" data-tool="research">Research</a>
+            </div>
 
             <div class="nav-divider"></div>
-            <div class="nav-collapsible collapsed" id="legacy-toggle">
+
+            <!-- LEGACY -->
+            <div class="nav-collapsible legacy collapsed" data-group="legacy">
                 <span>Legacy</span>
                 <span class="chevron">▼</span>
             </div>
             <div class="nav-group collapsed" id="legacy-group">
+                <a class="nav-item" data-tool="productgen">Product Gen</a>
+                <a class="nav-item" data-tool="envgen">Environment Gen</a>
                 <a class="nav-item" data-tool="socialset-v1">SocialSet v1</a>
                 <a class="nav-item" data-tool="socialset-v2">SocialSet v2</a>
                 <a class="nav-item" data-tool="campaign-v1">Campaign Gen v1</a>
@@ -251,20 +284,26 @@
         // All tools now live in /tools/
         const v = Date.now();
         const tools = {
-            'generate': `/tools/generate.html?v=${v}`,
+            // Studio
+            'socialset': `/tools/socialset/index.html?v=${v}`,
+            'lockgroup': `/tools/lockgroup/index.html?v=${v}`,
+            'campaign': `/tools/campaign-gen-v2.html?v=${v}`,
+            'styling': `/tools/styling/index.html?v=${v}`,
+            // Transform
             'remix': `/tools/remix.html?v=${v}`,
             'batch-remix': `/tools/batch-remix.html?v=${v}`,
             'bg-replace': `/tools/bg-replace.html?v=${v}`,
-            'lockgroup': `/tools/lockgroup/index.html?v=${v}`,
-            'styling': `/tools/styling/index.html?v=${v}`,
-            'socialset': `/tools/socialset/index.html?v=${v}`,
+            'upscaler': `/tools/upscaler.html?v=${v}`,
+            // Create
+            'generate': `/tools/generate.html?v=${v}`,
+            'video': `/tools/video.html?v=${v}`,
+            // Library
+            'pose-library': `/tools/pose-library.html?v=${v}`,
+            'moodboards': `/tools/moodboards.html?v=${v}`,
+            'research': `/tools/research.html?v=${v}`,
+            // Legacy
             'productgen': `/tools/socialset/product-generator.html?v=${v}`,
             'envgen': `/tools/socialset/environment-generator.html?v=${v}`,
-            'campaign': `/tools/campaign-gen-v2.html?v=${v}`,
-            'video': `/tools/video.html?v=${v}`,
-            'pose-library': `/tools/pose-library.html?v=${v}`,
-            'research': `/tools/research.html?v=${v}`,
-            // Legacy tools
             'socialset-v1': `/tools/legacy/socialset-v1.html?v=${v}`,
             'socialset-v2': `/tools/legacy/setset-social-v1.html?v=${v}`,
             'campaign-v1': `/tools/legacy/campaign-gen-v1.html?v=${v}`,
@@ -307,12 +346,14 @@
             item.addEventListener('click', () => loadTool(item.dataset.tool));
         });
 
-        // Legacy collapsible toggle
-        document.getElementById('legacy-toggle').addEventListener('click', () => {
-            const toggle = document.getElementById('legacy-toggle');
-            const group = document.getElementById('legacy-group');
-            toggle.classList.toggle('collapsed');
-            group.classList.toggle('collapsed');
+        // Collapsible group toggles
+        document.querySelectorAll('.nav-collapsible').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const groupId = toggle.dataset.group + '-group';
+                const group = document.getElementById(groupId);
+                toggle.classList.toggle('collapsed');
+                group.classList.toggle('collapsed');
+            });
         });
     </script>
 </body>

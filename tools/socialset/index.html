@@ -166,6 +166,50 @@
             cursor: not-allowed;
         }
 
+        /* Collection Picker */
+        .collection-picker {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .collection-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            white-space: nowrap;
+        }
+
+        .collection-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .collection-chip {
+            padding: 4px 10px;
+            font-size: 11px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--off-white);
+            color: var(--carbon);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .collection-chip:hover {
+            border-color: var(--ash-grey);
+            background: var(--white);
+        }
+
+        .collection-chip.active {
+            border-color: var(--jet);
+            background: var(--jet);
+            color: var(--white);
+        }
+
         /* Mood Board Grid */
         .moodboard-grid {
             display: grid;
@@ -659,59 +703,27 @@
             display: none;
         }
 
-        /* Style Toggle Row */
-        .style-toggle-row {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            padding: var(--space-sm) var(--space-md);
-            background: var(--off-white);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--space-md);
-        }
-
-        .style-toggle-row.hidden {
-            display: none;
-        }
-
-        .style-toggle-label {
-            font-size: var(--text-sm);
-            font-weight: 500;
-            color: var(--carbon);
-        }
-
-        .style-toggle-buttons {
-            display: flex;
-            gap: 4px;
-        }
-
-        .style-toggle-btn {
-            padding: 8px 16px;
-            font-size: var(--text-sm);
-            font-weight: 500;
-            border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-sm);
-            background: var(--white);
+        /* Pose dropdown optgroup styling */
+        .output-pose-select optgroup {
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
             color: var(--slate);
-            cursor: pointer;
-            transition: all var(--transition-fast);
+            background: var(--off-white);
+            padding: 8px 0 4px 0;
         }
 
-        .style-toggle-btn:hover {
-            border-color: var(--ash-grey);
+        .output-pose-select option {
+            font-weight: 400;
+            font-size: 13px;
+            text-transform: none;
+            letter-spacing: normal;
+            color: var(--carbon);
+            background: var(--white);
+            padding: 4px 8px;
         }
 
-        .style-toggle-btn.active {
-            background: var(--jet);
-            color: var(--white);
-            border-color: var(--jet);
-        }
-
-        .style-toggle-hint {
-            font-size: var(--text-xs);
-            color: var(--ash-grey);
-            font-style: italic;
-        }
     </style>
 </head>
 <body>
@@ -726,16 +738,6 @@
             <button class="mode-tab active" data-mode="ecommerce">E-commerce</button>
             <button class="mode-tab" data-mode="campaign">Campaign</button>
             <button class="mode-tab" data-mode="casting">Casting</button>
-        </div>
-
-        <!-- E-commerce Style Toggle (only visible in e-commerce mode) -->
-        <div class="style-toggle-row" id="style-toggle-row">
-            <span class="style-toggle-label">E-commerce Style:</span>
-            <div class="style-toggle-buttons">
-                <button class="style-toggle-btn" data-style="classic">Classic</button>
-                <button class="style-toggle-btn active" data-style="editorial">Editorial</button>
-            </div>
-            <span class="style-toggle-hint" id="style-toggle-hint">Subtle body language, natural poses</span>
         </div>
 
         <!-- Section 1: Talent Selection -->
@@ -754,6 +756,11 @@
                 <span class="section-title">2. Mood Board</span>
                 <span class="section-badge required">Required</span>
                 <button class="btn btn--sm" id="clear-moodboard" style="margin-left: auto; font-size: 11px; padding: 4px 10px;">Clear All</button>
+            </div>
+            <!-- Collection Picker -->
+            <div class="collection-picker" id="collection-picker">
+                <span class="collection-label">Quick Load:</span>
+                <div class="collection-chips" id="collection-chips"></div>
             </div>
             <div class="moodboard-grid" id="moodboard-grid"></div>
             <input type="file" id="moodboard-input" accept="image/*" multiple>
@@ -922,7 +929,6 @@
         // State
         const state = {
             mode: 'ecommerce',  // 'ecommerce', 'campaign', 'casting'
-            ecommerceStyle: 'editorial',  // 'classic' or 'editorial' (default to editorial)
 
             // Talent selection
             selectedTalent: [],      // For ecommerce/campaign: array of IDs
@@ -941,6 +947,15 @@
                 usedFemale: 0,  // Counter for assigning unique outfits
                 usedMale: 0
             },
+
+            // Campaign environments - one indoor + one outdoor location with variations
+            campaignEnvironments: {
+                indoor: [],   // 5 variations of the same indoor location
+                outdoor: []   // 5 variations of the same outdoor location
+            },
+            currentIndoorIndex: 0,   // Counter for cycling through indoor variations
+            currentOutdoorIndex: 0,  // Counter for cycling through outdoor variations
+            useIndoorNext: true,     // Alternates between indoor and outdoor
 
             // Output configuration - 12 slots
             outputs: new Array(12).fill(null).map(() => ({
@@ -961,8 +976,6 @@
         // DOM Elements
         const elements = {
             modeTabs: document.querySelectorAll('.mode-tab'),
-            styleToggleRow: document.getElementById('style-toggle-row'),
-            styleToggleHint: document.getElementById('style-toggle-hint'),
             talentGrid: document.getElementById('talent-grid'),
             talentCount: document.getElementById('talent-count'),
             talentHint: document.getElementById('talent-hint'),
@@ -995,7 +1008,98 @@
         let lastMessageIndex = -1;
 
         // Initialize
+        // Moodboard collections library
+        let moodboardLibrary = null;
+
+        async function loadMoodboardLibrary() {
+            try {
+                const response = await fetch('/shared/data/moodboard-library.json');
+                moodboardLibrary = await response.json();
+                renderCollectionChips();
+            } catch (error) {
+                console.error('Failed to load moodboard library:', error);
+            }
+        }
+
+        function renderCollectionChips() {
+            const container = document.getElementById('collection-chips');
+            if (!moodboardLibrary || !container) return;
+
+            container.innerHTML = moodboardLibrary.collections.map(collection => `
+                <button class="collection-chip" data-collection="${collection.id}" title="${collection.description}">
+                    ${collection.name}
+                </button>
+            `).join('');
+
+            // Add click handlers
+            container.querySelectorAll('.collection-chip').forEach(chip => {
+                chip.addEventListener('click', () => loadCollection(chip.dataset.collection));
+            });
+        }
+
+        async function loadCollection(collectionId) {
+            const collection = moodboardLibrary?.collections.find(c => c.id === collectionId);
+            if (!collection) return;
+
+            // Clear existing moodboard
+            state.moodboardImages = new Array(24).fill(null);
+
+            // Update chip states
+            document.querySelectorAll('.collection-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.collection === collectionId);
+            });
+
+            // Load images from collection (up to 24)
+            const imagesToLoad = collection.images.slice(0, 24);
+
+            for (let i = 0; i < imagesToLoad.length; i++) {
+                const imagePath = imagesToLoad[i];
+                try {
+                    // Fetch and convert to base64
+                    const response = await fetch(imagePath);
+                    const blob = await response.blob();
+                    const base64 = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+
+                    state.moodboardImages[i] = {
+                        url: base64,
+                        selected: true,
+                        name: imagePath.split('/').pop()
+                    };
+                } catch (error) {
+                    console.error(`Failed to load image: ${imagePath}`, error);
+                }
+            }
+
+            // Pre-fill style analysis from collection
+            if (collection.styleAnalysis) {
+                const analysis = collection.styleAnalysis;
+                // Combine into a usable analysis string
+                state.analysis = `${analysis.aesthetic} ${analysis.clothing} ${analysis.photography} ${analysis.mood}`;
+                console.log('Pre-loaded style analysis from collection:', collection.name);
+            }
+
+            // Load indoor/outdoor environment pools from collection
+            if (collection.environmentPool && collection.environmentPool.indoor && collection.environmentPool.outdoor) {
+                state.campaignEnvironments.indoor = [...collection.environmentPool.indoor];
+                state.campaignEnvironments.outdoor = [...collection.environmentPool.outdoor];
+                state.currentIndoorIndex = 0;
+                state.currentOutdoorIndex = 0;
+                state.useIndoorNext = Math.random() > 0.5; // Random start
+                console.log(`Loaded campaign environments - Indoor: ${state.campaignEnvironments.indoor.length} variations, Outdoor: ${state.campaignEnvironments.outdoor.length} variations`);
+            } else {
+                state.campaignEnvironments = { indoor: [], outdoor: [] };
+            }
+
+            renderMoodboardGrid();
+            updateUI();
+        }
+
         function init() {
+            loadMoodboardLibrary();
             renderTalentGrid();
             renderMoodboardGrid();
             renderOutputGrid();
@@ -1199,10 +1303,22 @@
 
         // Render Output Grid
         function renderOutputGrid() {
-            // Build pose options from poses.js
-            const poseOptions = POSES.map(pose =>
-                `<option value="${pose.id}">${pose.name}</option>`
-            ).join('');
+            // Build pose options with optgroups for visual grouping
+            const pdpPoses = POSES.filter(p => p.category === 'pdp');
+            const lifestylePoses = POSES.filter(p => p.category === 'lifestyle');
+            const detailPoses = POSES.filter(p => p.category === 'detail');
+
+            const poseOptions = `
+                <optgroup label="PDP">
+                    ${pdpPoses.map(pose => `<option value="${pose.id}">${pose.name}</option>`).join('')}
+                </optgroup>
+                <optgroup label="Studio">
+                    ${lifestylePoses.map(pose => `<option value="${pose.id}">${pose.name}</option>`).join('')}
+                </optgroup>
+                <optgroup label="Product Only">
+                    ${detailPoses.map(pose => `<option value="${pose.id}">${pose.name}</option>`).join('')}
+                </optgroup>
+            `;
 
             elements.outputGrid.innerHTML = state.outputs.map((output, i) => {
                 const isActive = output.enabled;
@@ -1290,27 +1406,8 @@
                     elements.modeTabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
 
-                    // Show/hide e-commerce style toggle
-                    updateStyleToggleVisibility();
-
                     renderTalentGrid();
                     updateUI();
-                });
-            });
-
-            // E-commerce style toggle
-            document.querySelectorAll('.style-toggle-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.style-toggle-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    state.ecommerceStyle = btn.dataset.style;
-
-                    // Update hint text
-                    if (state.ecommerceStyle === 'classic') {
-                        elements.styleToggleHint.textContent = 'Clean, straightforward poses';
-                    } else {
-                        elements.styleToggleHint.textContent = 'Subtle weight shifts, relaxed hands, natural body language';
-                    }
                 });
             });
 
@@ -1400,15 +1497,6 @@
             });
         }
 
-        // Update style toggle visibility
-        function updateStyleToggleVisibility() {
-            if (state.mode === 'ecommerce') {
-                elements.styleToggleRow.classList.remove('hidden');
-            } else {
-                elements.styleToggleRow.classList.add('hidden');
-            }
-        }
-
         // Update UI state
         function updateUI() {
             const isCasting = state.mode === 'casting';
@@ -1422,16 +1510,16 @@
             elements.analyzeBtn.disabled = !hasMoodboard && !hasStyleText;
 
             // Update analyze button text based on what we're analyzing
-            if (!state.analysis) {
-                if (hasMoodboard && hasStyleText) {
-                    elements.analyzeBtn.textContent = 'Analyze Style';
-                } else if (hasMoodboard) {
-                    elements.analyzeBtn.textContent = 'Analyze Mood Board';
-                } else if (hasStyleText) {
-                    elements.analyzeBtn.textContent = 'Analyze Style Text';
-                } else {
-                    elements.analyzeBtn.textContent = 'Analyze Style';
-                }
+            if (state.analysis) {
+                elements.analyzeBtn.textContent = 'Re-analyze Style';
+            } else if (hasMoodboard && hasStyleText) {
+                elements.analyzeBtn.textContent = 'Analyze Style';
+            } else if (hasMoodboard) {
+                elements.analyzeBtn.textContent = 'Analyze Mood Board';
+            } else if (hasStyleText) {
+                elements.analyzeBtn.textContent = 'Analyze Style Text';
+            } else {
+                elements.analyzeBtn.textContent = 'Analyze Style';
             }
 
             // Enable/disable generate button - need style input OR moodboard (not both required)
@@ -1650,6 +1738,14 @@ IMPORTANT:
             state.outfits.usedFemale = 0;
             state.outfits.usedMale = 0;
             console.log(`[Generate] Outfit pools: ${state.outfits.female?.length || 0} female, ${state.outfits.male?.length || 0} male`);
+
+            // Reset environment indices for campaign mode cycling
+            state.currentIndoorIndex = 0;
+            state.currentOutdoorIndex = 0;
+            state.useIndoorNext = Math.random() > 0.5; // Random start each generation
+            if (state.campaignEnvironments.indoor.length > 0) {
+                console.log(`[Generate] Campaign locations - Indoor: ${state.campaignEnvironments.indoor[0]?.substring(0, 40)}..., Outdoor: ${state.campaignEnvironments.outdoor[0]?.substring(0, 40)}...`);
+            }
 
             let completed = 0;
             const total = activeOutputs.length;
@@ -1929,14 +2025,41 @@ IMPORTANT:
                 // Build prompt using the actual selected pose
                 prompt = `${noSplitting} ${groupInstruction}${poseInstruction} ${analysis}. Clean white studio background, professional e-commerce lighting.`;
             } else if (state.mode === 'campaign') {
-                // Campaign: Environmental backgrounds from mood board
+                // Campaign: Alternate between indoor and outdoor locations
                 // Use the selected pose but in environmental setting
                 let poseInstruction = selectedPosePrompt
                     .replace('[PRODUCT_DESCRIPTION]', clothingInstruction)
                     .replace(/white studio/gi, 'editorial campaign setting')
                     .replace(/studio/gi, 'location');
 
-                prompt = `${noSplitting} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. Use the environmental style, locations, and mood from the reference images. Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.`;
+                // Alternate between indoor and outdoor, cycling through variations
+                let environmentDescription = '';
+                const hasIndoor = state.campaignEnvironments.indoor.length > 0;
+                const hasOutdoor = state.campaignEnvironments.outdoor.length > 0;
+
+                if (hasIndoor || hasOutdoor) {
+                    if (state.useIndoorNext && hasIndoor) {
+                        // Get next indoor variation
+                        const idx = state.currentIndoorIndex % state.campaignEnvironments.indoor.length;
+                        environmentDescription = state.campaignEnvironments.indoor[idx];
+                        state.currentIndoorIndex++;
+                        console.log(`[Campaign] Indoor variation ${idx + 1}: ${environmentDescription.substring(0, 50)}...`);
+                    } else if (hasOutdoor) {
+                        // Get next outdoor variation
+                        const idx = state.currentOutdoorIndex % state.campaignEnvironments.outdoor.length;
+                        environmentDescription = state.campaignEnvironments.outdoor[idx];
+                        state.currentOutdoorIndex++;
+                        console.log(`[Campaign] Outdoor variation ${idx + 1}: ${environmentDescription.substring(0, 50)}...`);
+                    }
+                    // Alternate for next image
+                    state.useIndoorNext = !state.useIndoorNext;
+                }
+
+                const environmentClause = environmentDescription
+                    ? `Shot in: ${environmentDescription}.`
+                    : 'Use the environmental style, locations, and mood from the reference images.';
+
+                prompt = `${noSplitting} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. ${environmentClause} Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.`;
             } else if (state.mode === 'casting') {
                 // Casting: Variety of styles, hero always present
                 // Mix between e-commerce and campaign randomly
@@ -1949,7 +2072,29 @@ IMPORTANT:
                         .replace(/white studio/gi, 'editorial campaign setting')
                         .replace(/studio/gi, 'location');
 
-                    prompt = `${noSplitting} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. Use the environmental style, locations, and mood from the reference images. Fashion editorial style, creative composition, dramatic lighting.`;
+                    // Use same indoor/outdoor alternating system as campaign mode
+                    let environmentDescription = '';
+                    const hasIndoor = state.campaignEnvironments.indoor.length > 0;
+                    const hasOutdoor = state.campaignEnvironments.outdoor.length > 0;
+
+                    if (hasIndoor || hasOutdoor) {
+                        if (state.useIndoorNext && hasIndoor) {
+                            const idx = state.currentIndoorIndex % state.campaignEnvironments.indoor.length;
+                            environmentDescription = state.campaignEnvironments.indoor[idx];
+                            state.currentIndoorIndex++;
+                        } else if (hasOutdoor) {
+                            const idx = state.currentOutdoorIndex % state.campaignEnvironments.outdoor.length;
+                            environmentDescription = state.campaignEnvironments.outdoor[idx];
+                            state.currentOutdoorIndex++;
+                        }
+                        state.useIndoorNext = !state.useIndoorNext;
+                    }
+
+                    const environmentClause = environmentDescription
+                        ? `Shot in: ${environmentDescription}.`
+                        : 'Use the environmental style, locations, and mood from the reference images.';
+
+                    prompt = `${noSplitting} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. ${environmentClause} Fashion editorial style, creative composition, dramatic lighting.`;
                 } else {
                     const groupInstruction = numPeople > 1
                         ? `Place ${peopleText} standing together. `
