@@ -127,31 +127,38 @@ const POSES = [
 ];
 
 // Simplified pose prompt templates - uses [PRODUCT_DESCRIPTION] placeholder
+// Updated with subtle editorial body language for more natural, alive poses
 const POSE_PROMPTS = {
     'pose-pdp-front': [
-        'Full-body portrait of this exact person in a white studio. Standing with shoulders back, direct gaze into camera, arms at sides. [PRODUCT_DESCRIPTION]. Sharp editorial lighting. Keep identical facial features.',
-        'Full-body portrait of this exact person in a white studio. Standing confidently with one hand in pocket, direct gaze. [PRODUCT_DESCRIPTION]. Clean professional lighting. Maintain exact face.',
-        'Full-body portrait of this exact person in a white studio. Standing straight with confident posture, looking at camera. [PRODUCT_DESCRIPTION]. High-contrast studio lighting. Preserve facial identity.',
+        'Full-body portrait of this exact person in a white studio. Standing with weight shifted slightly to one hip, arms relaxed at sides with soft hands, direct confident gaze. [PRODUCT_DESCRIPTION]. Sharp editorial lighting. Keep identical facial features.',
+        'Full-body portrait of this exact person in a white studio. Standing with subtle contrapposto, one knee slightly bent, shoulders relaxed, composed direct gaze. [PRODUCT_DESCRIPTION]. Clean professional lighting. Maintain exact face.',
+        'Full-body portrait of this exact person in a white studio. Standing with natural weight shift, one hand grazing thigh, chin slightly lifted, confident expression. [PRODUCT_DESCRIPTION]. High-contrast studio lighting. Preserve facial identity.',
+        'Full-body portrait of this exact person in a white studio. Standing with relaxed S-curve posture, weight on back leg, arms hanging naturally with fingers softly curved. [PRODUCT_DESCRIPTION]. Editorial lighting. Keep identical face.',
+        'Full-body portrait of this exact person in a white studio. Standing with easy confidence, hip shifted subtly, shoulders dropped and relaxed, calm direct gaze. [PRODUCT_DESCRIPTION]. Professional lighting. Maintain exact face.',
     ],
     'pose-pdp-angle': [
-        'Full-body portrait of this exact person at 45-degree angle in white studio. Body turned right, gaze forward (not at camera). [PRODUCT_DESCRIPTION]. Editorial lighting. Keep identical face.',
-        'Full-body portrait of this exact person at 45-degree angle in white studio. Body turned right, one hand in pocket. [PRODUCT_DESCRIPTION]. Clean lighting on garment silhouette. Maintain facial identity.',
-        'Full-body portrait of this exact person at 45-degree angle in white studio. Body turned left, weight forward, gaze ahead. [PRODUCT_DESCRIPTION]. Professional lighting. Preserve same face.',
+        'Full-body portrait of this exact person at 45-degree angle in white studio. Body turned right, weight shifted naturally, gaze forward with quiet confidence. [PRODUCT_DESCRIPTION]. Editorial lighting. Keep identical face.',
+        'Full-body portrait of this exact person at 45-degree angle in white studio. Body turned with relaxed shoulders, one hand loosely at side, composed expression. [PRODUCT_DESCRIPTION]. Clean lighting on garment silhouette. Maintain facial identity.',
+        'Full-body portrait of this exact person at 45-degree angle in white studio. Torso angled left, weight on back leg, head turned subtly toward camera. [PRODUCT_DESCRIPTION]. Professional lighting. Preserve same face.',
+        'Full-body portrait of this exact person at 45-degree angle in white studio. Natural three-quarter stance, one knee bent, arms relaxed, confident but approachable gaze. [PRODUCT_DESCRIPTION]. Editorial lighting. Keep identical face.',
     ],
     'pose-pdp-back': [
-        'Full-body portrait of this exact person from behind in white studio. Standing with shoulders back, facing away, head forward. [PRODUCT_DESCRIPTION]. Editorial lighting on garment back. Clear back view.',
-        'Full-body portrait of this exact person from behind in white studio. Facing away, arms at sides, showing garment back. [PRODUCT_DESCRIPTION]. Clean studio lighting. Complete back view.',
-        'Full-body portrait of this exact person from behind with subtle twist in white studio. Facing away with slight body angle. [PRODUCT_DESCRIPTION]. Professional lighting. Back of garment as focus.',
+        'Full-body portrait of this exact person from behind in white studio. Standing with weight shifted, one hip slightly higher, shoulders relaxed. [PRODUCT_DESCRIPTION]. Editorial lighting on garment back. Clear back view.',
+        'Full-body portrait of this exact person from behind in white studio. Facing away with natural posture, one foot slightly forward, arms hanging loosely. [PRODUCT_DESCRIPTION]. Clean studio lighting. Complete back view.',
+        'Full-body portrait of this exact person from behind with subtle twist in white studio. Slight over-shoulder glance, body angle creating movement. [PRODUCT_DESCRIPTION]. Professional lighting. Back of garment as focus.',
+        'Full-body portrait of this exact person from behind in white studio. Natural standing pose, weight shifted, head turned slightly as if about to look back. [PRODUCT_DESCRIPTION]. Editorial lighting. Keep back view focus.',
     ],
     'pose-pdp-halfbody': [
-        'Waist-up portrait of this exact person in white studio. Shoulders squared, hands at sides, direct gaze. [PRODUCT_DESCRIPTION]. Clean editorial lighting. Keep identical facial features.',
-        'Half-body portrait of this exact person in white studio. From waist up, shoulders back, looking at camera. [PRODUCT_DESCRIPTION]. Professional lighting on torso. Maintain exact face.',
-        'Waist-up portrait of this exact person in white studio. Squared shoulders, confident gaze into camera. [PRODUCT_DESCRIPTION]. Sharp lighting on upper body. Preserve facial identity.',
+        'Waist-up portrait of this exact person in white studio. Shoulders angled naturally, one slightly forward, relaxed direct gaze. [PRODUCT_DESCRIPTION]. Clean editorial lighting. Keep identical facial features.',
+        'Half-body portrait of this exact person in white studio. From waist up, torso turned slightly, one hand visible with natural hand placement. [PRODUCT_DESCRIPTION]. Professional lighting on torso. Maintain exact face.',
+        'Waist-up portrait of this exact person in white studio. Relaxed shoulders, head tilted subtly, confident composed expression. [PRODUCT_DESCRIPTION]. Sharp lighting on upper body. Preserve facial identity.',
+        'Half-body portrait of this exact person in white studio. Natural upper body positioning, shoulders dropped, one hand near hip, approachable gaze. [PRODUCT_DESCRIPTION]. Editorial lighting. Keep identical face.',
     ],
     'pose-pdp-closer': [
-        'Chest-up portrait of this exact person in white studio. Shoulders squared, direct gaze, confident expression. [PRODUCT_DESCRIPTION]. Editorial lighting on face and shoulders. Keep identical face.',
-        'Portrait from chest up of this exact person in white studio. Looking at camera with subtle smile. [PRODUCT_DESCRIPTION]. Clean lighting. Maintain exact facial features.',
-        'Chest-up portrait of this exact person in white studio. Shoulders angled, composed expression. [PRODUCT_DESCRIPTION]. Professional lighting. Preserve same face.',
+        'Chest-up portrait of this exact person in white studio. Shoulders angled naturally, head tilted slightly, direct confident gaze. [PRODUCT_DESCRIPTION]. Editorial lighting on face and shoulders. Keep identical face.',
+        'Portrait from chest up of this exact person in white studio. Relaxed shoulders, soft expression, looking at camera with quiet intensity. [PRODUCT_DESCRIPTION]. Clean lighting. Maintain exact facial features.',
+        'Chest-up portrait of this exact person in white studio. One shoulder slightly forward, chin lifted subtly, composed editorial expression. [PRODUCT_DESCRIPTION]. Professional lighting. Preserve same face.',
+        'Portrait from chest up of this exact person in white studio. Natural head position, shoulders relaxed, approachable confident gaze. [PRODUCT_DESCRIPTION]. Soft editorial lighting. Keep identical face.',
     ],
     'pose-pdp-detail': [
         'Product photo of the exact garment on white wooden hanger against white background. Full shape visible, natural drape. Professional product photography, soft even lighting. No person, just product on hanger.',

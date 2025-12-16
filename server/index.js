@@ -1108,8 +1108,108 @@ One prompt per line, no numbering. Each prompt should be 2-3 sentences.`;
 });
 
 /**
+ * POST /api/generate-outfits
+ * Generate outfit pools based on brand analysis
+ * Returns separate pools for male and female talent
+ */
+app.post('/api/generate-outfits', async (req, res) => {
+    try {
+        const { brandAnalysis, styleText, femaleCount, maleCount } = req.body;
+
+        // Ensure we have at least some outfits
+        const numFemale = Math.max(femaleCount || 6, 6);
+        const numMale = Math.max(maleCount || 6, 6);
+
+        console.log(`👗 [Outfits] Generating ${numFemale} female + ${numMale} male outfits`);
+
+        const styleContext = brandAnalysis || styleText || 'contemporary minimalist fashion';
+
+        const systemPrompt = `You are a fashion stylist creating outfit combinations for a photoshoot.
+Based on the brand aesthetic provided, create distinct but cohesive outfits.
+
+RULES:
+- Each outfit must be different but feel like the same brand/collection
+- Include: top, bottom (or dress), shoes, and optionally one accessory
+- Be specific about colors, materials, and fit (e.g., "oversized oatmeal wool coat" not just "coat")
+- Keep descriptions concise (one line per outfit)
+- Vary silhouettes: some fitted, some relaxed, some layered
+- Stay true to the brand's color palette and aesthetic
+- NO brand names - describe the style/look instead`;
+
+        const userPrompt = `BRAND AESTHETIC:
+${styleContext}
+
+Generate exactly ${numFemale} FEMALE outfits and ${numMale} MALE outfits.
+
+Format your response as JSON:
+{
+  "female": [
+    "outfit description 1",
+    "outfit description 2",
+    ...
+  ],
+  "male": [
+    "outfit description 1",
+    "outfit description 2",
+    ...
+  ]
+}
+
+Each outfit should be a single string describing the complete look. Be specific about colors, materials, and fit.`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.8,
+                max_tokens: 2000
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Outfits] API Error:', data);
+            return res.status(response.status).json({ error: data.error?.message || 'Outfit generation failed' });
+        }
+
+        // Parse the JSON response
+        let outfits = { female: [], male: [] };
+        try {
+            const content = data.choices[0].message.content;
+            // Remove markdown code blocks if present
+            const jsonStr = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+            const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                outfits = JSON.parse(jsonMatch[0]);
+            }
+        } catch (parseErr) {
+            console.error('❌ [Outfits] JSON parse error:', parseErr);
+            // Fallback: try to extract outfits from text
+            return res.status(500).json({ error: 'Failed to parse outfit response' });
+        }
+
+        console.log(`✅ [Outfits] Generated ${outfits.female?.length || 0} female, ${outfits.male?.length || 0} male outfits`);
+
+        res.json(outfits);
+    } catch (error) {
+        console.error('❌ [Outfits] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/analyze
  * Analyze images using GPT-4 Vision (supports multiple images)
+ * Also supports text-only analysis when no images are provided
  */
 app.post('/api/analyze', async (req, res) => {
     try {
@@ -1118,8 +1218,42 @@ app.post('/api/analyze', async (req, res) => {
         // Support both single image and array of images
         const imageUrls = images || (image ? [image] : []);
 
+        if (imageUrls.length === 0 && !prompt) {
+            return res.status(400).json({ error: 'No images or prompt provided' });
+        }
+
+        // Text-only mode (no images)
         if (imageUrls.length === 0) {
-            return res.status(400).json({ error: 'No images provided' });
+            console.log(`🔍 [Analyze] Processing text-only request`);
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    max_tokens: 1500,
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('❌ [Analyze] OpenAI error:', data.error);
+                return res.status(response.status).json({ error: data.error?.message || 'Analysis failed' });
+            }
+
+            console.log('✅ [Analyze] Text-only success');
+            return res.json({ content: data.choices[0].message.content });
         }
 
         console.log(`🔍 [Analyze] Processing ${imageUrls.length} image(s)`);

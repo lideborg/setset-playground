@@ -133,8 +133,8 @@
 
         .nav-group {
             overflow: hidden;
-            transition: max-height 0.2s ease;
-            max-height: 200px;
+            transition: max-height 0.3s ease;
+            max-height: 500px;
         }
 
         .nav-group.collapsed {
@@ -208,8 +208,8 @@
             <a class="nav-item" data-tool="productgen">Product Gen</a>
             <a class="nav-item" data-tool="envgen">Environment Gen</a>
             <a class="nav-item" data-tool="campaign">Campaign Gen</a>
-            <a class="nav-item" data-tool="setsetsocial">Setset Social</a>
             <a class="nav-item" data-tool="video">Video</a>
+            <a class="nav-item" data-tool="pose-library">Pose Library</a>
             <a class="nav-item" data-tool="research">Research</a>
 
             <div class="nav-divider"></div>
@@ -218,6 +218,8 @@
                 <span class="chevron">▼</span>
             </div>
             <div class="nav-group collapsed" id="legacy-group">
+                <a class="nav-item" data-tool="socialset-v1">SocialSet v1</a>
+                <a class="nav-item" data-tool="socialset-v2">SocialSet v2</a>
                 <a class="nav-item" data-tool="campaign-v1">Campaign Gen v1</a>
                 <a class="nav-item" data-tool="looks">Looks</a>
                 <a class="nav-item" data-tool="old-styling">Old Styling</a>
@@ -259,10 +261,12 @@
             'productgen': `/tools/socialset/product-generator.html?v=${v}`,
             'envgen': `/tools/socialset/environment-generator.html?v=${v}`,
             'campaign': `/tools/campaign-gen-v2.html?v=${v}`,
-            'setsetsocial': `/tools/setset-social.html?v=${v}`,
             'video': `/tools/video.html?v=${v}`,
+            'pose-library': `/tools/pose-library.html?v=${v}`,
             'research': `/tools/research.html?v=${v}`,
             // Legacy tools
+            'socialset-v1': `/tools/legacy/socialset-v1.html?v=${v}`,
+            'socialset-v2': `/tools/legacy/setset-social-v1.html?v=${v}`,
             'campaign-v1': `/tools/legacy/campaign-gen-v1.html?v=${v}`,
             'looks': `/tools/legacy/looks.html?v=${v}`,
             'old-styling': `/tools/legacy/styling.html?v=${v}`,
