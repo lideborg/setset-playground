@@ -73,64 +73,7 @@
             opacity: 1;
         }
 
-        /* Inline loader with studio messages */
-        .inline-loader {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-lg);
-            background: var(--off-white);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--space-md);
-        }
-
-        .inline-loader.visible {
-            display: flex;
-        }
-
-        .loader-message {
-            font-size: var(--text-lg);
-            font-weight: 600;
-            background: linear-gradient(90deg,
-                rgba(0, 47, 167, 0.4) 0%,
-                rgba(0, 47, 167, 1) 50%,
-                rgba(0, 47, 167, 0.4) 100%);
-            background-size: 200% 100%;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: sweep 2s ease-in-out infinite;
-        }
-
-        .loader-message.fade-out {
-            animation: fade-out 0.25s ease-out forwards;
-        }
-
-        .loader-message.fade-in {
-            animation: fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
-        }
-
-        @keyframes sweep {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
-
-        @keyframes fade-out {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        @keyframes fade-in {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        .loader-progress {
-            font-size: var(--text-sm);
-            color: var(--slate);
-            margin-top: var(--space-xs);
-        }
+        /* Inline loader styles are in /shared/css/components.css */
 
         /* Results Grid */
         .results-grid {
@@ -362,8 +305,28 @@
     </div>
 
     <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/loader.js"></script>
 
     <script>
+        // Custom messages for upscaler (overrides default studio messages)
+        const UPSCALER_MESSAGES = [
+            "Enhancing Details...",
+            "Analyzing Textures...",
+            "Upscaling Pixels...",
+            "Refining Edges...",
+            "Boosting Resolution...",
+            "Processing Highlights...",
+            "Sharpening Features...",
+            "Reconstructing Details...",
+            "Magnifying Beauty...",
+            "Adding Clarity...",
+            "Perfecting Tones...",
+            "Almost There..."
+        ];
+
+        // Create custom loader with upscaler messages
+        const upscalerLoader = new StudioLoader({ messages: UPSCALER_MESSAGES });
+
         // State
         const state = {
             images: [], // Array of { dataUrl, file }
@@ -409,61 +372,17 @@
             lightboxDownload: document.getElementById('lightbox-download')
         };
 
-        // Studio messages for the loader
-        const STUDIO_MESSAGES = [
-            "Enhancing Details...",
-            "Analyzing Textures...",
-            "Upscaling Pixels...",
-            "Refining Edges...",
-            "Boosting Resolution...",
-            "Processing Highlights...",
-            "Sharpening Features...",
-            "Reconstructing Details...",
-            "Magnifying Beauty...",
-            "Adding Clarity...",
-            "Perfecting Tones...",
-            "Almost There..."
-        ];
-        let loadingInterval = null;
-        let lastMessageIndex = -1;
-
-        // Loading animation functions
+        // Loading animation uses upscalerLoader (defined above)
         function startLoadingAnimation(progressText = 'Preparing...') {
-            elements.inlineLoader.classList.add('visible');
-            elements.loaderProgress.textContent = progressText;
-
-            const initialIdx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-            elements.loaderMessage.textContent = STUDIO_MESSAGES[initialIdx];
-            lastMessageIndex = initialIdx;
-
-            loadingInterval = setInterval(() => {
-                let idx;
-                do {
-                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-                } while (idx === lastMessageIndex && STUDIO_MESSAGES.length > 1);
-                lastMessageIndex = idx;
-
-                elements.loaderMessage.classList.add('fade-out');
-                elements.loaderMessage.classList.remove('fade-in');
-
-                setTimeout(() => {
-                    elements.loaderMessage.textContent = STUDIO_MESSAGES[idx];
-                    elements.loaderMessage.classList.remove('fade-out');
-                    elements.loaderMessage.classList.add('fade-in');
-                }, 250);
-            }, 2000);
+            upscalerLoader.start(progressText);
         }
 
         function updateLoadingProgress(text) {
-            elements.loaderProgress.textContent = text;
+            upscalerLoader.updateProgress(text);
         }
 
         function stopLoadingAnimation() {
-            if (loadingInterval) {
-                clearInterval(loadingInterval);
-                loadingInterval = null;
-            }
-            elements.inlineLoader.classList.remove('visible');
+            upscalerLoader.stop();
         }
 
         // Initialize upload grid

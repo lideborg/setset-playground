@@ -67,6 +67,34 @@ const MODELS = {
     }
 };
 
+/**
+ * Remix-specific model configs (image-to-image)
+ * Used by remix.html and batch-remix.html
+ */
+const REMIX_MODELS = {
+    nano: {
+        name: 'Nano',
+        endpoint: 'nanobanana-edit',
+        costPerImage: 0.15,
+        hasResolution: false,
+        hasAspectRatio: true
+    },
+    nanopro: {
+        name: 'Nano Pro',
+        endpoint: 'nanobanana-pro-edit',
+        costPerImage: 0.15,
+        hasResolution: true,  // 1K, 2K
+        hasAspectRatio: true
+    },
+    flux2: {
+        name: 'Flux 2',
+        endpoint: 'flux2-redux',
+        costPerImage: 0.15,
+        hasResolution: false,
+        hasAspectRatio: false
+    }
+};
+
 // Aspect ratio to dimensions mapping
 const ASPECT_SIZES = {
     '1K': {
@@ -128,6 +156,7 @@ function calculateCost(modelKeys, numPrompts, numSeeds) {
 
 // Export
 window.MODELS = MODELS;
+window.REMIX_MODELS = REMIX_MODELS;
 window.ASPECT_SIZES = ASPECT_SIZES;
 window.getAspectSize = getAspectSize;
 window.getModel = getModel;

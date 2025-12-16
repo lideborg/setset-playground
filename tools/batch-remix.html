@@ -345,64 +345,7 @@
             font-weight: 400;
         }
 
-        /* Inline loader with studio messages */
-        .inline-loader {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-lg);
-            background: var(--off-white);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--space-md);
-        }
-
-        .inline-loader.visible {
-            display: flex;
-        }
-
-        .loader-message {
-            font-size: var(--text-lg);
-            font-weight: 600;
-            background: linear-gradient(90deg,
-                rgba(0, 47, 167, 0.4) 0%,
-                rgba(0, 47, 167, 1) 50%,
-                rgba(0, 47, 167, 0.4) 100%);
-            background-size: 200% 100%;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: sweep 2s ease-in-out infinite;
-        }
-
-        .loader-message.fade-out {
-            animation: fade-out 0.25s ease-out forwards;
-        }
-
-        .loader-message.fade-in {
-            animation: fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
-        }
-
-        @keyframes sweep {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
-
-        @keyframes fade-out {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        @keyframes fade-in {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        .loader-progress {
-            font-size: var(--text-sm);
-            color: var(--slate);
-            margin-top: var(--space-xs);
-        }
+        /* Inline loader styles are in /shared/css/components.css */
 
         /* Results */
         .result-image {
@@ -600,15 +543,13 @@
     </div>
 
     <!-- Shared JS -->
+    <script src="/shared/js/models.js"></script>
     <script src="/shared/js/utils.js"></script>
     <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
 
     <script>
-        // Model configs
-        const REMIX_MODELS = {
-            nano: { name: 'Nano', endpoint: 'nano', costPerImage: 0.15, hasResolution: false },
-            nanopro: { name: 'Nano Pro', endpoint: 'nano-pro', costPerImage: 0.15, hasResolution: true }
-        };
+        // REMIX_MODELS is now loaded from /shared/js/models.js
 
         // State
         let sets = []; // Array of set data
@@ -654,72 +595,7 @@
             lightboxSourceImages: document.getElementById('lightbox-source-images')
         };
 
-        // Studio messages for the loader
-        const STUDIO_MESSAGES = [
-            "Setting up the Studio...",
-            "Adjusting the Key Light...",
-            "Loading the Film...",
-            "Warming up the Strobes...",
-            "Preparing the Backdrop...",
-            "Adjusting the Fill Light...",
-            "Checking the Framing...",
-            "Setting the Aperture...",
-            "Loading Color Profiles...",
-            "Positioning the C-Stand...",
-            "Focusing...",
-            "Checking Tethering...",
-            "Rolling...",
-            "Adjusting the Umbrella...",
-            "Metering...",
-            "Standby...",
-            "Loading the Presets...",
-            "Quiet on Set...",
-            "Final Touches...",
-            "Almost There..."
-        ];
-        let loadingInterval = null;
-        let lastMessageIndex = -1;
-
-        // Loading animation functions
-        function startLoadingAnimation(progressText = 'Preparing...') {
-            elements.inlineLoader.classList.add('visible');
-            elements.loaderProgress.textContent = progressText;
-
-            // Set initial message
-            const initialIdx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-            elements.loaderMessage.textContent = STUDIO_MESSAGES[initialIdx];
-            lastMessageIndex = initialIdx;
-
-            // Rotate messages every 2 seconds with fade effect
-            loadingInterval = setInterval(() => {
-                let idx;
-                do {
-                    idx = Math.floor(Math.random() * STUDIO_MESSAGES.length);
-                } while (idx === lastMessageIndex && STUDIO_MESSAGES.length > 1);
-                lastMessageIndex = idx;
-
-                elements.loaderMessage.classList.add('fade-out');
-                elements.loaderMessage.classList.remove('fade-in');
-
-                setTimeout(() => {
-                    elements.loaderMessage.textContent = STUDIO_MESSAGES[idx];
-                    elements.loaderMessage.classList.remove('fade-out');
-                    elements.loaderMessage.classList.add('fade-in');
-                }, 250);
-            }, 2000);
-        }
-
-        function updateLoadingProgress(text) {
-            elements.loaderProgress.textContent = text;
-        }
-
-        function stopLoadingAnimation() {
-            if (loadingInterval) {
-                clearInterval(loadingInterval);
-                loadingInterval = null;
-            }
-            elements.inlineLoader.classList.remove('visible');
-        }
+        // Loading animation functions are now in /shared/js/loader.js
 
         // Initialize a set
         function createSetData() {
