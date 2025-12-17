@@ -1207,6 +1207,108 @@ Each outfit should be a single string describing the complete look. Be specific 
 });
 
 /**
+ * POST /api/generate-environments
+ * Generate campaign environment options based on brand analysis
+ * Returns 5 indoor and 5 outdoor location suggestions
+ */
+app.post('/api/generate-environments', async (req, res) => {
+    try {
+        const { brandAnalysis, styleText } = req.body;
+
+        console.log(`🏠 [Environments] Generating campaign locations`);
+
+        const styleContext = brandAnalysis || styleText || 'contemporary fashion brand';
+
+        const systemPrompt = `You are a fashion editorial location scout. Based on a brand aesthetic, suggest campaign shoot locations.
+
+RULES:
+- Each location should complement the fashion aesthetic
+- Be specific about architectural details, materials, textures, and lighting quality
+- Indoor locations can include:
+  * Studio settings with colored backdrops (match brand colors from the aesthetic)
+  * Real architectural interiors (galleries, lofts, modernist homes)
+  * Mix of studio and real environments
+- Outdoor locations: landscapes, urban environments, architectural exteriors
+- If the brand aesthetic mentions colored backgrounds or studio shots, include STUDIO OPTIONS with specific backdrop colors
+- Keep descriptions concise but evocative (one line each)
+- Focus on atmosphere and visual quality
+- These will be used as prompts for AI image generation, so be descriptive`;
+
+        const userPrompt = `BRAND AESTHETIC:
+${styleContext}
+
+Generate exactly 5 INDOOR and 5 OUTDOOR campaign locations that would complement this brand.
+
+IMPORTANT: For indoor, include a MIX of:
+- Studio backdrops with specific colors (e.g., "studio with soft lavender seamless backdrop and diffused lighting")
+- Real architectural interiors
+
+Format your response as JSON:
+{
+  "indoor": [
+    { "name": "studio with warm coral seamless backdrop and soft diffused lighting" },
+    { "name": "minimalist wood-paneled study with warm afternoon light" },
+    { "name": "studio with deep navy backdrop and dramatic side lighting" },
+    ...
+  ],
+  "outdoor": [
+    { "name": "Mediterranean terrace with pink stucco walls at golden hour" },
+    { "name": "brutalist concrete courtyard with geometric shadows" },
+    ...
+  ]
+}
+
+Each location should be a short, evocative description. For studio options, specify the backdrop color and lighting style.`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.9,
+                max_tokens: 1000
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Environments] API Error:', data);
+            return res.status(response.status).json({ error: data.error?.message || 'Environment generation failed' });
+        }
+
+        // Parse the JSON response
+        let environments = { indoor: [], outdoor: [] };
+        try {
+            const content = data.choices[0].message.content;
+            // Remove markdown code blocks if present
+            const jsonStr = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+            const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                environments = JSON.parse(jsonMatch[0]);
+            }
+        } catch (parseErr) {
+            console.error('❌ [Environments] JSON parse error:', parseErr);
+            return res.status(500).json({ error: 'Failed to parse environment response' });
+        }
+
+        console.log(`✅ [Environments] Generated ${environments.indoor?.length || 0} indoor, ${environments.outdoor?.length || 0} outdoor locations`);
+
+        res.json(environments);
+    } catch (error) {
+        console.error('❌ [Environments] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/analyze
  * Analyze images using GPT-4 Vision (supports multiple images)
  * Also supports text-only analysis when no images are provided

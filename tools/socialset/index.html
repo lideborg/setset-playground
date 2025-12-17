@@ -406,6 +406,31 @@
             cursor: not-allowed;
         }
 
+        .output-framing-select {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            font-size: var(--text-xs);
+            background: var(--white);
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .output-framing-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .output-selects-row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .output-selects-row select {
+            flex: 1;
+        }
+
         .output-people-row {
             display: flex;
             align-items: center;
@@ -724,6 +749,89 @@
             padding: 4px 8px;
         }
 
+        /* Environment Picker */
+        .environment-picker-container {
+            margin-top: var(--space-md);
+            padding: var(--space-md);
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .environment-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .environment-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--carbon);
+        }
+
+        .environment-picker {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        .environment-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .environment-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+            margin: 0 0 4px 0;
+        }
+
+        .environment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .environment-option {
+            padding: 8px 10px;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            color: var(--carbon);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: left;
+            line-height: 1.3;
+        }
+
+        .environment-option:hover {
+            border-color: var(--slate);
+        }
+
+        .environment-option.selected {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        .environment-option.selected:hover {
+            background: var(--carbon);
+            border-color: var(--carbon);
+        }
+
+        @media (max-width: 600px) {
+            .environment-picker {
+                grid-template-columns: 1fr;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -767,7 +875,25 @@
 
             <!-- Style Input -->
             <div class="style-input-container">
-                <textarea class="style-input" id="style-input" placeholder="Add style directions (e.g., 'more minimal', 'all red', 'athletic wear', 'oversized silhouettes')..." rows="2"></textarea>
+                <textarea class="style-input" id="style-input" placeholder="Add style directions (e.g., 'more minimal', 'all red', 'athletic wear', 'sunglasses on every shot')..." rows="2"></textarea>
+            </div>
+
+            <!-- Campaign Environments (shown after analyze in Campaign mode) -->
+            <div class="environment-picker-container" id="environment-section" style="display: none;">
+                <div class="environment-header">
+                    <span class="environment-title">Campaign Environments</span>
+                    <span class="section-badge">Select 1 each</span>
+                </div>
+                <div class="environment-picker">
+                    <div class="environment-column">
+                        <h4 class="environment-label">Indoor</h4>
+                        <div class="environment-options" id="indoor-options"></div>
+                    </div>
+                    <div class="environment-column">
+                        <h4 class="environment-label">Outdoor</h4>
+                        <div class="environment-options" id="outdoor-options"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -865,6 +991,7 @@
     <script src="/shared/js/utils.js"></script>
     <script src="/shared/js/api.js"></script>
     <script src="/shared/js/loader.js"></script>
+    <script src="/shared/data/editorial-moods.js"></script>
     <script src="poses.js"></script>
     <script src="pose-pools.js"></script>
 
@@ -929,8 +1056,16 @@
 
             // Campaign environments - one indoor + one outdoor location with variations
             campaignEnvironments: {
-                indoor: [],   // 5 variations of the same indoor location
-                outdoor: []   // 5 variations of the same outdoor location
+                indoor: [],   // 5 variations of the selected indoor location
+                outdoor: []   // 5 variations of the selected outdoor location
+            },
+            generatedEnvironments: {
+                indoor: [],   // 5 generated indoor options to choose from
+                outdoor: []   // 5 generated outdoor options to choose from
+            },
+            selectedEnvironments: {
+                indoor: null,  // Selected indoor environment (index)
+                outdoor: null  // Selected outdoor environment (index)
             },
             currentIndoorIndex: 0,   // Counter for cycling through indoor variations
             currentOutdoorIndex: 0,  // Counter for cycling through outdoor variations
@@ -940,7 +1075,9 @@
             outputs: new Array(12).fill(null).map(() => ({
                 enabled: false,
                 poseId: 'pose-pdp-front',
-                peopleCount: 1
+                peopleCount: 1,
+                framingId: 'headshot',  // Default framing
+                castingStyle: 'studio'  // 'studio' or 'campaign' for casting mode
             })),
 
             // Settings
@@ -980,7 +1117,10 @@
             lightboxImage: document.getElementById('lightbox-image'),
             lightboxType: document.getElementById('lightbox-type'),
             lightboxPose: document.getElementById('lightbox-pose'),
-            lightboxPrompt: document.getElementById('lightbox-prompt')
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            environmentSection: document.getElementById('environment-section'),
+            indoorOptions: document.getElementById('indoor-options'),
+            outdoorOptions: document.getElementById('outdoor-options')
         };
 
         let loadingInterval = null;
@@ -1280,6 +1420,91 @@
             });
         }
 
+        // Render Environment Options for Campaign mode
+        function renderEnvironmentOptions() {
+            const { indoor, outdoor } = state.generatedEnvironments;
+
+            // Render indoor options
+            elements.indoorOptions.innerHTML = indoor.map((env, idx) => `
+                <button class="environment-option ${state.selectedEnvironments.indoor === idx ? 'selected' : ''}"
+                        data-type="indoor" data-index="${idx}">
+                    ${env.name || env}
+                </button>
+            `).join('');
+
+            // Render outdoor options
+            elements.outdoorOptions.innerHTML = outdoor.map((env, idx) => `
+                <button class="environment-option ${state.selectedEnvironments.outdoor === idx ? 'selected' : ''}"
+                        data-type="outdoor" data-index="${idx}">
+                    ${env.name || env}
+                </button>
+            `).join('');
+
+            // Add click handlers
+            elements.indoorOptions.querySelectorAll('.environment-option').forEach(btn => {
+                btn.addEventListener('click', () => selectEnvironment('indoor', parseInt(btn.dataset.index)));
+            });
+
+            elements.outdoorOptions.querySelectorAll('.environment-option').forEach(btn => {
+                btn.addEventListener('click', () => selectEnvironment('outdoor', parseInt(btn.dataset.index)));
+            });
+
+            // Show section if we have environments and in campaign mode
+            const hasEnvironments = indoor.length > 0 || outdoor.length > 0;
+            elements.environmentSection.style.display = (hasEnvironments && state.mode === 'campaign') ? 'block' : 'none';
+        }
+
+        function selectEnvironment(type, index) {
+            // Toggle selection (click again to deselect)
+            if (state.selectedEnvironments[type] === index) {
+                state.selectedEnvironments[type] = null;
+            } else {
+                state.selectedEnvironments[type] = index;
+            }
+
+            // Update campaign environments based on selection
+            updateCampaignEnvironments();
+            renderEnvironmentOptions();
+        }
+
+        function updateCampaignEnvironments() {
+            // When user selects an environment, generate 5 variations of it
+            const { indoor, outdoor } = state.generatedEnvironments;
+            const { indoor: selectedIndoor, outdoor: selectedOutdoor } = state.selectedEnvironments;
+
+            if (selectedIndoor !== null && indoor[selectedIndoor]) {
+                const base = indoor[selectedIndoor].name || indoor[selectedIndoor];
+                state.campaignEnvironments.indoor = [
+                    `${base}, wide establishing shot`,
+                    `${base}, different angle with interesting shadows`,
+                    `${base}, intimate corner framing`,
+                    `${base}, architectural details visible`,
+                    `${base}, soft natural light variation`
+                ];
+            } else {
+                state.campaignEnvironments.indoor = [];
+            }
+
+            if (selectedOutdoor !== null && outdoor[selectedOutdoor]) {
+                const base = outdoor[selectedOutdoor].name || outdoor[selectedOutdoor];
+                state.campaignEnvironments.outdoor = [
+                    `${base}, wide establishing shot`,
+                    `${base}, different angle with golden hour light`,
+                    `${base}, intimate framing near focal point`,
+                    `${base}, environmental context visible`,
+                    `${base}, dramatic sky or weather variation`
+                ];
+            } else {
+                state.campaignEnvironments.outdoor = [];
+            }
+
+            state.currentIndoorIndex = 0;
+            state.currentOutdoorIndex = 0;
+            state.useIndoorNext = Math.random() > 0.5;
+
+            console.log('[Environments] Updated - Indoor:', state.campaignEnvironments.indoor.length, 'Outdoor:', state.campaignEnvironments.outdoor.length);
+        }
+
         // Render Output Grid
         function renderOutputGrid() {
             // Build pose options with optgroups for visual grouping
@@ -1299,8 +1524,14 @@
                 </optgroup>
             `;
 
+            // Build framing options
+            const framingOptions = FRAMING_OPTIONS.map(f =>
+                `<option value="${f.id}">${f.name}</option>`
+            ).join('');
+
             elements.outputGrid.innerHTML = state.outputs.map((output, i) => {
                 const isActive = output.enabled;
+                const isCasting = state.mode === 'casting';
 
                 return `
                     <div class="output-slot ${isActive ? 'active' : ''}" data-index="${i}">
@@ -1311,6 +1542,15 @@
                         <select class="output-pose-select" data-index="${i}" ${!isActive ? 'disabled' : ''}>
                             ${poseOptions}
                         </select>
+                        ${isCasting ? `
+                        <select class="output-framing-select" data-index="${i}" ${!isActive ? 'disabled' : ''}>
+                            ${framingOptions}
+                        </select>
+                        <select class="output-casting-style-select" data-index="${i}" ${!isActive ? 'disabled' : ''}>
+                            <option value="studio">Studio</option>
+                            <option value="campaign">Campaign</option>
+                        </select>
+                        ` : ''}
                         <div class="output-people-row">
                             <span class="output-people-label">People</span>
                             <div class="output-people-controls">
@@ -1329,6 +1569,18 @@
                 select.value = state.outputs[index].poseId;
             });
 
+            // Set initial framing values (casting mode only)
+            elements.outputGrid.querySelectorAll('.output-framing-select').forEach(select => {
+                const index = parseInt(select.dataset.index);
+                select.value = state.outputs[index].framingId || 'headshot';
+            });
+
+            // Set initial casting style values (casting mode only)
+            elements.outputGrid.querySelectorAll('.output-casting-style-select').forEach(select => {
+                const index = parseInt(select.dataset.index);
+                select.value = state.outputs[index].castingStyle || 'studio';
+            });
+
             // Toggle handlers
             elements.outputGrid.querySelectorAll('.output-toggle').forEach(toggle => {
                 toggle.addEventListener('click', () => {
@@ -1344,6 +1596,22 @@
                 select.addEventListener('change', () => {
                     const index = parseInt(select.dataset.index);
                     state.outputs[index].poseId = select.value;
+                });
+            });
+
+            // Framing select handlers (casting mode only)
+            elements.outputGrid.querySelectorAll('.output-framing-select').forEach(select => {
+                select.addEventListener('change', () => {
+                    const index = parseInt(select.dataset.index);
+                    state.outputs[index].framingId = select.value;
+                });
+            });
+
+            // Casting style select handlers (casting mode only)
+            elements.outputGrid.querySelectorAll('.output-casting-style-select').forEach(select => {
+                select.addEventListener('change', () => {
+                    const index = parseInt(select.dataset.index);
+                    state.outputs[index].castingStyle = select.value;
                 });
             });
 
@@ -1681,6 +1949,34 @@ IMPORTANT:
                         console.error('Outfit generation error:', outfitError);
                         // Continue without outfits - will use generic clothing instruction
                     }
+
+                    // Generate environment options for Campaign mode
+                    if (state.mode === 'campaign') {
+                        updateLoadingProgress('Generating environment options...');
+                        try {
+                            const envResponse = await fetch('/api/generate-environments', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    brandAnalysis: analysisResult,
+                                    styleText: styleText
+                                })
+                            });
+                            const environments = await envResponse.json();
+                            if (environments.indoor && environments.outdoor) {
+                                state.generatedEnvironments.indoor = environments.indoor;
+                                state.generatedEnvironments.outdoor = environments.outdoor;
+                                // Auto-select first of each
+                                state.selectedEnvironments.indoor = 0;
+                                state.selectedEnvironments.outdoor = 0;
+                                console.log(`Environments generated: ${environments.indoor.length} indoor, ${environments.outdoor.length} outdoor`);
+                                updateCampaignEnvironments();
+                                renderEnvironmentOptions();
+                            }
+                        } catch (envError) {
+                            console.error('Environment generation error:', envError);
+                        }
+                    }
                 }
 
                 elements.analyzeBtn.textContent = 'Re-analyze';
@@ -1712,6 +2008,33 @@ IMPORTANT:
             elements.resultsGrid.innerHTML = '';
             elements.progressSection.classList.add('visible');
             startLoadingAnimation(`Generating ${activeOutputs.length} images...`);
+
+            // Generate outfits if pools are empty but we have analysis (e.g., pre-loaded from collection)
+            if ((!state.outfits.female || state.outfits.female.length === 0) && state.analysis) {
+                console.log('[Generate] Outfit pools empty, generating outfits from analysis...');
+                updateLoadingProgress('Generating outfit variations...');
+                const outfitCount = Math.max(activeOutputs.length + 4, 8);
+                try {
+                    const outfitResponse = await fetch('/api/generate-outfits', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            brandAnalysis: state.analysis,
+                            styleText: state.styleInput,
+                            femaleCount: outfitCount,
+                            maleCount: outfitCount
+                        })
+                    });
+                    const outfits = await outfitResponse.json();
+                    if (outfits.female && outfits.male) {
+                        state.outfits.female = outfits.female;
+                        state.outfits.male = outfits.male;
+                        console.log(`[Generate] Outfits generated: ${outfits.female.length} female, ${outfits.male.length} male`);
+                    }
+                } catch (err) {
+                    console.error('[Generate] Outfit generation error:', err);
+                }
+            }
 
             // Reset outfit counters for fresh distribution each generation
             state.outfits.usedFemale = 0;
@@ -1754,11 +2077,7 @@ IMPORTANT:
                 return arr;
             }
 
-            // Pre-assign talent to each slot for even distribution
-            // Ensure mix of male/female by interleaving genders
-            const singlePersonSlots = activeOutputs.filter(o => o.peopleCount === 1);
-
-            // Separate by gender, shuffle each, then interleave
+            // Separate by gender, shuffle each, then interleave for fallback pool
             const females = shuffle(allTalentData.filter(t => t.gender === 'female'));
             const males = shuffle(allTalentData.filter(t => t.gender === 'male'));
 
@@ -1774,22 +2093,124 @@ IMPORTANT:
 
             const talentAssignments = new Map();
 
-            singlePersonSlots.forEach((output, idx) => {
-                // Round-robin assignment from interleaved pool (ensures gender mix)
-                const talentIndex = idx % interleaved.length;
-                talentAssignments.set(output.index, [interleaved[talentIndex]]);
+            // Track usage count for each talent to ensure even distribution
+            const talentUsageCount = new Map();
+            allTalentData.forEach(t => talentUsageCount.set(t.id, 0));
+
+            // Pre-assign talent to ALL slots, ensuring maximum variety
+            // Strategy: For each slot, pick the least-used talent(s) that maintain gender balance
+            // EXCEPTION: In casting mode, single-person slots ALWAYS use the hero
+            activeOutputs.forEach((output, idx) => {
+                const count = output.peopleCount;
+                if (count === 0) return;
+
+                if (count === 1) {
+                    // CASTING MODE: Single person slots always use the hero
+                    if (isCasting) {
+                        const hero = allTalentData[0]; // Hero is always first in casting mode
+                        talentUsageCount.set(hero.id, talentUsageCount.get(hero.id) + 1);
+                        talentAssignments.set(output.index, [hero]);
+                        return;
+                    }
+
+                    // E-commerce/Campaign: pick least-used talent, alternating genders
+                    const targetGender = idx % 2 === 0 ? 'female' : 'male';
+                    const genderPool = allTalentData.filter(t => t.gender === targetGender);
+                    const fallbackPool = allTalentData.filter(t => t.gender !== targetGender);
+
+                    // Sort by usage count (least used first)
+                    const sortByUsage = (pool) => [...pool].sort((a, b) =>
+                        talentUsageCount.get(a.id) - talentUsageCount.get(b.id)
+                    );
+
+                    let chosen;
+                    const sortedGenderPool = sortByUsage(genderPool);
+                    const sortedFallbackPool = sortByUsage(fallbackPool);
+
+                    if (sortedGenderPool.length > 0) {
+                        chosen = sortedGenderPool[0];
+                    } else if (sortedFallbackPool.length > 0) {
+                        chosen = sortedFallbackPool[0];
+                    } else {
+                        chosen = interleaved[0];
+                    }
+
+                    talentUsageCount.set(chosen.id, talentUsageCount.get(chosen.id) + 1);
+                    talentAssignments.set(output.index, [chosen]);
+                } else {
+                    // Multi-person shots
+                    // CASTING MODE: Hero is always first, then add supporting cast
+                    if (isCasting) {
+                        const hero = allTalentData[0];
+                        const chosen = [hero];
+                        talentUsageCount.set(hero.id, talentUsageCount.get(hero.id) + 1);
+
+                        // Get supporting cast (everyone except hero), sorted by usage
+                        const supporting = [...allTalentData]
+                            .filter(t => t.id !== hero.id)
+                            .sort((a, b) => talentUsageCount.get(a.id) - talentUsageCount.get(b.id));
+
+                        // Add least-used supporting cast members
+                        for (let i = 0; i < count - 1 && i < supporting.length; i++) {
+                            chosen.push(supporting[i]);
+                            talentUsageCount.set(supporting[i].id, talentUsageCount.get(supporting[i].id) + 1);
+                        }
+
+                        talentAssignments.set(output.index, chosen);
+                        return;
+                    }
+
+                    // E-commerce/Campaign: pick N least-used talents, trying to balance genders
+                    const sortedByUsage = [...allTalentData].sort((a, b) =>
+                        talentUsageCount.get(a.id) - talentUsageCount.get(b.id)
+                    );
+
+                    const chosen = [];
+                    const femalesNeeded = Math.ceil(count / 2);
+                    const malesNeeded = count - femalesNeeded;
+
+                    // Get least-used females
+                    const availableFemales = sortedByUsage.filter(t => t.gender === 'female');
+                    chosen.push(...availableFemales.slice(0, femalesNeeded));
+
+                    // Get least-used males
+                    const availableMales = sortedByUsage.filter(t => t.gender === 'male');
+                    chosen.push(...availableMales.slice(0, malesNeeded));
+
+                    // If we don't have enough of one gender, fill from the other
+                    while (chosen.length < count && chosen.length < allTalentData.length) {
+                        const remaining = sortedByUsage.filter(t => !chosen.includes(t));
+                        if (remaining.length > 0) {
+                            chosen.push(remaining[0]);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    // Update usage counts
+                    chosen.forEach(t => {
+                        talentUsageCount.set(t.id, talentUsageCount.get(t.id) + 1);
+                    });
+
+                    talentAssignments.set(output.index, chosen);
+                }
             });
+
+            console.log('[Talent Distribution]', [...talentAssignments.entries()].map(([idx, talents]) =>
+                `Slot ${idx + 1}: ${talents.map(t => t.name).join(', ')}`
+            ).join(' | '));
 
             // Helper to get talent for an output
             function getTalentForOutput(output) {
                 const count = output.peopleCount;
                 if (count === 0) return [];
 
-                // Use pre-assigned talent for single-person slots
-                if (count === 1 && talentAssignments.has(output.index)) {
+                // Use pre-assigned talent for all slots
+                if (talentAssignments.has(output.index)) {
                     return talentAssignments.get(output.index);
                 }
 
+                // Fallback (shouldn't happen)
                 if (isCasting) {
                     // Hero is always first
                     const result = [allTalentData[0]]; // Hero
@@ -1963,6 +2384,9 @@ IMPORTANT:
                 ? 'this exact person from the reference image'
                 : `these exact ${numPeople} people from the reference images together in the same shot`;
 
+            // Style directive - always add to prompt if provided (e.g., "sunglasses on every shot")
+            const styleDirective = styleInput ? `IMPORTANT STYLE DIRECTIVE: ${styleInput}.` : '';
+
             let prompt = '';
 
             // Get pose prompt from POSE_PROMPTS based on the selected pose
@@ -2002,7 +2426,7 @@ IMPORTANT:
                 let poseInstruction = selectedPosePrompt.replace('[PRODUCT_DESCRIPTION]', clothingInstruction);
 
                 // Build prompt using the actual selected pose
-                prompt = `${noSplitting} ${groupInstruction}${poseInstruction} ${analysis}. Clean white studio background, professional e-commerce lighting.`;
+                prompt = `${noSplitting} ${styleDirective} ${groupInstruction}${poseInstruction} ${analysis}. Clean white studio background, professional e-commerce lighting.`;
             } else if (state.mode === 'campaign') {
                 // Campaign: Alternate between indoor and outdoor locations
                 // Use the selected pose but in environmental setting
@@ -2038,49 +2462,56 @@ IMPORTANT:
                     ? `Shot in: ${environmentDescription}.`
                     : 'Use the environmental style, locations, and mood from the reference images.';
 
-                prompt = `${noSplitting} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. ${environmentClause} Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.`;
+                prompt = `${noSplitting} ${styleDirective} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. ${environmentClause} Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.`;
             } else if (state.mode === 'casting') {
-                // Casting: Variety of styles, hero always present
-                // Mix between e-commerce and campaign randomly
-                const isCampaignStyle = Math.random() > 0.5;
+                // Casting: Editorial variety with random moods from curated pool
+                // Get gender of primary talent (hero) for mood selection
+                const primaryGender = talentArray[0]?.gender || 'female';
 
+                // Get random editorial mood based on gender
+                const mood = getRandomEditorialMood(primaryGender);
+                console.log(`[Casting] Selected mood: ${mood.name} for ${primaryGender}`);
+
+                // Get framing from output slot - this controls body composition
+                const framing = getFramingById(output.framingId || 'headshot');
+                console.log(`[Casting] Framing: ${framing.name}`);
+
+                // Get casting style (studio or campaign)
+                const castingStyle = output.castingStyle || 'studio';
+                console.log(`[Casting] Style: ${castingStyle}`);
+
+                // Get pose instruction but strip out body framing words (framing selector takes precedence)
                 let poseInstruction = selectedPosePrompt.replace('[PRODUCT_DESCRIPTION]', clothingInstruction);
+                // Remove conflicting framing terms from pose - framing selector controls this
+                poseInstruction = poseInstruction
+                    .replace(/Full-body portrait/gi, 'Portrait')
+                    .replace(/full-body/gi, '')
+                    .replace(/full body/gi, '')
+                    .replace(/half-body/gi, '')
+                    .replace(/half body/gi, '')
+                    .replace(/three-quarter/gi, '')
+                    .replace(/head to toe/gi, '')
+                    .replace(/from waist up/gi, '')
+                    .replace(/from thighs up/gi, '')
+                    .replace(/from chest up/gi, '')
+                    .replace(/close-up/gi, '')
+                    .replace(/closeup/gi, '')
+                    .replace(/headshot/gi, '')
+                    .trim();
+                console.log(`[Casting] Pose: ${pose.name}`);
 
-                if (isCampaignStyle) {
-                    poseInstruction = poseInstruction
-                        .replace(/white studio/gi, 'editorial campaign setting')
-                        .replace(/studio/gi, 'location');
+                // Build the editorial prompt
+                const groupInstruction = numPeople > 1
+                    ? `Place ${peopleText} together in the frame. `
+                    : `Feature ${peopleText}. `;
 
-                    // Use same indoor/outdoor alternating system as campaign mode
-                    let environmentDescription = '';
-                    const hasIndoor = state.campaignEnvironments.indoor.length > 0;
-                    const hasOutdoor = state.campaignEnvironments.outdoor.length > 0;
+                // Different background based on casting style
+                const backgroundInstruction = castingStyle === 'studio'
+                    ? 'Clean studio environment with professional lighting, seamless backdrop or simple studio setting.'
+                    : 'Editorial campaign setting with environmental context, location-based backdrop.';
 
-                    if (hasIndoor || hasOutdoor) {
-                        if (state.useIndoorNext && hasIndoor) {
-                            const idx = state.currentIndoorIndex % state.campaignEnvironments.indoor.length;
-                            environmentDescription = state.campaignEnvironments.indoor[idx];
-                            state.currentIndoorIndex++;
-                        } else if (hasOutdoor) {
-                            const idx = state.currentOutdoorIndex % state.campaignEnvironments.outdoor.length;
-                            environmentDescription = state.campaignEnvironments.outdoor[idx];
-                            state.currentOutdoorIndex++;
-                        }
-                        state.useIndoorNext = !state.useIndoorNext;
-                    }
-
-                    const environmentClause = environmentDescription
-                        ? `Shot in: ${environmentDescription}.`
-                        : 'Use the environmental style, locations, and mood from the reference images.';
-
-                    prompt = `${noSplitting} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. ${environmentClause} Fashion editorial style, creative composition, dramatic lighting.`;
-                } else {
-                    const groupInstruction = numPeople > 1
-                        ? `Place ${peopleText} standing together. `
-                        : '';
-
-                    prompt = `${noSplitting} ${groupInstruction}${poseInstruction} ${analysis}. Clean white studio background, professional e-commerce lighting.`;
-                }
+                // Framing comes FIRST to set the shot composition, then pose for body position
+                prompt = `${noSplitting} ${styleDirective} ${groupInstruction}FRAMING: ${framing.prompt}. ${poseInstruction} ${backgroundInstruction} EDITORIAL STYLE: ${mood.prompt}. High-end fashion editorial photography.`;
             }
 
             return prompt;
