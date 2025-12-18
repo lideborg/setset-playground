@@ -151,7 +151,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'analog-imperfection',
         name: 'Analog Imperfection',
-        prompt: 'Light leaks bleeding orange and cyan across the frame, visible film sprocket holes or frame edges, cross-processed color shifts, scratches and dust, unstudied casual glance, the beauty of mechanical imperfection, nostalgia for a pre-digital world'
+        prompt: 'Warm analog film aesthetic with gentle color shifts and slightly lifted blacks, subtle film grain texture, relaxed unstudied expression with casual glance, nostalgic warmth reminiscent of vintage photography, soft natural imperfections that feel human and authentic'
     },
     // Additional 20 moods with photographer styles and flash techniques
     {
@@ -405,7 +405,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'analog-warmth',
         name: 'Analog Warmth',
-        prompt: 'Light leaks and film artifacts, cross-processed color shifts, visible grain and scratches, casual unstudied glance, the warm imperfection of analog photography, nostalgia for film-era masculinity'
+        prompt: 'Warm analog film aesthetic with gentle color shifts and slightly lifted blacks, subtle film grain texture, relaxed unstudied expression with casual glance, nostalgic warmth reminiscent of vintage photography, authentic and human quality'
     },
     // Additional 20 moods with photographer styles and flash techniques
     {

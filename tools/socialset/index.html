@@ -859,7 +859,7 @@
         </div>
 
         <!-- Section 2: Mood Board -->
-        <div class="section">
+        <div class="section" id="moodboard-section">
             <div class="section-header">
                 <span class="section-title">2. Mood Board</span>
                 <span class="section-badge required">Required</span>
@@ -1007,20 +1007,20 @@
             { id: 'sophia', name: 'Sophia Anderson', gender: 'female', image: '/shared/images/talent/talent-07_SophiaAnderson.png' },
             { id: 'liam', name: 'Liam Garcia', gender: 'male', image: '/shared/images/talent/talent-08_LiamGarcia.png' },
             { id: 'nina', name: 'Nina Davis', gender: 'female', image: '/shared/images/talent/talent-09_NinaDavis.png' },
-            { id: 'ava', name: 'Ava Martinez', gender: 'female', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
+            { id: 'mateo', name: 'Mateo Martinez', gender: 'male', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
             { id: 'luna', name: 'Luna Park', gender: 'female', image: '/shared/images/talent/talent-11_LunaPark.png' },
             { id: 'noah', name: 'Noah Chen', gender: 'male', image: '/shared/images/talent/talent-12_NoahChen.png' },
             { id: 'kai', name: 'Kai Thompson', gender: 'male', image: '/shared/images/talent/talent-13_KaiThompson.png' },
-            { id: 'riley', name: 'Riley Morgan', gender: 'female', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
-            { id: 'jordan', name: 'Jordan Lee', gender: 'female', image: '/shared/images/talent/talent-15_JordanLee.png' },
+            { id: 'riley', name: 'Riley Morgan', gender: 'male', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
+            { id: 'jordan', name: 'Jordan Lee', gender: 'male', image: '/shared/images/talent/talent-15_JordanLee.png' },
             { id: 'isabella', name: 'Isabella Rodriguez', gender: 'female', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
-            { id: 'quinn', name: 'Quinn Santos', gender: 'female', image: '/shared/images/talent/talent-17_QuinnSantos.png' },
+            { id: 'quinn', name: 'Quinn Santos', gender: 'male', image: '/shared/images/talent/talent-17_QuinnSantos.png' },
             { id: 'casey', name: 'Casey White', gender: 'female', image: '/shared/images/talent/talent-18_CaseyWhite.png' },
-            { id: 'sam', name: 'Sam Wilson', gender: 'male', image: '/shared/images/talent/talent-19_SamWilson.png' },
+            { id: 'sam', name: 'Sam Wilson', gender: 'female', image: '/shared/images/talent/talent-19_SamWilson.png' },
             { id: 'drew', name: 'Drew Martinez', gender: 'male', image: '/shared/images/talent/talent-20_DrewMartinez.png' },
             { id: 'avery', name: 'Avery Taylor', gender: 'female', image: '/shared/images/talent/talent-21_AveryTaylor.png' },
             { id: 'parker', name: 'Parker Miller', gender: 'male', image: '/shared/images/talent/talent-22_ParkerMiller.png' },
-            { id: 'morgan', name: 'Morgan Kim', gender: 'female', image: '/shared/images/talent/talent-23_MorganKim.png' },
+            { id: 'morgan', name: 'Morgan Kim', gender: 'male', image: '/shared/images/talent/talent-23_MorganKim.png' },
             { id: 'andre', name: 'Andre Jackson', gender: 'male', image: '/shared/images/talent/talent-24_AndreJackson.png' },
             { id: 'damon', name: 'Damon Carter', gender: 'male', image: '/shared/images/talent/talent-25_DamonCarter.png' },
             { id: 'nikolai', name: 'Nikolai Volkov', gender: 'male', image: '/shared/images/talent/talent-26_NikolaiVolkov.png' },
@@ -1095,6 +1095,7 @@
             talentGrid: document.getElementById('talent-grid'),
             talentCount: document.getElementById('talent-count'),
             talentHint: document.getElementById('talent-hint'),
+            moodboardSection: document.getElementById('moodboard-section'),
             moodboardGrid: document.getElementById('moodboard-grid'),
             moodboardInput: document.getElementById('moodboard-input'),
             clearMoodboard: document.getElementById('clear-moodboard'),
@@ -1769,10 +1770,20 @@
                 elements.analyzeBtn.textContent = 'Analyze Style';
             }
 
-            // Enable/disable generate button - need style input OR moodboard (not both required)
+            // Enable/disable generate button
+            // Casting mode: only needs talent and outputs (no moodboard/analysis required)
+            // Other modes: need style source (moodboard or text) AND analysis
             const hasStyleSource = hasMoodboard || hasStyleText;
-            const canGenerate = hasTalent && hasStyleSource && hasOutputs && state.analysis;
+            const canGenerate = isCasting
+                ? (hasTalent && hasOutputs)
+                : (hasTalent && hasStyleSource && hasOutputs && state.analysis);
             elements.generateBtn.disabled = !canGenerate;
+
+            // Hide analyze button and moodboard section in casting mode
+            elements.analyzeBtn.style.display = isCasting ? 'none' : 'inline-flex';
+            if (elements.moodboardSection) {
+                elements.moodboardSection.style.display = isCasting ? 'none' : 'block';
+            }
 
             // Update generate button text
             const totalImages = activeOutputs.length;
@@ -1785,7 +1796,7 @@
             } else if (state.mode === 'campaign') {
                 elements.outputHint.textContent = 'Campaign: Environmental backgrounds from mood board. Toggle slots, select pose and people count.';
             } else {
-                elements.outputHint.textContent = 'Casting: Hero model in every image. Toggle slots, select pose and people count.';
+                elements.outputHint.textContent = 'Casting: Select talent and generate. Mood & style randomized from editorial pool.';
             }
         }
 
@@ -1993,7 +2004,8 @@ IMPORTANT:
 
         // Handle Generate
         async function handleGenerate() {
-            if (!state.analysis) {
+            // Casting mode doesn't require analysis (uses random editorial moods)
+            if (!state.analysis && state.mode !== 'casting') {
                 alert('Please analyze the mood board first');
                 return;
             }
@@ -2249,7 +2261,11 @@ IMPORTANT:
             updateLoadingProgress(`Generating ${activeOutputs.length} images...`);
 
             // Generate for each active output
+            const startTime = Date.now();
+            console.log(`[Parallel] Starting ${activeOutputs.length} requests at ${new Date().toLocaleTimeString()}`);
+
             const promises = activeOutputs.map(async (output) => {
+                const slotStart = Date.now();
                 try {
                     const talentForOutput = getTalentForOutput(output);
                     const pose = POSES.find(p => p.id === output.poseId) || POSES[0];
@@ -2264,7 +2280,7 @@ IMPORTANT:
 
                     // Get pre-uploaded URLs for this output's talent
                     const imageUrls = talentForOutput.map(t => talentUrlMap.get(t.id));
-                    console.log(`Slot ${output.index + 1}: ${talentForOutput.map(t => t.name).join(', ')}`);
+                    console.log(`[Parallel] Slot ${output.index + 1} STARTED at +${Date.now() - startTime}ms`);
 
                     // Generate
                     const params = {
@@ -2279,6 +2295,7 @@ IMPORTANT:
                     const data = await api.remixImage('nano-pro', params);
 
                     if (data.images && data.images.length > 0) {
+                        console.log(`[Parallel] Slot ${output.index + 1} FINISHED at +${Date.now() - startTime}ms (took ${Date.now() - slotStart}ms)`);
                         state.results.push({
                             url: data.images[0].url,
                             prompt,
@@ -2416,10 +2433,15 @@ IMPORTANT:
             // Get the specific pose prompt for this output's selected pose
             const selectedPosePrompt = getPosePrompt(pose.id);
 
+            // Multi-person pose variety instruction
+            const poseVarietyInstruction = numPeople > 1
+                ? 'IMPORTANT: Give each person a DIFFERENT natural pose and body position. Vary their stance, arm positions, and where they look. Avoid having everyone do the same pose or lean into each other. Create visual interest through contrasting poses.'
+                : '';
+
             if (state.mode === 'ecommerce') {
                 // E-commerce: Always white studio background
                 const groupInstruction = numPeople > 1
-                    ? `Place ${peopleText} standing together in the same frame. `
+                    ? `Place ${peopleText} standing together in the same frame. ${poseVarietyInstruction} `
                     : '';
 
                 // Use the selected pose prompt, replacing [PRODUCT_DESCRIPTION] with outfit
@@ -2462,7 +2484,7 @@ IMPORTANT:
                     ? `Shot in: ${environmentDescription}.`
                     : 'Use the environmental style, locations, and mood from the reference images.';
 
-                prompt = `${noSplitting} ${styleDirective} Place ${peopleText} in an editorial campaign setting. ${poseInstruction} ${analysis}. ${environmentClause} Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.`;
+                prompt = `${noSplitting} ${styleDirective} Place ${peopleText} in an editorial campaign setting. ${poseVarietyInstruction} ${poseInstruction} ${analysis}. ${environmentClause} Fashion editorial style, creative composition, dramatic lighting, high-end fashion campaign aesthetic.`;
             } else if (state.mode === 'casting') {
                 // Casting: Editorial variety with random moods from curated pool
                 // Get gender of primary talent (hero) for mood selection
@@ -2502,7 +2524,7 @@ IMPORTANT:
 
                 // Build the editorial prompt
                 const groupInstruction = numPeople > 1
-                    ? `Place ${peopleText} together in the frame. `
+                    ? `Place ${peopleText} together in the frame. ${poseVarietyInstruction} `
                     : `Feature ${peopleText}. `;
 
                 // Different background based on casting style
