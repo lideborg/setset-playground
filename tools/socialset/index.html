@@ -166,6 +166,21 @@
             cursor: not-allowed;
         }
 
+        .talent-card .talent-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2px 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 9px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         /* Collection Picker */
         .collection-picker {
             display: flex;
@@ -901,7 +916,10 @@
         <div class="section">
             <div class="section-header">
                 <span class="section-title">3. Output Configuration</span>
-                <span class="section-badge required">Required</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" id="randomize-outputs-btn" style="display: none; padding: 4px 12px; font-size: 11px;">Randomize</button>
+                    <span class="section-badge required">Required</span>
+                </div>
             </div>
             <p class="section-hint" style="margin-bottom: var(--space-sm);" id="output-hint">Toggle slots on/off. Select pose and number of people per image.</p>
             <div class="output-grid" id="output-grid"></div>
@@ -1027,7 +1045,7 @@
             { id: 'sofia', name: 'Sofia Rodriguez', gender: 'female', image: '/shared/images/talent/talent-27_SofiaRodriguez.png' },
             { id: 'finn', name: 'Finn O\'Connor', gender: 'male', image: '/shared/images/talent/talent-28_FinnOConnor.png' },
             { id: 'clara', name: 'Clara Devereaux', gender: 'female', image: '/shared/images/talent/talent-29_ClaraDevereaux.png' },
-            { id: 'zoe', name: 'Zoe Washington', gender: 'female', image: '/shared/images/talent/talent-30_ZoeWashington.png' }
+            { id: 'zoe', name: 'Simone Park', gender: 'female', image: '/shared/images/talent/talent-30_ZoeWashington.png' }
         ];
 
         // STUDIO_MESSAGES is now loaded from /shared/js/loader.js
@@ -1121,7 +1139,8 @@
             lightboxPrompt: document.getElementById('lightbox-prompt'),
             environmentSection: document.getElementById('environment-section'),
             indoorOptions: document.getElementById('indoor-options'),
-            outdoorOptions: document.getElementById('outdoor-options')
+            outdoorOptions: document.getElementById('outdoor-options'),
+            randomizeOutputsBtn: document.getElementById('randomize-outputs-btn')
         };
 
         let loadingInterval = null;
@@ -1258,6 +1277,7 @@
                 return `
                     <div class="${classes}" data-id="${talent.id}" data-badge="${badge}" title="${talent.name}">
                         <img src="${talent.image}" alt="${talent.name}">
+                        <span class="talent-name">${talent.name}</span>
                     </div>
                 `;
             }).join('');
@@ -1511,7 +1531,6 @@
             // Build pose options with optgroups for visual grouping
             const pdpPoses = POSES.filter(p => p.category === 'pdp');
             const lifestylePoses = POSES.filter(p => p.category === 'lifestyle');
-            const detailPoses = POSES.filter(p => p.category === 'detail');
 
             const poseOptions = `
                 <optgroup label="PDP">
@@ -1519,9 +1538,6 @@
                 </optgroup>
                 <optgroup label="Studio">
                     ${lifestylePoses.map(pose => `<option value="${pose.id}">${pose.name}</option>`).join('')}
-                </optgroup>
-                <optgroup label="Product Only">
-                    ${detailPoses.map(pose => `<option value="${pose.id}">${pose.name}</option>`).join('')}
                 </optgroup>
             `;
 
@@ -1712,6 +1728,38 @@
             // Generate button
             elements.generateBtn.addEventListener('click', handleGenerate);
 
+            // Randomize outputs button (casting mode)
+            elements.randomizeOutputsBtn.addEventListener('click', () => {
+                // Get available poses (pdp + lifestyle only, no detail)
+                const availablePoses = POSES.filter(p => p.category === 'pdp' || p.category === 'lifestyle');
+
+                // Check if any outputs are enabled
+                const hasEnabledOutputs = state.outputs.some(o => o.enabled);
+
+                // If none enabled, enable random number (3-6) of outputs
+                if (!hasEnabledOutputs) {
+                    const numToEnable = Math.floor(Math.random() * 4) + 3; // 3-6 outputs
+                    const indices = [];
+                    while (indices.length < numToEnable) {
+                        const idx = Math.floor(Math.random() * state.outputs.length);
+                        if (!indices.includes(idx)) indices.push(idx);
+                    }
+                    indices.forEach(idx => state.outputs[idx].enabled = true);
+                }
+
+                state.outputs.forEach(output => {
+                    if (output.enabled) {
+                        // Randomize framing
+                        output.framingId = FRAMING_OPTIONS[Math.floor(Math.random() * FRAMING_OPTIONS.length)].id;
+                        // Randomize casting style
+                        output.castingStyle = Math.random() > 0.5 ? 'studio' : 'campaign';
+                        // Randomize pose
+                        output.poseId = availablePoses[Math.floor(Math.random() * availablePoses.length)].id;
+                    }
+                });
+                renderOutputGrid();
+            });
+
             // Lightbox
             document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
             elements.lightbox.addEventListener('click', (e) => {
@@ -1798,6 +1846,9 @@
             } else {
                 elements.outputHint.textContent = 'Casting: Select talent and generate. Mood & style randomized from editorial pool.';
             }
+
+            // Show/hide randomize button (only in casting mode)
+            elements.randomizeOutputsBtn.style.display = isCasting ? 'inline-flex' : 'none';
         }
 
         // Loading animation

@@ -38,7 +38,7 @@ const models = [
   { name: "Sofia Rodriguez", image: path.join(__dirname, "../images/talent-27_SofiaRodriguez.png"), id: "sofia" },
   { name: "Finn O'Connor", image: path.join(__dirname, "../images/talent-28_FinnOConnor.png"), id: "finn" },
   { name: "Clara Devereaux", image: path.join(__dirname, "../images/talent-29_ClaraDevereaux.png"), id: "clara" },
-  { name: "Zoe Washington", image: path.join(__dirname, "../images/talent-30_ZoeWashington.png"), id: "zoe" }
+  { name: "Simone Park", image: path.join(__dirname, "../images/talent-30_ZoeWashington.png"), id: "zoe" }
 ];
 
 async function analyzeModel(model) {

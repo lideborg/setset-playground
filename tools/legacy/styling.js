@@ -72,7 +72,7 @@ const models = [
     { name: "Sofia Rodriguez", image: "/shared/images/talent/talent-27_SofiaRodriguez.png", id: "sofia" },
     { name: "Finn O'Connor", image: "/shared/images/talent/talent-28_FinnOConnor.png", id: "finn" },
     { name: "Clara Devereaux", image: "/shared/images/talent/talent-29_ClaraDevereaux.png", id: "clara" },
-    { name: "Zoe Washington", image: "/shared/images/talent/talent-30_ZoeWashington.png", id: "zoe" }
+    { name: "Simone Park", image: "/shared/images/talent/talent-30_ZoeWashington.png", id: "zoe" }
 ];
 
 // Initialize
