@@ -42,11 +42,60 @@
             font-weight: 600;
             margin-bottom: 2px;
             letter-spacing: -0.01em;
+            position: relative;
+        }
+
+        .sidebar-header h1::before {
+            content: 'Setset';
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(90deg,
+                #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd, #ff6b6b);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            animation: rainbow-shimmer 2s linear infinite;
+        }
+
+        .sidebar-header a:hover h1::before {
+            opacity: 1;
+        }
+
+        @keyframes rainbow-shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
         }
 
         .sidebar-header p {
-            font-size: 11px;
-            color: var(--ash-grey);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--jet);
+            position: relative;
+        }
+
+        .sidebar-header p::before {
+            content: 'Playground';
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(90deg,
+                #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd, #ff6b6b);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            animation: rainbow-shimmer 2s linear infinite;
+        }
+
+        .sidebar-header a:hover p::before {
+            opacity: 1;
         }
 
         .sidebar-nav {
@@ -189,8 +238,10 @@
 <body>
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h1>Setset Playground</h1>
-            <p>Research & Tools</p>
+            <a href="/" style="text-decoration: none; color: inherit;">
+                <h1>Setset</h1>
+                <p>Playground</p>
+            </a>
         </div>
 
         <nav class="sidebar-nav">
@@ -206,6 +257,7 @@
                 <a class="nav-item" data-tool="lockgroup">LockGroup</a>
                 <a class="nav-item" data-tool="campaign">Campaign Gen</a>
                 <a class="nav-item" data-tool="styling">Styling</a>
+                <a class="nav-item" data-tool="style-lookbook">Style Lookbook</a>
             </div>
 
             <!-- TRANSFORM -->
@@ -218,6 +270,7 @@
                 <a class="nav-item" data-tool="batch-remix">Batch Remix</a>
                 <a class="nav-item" data-tool="bg-replace">BG Replace</a>
                 <a class="nav-item" data-tool="upscaler">Upscaler</a>
+                <a class="nav-item" data-tool="yassify">Yassify</a>
             </div>
 
             <!-- CREATE -->
@@ -227,7 +280,20 @@
             </div>
             <div class="nav-group collapsed" id="create-group">
                 <a class="nav-item" data-tool="generate">Generate</a>
-                <a class="nav-item" data-tool="video">Video</a>
+                <a class="nav-item" data-tool="productgen">Product Gen</a>
+                <a class="nav-item" data-tool="thumbnails">Thumbnails</a>
+                <a class="nav-item" data-tool="mood-generator">Mood Gen</a>
+                <a class="nav-item" data-tool="location">Location</a>
+            </div>
+
+            <!-- VIDEO -->
+            <div class="nav-collapsible collapsed" data-group="video">
+                <span>Video</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="video-group">
+                <a class="nav-item" data-tool="video-movements">Movements</a>
+                <a class="nav-item" data-tool="video-frames">First/Last Frame</a>
             </div>
 
             <!-- LIBRARY -->
@@ -238,7 +304,18 @@
             <div class="nav-group collapsed" id="library-group">
                 <a class="nav-item" data-tool="pose-library">Poses</a>
                 <a class="nav-item" data-tool="moodboards">Moodboards</a>
+                <a class="nav-item" data-tool="mood-library">Moods</a>
+                <a class="nav-item" data-tool="location-library">Locations</a>
                 <a class="nav-item" data-tool="research">Research</a>
+            </div>
+
+            <!-- VOICE -->
+            <div class="nav-collapsible collapsed" data-group="voice">
+                <span>Voice</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="voice-group">
+                <a class="nav-item" data-tool="chat">Chat</a>
             </div>
 
             <div class="nav-divider"></div>
@@ -249,7 +326,6 @@
                 <span class="chevron">▼</span>
             </div>
             <div class="nav-group collapsed" id="legacy-group">
-                <a class="nav-item" data-tool="productgen">Product Gen</a>
                 <a class="nav-item" data-tool="envgen">Environment Gen</a>
                 <a class="nav-item" data-tool="socialset-v1">SocialSet v1</a>
                 <a class="nav-item" data-tool="socialset-v2">SocialSet v2</a>
@@ -289,17 +365,28 @@
             'lockgroup': `/tools/lockgroup/index.html?v=${v}`,
             'campaign': `/tools/campaign-gen-v2.html?v=${v}`,
             'styling': `/tools/styling/index.html?v=${v}`,
+            'style-lookbook': `/tools/style-lookbook.html?v=${v}`,
             // Transform
             'remix': `/tools/remix.html?v=${v}`,
             'batch-remix': `/tools/batch-remix.html?v=${v}`,
             'bg-replace': `/tools/bg-replace.html?v=${v}`,
             'upscaler': `/tools/upscaler.html?v=${v}`,
+            'yassify': `/tools/yassify.html?v=${v}`,
             // Create
             'generate': `/tools/generate.html?v=${v}`,
-            'video': `/tools/video.html?v=${v}`,
+            'thumbnails': `/tools/thumbnail-generator.html?v=${v}`,
+            'mood-generator': `/tools/mood-generator.html?v=${v}`,
+            'location': `/tools/location-generator.html?v=${v}`,
+            // Video
+            'video-movements': `/tools/video-gen.html?v=${v}`,
+            'video-frames': `/tools/video.html?v=${v}`,
+            // Voice
+            'chat': `/tools/chat.html?v=${v}`,
             // Library
             'pose-library': `/tools/pose-library.html?v=${v}`,
             'moodboards': `/tools/moodboards.html?v=${v}`,
+            'mood-library': `/tools/mood-library.html?v=${v}`,
+            'location-library': `/tools/location-library.html?v=${v}`,
             'research': `/tools/research.html?v=${v}`,
             // Legacy
             'productgen': `/tools/socialset/product-generator.html?v=${v}`,

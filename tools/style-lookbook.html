@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style Lookbook</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👔</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Step Sections */
+        .step-section {
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .step-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .step-subtitle {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-left: auto;
+        }
+
+        /* Model Grid - 12 columns */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+        }
+
+        .model-card {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .model-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .model-card.selected {
+            border-color: var(--jet);
+        }
+
+        .model-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .model-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .model-card .check-mark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .model-card.selected .check-mark {
+            display: flex;
+        }
+
+        .model-card .model-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            font-size: 9px;
+            padding: 12px 4px 4px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .model-card:hover .model-name {
+            opacity: 1;
+        }
+
+        /* Pose Grid */
+        .pose-category {
+            margin-bottom: var(--space-md);
+        }
+
+        .pose-category-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pose-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .pose-card {
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            background: var(--white);
+        }
+
+        .pose-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .pose-card.selected {
+            border-color: var(--jet);
+        }
+
+        .pose-card .pose-image {
+            aspect-ratio: 3/4;
+            background: var(--off-white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pose-card .pose-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity var(--transition-fast);
+        }
+
+        .pose-card .pose-image img.hover-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }
+
+        .pose-card:hover .pose-image img.default-img {
+            opacity: 0;
+        }
+
+        .pose-card:hover .pose-image img.hover-img {
+            opacity: 1;
+        }
+
+        .pose-card .pose-name {
+            padding: var(--space-xs);
+            font-size: var(--text-xs);
+            font-weight: 500;
+            text-align: center;
+            background: var(--white);
+        }
+
+        .pose-card.selected .pose-name {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .pose-card .check-mark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .pose-card.selected .check-mark {
+            display: flex;
+        }
+
+        /* Config Section */
+        .config-row {
+            display: flex;
+            gap: var(--space-lg);
+            align-items: flex-start;
+        }
+
+        .config-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+            flex: 1;
+        }
+
+        .config-label {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .config-hint {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-top: var(--space-2xs);
+        }
+
+        /* Prompt Input */
+        .prompt-input {
+            width: 100%;
+            padding: var(--space-md);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            font-size: var(--text-md);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: all var(--transition-fast);
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .prompt-input::placeholder {
+            color: var(--ash-grey);
+        }
+
+        /* Style Presets */
+        .style-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-md);
+        }
+
+        .style-preset-btn {
+            padding: 8px 14px;
+            border: 1px solid var(--gainsboro);
+            border-radius: 20px;
+            background: var(--white);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            color: var(--slate);
+        }
+
+        .style-preset-btn:hover {
+            border-color: var(--jet);
+            color: var(--jet);
+        }
+
+        .style-preset-btn.selected {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .presets-label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+        }
+
+        .or-divider {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin: var(--space-md) 0;
+            color: var(--ash-grey);
+            font-size: var(--text-sm);
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
+        /* Enhanced Prompt Display */
+        .enhanced-prompt {
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-top: var(--space-sm);
+            display: none;
+        }
+
+        .enhanced-prompt.show {
+            display: block;
+        }
+
+        .enhanced-prompt-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .enhanced-prompt-text {
+            font-size: var(--text-sm);
+            color: var(--jet);
+            line-height: 1.5;
+        }
+
+        /* Settings Row */
+        .settings-row {
+            display: flex;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .setting-label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--slate);
+        }
+
+        .setting-select {
+            padding: 8px 12px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            background: var(--white);
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        .setting-select:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        /* Generate Section */
+        .generate-section {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .generate-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .generate-info p {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .generate-info strong {
+            color: var(--jet);
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: var(--space-xl);
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--white);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .result-image {
+            aspect-ratio: 3/4;
+            background: var(--off-white);
+            position: relative;
+        }
+
+        .result-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-image .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-sm);
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            gap: var(--space-xs);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .result-card:hover .result-overlay {
+            opacity: 1;
+        }
+
+        .result-overlay button {
+            flex: 1;
+            padding: 6px;
+            background: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-overlay button:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .result-meta {
+            padding: var(--space-sm);
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .result-meta strong {
+            color: var(--jet);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+
+        /* Lightbox - use shared styles from components.css, just add .show alias */
+        .lightbox.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Style Lookbook</h1>
+            <p class="subtitle">Generate lookbook thumbnails with your models</p>
+        </header>
+
+        <!-- Step 1: Select Models -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">Select Models</div>
+                <div class="step-subtitle" id="modelCount">0 / 4 selected</div>
+            </div>
+            <div class="model-grid" id="modelGrid"></div>
+        </section>
+
+        <!-- Step 2: Select Poses -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">Select Poses</div>
+                <div class="step-subtitle" id="poseCount">0 selected</div>
+            </div>
+
+            <div class="pose-category">
+                <div class="pose-category-title">PDP / E-Commerce</div>
+                <div class="pose-grid" id="pdpPoseGrid"></div>
+            </div>
+
+            <div class="pose-category">
+                <div class="pose-category-title">Lifestyle / Editorial</div>
+                <div class="pose-grid" id="lifestylePoseGrid"></div>
+            </div>
+        </section>
+
+        <!-- Step 3: Style Prompt -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">Choose a Style</div>
+            </div>
+            <div class="config-group">
+                <div class="presets-label">Quick Presets (select multiple to mix)</div>
+                <div class="style-presets" id="stylePresets"></div>
+
+                <div class="or-divider">or write your own</div>
+
+                <textarea class="prompt-input" id="stylePrompt" placeholder="Describe the outfit you want, e.g.:
+• baggy streetwear, oversized hoodie
+• business casual, navy blazer
+• minimal scandinavian, neutral tones"></textarea>
+                <p class="config-hint">Presets auto-adjust outfits for male/female models during generation.</p>
+
+                <div class="enhanced-prompt" id="enhancedPromptDisplay">
+                    <div class="enhanced-prompt-label">Final Outfit Description</div>
+                    <div class="enhanced-prompt-text" id="enhancedPromptText"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 4: Settings & Generate -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <div class="step-title">Settings & Generate</div>
+            </div>
+
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label class="setting-label">Aspect Ratio</label>
+                    <select class="setting-select" id="aspectRatioSelect" onchange="state.aspectRatio = this.value">
+                        <option value="3:4" selected>3:4 (Portrait)</option>
+                        <option value="4:3">4:3 (Landscape)</option>
+                        <option value="1:1">1:1 (Square)</option>
+                        <option value="9:16">9:16 (Stories)</option>
+                        <option value="16:9">16:9 (Wide)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label class="setting-label">Resolution</label>
+                    <select class="setting-select" id="resolutionSelect" onchange="state.resolution = this.value">
+                        <option value="1K">1K</option>
+                        <option value="2K" selected>2K</option>
+                        <option value="4K">4K</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="generate-section">
+                <div class="generate-info">
+                    <p>Ready to generate <strong id="imageCount">0</strong> images</p>
+                </div>
+                <button class="btn btn--secondary" id="enhanceBtn" onclick="enhancePrompt()">
+                    Preview Enhanced Prompt
+                </button>
+                <button class="btn btn--primary btn--lg" id="generateBtn" onclick="generateLookbook()" disabled>
+                    Generate Lookbook
+                </button>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Generated Lookbook</h2>
+                <button class="btn btn--secondary" onclick="downloadAll()">Download All</button>
+            </div>
+            <div class="results-grid" id="resultsGrid"></div>
+        </section>
+    </div>
+
+    <!-- Inline Loader -->
+    <div class="inline-loader" id="inline-loader">
+        <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+        <div class="loader-progress" id="loader-progress">Preparing...</div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">&larr;</button>
+            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">&rarr;</button>
+            <div class="lightbox-left">
+                <img id="lightboxImage" src="" alt="Generated Image" class="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Model</h3>
+                    <p class="lightbox-model-text" id="lightboxModel"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Pose</h3>
+                    <p class="lightbox-model-text" id="lightboxPose"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Outfit</h3>
+                    <p class="lightbox-prompt-text" id="lightboxOutfit"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Full Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightboxPrompt"></p>
+                </div>
+                <button class="lightbox-download" onclick="downloadCurrent()">
+                    Download Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script>
+        // State
+        const state = {
+            selectedModels: [],
+            selectedPoses: [],
+            selectedPresets: [],
+            results: [],
+            enhancedPrompt: '',
+            aspectRatio: '3:4',
+            resolution: '2K'
+        };
+
+        const MAX_MODELS = 2;
+
+        // Style Presets with gender-specific descriptions (same colors, different silhouettes)
+        const STYLE_PRESETS = [
+            {
+                id: 'streetwear',
+                name: 'Streetwear',
+                male: 'oversized black cotton hoodie hanging loose past the hips, baggy raw indigo denim jeans with a relaxed straight leg, clean white leather sneakers with minimal design',
+                female: 'oversized black cotton hoodie cropped at waist, high-waisted baggy raw indigo denim jeans, clean white leather sneakers with minimal design'
+            },
+            {
+                id: 'business',
+                name: 'Business Casual',
+                male: 'structured navy wool blazer with relaxed shoulders, crisp white oxford shirt tucked in with slight billow, tailored tan chinos with a straight leg, brown leather loafers',
+                female: 'fitted navy wool blazer nipped at waist, ivory silk blouse with subtle drape, high-waisted tan wide-leg tailored trousers, pointed-toe nude leather flats'
+            },
+            {
+                id: 'minimal',
+                name: 'Minimal',
+                male: 'slim-fit black merino crewneck sweater hugging the torso, black tailored trousers with a clean straight leg, black leather chelsea boots with a sleek profile',
+                female: 'fitted black merino turtleneck sweater, high-waisted black tailored wide-leg trousers with clean drape, black leather pointed-toe ankle boots'
+            },
+            {
+                id: 'casual',
+                name: 'Casual',
+                male: 'relaxed white cotton t-shirt with a soft drape, straight-leg light wash denim jeans sitting at the waist, clean white canvas sneakers',
+                female: 'relaxed white cotton t-shirt tucked at front, high-waisted light wash straight-leg denim jeans, clean white canvas sneakers'
+            },
+            {
+                id: 'athletic',
+                name: 'Athletic',
+                male: 'fitted black performance t-shirt skimming the body, tapered black joggers with a slim fit through the leg, neutral grey and white mesh running sneakers',
+                female: 'fitted black performance tank top, high-waisted black leggings with seamless finish, neutral grey and white mesh running sneakers'
+            },
+            {
+                id: 'smart',
+                name: 'Smart Casual',
+                male: 'light blue cotton button-up shirt worn untucked with rolled sleeves, slim-fit dark navy trousers with tapered leg, clean white leather sneakers, silver watch',
+                female: 'light blue silk button-up blouse with relaxed fit, high-waisted dark navy tailored trousers, clean white leather sneakers, delicate silver bracelet'
+            },
+            {
+                id: 'y2k',
+                name: 'Y2K',
+                male: 'extremely baggy low-rise cargo pants sitting on hips with wide legs, fitted ribbed tank top in white, chunky white sneakers, thin silver chain necklace',
+                female: 'extremely low-rise baggy cargo pants sitting on hips, fitted white cropped baby tee, chunky white sneakers, thin silver chain necklace'
+            },
+            {
+                id: 'western',
+                name: 'Western',
+                male: 'relaxed-fit denim western shirt with pearl snaps, straight-leg raw denim jeans with a slight boot cut, worn brown leather cowboy boots with stacked heel, wide brown leather belt',
+                female: 'fitted denim western shirt with pearl snaps tied at waist, high-waisted raw denim jeans with slight flare, worn brown leather cowboy boots with stacked heel, wide brown leather belt'
+            },
+            {
+                id: 'prep',
+                name: 'Prep',
+                male: 'slightly oversized brown tweed blazer with soft shoulders, cream cable-knit sweater vest layered over white oxford shirt, high-waisted pleated wool trousers, cognac brown leather oxford shoes',
+                female: 'fitted brown tweed blazer with nipped waist, cream cable-knit sweater vest over white cotton blouse, high-waisted pleated wool trousers, cognac brown leather loafers'
+            },
+            {
+                id: 'quietluxury',
+                name: 'Quiet Luxury',
+                male: 'slim-fit cashmere crew-neck sweater in oatmeal draping elegantly, perfectly tailored wool trousers with a clean straight leg, soft unstructured tan suede loafers, understated silver watch',
+                female: 'relaxed cashmere crew-neck sweater in oatmeal with elegant drape, high-waisted tailored wool trousers with wide leg, soft nude leather ballet flats, understated gold jewelry'
+            },
+            {
+                id: 'grunge',
+                name: 'Grunge',
+                male: 'oversized flannel shirt in red and black worn open, faded black t-shirt with abstract print underneath, baggy ripped black jeans with distressed knees, worn-in black leather boots',
+                female: 'oversized flannel shirt in red and black worn open, faded black t-shirt with abstract print underneath, high-waisted ripped black jeans with distressed knees, worn-in black leather combat boots'
+            },
+            {
+                id: 'allblack',
+                name: 'All Black',
+                male: 'structured black leather jacket with sharp shoulders, fitted black mock-neck top, flowing wide-leg black trousers with dramatic drape, chunky black boots',
+                female: 'structured black leather blazer with sharp shoulders, fitted black turtleneck top, high-waisted wide-leg black trousers with dramatic drape, black pointed-toe heeled boots'
+            },
+            {
+                id: 'bohemian',
+                name: 'Bohemian',
+                male: 'loose flowy linen shirt in natural cream with relaxed drape, wide-leg linen pants sitting at natural waist, woven tan leather sandals, thin gold chain necklace',
+                female: 'loose flowy cream linen blouse with relaxed drape, high-waisted wide-leg linen pants in natural tan, woven tan leather sandals, layered gold necklaces'
+            },
+            {
+                id: 'workwear',
+                name: 'Workwear',
+                male: 'boxy canvas chore jacket in tan with patch pockets, relaxed chambray work shirt tucked loosely, straight-leg sturdy dark indigo denim, brown leather work boots with worn patina',
+                female: 'fitted canvas chore jacket in tan with patch pockets, relaxed chambray shirt tied at waist, high-waisted straight-leg dark indigo denim, brown leather ankle boots with worn patina'
+            }
+        ];
+
+        // Editorial variations to add uniqueness to each image (all studio lighting)
+        // Describe light QUALITY not equipment to avoid rendering lights/flashes in scene
+        const EDITORIAL_VARIATIONS = [
+            { lighting: 'soft diffused light from the left', mood: 'confident and commanding' },
+            { lighting: 'bright even illumination', mood: 'fresh and self-assured' },
+            { lighting: 'crisp directional light from above', mood: 'bold and striking' },
+            { lighting: 'soft frontal beauty lighting', mood: 'clean and powerful' },
+            { lighting: 'high-key bright lighting', mood: 'effortless and cool' },
+            { lighting: 'flat even lighting', mood: 'editorial and refined' },
+            { lighting: 'clean overhead illumination', mood: 'sharp and confident' },
+            { lighting: 'soft wraparound light', mood: 'polished and assured' }
+        ];
+
+        // Facial expressions for variety
+        const FACE_EXPRESSIONS = [
+            'neutral expression with quiet confidence',
+            'subtle hint of a smile, relaxed',
+            'serious editorial expression, direct gaze',
+            'soft contemplative gaze',
+            'slight knowing smirk',
+            'calm and composed, gentle eyes',
+            'intense focused stare at camera',
+            'relaxed and approachable, easy expression',
+            'cool unbothered demeanor',
+            'pensive look with eyes slightly narrowed',
+            'warm expression with hint of smile',
+            'stoic powerful gaze'
+        ];
+
+        // Setset Models (all 32 including new ones)
+        const SETSET_MODELS = [
+            { id: 'james', name: 'James Wilson', image: '/shared/images/talent/talent-01_JamesWilson.png', gender: 'male' },
+            { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png', gender: 'female' },
+            { id: 'river', name: 'River Blake', image: '/shared/images/talent/talent-03_RiverBlake.png', gender: 'male' },
+            { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png', gender: 'female' },
+            { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/talent-05_MarcusBrown.png', gender: 'male' },
+            { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png', gender: 'female' },
+            { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png', gender: 'female' },
+            { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/talent-08_LiamGarcia.png', gender: 'male' },
+            { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png', gender: 'female' },
+            { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png', gender: 'female' },
+            { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png', gender: 'female' },
+            { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png', gender: 'male' },
+            { id: 'kai', name: 'Mia Parker', image: '/shared/images/talent/talent-13_MiaParker.png', gender: 'male' },
+            { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png', gender: 'female' },
+            { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png', gender: 'male' },
+            { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png', gender: 'female' },
+            { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/talent-17_QuinnSantos.png', gender: 'female' },
+            { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png', gender: 'male' },
+            { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png', gender: 'male' },
+            { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/talent-20_DrewMartinez.png', gender: 'male' },
+            { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png', gender: 'female' },
+            { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png', gender: 'male' },
+            { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png', gender: 'female' },
+            { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png', gender: 'male' },
+            { id: 'damon', name: 'Damon Carter', image: '/shared/images/talent/talent-25_DamonCarter.png', gender: 'male' },
+            { id: 'nikolai', name: 'Nikolai Volkov', image: '/shared/images/talent/talent-26_NikolaiVolkov.png', gender: 'male' },
+            { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/talent-27_SofiaRodriguez.png', gender: 'female' },
+            { id: 'finn', name: 'Finn O\'Connor', image: '/shared/images/talent/talent-28_FinnOConnor.png', gender: 'male' },
+            { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/talent-29_ClaraDevereaux.png', gender: 'female' },
+            { id: 'simone', name: 'Zoe Washington', image: '/shared/images/talent/talent-30_ZoeWashington.png', gender: 'female' },
+            { id: 'emily', name: 'Emily Hart', image: '/shared/images/talent/talent-31_EmilyHart.png', gender: 'female' },
+            { id: 'alex', name: 'Alex Stone', image: '/shared/images/talent/talent-32_AlexStone.png', gender: 'male' }
+        ];
+
+        // Poses with images (from styling tool)
+        const POSES = [
+            // PDP Category
+            { id: 'front', name: 'Front', category: 'pdp', defaultImage: '/tools/styling/images/poses/pose-1-default.jpg', hoverImage: '/tools/styling/images/poses/pose-1-hover.jpg' },
+            { id: 'angle', name: '45° Angle', category: 'pdp', defaultImage: '/tools/styling/images/poses/pose-45degree-default.jpg', hoverImage: '/tools/styling/images/poses/pose-45degree-hover.jpg' },
+            { id: 'back', name: 'Back', category: 'pdp', defaultImage: '/tools/styling/images/poses/pose-back-default.jpg', hoverImage: '/tools/styling/images/poses/pose-back-hover.jpg' },
+            { id: 'halfbody', name: 'Half Body', category: 'pdp', defaultImage: '/tools/styling/images/poses/pose-6-default.jpg', hoverImage: '/tools/styling/images/poses/pose-6-hover.jpg' },
+            { id: 'portrait', name: 'Portrait', category: 'pdp', defaultImage: '/tools/styling/images/poses/pose-closer-default.jpg', hoverImage: '/tools/styling/images/poses/pose-closer-hover.jpg' },
+            // Lifestyle Category
+            { id: 'editorial', name: 'Editorial', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-editorial-default.jpg', hoverImage: '/tools/styling/images/poses/pose-editorial-hover.jpg' },
+            { id: 'sitting', name: 'Sitting', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-3-default.jpg', hoverImage: '/tools/styling/images/poses/pose-3-hover.jpg' },
+            { id: 'walking', name: 'Walking', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-4-default.jpg', hoverImage: '/tools/styling/images/poses/pose-4-hover.jpg' },
+            { id: 'leaning', name: 'Leaning', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-5-default.jpg', hoverImage: '/tools/styling/images/poses/pose-5-hover.jpg' },
+            { id: 'armscrossed', name: 'Arms Crossed', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-crossed-default.jpg', hoverImage: '/tools/styling/images/poses/pose-crossed-hover.jpg' },
+            { id: 'pocket', name: 'Pocket', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-pocket-default.jpg', hoverImage: '/tools/styling/images/poses/pose-pocket-hover.jpg' },
+            { id: 'brush', name: 'Brush', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-brush-default.jpg', hoverImage: '/tools/styling/images/poses/pose-brush-hover.jpg' },
+            { id: 'adjust', name: 'Adjust', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-adjust-default.jpg', hoverImage: '/tools/styling/images/poses/pose-adjust-hover.jpg' },
+            { id: 'laying', name: 'Laying', category: 'lifestyle', defaultImage: '/tools/styling/images/poses/pose-laying-default.jpg', hoverImage: '/tools/styling/images/poses/pose-laying-hover.jpg' }
+        ];
+
+        // Pose prompt templates with variations for each pose
+        const POSE_PROMPTS = {
+            'front': [
+                'Standing tall facing camera, weight shifted to one hip, one hand in pocket, confident swagger',
+                'Powerful frontal stance, shoulders back and open, chin lifted, commanding presence',
+                'Fashion model pose facing forward, slight hip thrust, arms relaxed but purposeful',
+                'Standing confidently with chest open, one leg slightly forward, direct intense gaze',
+                'Editorial front pose, body angled slightly, hand adjusting jacket, effortless cool',
+                'Strong vertical posture, weight on back leg, front foot pointed, fashion-forward stance'
+            ],
+            'angle': [
+                'Standing at 45-degree angle to camera, slight turn to the side, natural stance',
+                'Body angled to the left, head turned toward camera, relaxed shoulders',
+                'Three-quarter turn, weight shifted to back foot, casual stance',
+                'Angled pose with subtle hip shift, looking over shoulder at camera'
+            ],
+            'back': [
+                'Full body from behind, facing away from camera, showing back of garment',
+                'Back to camera, head turned slightly to profile, shoulders relaxed',
+                'Rear view, one foot slightly forward, natural standing position',
+                'Facing away, glancing back over shoulder, weight on one leg'
+            ],
+            'halfbody': [
+                'Waist-up shot, medium framing, hands positioned at waist, direct gaze',
+                'Half body crop, arms crossed loosely at midsection, confident expression',
+                'Torso framing, one hand on hip, relaxed shoulders, engaging the camera',
+                'Medium shot from waist up, hands in pockets, natural posture'
+            ],
+            'portrait': [
+                'Chest-up portrait, shoulders squared, direct gaze, confident expression',
+                'Close portrait framing, head tilted slightly, soft expression',
+                'Shoulders and head, angled slightly, eyes meeting the lens',
+                'Portrait crop, chin down subtly, intense eye contact'
+            ],
+            'editorial': [
+                'Dynamic fashion editorial pose, one arm extended, expressive, high fashion',
+                'Dramatic editorial stance, body twisted, arms creating angles',
+                'High fashion pose, exaggerated posture, strong silhouette',
+                'Editorial movement, mid-gesture, flowing and dynamic'
+            ],
+            'sitting': [
+                'Seated pose on white block, leaning forward with elbows on knees, relaxed',
+                'Sitting casually, legs crossed, leaning back slightly, at ease',
+                'Seated with one knee up, arms resting naturally, contemplative',
+                'Perched on edge, body angled, hands clasped loosely'
+            ],
+            'walking': [
+                'Mid-stride walking pose, arms swinging naturally, confident forward gaze',
+                'Caught in motion walking, one foot forward, natural arm movement',
+                'Walking toward camera, relaxed gait, casual confidence',
+                'Striding pose, body in motion, dynamic energy'
+            ],
+            'leaning': [
+                'Leaning against invisible wall, arms crossed, relaxed casual attitude',
+                'Shoulder against surface, one foot crossed over ankle, laid back',
+                'Leaning pose, hands in pockets, easy confidence',
+                'Resting against wall, head tilted, relaxed demeanor'
+            ],
+            'armscrossed': [
+                'Standing straight with arms crossed at chest, confident expression',
+                'Arms folded across body, weight on one hip, assured stance',
+                'Crossed arms, shoulders back, direct engaging gaze',
+                'Arms crossed loosely, slight lean, casual confidence'
+            ],
+            'pocket': [
+                'Both hands in pockets, shoulders angled, relaxed confident stance',
+                'Hands tucked in pockets, easy posture, natural smile',
+                'Pockets pose, thumbs hooked in waistband, laid back attitude',
+                'Hands in pockets, weight shifted, effortless cool'
+            ],
+            'brush': [
+                'One hand brushing through hair, gaze at camera, natural movement',
+                'Running fingers through hair, candid moment, relaxed expression',
+                'Hand in hair, head tilted, caught mid-gesture',
+                'Touching hair casually, soft gaze, natural and unposed'
+            ],
+            'adjust': [
+                'Hands adjusting collar or sleeve, focused attention on garment',
+                'Fixing cuff detail, downward glance, moment of styling',
+                'Adjusting jacket lapel, engaged with clothing, editorial moment',
+                'Smoothing fabric, attention to detail, refined gesture'
+            ],
+            'laying': [
+                'Laying on white surface, body stretched, one arm above head',
+                'Reclined pose, relaxed on back, limbs arranged artfully',
+                'Lying down, propped on elbow, gazing at camera',
+                'Horizontal pose, body elongated, serene expression'
+            ]
+        };
+
+        // Helper to get random pose variation
+        function getRandomPosePrompt(poseId) {
+            const variations = POSE_PROMPTS[poseId];
+            if (!variations) return '';
+            return variations[Math.floor(Math.random() * variations.length)];
+        }
+
+        // Initialize
+        function init() {
+            renderModelGrid();
+            renderPoseGrids();
+            renderStylePresets();
+            setupEventListeners();
+            updateCounts();
+        }
+
+        // Render Style Presets
+        function renderStylePresets() {
+            const container = document.getElementById('stylePresets');
+            container.innerHTML = STYLE_PRESETS.map(preset => `
+                <button class="style-preset-btn" data-preset-id="${preset.id}" onclick="selectPreset('${preset.id}')">
+                    ${preset.name}
+                </button>
+            `).join('');
+        }
+
+        // Select Preset (supports multiple selection)
+        function selectPreset(presetId) {
+            const preset = STYLE_PRESETS.find(p => p.id === presetId);
+            if (!preset) return;
+
+            // Toggle in array
+            const index = state.selectedPresets.indexOf(presetId);
+            if (index > -1) {
+                state.selectedPresets.splice(index, 1);
+            } else {
+                state.selectedPresets.push(presetId);
+            }
+
+            // Show just preset names in textarea (gender-specific descriptions applied during generation)
+            const presetNames = state.selectedPresets
+                .map(id => STYLE_PRESETS.find(p => p.id === id)?.name)
+                .filter(Boolean)
+                .join(' + ');
+
+            document.getElementById('stylePrompt').value = presetNames;
+
+            // Update button states
+            document.querySelectorAll('.style-preset-btn').forEach(btn => {
+                btn.classList.toggle('selected', state.selectedPresets.includes(btn.dataset.presetId));
+            });
+
+            // Clear enhanced prompt when changing presets
+            document.getElementById('enhancedPromptDisplay').classList.remove('show');
+            state.enhancedPrompt = '';
+            updateCounts();
+        }
+
+        // Render Model Grid
+        function renderModelGrid() {
+            const grid = document.getElementById('modelGrid');
+            grid.innerHTML = SETSET_MODELS.map(model => `
+                <div class="model-card" data-model-id="${model.id}" onclick="toggleModel('${model.id}')">
+                    <img src="${model.image}" alt="${model.name}" loading="lazy">
+                    <div class="check-mark">✓</div>
+                    <div class="model-name">${model.name}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render Pose Grids
+        function renderPoseGrids() {
+            const pdpGrid = document.getElementById('pdpPoseGrid');
+            const lifestyleGrid = document.getElementById('lifestylePoseGrid');
+
+            const pdpPoses = POSES.filter(p => p.category === 'pdp');
+            const lifestylePoses = POSES.filter(p => p.category === 'lifestyle');
+
+            pdpGrid.innerHTML = pdpPoses.map(pose => renderPoseCard(pose)).join('');
+            lifestyleGrid.innerHTML = lifestylePoses.map(pose => renderPoseCard(pose)).join('');
+        }
+
+        function renderPoseCard(pose) {
+            return `
+                <div class="pose-card" data-pose-id="${pose.id}" onclick="togglePose('${pose.id}')">
+                    <div class="pose-image">
+                        <img class="default-img" src="${pose.defaultImage}" alt="${pose.name}" loading="lazy">
+                        <img class="hover-img" src="${pose.hoverImage}" alt="${pose.name}" loading="lazy">
+                        <div class="check-mark">✓</div>
+                    </div>
+                    <div class="pose-name">${pose.name}</div>
+                </div>
+            `;
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            document.getElementById('stylePrompt').addEventListener('input', (e) => {
+                // Clear preset selection when user types manually
+                if (state.selectedPresets.length > 0) {
+                    // Build what the combined preset text would be
+                    const expectedText = state.selectedPresets
+                        .map(id => STYLE_PRESETS.find(p => p.id === id)?.description)
+                        .filter(Boolean)
+                        .join('\n\n');
+
+                    // Only clear if user has changed the text
+                    if (e.target.value !== expectedText) {
+                        state.selectedPresets = [];
+                        document.querySelectorAll('.style-preset-btn').forEach(btn => {
+                            btn.classList.remove('selected');
+                        });
+                    }
+                }
+                document.getElementById('enhancedPromptDisplay').classList.remove('show');
+                state.enhancedPrompt = '';
+                updateCounts();
+            });
+        }
+
+        // Toggle Model Selection
+        function toggleModel(modelId) {
+            const index = state.selectedModels.indexOf(modelId);
+            const card = document.querySelector(`[data-model-id="${modelId}"]`);
+
+            if (index > -1) {
+                state.selectedModels.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                if (state.selectedModels.length < MAX_MODELS) {
+                    state.selectedModels.push(modelId);
+                    card.classList.add('selected');
+                }
+            }
+
+            // Update disabled state
+            const allCards = document.querySelectorAll('.model-card');
+            allCards.forEach(c => {
+                const isSelected = c.classList.contains('selected');
+                if (state.selectedModels.length >= MAX_MODELS && !isSelected) {
+                    c.classList.add('disabled');
+                } else {
+                    c.classList.remove('disabled');
+                }
+            });
+
+            updateCounts();
+        }
+
+        // Toggle Pose Selection
+        function togglePose(poseId) {
+            const index = state.selectedPoses.indexOf(poseId);
+            const card = document.querySelector(`[data-pose-id="${poseId}"]`);
+
+            if (index > -1) {
+                state.selectedPoses.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                state.selectedPoses.push(poseId);
+                card.classList.add('selected');
+            }
+
+            updateCounts();
+        }
+
+        // Update Counts
+        function updateCounts() {
+            const modelCount = state.selectedModels.length;
+            const poseCount = state.selectedPoses.length;
+            const prompt = document.getElementById('stylePrompt').value.trim();
+
+            // Count outfits (separated by double line breaks)
+            const outfitCount = prompt
+                .split(/\n\n+/)
+                .map(s => s.trim())
+                .filter(s => s.length > 0)
+                .length || 0;
+
+            const imageCount = modelCount * poseCount * Math.max(outfitCount, 1);
+
+            document.getElementById('modelCount').textContent = `${modelCount} / ${MAX_MODELS} selected`;
+            document.getElementById('poseCount').textContent = `${poseCount} selected`;
+            document.getElementById('imageCount').textContent = imageCount;
+
+            document.getElementById('generateBtn').disabled = modelCount === 0 || poseCount === 0 || prompt === '';
+            document.getElementById('enhanceBtn').disabled = prompt === '';
+        }
+
+        // Enhance Prompt using GPT
+        async function enhancePrompt() {
+            const userPrompt = document.getElementById('stylePrompt').value.trim();
+            if (!userPrompt) return;
+
+            const enhanceBtn = document.getElementById('enhanceBtn');
+            enhanceBtn.disabled = true;
+            enhanceBtn.textContent = 'Enhancing...';
+
+            try {
+                const response = await window.api.analyzeImages([], `You are a fashion photography prompt engineer. Take this user's style description and enhance it into a detailed, professional fashion photography prompt. Keep the core style but add specific details about clothing, colors, textures, and mood.
+
+User style description: "${userPrompt}"
+
+Return ONLY the enhanced prompt, no explanations. The prompt should describe clothing and styling only (not the model, pose, or camera settings - those will be added separately). Keep it concise but descriptive, around 2-3 sentences.`);
+
+                state.enhancedPrompt = (response.content || response).trim();
+                document.getElementById('enhancedPromptText').textContent = state.enhancedPrompt;
+                document.getElementById('enhancedPromptDisplay').classList.add('show');
+            } catch (error) {
+                console.error('Error enhancing prompt:', error);
+                state.enhancedPrompt = userPrompt;
+            }
+
+            enhanceBtn.disabled = false;
+            enhanceBtn.textContent = 'Preview Enhanced Prompt';
+        }
+
+        // Generate Lookbook
+        async function generateLookbook() {
+            if (state.selectedModels.length === 0 || state.selectedPoses.length === 0) return;
+
+            const userPrompt = document.getElementById('stylePrompt').value.trim();
+            if (!userPrompt) return;
+
+            state.results = [];
+
+            // Step 1: Create the outfit description
+            // For presets, use directly; for custom prompts, enhance them
+            let outfitDescription = userPrompt;
+
+            if (state.selectedPresets.length > 0) {
+                // Presets already have detailed outfit descriptions, use as-is
+                outfitDescription = userPrompt;
+            } else if (!state.enhancedPrompt) {
+                // Custom prompt - enhance it first
+                startLoadingAnimation('Enhancing prompt...');
+                await enhancePrompt();
+                outfitDescription = state.enhancedPrompt || userPrompt;
+            } else {
+                outfitDescription = state.enhancedPrompt;
+            }
+
+            // Step 2: Build task list based on whether presets are selected or custom text
+            const tasks = [];
+
+            if (state.selectedPresets.length > 0) {
+                // Using presets - generate gender-specific outfits for each model
+                for (const modelId of state.selectedModels) {
+                    const model = SETSET_MODELS.find(m => m.id === modelId);
+                    const gender = model?.gender || 'male';
+
+                    for (const poseId of state.selectedPoses) {
+                        for (const presetId of state.selectedPresets) {
+                            const preset = STYLE_PRESETS.find(p => p.id === presetId);
+                            if (preset) {
+                                const outfit = preset[gender] || preset.male;
+                                tasks.push({ modelId, poseId, outfit, presetName: preset.name });
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Custom text - split by double line breaks
+                const outfits = outfitDescription
+                    .split(/\n\n+/)
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0);
+
+                for (const modelId of state.selectedModels) {
+                    for (const poseId of state.selectedPoses) {
+                        for (const outfit of outfits) {
+                            tasks.push({ modelId, poseId, outfit, presetName: 'Custom' });
+                        }
+                    }
+                }
+            }
+
+            startLoadingAnimation(`0 / ${tasks.length}`);
+
+            let completed = 0;
+
+            // Process in parallel with concurrency limit
+            const concurrency = 10;
+            const results = [];
+
+            for (let i = 0; i < tasks.length; i += concurrency) {
+                const batch = tasks.slice(i, i + concurrency);
+                const batchPromises = batch.map(task =>
+                    generateImage(task.modelId, task.poseId, task.outfit, task.presetName)
+                );
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults);
+                completed += batch.length;
+                updateLoadingProgress(`${completed} / ${tasks.length}`);
+            }
+
+            state.results = results.filter(r => r !== null);
+
+            stopLoadingAnimation();
+            renderResults();
+        }
+
+        // Cache for uploaded model images (to avoid re-uploading)
+        const uploadedModelImages = {};
+
+        // Generate Single Image
+        async function generateImage(modelId, poseId, stylePrompt, presetName = 'Custom') {
+            const model = SETSET_MODELS.find(m => m.id === modelId);
+            const pose = POSES.find(p => p.id === poseId);
+            if (!model || !pose) return null;
+
+            // Get random pose variation for uniqueness
+            const poseDescription = getRandomPosePrompt(poseId);
+
+            // Pick a random editorial variation for uniqueness
+            const variation = EDITORIAL_VARIATIONS[Math.floor(Math.random() * EDITORIAL_VARIATIONS.length)];
+
+            // Pick a random facial expression
+            const faceExpression = FACE_EXPRESSIONS[Math.floor(Math.random() * FACE_EXPRESSIONS.length)];
+
+            // Build full prompt with variation
+            const prompt = `High fashion editorial photograph of a tall ${model.gender} fashion model with elongated proportions, ${poseDescription}. Facial expression: ${faceExpression}.
+
+Wearing: ${stylePrompt}
+
+Pure white seamless studio backdrop, no background elements, professional fashion photography, high-end magazine quality, sharp focus, ${variation.lighting}, full body shot showing height, shot on medium format camera, 85mm lens, f/2.8, model appears tall and statuesque.`;
+
+            try {
+                // Get or upload model image
+                let imageUrl = uploadedModelImages[modelId];
+                if (!imageUrl) {
+                    const response = await fetch(model.image);
+                    const blob = await response.blob();
+                    const base64 = await blobToBase64(blob);
+                    const uploadResult = await window.api.uploadBase64(base64);
+                    imageUrl = uploadResult.url;
+                    uploadedModelImages[modelId] = imageUrl;
+                }
+
+                const result = await window.api.remixImage('nano-pro', {
+                    prompt: prompt,
+                    image_urls: [imageUrl],
+                    num_images: 1,
+                    aspect_ratio: state.aspectRatio,
+                    resolution: state.resolution,
+                    output_format: 'png'
+                });
+
+                // Get a short style label (first few words of the outfit)
+                const styleLabel = stylePrompt.split(',')[0].trim().substring(0, 30);
+
+                return {
+                    modelId,
+                    poseId,
+                    modelName: model.name,
+                    poseName: pose.name,
+                    styleLabel,
+                    presetName,
+                    outfit: stylePrompt,
+                    imageUrl: result.images?.[0]?.url || result.image?.url,
+                    prompt
+                };
+            } catch (error) {
+                console.error('Generation error:', error);
+                return null;
+            }
+        }
+
+        // Helper: Blob to Base64
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Render Results
+        function renderResults() {
+            const section = document.getElementById('resultsSection');
+            const grid = document.getElementById('resultsGrid');
+
+            section.classList.add('show');
+
+            grid.innerHTML = state.results.map((result, index) => `
+                <div class="result-card" onclick="openLightbox(${index})">
+                    <div class="result-image">
+                        <img src="${result.imageUrl}" alt="${result.modelName} - ${result.poseName}">
+                        <div class="result-overlay">
+                            <button onclick="event.stopPropagation(); downloadSingle(${index})">Download</button>
+                        </div>
+                    </div>
+                    <div class="result-meta">
+                        <strong>${result.modelName}</strong>
+                        ${result.poseName} · ${result.styleLabel}
+                    </div>
+                </div>
+            `).join('');
+
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Lightbox
+        let currentLightboxIndex = 0;
+
+        function openLightbox(index) {
+            currentLightboxIndex = index;
+            const result = state.results[index];
+
+            document.getElementById('lightboxImage').src = result.imageUrl;
+            document.getElementById('lightboxModel').textContent = result.modelName;
+            document.getElementById('lightboxPose').textContent = result.poseName;
+            document.getElementById('lightboxOutfit').textContent = result.outfit || '';
+            document.getElementById('lightboxPrompt').textContent = result.prompt;
+
+            document.getElementById('lightbox').classList.add('show');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('show');
+        }
+
+        function navigateLightbox(direction) {
+            const newIndex = currentLightboxIndex + direction;
+            if (newIndex >= 0 && newIndex < state.results.length) {
+                openLightbox(newIndex);
+            }
+        }
+
+        // Downloads
+        function getDownloadFilename(result, index) {
+            const now = new Date();
+            const date = now.toISOString().slice(2, 10).replace(/-/g, ''); // YYMMDD
+            const time = now.toTimeString().slice(0, 5).replace(':', ''); // HHMM
+            const num = String(index + 1).padStart(2, '0');
+            // Use preset name (e.g., "Athletic", "Minimal") or "Custom" for custom prompts
+            const styleName = (result.presetName || 'Custom').replace(/\s+/g, '');
+            return `Setset_Styling_${styleName}_${date}_${time}_${num}`;
+        }
+
+        function downloadCurrent() {
+            const result = state.results[currentLightboxIndex];
+            const filename = getDownloadFilename(result, currentLightboxIndex);
+            downloadImage(result.imageUrl, filename);
+        }
+
+        function downloadSingle(index) {
+            const result = state.results[index];
+            const filename = getDownloadFilename(result, index);
+            downloadImage(result.imageUrl, filename);
+        }
+
+        async function downloadImage(url, name) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${name}.jpg`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } catch (error) {
+                console.error('Download error:', error);
+            }
+        }
+
+        async function downloadAll() {
+            const now = new Date();
+            const date = now.toISOString().slice(2, 10).replace(/-/g, ''); // YYMMDD
+            const time = now.toTimeString().slice(0, 5).replace(':', ''); // HHMM
+
+            for (let i = 0; i < state.results.length; i++) {
+                const result = state.results[i];
+                const num = String(i + 1).padStart(2, '0');
+                const styleName = (result.presetName || 'Custom').replace(/\s+/g, '');
+                const filename = `Setset_Styling_${styleName}_${date}_${time}_${num}`;
+                await downloadImage(result.imageUrl, filename);
+                await new Promise(r => setTimeout(r, 500));
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('lightbox').classList.contains('show')) return;
+
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

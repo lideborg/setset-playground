@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Generator</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        header {
+            margin-bottom: var(--space-lg);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        /* Top controls */
+        .top-controls {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .controls-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .controls-header h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--space-md);
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* Selection buttons */
+        .selection-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-sm);
+        }
+
+        .selection-buttons .btn {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            height: auto;
+        }
+
+        /* Category tabs */
+        .category-tabs {
+            display: flex;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-sm);
+        }
+
+        .category-tab {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.15s;
+        }
+
+        .category-tab:hover {
+            border-color: var(--text-tertiary);
+        }
+
+        .category-tab.active {
+            background: rgba(0, 100, 255, 0.15);
+            border-color: rgba(0, 100, 255, 0.4);
+        }
+
+        .category-tab .count {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            margin-left: 4px;
+        }
+
+        /* Location grid (horizontal) */
+        .location-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .location-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.75rem;
+        }
+
+        .location-chip:hover {
+            border-color: var(--text-tertiary);
+        }
+
+        .location-chip input[type="checkbox"] {
+            display: none;
+        }
+
+        .location-chip.selected {
+            background: rgba(0, 100, 255, 0.15);
+            border-color: rgba(0, 100, 255, 0.4);
+        }
+
+        .location-chip .location-code {
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+        }
+
+        .location-chip .location-label {
+            color: var(--text-primary);
+        }
+
+        .location-chip .location-type {
+            font-size: 0.6rem;
+            padding: 1px 4px;
+            background: var(--bg-secondary);
+            border-radius: 2px;
+            color: var(--text-tertiary);
+        }
+
+        /* Settings section */
+        .settings-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            min-width: fit-content;
+        }
+
+        .settings-section label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .settings-section input {
+            width: 50px;
+            padding: 4px 8px;
+            font-size: 0.875rem;
+            text-align: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+        }
+
+        .settings-section .hint {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+        }
+
+        .stats-inline {
+            display: flex;
+            gap: var(--space-md);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-inline span {
+            white-space: nowrap;
+        }
+
+        .stats-inline strong {
+            color: var(--text-primary);
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-xs);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar-bg {
+            height: 4px;
+            background: var(--border-primary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Main content */
+        .main-content {
+            min-width: 0;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border-primary);
+        }
+
+        .result-card.generating {
+            opacity: 0.7;
+        }
+
+        .result-card.generating .result-placeholder {
+            background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .result-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .result-info {
+            padding: var(--space-sm);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            margin-bottom: 4px;
+        }
+
+        .result-code {
+            font-family: monospace;
+            font-size: 0.625rem;
+            color: var(--text-tertiary);
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .result-type {
+            font-size: 0.625rem;
+            color: var(--text-tertiary);
+        }
+
+        .result-name {
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: var(--space-xs);
+            margin-top: var(--space-xs);
+        }
+
+        .result-actions .btn {
+            flex: 1;
+            font-size: 0.65rem;
+            padding: 4px;
+            height: auto;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-xl);
+            color: var(--text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Location Generator</h1>
+            <p>Select locations → generates environments with model for testing backdrops</p>
+        </header>
+
+        <div class="layout">
+            <!-- Top Controls -->
+            <div class="top-controls">
+                <div class="controls-header">
+                    <h3>Select Locations</h3>
+                    <div class="selection-buttons">
+                        <button class="btn btn--secondary" id="select-all-btn">All 50</button>
+                        <button class="btn btn--secondary" id="deselect-all-btn">None</button>
+                        <button class="btn btn--secondary" id="select-random-10-btn">Random 10</button>
+                    </div>
+                </div>
+                <div class="category-tabs" id="category-tabs">
+                    <!-- Counts populated dynamically -->
+                </div>
+                <div class="location-grid" id="location-checklist"></div>
+            </div>
+
+            <!-- Settings Bar -->
+            <div class="top-controls">
+                <div class="controls-row">
+                    <div class="settings-section">
+                        <label>Images per location:</label>
+                        <input type="number" id="images-per-location" value="1" min="1" max="10">
+                        <span class="hint">(×2 genders)</span>
+                    </div>
+
+                    <div class="stats-inline">
+                        <span>Selected: <strong id="selected-count">0</strong></span>
+                        <span>Total images: <strong id="total-images-count">0</strong></span>
+                        <span>Generated: <strong id="generated-count">0</strong></span>
+                    </div>
+
+                    <div class="progress-section" id="progress-section">
+                        <div class="progress-header">
+                            <span id="progress-status">Generating...</span>
+                            <span id="progress-count">0 / 0</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn--primary" id="generate-btn">Generate</button>
+                        <button class="btn btn--secondary" id="download-all-btn" disabled>Download All</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Grid -->
+            <div class="main-content">
+                <div class="results-grid" id="results-grid">
+                    <div class="empty-state">
+                        <p>Select locations above and click Generate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/data/editorial-locations.js"></script>
+    <script src="/shared/data/editorial-moods.js"></script>
+    <script>
+        // Global state
+        const state = {
+            locations: [],       // all locations with index/code
+            selected: new Set(), // selected location IDs
+            results: {},         // generated results keyed by unique filename
+            generating: false,
+            categoryFilter: 'all'
+        };
+
+        let api, elements;
+
+        // Build location list with indices
+        function buildLocationList() {
+            const indoor = INDOOR_LOCATIONS.map((loc, idx) => ({
+                ...loc,
+                type: 'indoor',
+                index: idx + 1,
+                code: `I${String(idx + 1).padStart(2, '0')}`
+            }));
+            const outdoor = OUTDOOR_LOCATIONS.map((loc, idx) => ({
+                ...loc,
+                type: 'outdoor',
+                index: idx + 1,
+                code: `O${String(idx + 1).padStart(2, '0')}`
+            }));
+            return [...indoor, ...outdoor];
+        }
+
+        // Get images per location setting
+        function getImagesPerLocation() {
+            return parseInt(elements.imagesPerLocation.value) || 1;
+        }
+
+        // Get filtered locations based on category
+        function getFilteredLocations() {
+            if (state.categoryFilter === 'all') return state.locations;
+            return state.locations.filter(loc => loc.type === state.categoryFilter);
+        }
+
+        // Render location chips
+        function renderChecklist() {
+            const locations = getFilteredLocations();
+            elements.locationChecklist.innerHTML = locations.map(loc => `
+                <label class="location-chip ${state.selected.has(loc.id) ? 'selected' : ''}" data-id="${loc.id}">
+                    <input type="checkbox" ${state.selected.has(loc.id) ? 'checked' : ''}>
+                    <span class="location-code">${loc.code}</span>
+                    <span class="location-label">${loc.name}</span>
+                    <span class="location-type">${loc.type}</span>
+                </label>
+            `).join('');
+
+            // Add event listeners
+            document.querySelectorAll('.location-chip').forEach(chip => {
+                chip.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.dataset.id;
+                    if (state.selected.has(id)) {
+                        state.selected.delete(id);
+                        this.classList.remove('selected');
+                    } else {
+                        state.selected.add(id);
+                        this.classList.add('selected');
+                    }
+                    updateStats();
+                });
+            });
+
+            updateStats();
+        }
+
+        // Update stats
+        function updateStats() {
+            const imagesPerLocation = getImagesPerLocation();
+            const totalImages = state.selected.size * 2 * imagesPerLocation; // ×2 for both genders
+            elements.selectedCount.textContent = state.selected.size;
+            elements.totalImagesCount.textContent = totalImages;
+            elements.generatedCount.textContent = Object.keys(state.results).length;
+            elements.generateBtn.disabled = state.selected.size === 0 || state.generating;
+            elements.downloadAllBtn.disabled = Object.keys(state.results).length === 0;
+        }
+
+        // Render results grid
+        function renderResults() {
+            const results = Object.entries(state.results);
+
+            if (results.length === 0) {
+                elements.resultsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <p>Select locations and click Generate</p>
+                    </div>
+                `;
+                return;
+            }
+
+            elements.resultsGrid.innerHTML = results.map(([filename, result]) => `
+                <div class="result-card" data-filename="${filename}">
+                    <img class="result-image" src="${result.url}" alt="${result.name}">
+                    <div class="result-info">
+                        <div class="result-header">
+                            <span class="result-code">${result.code}</span>
+                            <span class="result-type">${result.type}</span>
+                        </div>
+                        <div class="result-name">${result.name}</div>
+                        <div class="result-actions">
+                            <button class="btn btn--secondary" onclick="regenerateSingle('${filename}')">Redo</button>
+                            <button class="btn btn--secondary" onclick="downloadSingle('${filename}')">Download</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
+        }
+
+        // Add generating placeholder
+        function addGeneratingPlaceholder(genTask) {
+            // Remove empty state if present
+            const emptyState = elements.resultsGrid.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            // Check if card already exists
+            let card = elements.resultsGrid.querySelector(`[data-filename="${genTask.filename}"]`);
+            if (!card) {
+                const html = `
+                    <div class="result-card generating" data-filename="${genTask.filename}">
+                        <div class="result-placeholder">${genTask.code}</div>
+                        <div class="result-info">
+                            <div class="result-header">
+                                <span class="result-code">${genTask.code}</span>
+                                <span class="result-type">${genTask.type}</span>
+                            </div>
+                            <div class="result-name">${genTask.name}</div>
+                        </div>
+                    </div>
+                `;
+                elements.resultsGrid.insertAdjacentHTML('beforeend', html);
+            }
+        }
+
+        // Update card with result
+        function updateCardWithResult(filename, result) {
+            const card = elements.resultsGrid.querySelector(`[data-filename="${filename}"]`);
+            if (card) {
+                card.classList.remove('generating');
+                card.innerHTML = `
+                    <img class="result-image" src="${result.url}" alt="${result.name}">
+                    <div class="result-info">
+                        <div class="result-header">
+                            <span class="result-code">${result.code}</span>
+                            <span class="result-type">${result.type}</span>
+                        </div>
+                        <div class="result-name">${result.name}</div>
+                        <div class="result-actions">
+                            <button class="btn btn--secondary" onclick="regenerateSingle('${filename}')">Redo</button>
+                            <button class="btn btn--secondary" onclick="downloadSingle('${filename}')">Download</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Interaction prompts - adds life to the scene
+        const INTERACTION_PROMPTS = [
+            // Sitting
+            'sitting casually on a chair',
+            'sitting on the floor',
+            'perched on a stool',
+            'resting on a low bench',
+            'sitting on steps',
+            'sitting cross-legged on the ground',
+            'lounging on a couch',
+            'sitting on a window sill',
+            'sitting on the edge of a table',
+            'sitting backwards on a chair',
+            // Leaning
+            'leaning against the wall',
+            'leaning on a table',
+            'leaning in a doorway',
+            'leaning on a railing',
+            'leaning against a column',
+            'leaning on a window frame',
+            // Crouching/Kneeling
+            'crouching down',
+            'kneeling on one knee',
+            'squatting casually',
+            // Lying
+            'lying on the floor looking up',
+            'lying on a couch',
+            'sprawled on a rug',
+            // Dynamic poses
+            'walking through the space',
+            'mid-stride walking toward camera',
+            'turning to look over shoulder',
+            'adjusting their jacket',
+            'running hand through hair',
+            'arms crossed leaning back',
+            'hands in pockets relaxed stance',
+            'stretching arms overhead',
+            // Props/Objects
+            'holding a coffee cup',
+            'reading a magazine',
+            'looking at their phone',
+            'holding sunglasses',
+            'draped in a blanket',
+            'wrapped in an oversized coat',
+            'holding flowers',
+            'carrying a bag over shoulder'
+        ];
+
+        // Build prompt for location with a model
+        function buildLocationPrompt(location, gender) {
+            const subject = gender === 'female'
+                ? 'Photorealistic portrait of a female model'
+                : 'Photorealistic portrait of a male model';
+
+            // Random framing from editorial moods
+            const framing = FRAMING_OPTIONS[Math.floor(Math.random() * FRAMING_OPTIONS.length)];
+
+            // Random expression
+            const expression = getRandomExpression('editorial');
+
+            // 30% chance of interaction with the scene
+            let interaction = '';
+            if (Math.random() < 0.3) {
+                interaction = INTERACTION_PROMPTS[Math.floor(Math.random() * INTERACTION_PROMPTS.length)] + ', ';
+            }
+
+            return {
+                prompt: `${subject}, ${framing.prompt}, ${expression.prompt}, ${interaction}wearing simple contemporary fashion, ${location.prompt}, professional fashion photography, color photography`,
+                framing: framing,
+                expression: expression,
+                hasInteraction: interaction !== ''
+            };
+        }
+
+        // Generate single task
+        async function generateSingle(genTask) {
+            addGeneratingPlaceholder(genTask);
+
+            try {
+                const { prompt, framing } = buildLocationPrompt(genTask.location, genTask.gender);
+                console.log(`🎨 Generating: ${genTask.code} ${genTask.name}`);
+
+                const data = await api.generateImage('reve', {
+                    prompt: prompt,
+                    aspect_ratio: '3:4',
+                    num_images: 1,
+                    output_format: 'png'
+                });
+
+                if (data.images && data.images.length > 0) {
+                    const result = {
+                        url: data.images[0].url,
+                        code: genTask.code,
+                        name: genTask.name,
+                        type: genTask.type,
+                        gender: genTask.gender,
+                        location: genTask.location,
+                        framing: framing,
+                        prompt: prompt
+                    };
+                    state.results[genTask.filename] = result;
+                    updateCardWithResult(genTask.filename, result);
+                    console.log(`   ✅ Done: ${genTask.code}`);
+                    return result;
+                }
+            } catch (error) {
+                console.error(`   ❌ Failed: ${genTask.code}`, error);
+            }
+            return null;
+        }
+
+        // Regenerate single
+        async function regenerateSingle(filename) {
+            const result = state.results[filename];
+            if (!result) return;
+
+            const genTask = {
+                location: result.location,
+                gender: result.gender,
+                code: result.code,
+                name: result.name,
+                type: result.type,
+                filename: filename
+            };
+
+            delete state.results[filename];
+            await generateSingle(genTask);
+            updateStats();
+        }
+
+        // Build generation tasks from selected locations
+        function buildGenerationTasks() {
+            const tasks = [];
+            const imagesPerLocation = getImagesPerLocation();
+            const selectedLocations = state.locations.filter(l => state.selected.has(l.id));
+
+            for (const location of selectedLocations) {
+                // Generate both genders for each location
+                for (const gender of ['female', 'male']) {
+                    for (let i = 1; i <= imagesPerLocation; i++) {
+                        const genderCode = gender === 'female' ? 'F' : 'M';
+                        const code = `${location.code}${genderCode}${i}`;
+                        tasks.push({
+                            location: location,
+                            gender: gender,
+                            type: location.type,
+                            variationIndex: i,
+                            code: code,
+                            name: `${location.name} (${gender === 'female' ? '♀' : '♂'})`,
+                            filename: `location_${code}_${location.id}.png`
+                        });
+                    }
+                }
+            }
+            return tasks;
+        }
+
+        // Generate all selected
+        async function generateSelected() {
+            if (state.generating || state.selected.size === 0) return;
+            state.generating = true;
+
+            elements.generateBtn.disabled = true;
+            elements.progressSection.classList.add('visible');
+
+            const tasks = buildGenerationTasks();
+            const total = tasks.length;
+            let completed = 0;
+
+            console.log(`\n🎬 Starting generation of ${total} images (${state.selected.size} locations × 2 genders × ${getImagesPerLocation()} each)...`);
+
+            elements.progressCount.textContent = `0 / ${total}`;
+            elements.progressBar.style.width = '0%';
+
+            const MAX_CONCURRENT = 5;
+            const executing = new Set();
+
+            for (const task of tasks) {
+                const promise = (async () => {
+                    await generateSingle(task);
+                    completed++;
+                    elements.progressCount.textContent = `${completed} / ${total}`;
+                    elements.progressBar.style.width = `${(completed / total) * 100}%`;
+                    updateStats();
+                })();
+
+                const wrapped = promise.then(() => executing.delete(wrapped));
+                executing.add(wrapped);
+
+                if (executing.size >= MAX_CONCURRENT) {
+                    await Promise.race(executing);
+                }
+            }
+
+            await Promise.all(executing);
+
+            console.log(`\n✅ Generation complete!`);
+            elements.progressStatus.textContent = 'Complete!';
+            state.generating = false;
+            elements.generateBtn.disabled = false;
+        }
+
+        // Download single
+        async function downloadSingle(filename) {
+            const result = state.results[filename];
+            if (!result) return;
+
+            try {
+                const response = await fetch(result.url);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Download failed:', error);
+            }
+        }
+
+        // Download all
+        async function downloadAll() {
+            const results = Object.entries(state.results);
+            console.log(`📥 Downloading ${results.length} images...`);
+
+            for (const [filename, result] of results) {
+                await downloadSingle(filename);
+                await new Promise(r => setTimeout(r, 300));
+            }
+
+            console.log('✅ All downloads complete!');
+        }
+
+        // Selection helpers
+        function selectAll() {
+            const filtered = getFilteredLocations();
+            filtered.forEach(l => state.selected.add(l.id));
+            renderChecklist();
+        }
+
+        function deselectAll() {
+            state.selected.clear();
+            renderChecklist();
+        }
+
+        function selectRandom10() {
+            state.selected.clear();
+            const shuffled = [...state.locations].sort(() => Math.random() - 0.5);
+            shuffled.slice(0, 10).forEach(l => state.selected.add(l.id));
+            renderChecklist();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            api = new API();
+            elements = {
+                locationChecklist: document.getElementById('location-checklist'),
+                imagesPerLocation: document.getElementById('images-per-location'),
+                selectedCount: document.getElementById('selected-count'),
+                totalImagesCount: document.getElementById('total-images-count'),
+                generatedCount: document.getElementById('generated-count'),
+                generateBtn: document.getElementById('generate-btn'),
+                downloadAllBtn: document.getElementById('download-all-btn'),
+                resultsGrid: document.getElementById('results-grid'),
+                progressSection: document.getElementById('progress-section'),
+                progressStatus: document.getElementById('progress-status'),
+                progressCount: document.getElementById('progress-count'),
+                progressBar: document.getElementById('progress-bar')
+            };
+
+            // Build location list
+            state.locations = buildLocationList();
+
+            // Render category tabs with dynamic counts
+            const indoorCount = INDOOR_LOCATIONS.length;
+            const outdoorCount = OUTDOOR_LOCATIONS.length;
+            const totalCount = indoorCount + outdoorCount;
+            document.getElementById('category-tabs').innerHTML = `
+                <div class="category-tab active" data-category="all">All <span class="count">(${totalCount})</span></div>
+                <div class="category-tab" data-category="indoor">Indoor <span class="count">(${indoorCount})</span></div>
+                <div class="category-tab" data-category="outdoor">Outdoor <span class="count">(${outdoorCount})</span></div>
+            `;
+
+            renderChecklist();
+
+            // Category tabs
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    state.categoryFilter = this.dataset.category;
+                    renderChecklist();
+                });
+            });
+
+            // Selection buttons
+            document.getElementById('select-all-btn').addEventListener('click', selectAll);
+            document.getElementById('deselect-all-btn').addEventListener('click', deselectAll);
+            document.getElementById('select-random-10-btn').addEventListener('click', selectRandom10);
+
+            // Images per location change handler
+            elements.imagesPerLocation.addEventListener('change', updateStats);
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', generateSelected);
+
+            // Download all button
+            elements.downloadAllBtn.addEventListener('click', downloadAll);
+
+            console.log('🏠 Location Generator initialized');
+            console.log(`   ${INDOOR_LOCATIONS.length} indoor + ${OUTDOOR_LOCATIONS.length} outdoor locations`);
+        });
+    </script>
+</body>
+</html>

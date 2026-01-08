@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yassify</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Step Sections */
+        .step-section {
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .step-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .step-subtitle {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-left: auto;
+        }
+
+        /* Model Grid - 12 columns */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+        }
+
+        .model-card {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .model-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .model-card.selected {
+            border-color: var(--jet);
+        }
+
+        .model-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .model-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .model-card .check-mark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .model-card.selected .check-mark {
+            display: flex;
+        }
+
+        .model-card .model-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            font-size: 9px;
+            padding: 12px 4px 4px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .model-card:hover .model-name {
+            opacity: 1;
+        }
+
+        /* Slider Section */
+        .slider-container {
+            max-width: 400px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .slider-label span {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .slider-value {
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--gainsboro);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--jet);
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--jet);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .generate-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .generate-info p {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .generate-info strong {
+            color: var(--jet);
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: var(--space-xl);
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--white);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .result-image {
+            aspect-ratio: 3/4;
+            background: var(--off-white);
+            position: relative;
+        }
+
+        .result-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-image .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-sm);
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            gap: var(--space-xs);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .result-card:hover .result-overlay {
+            opacity: 1;
+        }
+
+        .result-overlay button {
+            flex: 1;
+            padding: 6px;
+            background: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-overlay button:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .result-meta {
+            padding: var(--space-sm);
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .result-meta strong {
+            color: var(--jet);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Model group header in results */
+        .model-group {
+            margin-bottom: var(--space-xl);
+        }
+
+        .model-group-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .model-group-header img {
+            width: 48px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+        }
+
+        .model-group-header h3 {
+            font-size: var(--text-md);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .model-group-header span {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Lightbox */
+        .lightbox.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Yassify</h1>
+            <p class="subtitle">Add character and uniqueness to model faces</p>
+        </header>
+
+        <!-- Step 1: Select Models -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">Select Models</div>
+                <div class="step-subtitle" id="modelCount">0 / 5 selected</div>
+            </div>
+            <div class="model-grid" id="modelGrid"></div>
+        </section>
+
+        <!-- Step 2: Iterations -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">Variations per Model</div>
+            </div>
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>How many variations?</span>
+                    <span class="slider-value" id="iterationValue">5</span>
+                </div>
+                <input type="range" min="1" max="10" value="5" class="slider" id="iterationSlider">
+            </div>
+        </section>
+
+        <!-- Step 3: Generate -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">Generate</div>
+            </div>
+            <div class="generate-section">
+                <div class="generate-info">
+                    <p>Ready to generate <strong id="imageCount">0</strong> images</p>
+                </div>
+                <button class="btn btn--primary btn--lg" id="generateBtn" onclick="generateYassify()" disabled>
+                    Yassify
+                </button>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Results</h2>
+                <button class="btn btn--secondary" onclick="downloadAll()">Download All</button>
+            </div>
+            <div id="resultsContainer"></div>
+        </section>
+    </div>
+
+    <!-- Inline Loader -->
+    <div class="inline-loader" id="inline-loader">
+        <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+        <div class="loader-progress" id="loader-progress">Preparing...</div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">&larr;</button>
+            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">&rarr;</button>
+            <div class="lightbox-left">
+                <img id="lightboxImage" src="" alt="Generated Image" class="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Model</h3>
+                    <p class="lightbox-model-text" id="lightboxModel"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Enhancements</h3>
+                    <p class="lightbox-prompt-text" id="lightboxEnhancements"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Full Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightboxPrompt"></p>
+                </div>
+                <button class="lightbox-download" onclick="downloadCurrent()">
+                    Download Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script>
+        // State
+        const state = {
+            selectedModels: [],
+            iterations: 5,
+            results: []
+        };
+
+        const MAX_MODELS = 5;
+
+        // Character traits organized by CATEGORY - symmetrical, attractive variations only
+        const TRAIT_CATEGORIES = {
+            eyeShape: [
+                'large expressive eyes',
+                'smaller intense eyes',
+                'almond-shaped eyes',
+                'round eyes',
+                'hooded eyelids',
+                'double eyelids',
+                'monolid eyes',
+                'upturned eye corners',
+                'downturned eye corners',
+                'deep-set eyes'
+            ],
+            eyeSpacing: [
+                'wide-set eyes',
+                'close-set eyes',
+                'average eye spacing'
+            ],
+            noseSize: [
+                'small delicate nose',
+                'larger prominent nose',
+                'long nose',
+                'short nose',
+                'wide nose',
+                'narrow nose'
+            ],
+            noseShape: [
+                'straight nose bridge',
+                'slight bump on nose bridge',
+                'flat nose bridge',
+                'high nose bridge',
+                'aquiline nose',
+                'button nose',
+                'upturned nose',
+                'downturned nose tip'
+            ],
+            lips: [
+                'full lips',
+                'thin lips',
+                'medium lips',
+                'fuller bottom lip',
+                'fuller top lip',
+                'defined cupids bow',
+                'wide mouth',
+                'small mouth',
+                'heart-shaped lips'
+            ],
+            teeth: [
+                'slight gap between front teeth',
+                'small teeth',
+                'larger front teeth',
+                'perfectly straight teeth'
+            ],
+            jawline: [
+                'strong square jaw',
+                'soft rounded jaw',
+                'narrow V-shaped jaw',
+                'wide jaw',
+                'angular defined jaw',
+                'soft subtle jaw'
+            ],
+            chin: [
+                'pointed chin',
+                'rounded chin',
+                'square chin',
+                'small chin',
+                'prominent chin',
+                'cleft chin'
+            ],
+            cheekbones: [
+                'high cheekbones',
+                'subtle cheekbones',
+                'wide cheekbones',
+                'hollow cheeks',
+                'full round cheeks',
+                'apple cheeks'
+            ],
+            faceShape: [
+                'oval face shape',
+                'round face shape',
+                'square face shape',
+                'heart-shaped face',
+                'long face shape',
+                'diamond face shape'
+            ],
+            forehead: [
+                'high forehead',
+                'smaller forehead',
+                'wide forehead',
+                'narrow forehead',
+                'prominent brow ridge'
+            ],
+            eyebrows: [
+                'thick natural eyebrows',
+                'thin eyebrows',
+                'straight eyebrows',
+                'arched eyebrows',
+                'bushy eyebrows',
+                'feathered eyebrows'
+            ],
+            skinMarks: [
+                'light freckles across nose and cheeks',
+                'freckles across face',
+                'beauty mark near mouth',
+                'beauty mark on cheek',
+                'clear smooth skin',
+                'natural skin texture'
+            ],
+            ears: [
+                'slightly protruding ears',
+                'ears flat to head',
+                'larger ears',
+                'smaller ears'
+            ],
+            hair: [
+                'wavy hair texture',
+                'straight hair',
+                'curly hair',
+                'coily textured hair',
+                'thick voluminous hair',
+                'fine thin hair',
+                'widow\'s peak hairline',
+                'straight hairline',
+                'higher hairline',
+                'lower hairline'
+            ],
+            dimples: [
+                'dimples on both cheeks when smiling',
+                'chin dimple',
+                'no dimples'
+            ]
+        };
+
+        // Pick one trait from each of several random categories
+        function getRandomTraits() {
+            const categories = Object.keys(TRAIT_CATEGORIES);
+            // Shuffle and pick 6-9 categories for more visible changes
+            const shuffledCategories = [...categories].sort(() => Math.random() - 0.5);
+            const numCategories = 6 + Math.floor(Math.random() * 4); // 6-9 categories
+            const selectedCategories = shuffledCategories.slice(0, numCategories);
+
+            // Pick one random trait from each selected category
+            return selectedCategories.map(cat => {
+                const options = TRAIT_CATEGORIES[cat];
+                return options[Math.floor(Math.random() * options.length)];
+            });
+        }
+
+        // Setset Models (all 32)
+        const SETSET_MODELS = [
+            { id: 'james', name: 'James Wilson', image: '/shared/images/talent/talent-01_JamesWilson.png', gender: 'male' },
+            { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png', gender: 'female' },
+            { id: 'river', name: 'River Blake', image: '/shared/images/talent/talent-03_RiverBlake.png', gender: 'male' },
+            { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png', gender: 'female' },
+            { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/talent-05_MarcusBrown.png', gender: 'male' },
+            { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png', gender: 'female' },
+            { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png', gender: 'female' },
+            { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/talent-08_LiamGarcia.png', gender: 'male' },
+            { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png', gender: 'female' },
+            { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png', gender: 'female' },
+            { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png', gender: 'female' },
+            { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png', gender: 'male' },
+            { id: 'kai', name: 'Mia Parker', image: '/shared/images/talent/talent-13_MiaParker.png', gender: 'male' },
+            { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png', gender: 'female' },
+            { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png', gender: 'male' },
+            { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png', gender: 'female' },
+            { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/talent-17_QuinnSantos.png', gender: 'female' },
+            { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png', gender: 'male' },
+            { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png', gender: 'male' },
+            { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/talent-20_DrewMartinez.png', gender: 'male' },
+            { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png', gender: 'female' },
+            { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png', gender: 'male' },
+            { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png', gender: 'female' },
+            { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png', gender: 'male' },
+            { id: 'damon', name: 'Damon Carter', image: '/shared/images/talent/talent-25_DamonCarter.png', gender: 'male' },
+            { id: 'nikolai', name: 'Nikolai Volkov', image: '/shared/images/talent/talent-26_NikolaiVolkov.png', gender: 'male' },
+            { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/talent-27_SofiaRodriguez.png', gender: 'female' },
+            { id: 'finn', name: 'Finn O\'Connor', image: '/shared/images/talent/talent-28_FinnOConnor.png', gender: 'male' },
+            { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/talent-29_ClaraDevereaux.png', gender: 'female' },
+            { id: 'simone', name: 'Zoe Washington', image: '/shared/images/talent/talent-30_ZoeWashington.png', gender: 'female' },
+            { id: 'emily', name: 'Emily Hart', image: '/shared/images/talent/talent-31_EmilyHart.png', gender: 'female' },
+            { id: 'alex', name: 'Alex Stone', image: '/shared/images/talent/talent-32_AlexStone.png', gender: 'male' }
+        ];
+
+        // Initialize
+        function init() {
+            renderModelGrid();
+            setupEventListeners();
+            updateCounts();
+        }
+
+        // Render Model Grid
+        function renderModelGrid() {
+            const grid = document.getElementById('modelGrid');
+            grid.innerHTML = SETSET_MODELS.map(model => `
+                <div class="model-card" data-model-id="${model.id}" onclick="toggleModel('${model.id}')">
+                    <img src="${model.image}" alt="${model.name}" loading="lazy">
+                    <div class="check-mark">✓</div>
+                    <div class="model-name">${model.name}</div>
+                </div>
+            `).join('');
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            document.getElementById('iterationSlider').addEventListener('input', (e) => {
+                state.iterations = parseInt(e.target.value);
+                document.getElementById('iterationValue').textContent = state.iterations;
+                updateCounts();
+            });
+        }
+
+        // Toggle Model Selection
+        function toggleModel(modelId) {
+            const index = state.selectedModels.indexOf(modelId);
+            const card = document.querySelector(`[data-model-id="${modelId}"]`);
+
+            if (index > -1) {
+                state.selectedModels.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                if (state.selectedModels.length < MAX_MODELS) {
+                    state.selectedModels.push(modelId);
+                    card.classList.add('selected');
+                }
+            }
+
+            // Update disabled state
+            const allCards = document.querySelectorAll('.model-card');
+            allCards.forEach(c => {
+                const isSelected = c.classList.contains('selected');
+                if (state.selectedModels.length >= MAX_MODELS && !isSelected) {
+                    c.classList.add('disabled');
+                } else {
+                    c.classList.remove('disabled');
+                }
+            });
+
+            updateCounts();
+        }
+
+        // Update Counts
+        function updateCounts() {
+            const modelCount = state.selectedModels.length;
+            const imageCount = modelCount * state.iterations;
+
+            document.getElementById('modelCount').textContent = `${modelCount} / ${MAX_MODELS} selected`;
+            document.getElementById('imageCount').textContent = imageCount;
+            document.getElementById('generateBtn').disabled = modelCount === 0;
+        }
+
+        // Generate Yassify
+        async function generateYassify() {
+            if (state.selectedModels.length === 0) return;
+
+            state.results = [];
+            const tasks = [];
+
+            // Build task list
+            for (const modelId of state.selectedModels) {
+                const model = SETSET_MODELS.find(m => m.id === modelId);
+                for (let i = 0; i < state.iterations; i++) {
+                    const traits = getRandomTraits();
+                    tasks.push({ model, traits, iteration: i + 1 });
+                }
+            }
+
+            startLoadingAnimation(`0 / ${tasks.length}`);
+
+            let completed = 0;
+            const concurrency = 10;
+            const results = [];
+
+            // Process in parallel batches
+            for (let i = 0; i < tasks.length; i += concurrency) {
+                const batch = tasks.slice(i, i + concurrency);
+                const batchPromises = batch.map(task => generateImage(task.model, task.traits, task.iteration));
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults);
+                completed += batch.length;
+                updateLoadingProgress(`${completed} / ${tasks.length}`);
+            }
+
+            state.results = results.filter(r => r !== null);
+
+            stopLoadingAnimation();
+            renderResults();
+        }
+
+        // Cache for uploaded model images
+        const uploadedModelImages = {};
+
+        // Generate Single Image with timeout
+        async function generateImage(model, traits, iteration) {
+            const traitsDescription = traits.join(', ');
+
+            const prompt = `High fashion model portrait with striking facial structure. This person has: ${traitsDescription}.
+
+Editorial model look with strong distinctive features. These characteristics should be clearly visible and define the face. Neutral confident expression or very slight smile. Clean white studio background, fashion photography lighting, photorealistic, sharp focus, 3:4 portrait format.`;
+
+            // Timeout wrapper - 90 seconds max per image
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timeout')), 90000)
+            );
+
+            try {
+                // Get or upload model image
+                let imageUrl = uploadedModelImages[model.id];
+                if (!imageUrl) {
+                    const response = await fetch(model.image);
+                    const blob = await response.blob();
+                    const base64 = await blobToBase64(blob);
+                    const uploadResult = await window.api.uploadBase64(base64);
+                    imageUrl = uploadResult.url;
+                    uploadedModelImages[model.id] = imageUrl;
+                }
+
+                const apiCall = window.api.remixImage('nano-pro', {
+                    prompt: prompt,
+                    image_urls: [imageUrl],
+                    num_images: 1,
+                    aspect_ratio: '3:4',
+                    resolution: '2K',
+                    output_format: 'png'
+                });
+
+                // Race between API call and timeout
+                const result = await Promise.race([apiCall, timeoutPromise]);
+
+                return {
+                    modelId: model.id,
+                    modelName: model.name,
+                    modelImage: model.image,
+                    iteration,
+                    traits,
+                    traitsDescription,
+                    imageUrl: result.images?.[0]?.url || result.image?.url,
+                    prompt
+                };
+            } catch (error) {
+                console.error('Generation error:', error);
+                return null;
+            }
+        }
+
+        // Helper: Blob to Base64
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Render Results (grouped by model)
+        function renderResults() {
+            const section = document.getElementById('resultsSection');
+            const container = document.getElementById('resultsContainer');
+
+            section.classList.add('show');
+
+            // Group results by model
+            const grouped = {};
+            state.results.forEach(result => {
+                if (!grouped[result.modelId]) {
+                    grouped[result.modelId] = {
+                        model: SETSET_MODELS.find(m => m.id === result.modelId),
+                        results: []
+                    };
+                }
+                grouped[result.modelId].results.push(result);
+            });
+
+            container.innerHTML = Object.values(grouped).map(group => `
+                <div class="model-group">
+                    <div class="model-group-header">
+                        <img src="${group.model.image}" alt="${group.model.name}">
+                        <div>
+                            <h3>${group.model.name}</h3>
+                            <span>${group.results.length} variations</span>
+                        </div>
+                    </div>
+                    <div class="results-grid">
+                        ${group.results.map((result, idx) => {
+                            const globalIndex = state.results.indexOf(result);
+                            return `
+                                <div class="result-card" onclick="openLightbox(${globalIndex})">
+                                    <div class="result-image">
+                                        <img src="${result.imageUrl}" alt="${result.modelName} variation ${result.iteration}">
+                                        <div class="result-overlay">
+                                            <button onclick="event.stopPropagation(); downloadSingle(${globalIndex})">Download</button>
+                                        </div>
+                                    </div>
+                                    <div class="result-meta">
+                                        <strong>Variation ${result.iteration}</strong>
+                                        ${result.traits.slice(0, 2).map(t => t.split(' ').slice(0, 3).join(' ')).join(', ')}...
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Download filename helper
+        function getDownloadFilename(result, index) {
+            const now = new Date();
+            const date = now.toISOString().slice(2, 10).replace(/-/g, '');
+            const time = now.toTimeString().slice(0, 5).replace(':', '');
+            const num = String(index + 1).padStart(2, '0');
+            const modelName = result.modelName.replace(/\s+/g, '');
+            return `Setset_Yassify_${modelName}_${date}_${time}_${num}`;
+        }
+
+        // Lightbox
+        let currentLightboxIndex = 0;
+
+        function openLightbox(index) {
+            currentLightboxIndex = index;
+            const result = state.results[index];
+
+            document.getElementById('lightboxImage').src = result.imageUrl;
+            document.getElementById('lightboxModel').textContent = result.modelName;
+            document.getElementById('lightboxEnhancements').textContent = result.traits.join('\n• ');
+            document.getElementById('lightboxPrompt').textContent = result.prompt;
+
+            document.getElementById('lightbox').classList.add('show');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('show');
+        }
+
+        function navigateLightbox(direction) {
+            const newIndex = currentLightboxIndex + direction;
+            if (newIndex >= 0 && newIndex < state.results.length) {
+                openLightbox(newIndex);
+            }
+        }
+
+        // Downloads
+        function downloadCurrent() {
+            const result = state.results[currentLightboxIndex];
+            const filename = getDownloadFilename(result, currentLightboxIndex);
+            downloadImage(result.imageUrl, filename);
+        }
+
+        function downloadSingle(index) {
+            const result = state.results[index];
+            const filename = getDownloadFilename(result, index);
+            downloadImage(result.imageUrl, filename);
+        }
+
+        async function downloadImage(url, name) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${name}.png`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } catch (error) {
+                console.error('Download error:', error);
+            }
+        }
+
+        async function downloadAll() {
+            const now = new Date();
+            const date = now.toISOString().slice(2, 10).replace(/-/g, '');
+            const time = now.toTimeString().slice(0, 5).replace(':', '');
+
+            for (let i = 0; i < state.results.length; i++) {
+                const result = state.results[i];
+                const num = String(i + 1).padStart(2, '0');
+                const modelName = result.modelName.replace(/\s+/g, '');
+                const filename = `Setset_Yassify_${modelName}_${date}_${time}_${num}`;
+                await downloadImage(result.imageUrl, filename);
+                await new Promise(r => setTimeout(r, 500));
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('lightbox').classList.contains('show')) return;
+
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

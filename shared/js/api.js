@@ -156,6 +156,28 @@ class API {
 
         return response.json();
     }
+
+    /**
+     * Create a variation of a base editorial mood prompt
+     * Uses GPT-4o-mini for speed and cost efficiency
+     * @param {string} basePrompt - The base mood prompt to vary
+     * @param {string} moodName - Name of the mood for context
+     * @param {string} gender - 'female' or 'male'
+     */
+    async varyPrompt(basePrompt, moodName, gender) {
+        const response = await fetch(`${this.baseUrl}/api/prompts/vary`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ basePrompt, moodName, gender })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Prompt variation failed');
+        }
+
+        return response.json();
+    }
 }
 
 // Export singleton

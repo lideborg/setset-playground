@@ -45,6 +45,42 @@ const FAL_API_KEYS = {
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY;
 
+// Helper to get image dimensions from buffer (PNG/JPEG)
+function getImageDimensions(buffer) {
+    try {
+        // PNG: bytes 16-23 contain width (4 bytes) and height (4 bytes)
+        if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+            const width = buffer.readUInt32BE(16);
+            const height = buffer.readUInt32BE(20);
+            return { width, height };
+        }
+
+        // JPEG: need to parse markers to find SOF
+        if (buffer[0] === 0xFF && buffer[1] === 0xD8) {
+            let offset = 2;
+            while (offset < buffer.length) {
+                if (buffer[offset] !== 0xFF) break;
+
+                const marker = buffer[offset + 1];
+                const length = buffer.readUInt16BE(offset + 2);
+
+                // SOF markers (0xC0-0xCF except 0xC4, 0xC8, 0xCC)
+                if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+                    const height = buffer.readUInt16BE(offset + 5);
+                    const width = buffer.readUInt16BE(offset + 7);
+                    return { width, height };
+                }
+
+                offset += 2 + length;
+            }
+        }
+
+        return null;
+    } catch (e) {
+        return null;
+    }
+}
+
 // Helper to get the right FAL key based on request
 function getFalKey(req) {
     const keyType = req.body?.falKey || req.query?.falKey || 'setset';
@@ -256,6 +292,109 @@ app.post('/api/video', async (req, res) => {
 });
 
 /**
+ * POST /api/video/seedance
+ * Generate video from images using Seedance (ByteDance) model
+ * Supports image-to-video with movement prompts
+ */
+app.post('/api/video/seedance', async (req, res) => {
+    try {
+        const { image_url, prompt, aspect_ratio, resolution, duration, camera_fixed, seed, end_image_url } = req.body;
+
+        if (!image_url || !prompt) {
+            return res.status(400).json({ error: 'image_url and prompt are required' });
+        }
+
+        // Configure fal with the appropriate key
+        fal.config({ credentials: getFalKey(req) });
+
+        const endpoint = 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video';
+
+        // Build params - duration must be string enum "2"-"12"
+        const durationNum = Math.min(12, Math.max(2, parseInt(duration) || 5));
+
+        // Valid aspect ratios for v1.5 with their decimal values
+        const validAspectRatios = [
+            { ratio: '21:9', value: 21/9 },   // 2.33 ultra-wide
+            { ratio: '16:9', value: 16/9 },   // 1.78 landscape
+            { ratio: '4:3', value: 4/3 },     // 1.33 landscape
+            { ratio: '1:1', value: 1 },       // 1.0 square
+            { ratio: '3:4', value: 3/4 },     // 0.75 portrait
+            { ratio: '9:16', value: 9/16 }    // 0.56 tall portrait
+        ];
+
+        // Detect aspect ratio from image if 'auto' or not specified
+        let finalAspectRatio = aspect_ratio;
+        if (!aspect_ratio || aspect_ratio === 'auto') {
+            try {
+                // Fetch image to get dimensions
+                const imageResponse = await fetch(image_url);
+                const buffer = await imageResponse.buffer();
+
+                // Parse image dimensions from buffer (works for PNG/JPEG)
+                const dimensions = getImageDimensions(buffer);
+                if (dimensions) {
+                    const imageRatio = dimensions.width / dimensions.height;
+
+                    // Find closest matching aspect ratio
+                    let closest = validAspectRatios[0];
+                    let minDiff = Math.abs(imageRatio - closest.value);
+
+                    for (const ar of validAspectRatios) {
+                        const diff = Math.abs(imageRatio - ar.value);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            closest = ar;
+                        }
+                    }
+
+                    finalAspectRatio = closest.ratio;
+                    console.log(`🎬 [Seedance] Image ${dimensions.width}x${dimensions.height} (${imageRatio.toFixed(2)}) → ${finalAspectRatio}`);
+                }
+            } catch (e) {
+                console.log(`⚠️ [Seedance] Could not detect aspect ratio, defaulting to 3:4`);
+                finalAspectRatio = '3:4';  // Default for fashion
+            }
+        }
+
+        const params = {
+            prompt,
+            image_url,
+            duration: String(durationNum),  // String enum: "2", "3", ... "12"
+            aspect_ratio: finalAspectRatio,
+            resolution: resolution || '720p',
+            enable_safety_checker: false,
+            generate_audio: false  // Always disable audio generation
+        };
+
+        if (seed !== undefined && seed !== -1) params.seed = seed;
+        if (camera_fixed) params.camera_fixed = true;
+        if (end_image_url) params.end_image_url = end_image_url;
+
+        console.log(`🎬 [Seedance] Generating video...`);
+        console.log(`🎬 [Seedance] Params:`, JSON.stringify(params, null, 2));
+
+        // Use fal.subscribe for long-running video generation
+        const result = await fal.subscribe(endpoint, {
+            input: params,
+            logs: true,
+            onQueueUpdate: (update) => {
+                if (update.status === 'IN_PROGRESS') {
+                    console.log(`🎬 [Seedance] Progress: ${update.logs?.map(l => l.message).join(', ') || 'processing...'}`);
+                }
+            }
+        });
+
+        console.log(`✅ [Seedance] Complete:`, JSON.stringify(result.data, null, 2));
+
+        res.json(result.data);
+    } catch (error) {
+        console.error('❌ [Seedance] Error:', error);
+        console.error('❌ [Seedance] Error body:', JSON.stringify(error.body, null, 2));
+        res.status(500).json({ error: error.message, details: error.body });
+    }
+});
+
+/**
  * POST /api/prompts
  * Generate prompts using OpenAI
  */
@@ -308,6 +447,80 @@ IMPORTANT: Return ONLY the prompts. Separate each prompt with TWO blank lines. N
         res.json({ prompts });
     } catch (error) {
         console.error('Prompts error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/prompts/vary
+ * Create a single variation of a base editorial mood prompt
+ * Uses GPT-4o-mini for speed and cost efficiency
+ */
+app.post('/api/prompts/vary', async (req, res) => {
+    try {
+        const { basePrompt, moodName, expression, framing, gender } = req.body;
+
+        if (!basePrompt) {
+            return res.status(400).json({ error: 'basePrompt is required' });
+        }
+
+        const systemPrompt = `You are an expert editorial fashion photography prompt writer. Given a base mood/lighting concept, create ONE unique variation that keeps the core aesthetic but varies the specific details.
+
+KEEP EXACTLY THE SAME:
+- The core lighting style and mood
+- The overall atmosphere and color treatment
+- The photography technique/approach
+
+VARY THESE ELEMENTS (pick 2-3 to change):
+- Specific pose details (but keep it natural and editorial)
+- Clothing specifics (type, color, texture - always clothed unless prompt says otherwise)
+- Minor background/setting nuances
+- Small compositional adjustments
+- Specific textures or material details
+
+RULES:
+- Output ONLY the new prompt, nothing else
+- Keep it roughly the same length as the original
+- Maintain the same quality level and photorealistic editorial style
+- The subject is a ${gender} model
+- Do NOT include framing or expression - those are handled separately
+- Always include "color photography" at the end`;
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `Create a unique variation of this "${moodName}" editorial mood prompt:\n\n${basePrompt}` }
+                ],
+                temperature: 0.8,
+                max_tokens: 500
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            console.error('❌ [Prompt Vary] OpenAI error:', data.error);
+            return res.status(500).json({ error: data.error.message });
+        }
+
+        const variedPrompt = data.choices[0].message.content.trim();
+        console.log(`✅ [Prompt Vary] Created variation for "${moodName}"`);
+
+        res.json({
+            original: basePrompt,
+            varied: variedPrompt,
+            moodName
+        });
+
+    } catch (error) {
+        console.error('❌ [Prompt Vary] Error:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1535,6 +1748,97 @@ app.post('/api/upscale', async (req, res) => {
 });
 
 /**
+ * POST /api/skin-enhance
+ * Start a skin enhancement task using Freepik Skin Enhancer API
+ * Supports three modes: creative, faithful, flexible
+ */
+app.post('/api/skin-enhance', async (req, res) => {
+    try {
+        const { image, mode, sharpen, smart_grain, skin_detail, optimized_for } = req.body;
+
+        if (!image) {
+            return res.status(400).json({ error: 'Image is required' });
+        }
+
+        // Validate mode - default to creative
+        const validModes = ['creative', 'faithful', 'flexible'];
+        const selectedMode = validModes.includes(mode) ? mode : 'creative';
+
+        console.log(`✨ [Skin Enhance] Starting ${selectedMode} task, sharpen: ${sharpen || 0}, smart_grain: ${smart_grain || 2}`);
+
+        const requestBody = {
+            image: image // Base64 or URL
+        };
+
+        // Common parameters for all modes
+        if (sharpen !== undefined) requestBody.sharpen = sharpen;
+        if (smart_grain !== undefined) requestBody.smart_grain = smart_grain;
+
+        // Faithful mode has skin_detail parameter
+        if (selectedMode === 'faithful' && skin_detail !== undefined) {
+            requestBody.skin_detail = skin_detail;
+        }
+
+        // Flexible mode has optimized_for parameter
+        if (selectedMode === 'flexible' && optimized_for) {
+            requestBody.optimized_for = optimized_for;
+        }
+
+        const response = await fetch(`https://api.freepik.com/v1/ai/skin-enhancer/${selectedMode}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-freepik-api-key': FREEPIK_API_KEY
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error(`❌ [Skin Enhance ${selectedMode}] API Error:`, data);
+            return res.status(response.status).json({ error: data.message || 'Skin enhance failed' });
+        }
+
+        console.log(`✅ [Skin Enhance ${selectedMode}] Task started:`, data.data?.task_id);
+        // Include mode in response for client reference
+        res.json({ ...data, mode: selectedMode });
+    } catch (error) {
+        console.error('❌ [Skin Enhance] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/skin-enhance/:taskId
+ * Check status of a skin enhancement task
+ */
+app.get('/api/skin-enhance/:taskId', async (req, res) => {
+    try {
+        const { taskId } = req.params;
+
+        const response = await fetch(`https://api.freepik.com/v1/ai/skin-enhancer/${taskId}`, {
+            method: 'GET',
+            headers: {
+                'x-freepik-api-key': FREEPIK_API_KEY
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Skin Enhance Status] API Error:', data);
+            return res.status(response.status).json({ error: data.message || 'Status check failed' });
+        }
+
+        res.json(data);
+    } catch (error) {
+        console.error('❌ [Skin Enhance Status] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * GET /api/upscale/:taskId
  * Check status of an upscale task
  */
@@ -1637,9 +1941,107 @@ app.get('/:tool', (req, res, next) => {
     next();
 });
 
+// ═══════════════════════════════════════════════════════════════
+// PROXY DOWNLOAD - For downloading images from external CDNs
+// ═══════════════════════════════════════════════════════════════
+app.get('/api/proxy-download', async (req, res) => {
+    const { url } = req.query;
+
+    if (!url) {
+        return res.status(400).json({ error: 'URL parameter required' });
+    }
+
+    try {
+        console.log(`📥 [Proxy Download] Fetching: ${url.substring(0, 80)}...`);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            console.error(`❌ [Proxy Download] Failed: ${response.status}`);
+            return res.status(response.status).json({ error: `Failed to fetch: ${response.status}` });
+        }
+
+        // Get content type and forward it
+        const contentType = response.headers.get('content-type') || 'image/png';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', 'attachment');
+
+        // Stream the response
+        const buffer = await response.buffer();
+        res.send(buffer);
+
+        console.log(`✅ [Proxy Download] Success: ${buffer.length} bytes`);
+    } catch (error) {
+        console.error('❌ [Proxy Download] Error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Fallback - serve index.html for client-side routing
 app.get('*', (req, res) => {
     res.sendFile(join(__dirname, '..', 'index.html'));
+});
+
+/**
+ * Chat API - Conversational AI
+ */
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { messages } = req.body;
+
+        if (!messages || messages.length === 0) {
+            return res.status(400).json({ error: 'Messages are required' });
+        }
+
+        console.log(`💬 [Chat] Processing ${messages.length} messages`);
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are an AI assistant trained specifically on the user's business. You understand their workflows, operations, and can predict challenges while helping them make informed decisions in real time.
+
+Your capabilities include:
+- Understanding business workflows and operations
+- Predicting operational challenges before they occur
+- Providing data-driven insights and recommendations
+- Helping with real-time decision making
+- Analyzing patterns in business data
+
+Keep responses concise, professional, and actionable. Focus on practical business value. When discussing capabilities, emphasize how AI can transform physical operations through vision, sensors, and real-time analytics.
+
+IMPORTANT: Always end your response with a relevant follow-up question to keep the conversation going and explore the user's needs deeper.`
+                    },
+                    ...messages
+                ],
+                max_tokens: 1000,
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            console.error('❌ [Chat] OpenAI error:', data.error);
+            return res.status(500).json({ error: data.error.message });
+        }
+
+        const content = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+        console.log(`✅ [Chat] Response generated (${content.length} chars)`);
+
+        res.json({ content });
+
+    } catch (error) {
+        console.error('❌ [Chat] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Start server

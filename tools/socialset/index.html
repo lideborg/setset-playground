@@ -635,6 +635,12 @@
             text-align: center;
         }
 
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
         .btn.analyzed {
             background: #22c55e;
             border-color: #22c55e;
@@ -956,6 +962,7 @@
                 <button class="btn action-btn" id="analyze-btn" disabled>Analyze Mood Board</button>
                 <button class="btn btn--primary action-btn" id="generate-btn" disabled>
                     <span id="generate-btn-text">Generate 0 images</span>
+                    <span class="btn-cost" id="cost-display">$0.00</span>
                 </button>
             </div>
         </div>
@@ -1008,6 +1015,7 @@
     <!-- Shared JS -->
     <script src="/shared/js/utils.js"></script>
     <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/models.js"></script>
     <script src="/shared/js/loader.js"></script>
     <script src="/shared/data/editorial-moods.js"></script>
     <script src="poses.js"></script>
@@ -1028,7 +1036,7 @@
             { id: 'mateo', name: 'Mateo Martinez', gender: 'male', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
             { id: 'luna', name: 'Luna Park', gender: 'female', image: '/shared/images/talent/talent-11_LunaPark.png' },
             { id: 'noah', name: 'Noah Chen', gender: 'male', image: '/shared/images/talent/talent-12_NoahChen.png' },
-            { id: 'kai', name: 'Kai Thompson', gender: 'male', image: '/shared/images/talent/talent-13_KaiThompson.png' },
+            { id: 'kai', name: 'Mia Parker', gender: 'male', image: '/shared/images/talent/talent-13_MiaParker.png' },
             { id: 'riley', name: 'Riley Morgan', gender: 'male', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
             { id: 'jordan', name: 'Jordan Lee', gender: 'male', image: '/shared/images/talent/talent-15_JordanLee.png' },
             { id: 'isabella', name: 'Isabella Rodriguez', gender: 'female', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
@@ -1045,7 +1053,9 @@
             { id: 'sofia', name: 'Sofia Rodriguez', gender: 'female', image: '/shared/images/talent/talent-27_SofiaRodriguez.png' },
             { id: 'finn', name: 'Finn O\'Connor', gender: 'male', image: '/shared/images/talent/talent-28_FinnOConnor.png' },
             { id: 'clara', name: 'Clara Devereaux', gender: 'female', image: '/shared/images/talent/talent-29_ClaraDevereaux.png' },
-            { id: 'zoe', name: 'Simone Park', gender: 'female', image: '/shared/images/talent/talent-30_ZoeWashington.png' }
+            { id: 'simone', name: 'Zoe Washington', gender: 'female', image: '/shared/images/talent/talent-30_ZoeWashington.png' },
+            { id: 'emily', name: 'Emily Hart', gender: 'female', image: '/shared/images/talent/talent-31_EmilyHart.png' },
+            { id: 'alex', name: 'Alex Stone', gender: 'male', image: '/shared/images/talent/talent-32_AlexStone.png' }
         ];
 
         // STUDIO_MESSAGES is now loaded from /shared/js/loader.js
@@ -1124,6 +1134,7 @@
             analyzeBtn: document.getElementById('analyze-btn'),
             generateBtn: document.getElementById('generate-btn'),
             generateBtnText: document.getElementById('generate-btn-text'),
+            costDisplay: document.getElementById('cost-display'),
             inlineLoader: document.getElementById('inline-loader'),
             loaderMessage: document.getElementById('loader-message'),
             loaderProgress: document.getElementById('loader-progress'),
@@ -1833,10 +1844,15 @@
                 elements.moodboardSection.style.display = isCasting ? 'none' : 'block';
             }
 
-            // Update generate button text
+            // Update generate button text and cost
             const totalImages = activeOutputs.length;
             let btnText = `Generate ${totalImages} image${totalImages !== 1 ? 's' : ''}`;
             elements.generateBtnText.textContent = btnText;
+
+            // Calculate and display cost (using nano-pro at $0.15 per image)
+            const costPerImage = 0.15;
+            const totalCost = totalImages * costPerImage;
+            elements.costDisplay.textContent = formatCost(totalCost);
 
             // Update output hint based on mode
             if (state.mode === 'ecommerce') {
@@ -2482,7 +2498,12 @@ IMPORTANT:
             );
 
             // Get the specific pose prompt for this output's selected pose
-            const selectedPosePrompt = getPosePrompt(pose.id);
+            // For multi-person shots, back poses don't work well - switch to front
+            let effectivePoseId = pose.id;
+            if (numPeople > 1 && pose.id === 'pose-pdp-back') {
+                effectivePoseId = 'pose-pdp-front';
+            }
+            const selectedPosePrompt = getPosePrompt(effectivePoseId);
 
             // Multi-person pose variety instruction
             const poseVarietyInstruction = numPeople > 1
@@ -2573,18 +2594,32 @@ IMPORTANT:
                     .trim();
                 console.log(`[Casting] Pose: ${pose.name}`);
 
+                // For multi-person shots, adjust framing if extreme close-up (doesn't work well with groups)
+                let adjustedFraming = framing;
+                if (numPeople > 1 && framing.id === 'extreme-closeup') {
+                    // Upgrade to close-up for multiple people
+                    adjustedFraming = { id: 'closeup', name: 'Close-Up', prompt: 'close-up portrait heads and shoulders tightly framed' };
+                }
+
                 // Build the editorial prompt
                 const groupInstruction = numPeople > 1
-                    ? `Place ${peopleText} together in the frame. ${poseVarietyInstruction} `
+                    ? `Place ${peopleText} together in the frame, all facing camera. ${poseVarietyInstruction} `
                     : `Feature ${peopleText}. `;
 
                 // Different background based on casting style
                 const backgroundInstruction = castingStyle === 'studio'
-                    ? 'Clean studio environment with professional lighting, seamless backdrop or simple studio setting.'
-                    : 'Editorial campaign setting with environmental context, location-based backdrop.';
+                    ? 'Clean white studio environment with professional lighting, seamless white backdrop.'
+                    : 'Editorial campaign setting with sophisticated architectural or natural environment backdrop.';
 
                 // Framing comes FIRST to set the shot composition, then pose for body position
-                prompt = `${noSplitting} ${styleDirective} ${groupInstruction}FRAMING: ${framing.prompt}. ${poseInstruction} ${backgroundInstruction} EDITORIAL STYLE: ${mood.prompt}. High-end fashion editorial photography.`;
+                // Note: mood.prompt may contain B&W instructions - we strip those out for color photos
+                let moodPrompt = mood.prompt
+                    .replace(/black and white/gi, 'color')
+                    .replace(/b&w/gi, 'color')
+                    .replace(/monochrome/gi, 'color tones')
+                    .replace(/with grain/gi, 'with subtle film quality');
+
+                prompt = `${noSplitting} ${styleDirective} ${groupInstruction}FRAMING: ${adjustedFraming.prompt}. ${poseInstruction} ${backgroundInstruction} EDITORIAL STYLE: ${moodPrompt}. High-end fashion editorial photography in full color.`;
             }
 
             return prompt;

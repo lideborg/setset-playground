@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Library</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--off-white);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--slate);
+            font-size: 14px;
+        }
+
+        /* Category tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            max-width: 1400px;
+            margin: 0 auto 24px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .tab.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        .tab .count {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .location-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .location-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .location-images {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            background: var(--gainsboro);
+        }
+
+        .location-images img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .location-info {
+            padding: 16px;
+        }
+
+        .location-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .location-number {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .location-type {
+            font-size: 10px;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .location-type.indoor {
+            background: rgba(100, 100, 255, 0.1);
+            color: rgba(100, 100, 255, 0.8);
+        }
+
+        .location-type.outdoor {
+            background: rgba(100, 180, 100, 0.1);
+            color: rgba(80, 140, 80, 0.9);
+        }
+
+        .location-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--carbon);
+            letter-spacing: -0.01em;
+        }
+
+        .location-prompt {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--gainsboro);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--slate);
+        }
+
+        .location-card.expanded .location-prompt {
+            display: block;
+        }
+
+        .location-actions {
+            display: none;
+            margin-top: 12px;
+            gap: 8px;
+        }
+
+        .location-card.expanded .location-actions {
+            display: flex;
+        }
+
+        .location-actions button {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .location-actions button:hover {
+            background: var(--off-white);
+            border-color: var(--ash-grey);
+        }
+
+        .location-actions button.copied {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox img {
+            max-width: 80vw;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.5);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .lightbox-nav.prev { left: 20px; }
+        .lightbox-nav.next { right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Location Library</h1>
+        <p>Editorial locations with Female & Male variations. Click to expand prompt.</p>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">&#8249;</button>
+        <button class="lightbox-nav next" onclick="navigateLightbox(1)">&#8250;</button>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="">
+        </div>
+    </div>
+
+    <script src="/shared/data/editorial-locations.js"></script>
+    <script>
+        let currentFilter = 'all';
+
+        // Build location data
+        const locations = [
+            ...INDOOR_LOCATIONS.map((loc, idx) => {
+                const code = 'I' + String(idx + 1).padStart(2, '0');
+                return {
+                    ...loc,
+                    type: 'indoor',
+                    index: idx + 1,
+                    code: code,
+                    images: {
+                        f1: `/assets/locations/location_${code}F1_${loc.id}.png`,
+                        f2: `/assets/locations/location_${code}F2_${loc.id}.png`,
+                        m1: `/assets/locations/location_${code}M1_${loc.id}.png`,
+                        m2: `/assets/locations/location_${code}M2_${loc.id}.png`
+                    }
+                };
+            }),
+            ...OUTDOOR_LOCATIONS.map((loc, idx) => {
+                const code = 'O' + String(idx + 1).padStart(2, '0');
+                return {
+                    ...loc,
+                    type: 'outdoor',
+                    index: idx + 1,
+                    code: code,
+                    images: {
+                        f1: `/assets/locations/location_${code}F1_${loc.id}.png`,
+                        f2: `/assets/locations/location_${code}F2_${loc.id}.png`,
+                        m1: `/assets/locations/location_${code}M1_${loc.id}.png`,
+                        m2: `/assets/locations/location_${code}M2_${loc.id}.png`
+                    }
+                };
+            })
+        ];
+
+        const indoorCount = INDOOR_LOCATIONS.length;
+        const outdoorCount = OUTDOOR_LOCATIONS.length;
+        const totalCount = indoorCount + outdoorCount;
+
+        function renderTabs() {
+            document.getElementById('tabs').innerHTML = `
+                <div class="tab ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">All <span class="count">(${totalCount})</span></div>
+                <div class="tab ${currentFilter === 'indoor' ? 'active' : ''}" onclick="setFilter('indoor')">Indoor <span class="count">(${indoorCount})</span></div>
+                <div class="tab ${currentFilter === 'outdoor' ? 'active' : ''}" onclick="setFilter('outdoor')">Outdoor <span class="count">(${outdoorCount})</span></div>
+            `;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            renderTabs();
+            renderGrid();
+        }
+
+        function getFilteredLocations() {
+            if (currentFilter === 'all') return locations;
+            return locations.filter(l => l.type === currentFilter);
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            const filtered = getFilteredLocations();
+
+            grid.innerHTML = filtered.map(loc => `
+                <div class="location-card" data-id="${loc.id}" onclick="toggleCard(this, event)">
+                    <div class="location-images">
+                        <img src="${loc.images.f1}" alt="${loc.name} F1" onclick="openLightbox('${loc.images.f1}', event)">
+                        <img src="${loc.images.m1}" alt="${loc.name} M1" onclick="openLightbox('${loc.images.m1}', event)">
+                        <img src="${loc.images.f2}" alt="${loc.name} F2" onclick="openLightbox('${loc.images.f2}', event)">
+                        <img src="${loc.images.m2}" alt="${loc.name} M2" onclick="openLightbox('${loc.images.m2}', event)">
+                    </div>
+                    <div class="location-info">
+                        <div class="location-meta">
+                            <span class="location-number">${loc.code}</span>
+                            <span class="location-type ${loc.type}">${loc.type}</span>
+                        </div>
+                        <div class="location-name">${loc.name}</div>
+                        <div class="location-prompt">${loc.prompt}</div>
+                        <div class="location-actions">
+                            <button onclick="copyPrompt('${loc.id}', this, event)">Copy Prompt</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleCard(card, event) {
+            if (event.target.tagName === 'IMG' || event.target.tagName === 'BUTTON') return;
+            card.classList.toggle('expanded');
+        }
+
+        function copyPrompt(id, button, event) {
+            event.stopPropagation();
+            const loc = locations.find(l => l.id === id);
+            if (!loc) return;
+
+            navigator.clipboard.writeText(loc.prompt).then(() => {
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy Prompt';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function openLightbox(src, event) {
+            event.stopPropagation();
+            buildImageList();
+            currentImageIndex = allImages.indexOf(src);
+            if (currentImageIndex === -1) currentImageIndex = 0;
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        let allImages = [];
+        let currentImageIndex = 0;
+
+        function buildImageList() {
+            allImages = [];
+            getFilteredLocations().forEach(loc => {
+                allImages.push(loc.images.f1, loc.images.m1, loc.images.f2, loc.images.m2);
+            });
+        }
+
+        function navigateLightbox(direction) {
+            if (allImages.length === 0) return;
+            currentImageIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
+            document.getElementById('lightbox-img').src = allImages[currentImageIndex];
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') closeLightbox();
+        });
+
+        // Init
+        renderTabs();
+        renderGrid();
+    </script>
+</body>
+</html>

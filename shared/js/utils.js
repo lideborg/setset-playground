@@ -5,10 +5,14 @@
 
 /**
  * Download a file from URL
+ * Uses proxy endpoint to bypass CORS and ensure proper filename
  */
 async function downloadFile(url, filename) {
     try {
-        const response = await fetch(url);
+        // Use proxy to bypass CORS issues with CDN URLs
+        const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(url)}`);
+        if (!response.ok) throw new Error('Proxy download failed');
+
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -20,7 +24,22 @@ async function downloadFile(url, filename) {
         URL.revokeObjectURL(blobUrl);
     } catch (error) {
         console.error('Download failed:', error);
-        window.open(url, '_blank');
+        // Fallback: try direct fetch (works for same-origin)
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+        } catch (e) {
+            console.error('Direct download also failed:', e);
+            window.open(url, '_blank');
+        }
     }
 }
 

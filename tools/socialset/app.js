@@ -15,7 +15,7 @@ const SETSET_MODELS = [
     { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
     { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png' },
     { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png' },
-    { id: 'kai', name: 'Kai Thompson', image: '/shared/images/talent/talent-13_KaiThompson.png' },
+    { id: 'mia', name: 'Mia Parker', image: '/shared/images/talent/talent-13_MiaParker.png' },
     { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
     { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png' },
     { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
@@ -32,7 +32,7 @@ const SETSET_MODELS = [
     { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/talent-27_SofiaRodriguez.png' },
     { id: 'finn', name: 'Finn O\'Connor', image: '/shared/images/talent/talent-28_FinnOConnor.png' },
     { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/talent-29_ClaraDevereaux.png' },
-    { id: 'zoe', name: 'Simone Park', image: '/shared/images/talent/talent-30_ZoeWashington.png' }
+    { id: 'zoe', name: 'Zoe Washington', image: '/shared/images/talent/talent-30_ZoeWashington.png' }
 ];
 
 // State Management

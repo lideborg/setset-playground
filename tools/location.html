@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Step Sections */
+        .step-section {
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .step-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .step-subtitle {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-left: auto;
+        }
+
+        /* Category Headers */
+        .category-header {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+
+        .category-header:first-child {
+            margin-top: 0;
+        }
+
+        /* Location Grid - 6 columns */
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-bottom: var(--space-md);
+        }
+
+        .location-card {
+            aspect-ratio: 4/3;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .location-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .location-card.selected {
+            border-color: var(--jet);
+        }
+
+        .location-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .location-card .location-preview {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--off-white) 0%, var(--gainsboro) 100%);
+        }
+
+        .location-card .check-mark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .location-card.selected .check-mark {
+            display: flex;
+        }
+
+        .location-card .location-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            font-size: 10px;
+            padding: 16px 6px 6px;
+            text-align: center;
+        }
+
+        /* Slider Section */
+        .slider-container {
+            max-width: 400px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .slider-label span {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .slider-value {
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--gainsboro);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--jet);
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--jet);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .generate-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .generate-info p {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .generate-info strong {
+            color: var(--jet);
+        }
+
+        /* Prompts Section */
+        .prompts-section {
+            display: none;
+            margin-top: var(--space-lg);
+        }
+
+        .prompts-section.show {
+            display: block;
+        }
+
+        .prompts-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .prompts-header h2 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+        }
+
+        .prompts-header-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .prompts-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .prompt-group {
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .prompt-group-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .prompt-group-header .location-icon {
+            font-size: 20px;
+        }
+
+        .prompt-group-header h3 {
+            font-size: var(--text-md);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .prompt-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .prompt-item {
+            background: var(--white);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+            font-size: var(--text-sm);
+            line-height: 1.5;
+            color: var(--carbon);
+            position: relative;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .prompt-item:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .prompt-item.selected {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .prompt-item .prompt-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .prompt-item:hover .prompt-actions {
+            opacity: 1;
+        }
+
+        .prompt-action-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: var(--gainsboro);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prompt-action-btn:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .prompt-item .prompt-check {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .prompt-item.selected .prompt-check {
+            display: flex;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: var(--space-xl);
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--white);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .result-image {
+            aspect-ratio: 4/3;
+            background: var(--off-white);
+            position: relative;
+        }
+
+        .result-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-image .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-sm);
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            gap: var(--space-xs);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .result-card:hover .result-overlay {
+            opacity: 1;
+        }
+
+        .result-overlay button {
+            flex: 1;
+            padding: 6px;
+            background: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .result-overlay button:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .result-meta {
+            padding: var(--space-sm);
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .result-meta strong {
+            color: var(--jet);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Location group header in results */
+        .location-group {
+            margin-bottom: var(--space-xl);
+        }
+
+        .location-group-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .location-group-header .location-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--off-white);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .location-group-header h3 {
+            font-size: var(--text-md);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .location-group-header span {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Lightbox */
+        .lightbox.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Copy notification */
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--jet);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            z-index: 1000;
+        }
+
+        .copy-notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Location</h1>
+            <p class="subtitle">Generate environment prompts and images for fashion photography</p>
+        </header>
+
+        <!-- Step 1: Select Locations -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">Select Locations</div>
+                <div class="step-subtitle" id="locationCount">0 / 6 selected</div>
+            </div>
+
+            <div class="category-header">Interior Spaces</div>
+            <div class="location-grid" id="interiorGrid"></div>
+
+            <div class="category-header">Urban / Street</div>
+            <div class="location-grid" id="urbanGrid"></div>
+
+            <div class="category-header">Nature</div>
+            <div class="location-grid" id="natureGrid"></div>
+        </section>
+
+        <!-- Step 2: Variations -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">Prompts per Location</div>
+            </div>
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>How many prompt variations?</span>
+                    <span class="slider-value" id="variationValue">4</span>
+                </div>
+                <input type="range" min="1" max="8" value="4" class="slider" id="variationSlider">
+            </div>
+        </section>
+
+        <!-- Step 3: Generate Prompts -->
+        <section class="step-section">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">Generate Prompts</div>
+            </div>
+            <div class="generate-section">
+                <div class="generate-info">
+                    <p>Will generate <strong id="promptCount">0</strong> prompts using AI</p>
+                </div>
+                <button class="btn btn--primary btn--lg" id="generatePromptsBtn" onclick="generatePrompts()" disabled>
+                    Generate Prompts
+                </button>
+            </div>
+        </section>
+
+        <!-- Generated Prompts -->
+        <section class="prompts-section" id="promptsSection">
+            <div class="prompts-header">
+                <h2>Generated Prompts</h2>
+                <div class="prompts-header-actions">
+                    <button class="btn btn--secondary" onclick="copyAllPrompts()">Copy All</button>
+                    <button class="btn btn--secondary" onclick="copySelectedPrompts()">Copy Selected</button>
+                    <button class="btn btn--primary" onclick="generateImages()">Generate Images</button>
+                </div>
+            </div>
+            <div class="prompts-container" id="promptsContainer"></div>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Results</h2>
+                <button class="btn btn--secondary" onclick="downloadAll()">Download All</button>
+            </div>
+            <div id="resultsContainer"></div>
+        </section>
+    </div>
+
+    <!-- Copy Notification -->
+    <div class="copy-notification" id="copyNotification">Copied to clipboard!</div>
+
+    <!-- Inline Loader -->
+    <div class="inline-loader" id="inline-loader">
+        <div class="loader-message" id="loader-message">Generating prompts...</div>
+        <div class="loader-progress" id="loader-progress">Preparing...</div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">&larr;</button>
+            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">&rarr;</button>
+            <div class="lightbox-left">
+                <img id="lightboxImage" src="" alt="Generated Location" class="lightbox-image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Location</h3>
+                    <p class="lightbox-model-text" id="lightboxLocation"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightboxPrompt"></p>
+                </div>
+                <button class="lightbox-download" onclick="downloadCurrent()">
+                    Download Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script>
+        // State
+        const state = {
+            selectedLocations: [],
+            variations: 4,
+            generatedPrompts: {}, // { locationId: [prompts] }
+            selectedPrompts: new Set(), // Set of prompt IDs "locationId-index"
+            results: []
+        };
+
+        const MAX_LOCATIONS = 6;
+
+        // Location definitions with base descriptions for AI prompt generation
+        const LOCATIONS = {
+            // Interior Spaces
+            'studio': {
+                id: 'studio',
+                name: 'Studio',
+                icon: '📷',
+                category: 'interior',
+                description: 'Professional photography studio with white cyclorama, minimal aesthetic, clean lines, fashion photography setting'
+            },
+            'loft': {
+                id: 'loft',
+                name: 'SoHo Loft',
+                icon: '🏢',
+                category: 'interior',
+                description: 'SoHo/Brooklyn industrial loft with cast-iron columns, exposed brick, massive factory windows, herringbone floors, New York creative space aesthetic'
+            },
+            'parisian': {
+                id: 'parisian',
+                name: 'Parisian Apartment',
+                icon: '🗼',
+                category: 'interior',
+                description: 'Grand Haussmann-style Parisian apartment with herringbone parquet, ornate moldings, French windows, marble fireplace, velvet furniture, haute couture elegance'
+            },
+            'gallery': {
+                id: 'gallery',
+                name: 'Gallery Space',
+                icon: '🖼️',
+                category: 'interior',
+                description: 'Contemporary white cube art gallery with pristine walls, concrete floors, museum-quality lighting, minimal architecture, contemplative negative space'
+            },
+            'milanese': {
+                id: 'milanese',
+                name: 'Milanese Apartment',
+                icon: '🇮🇹',
+                category: 'interior',
+                description: 'Brutalist Milanese apartment with terrazzo floors, board-formed concrete, steel-framed windows, Italian design furniture, sophisticated minimalism'
+            },
+            'tokyo-studio': {
+                id: 'tokyo-studio',
+                name: 'Tokyo Studio',
+                icon: '🇯🇵',
+                category: 'interior',
+                description: 'Japanese minimalist studio with white plaster walls, hinoki wood floors, shoji screens, ikebana, wabi-sabi aesthetic, zen-like atmosphere, ma philosophy'
+            },
+            // Urban / Street
+            'scandinavian': {
+                id: 'scandinavian',
+                name: 'Scandinavian Streets',
+                icon: '🇸🇪',
+                category: 'urban',
+                description: 'Copenhagen/Stockholm street with pastel building facades, cobblestones, Nordic minimalist architecture, bicycles, northern European light'
+            },
+            'rooftop': {
+                id: 'rooftop',
+                name: 'Rooftop',
+                icon: '🌆',
+                category: 'urban',
+                description: 'Urban rooftop terrace with city skyline views, dramatic sky, industrial elements, water towers, contemporary outdoor furniture, golden hour/twilight atmosphere'
+            },
+            'industrial': {
+                id: 'industrial',
+                name: 'Industrial',
+                icon: '🏭',
+                category: 'urban',
+                description: 'Abandoned warehouse or factory with peeling paint, rusted metal, broken windows, dramatic light shafts, raw concrete, urban decay aesthetic'
+            },
+            'lisbon': {
+                id: 'lisbon',
+                name: 'Lisbon Streets',
+                icon: '🇵🇹',
+                category: 'urban',
+                description: 'Lisbon Alfama district with azulejo tile facades, narrow cobblestone streets, wrought iron balconies, bougainvillea, warm Mediterranean light, Portuguese charm'
+            },
+            // Nature
+            'beach': {
+                id: 'beach',
+                name: 'Beach / Coastal',
+                icon: '🏖️',
+                category: 'nature',
+                description: 'Dramatic coastline with rocky shores, waves crashing, tide pools, driftwood, beach grass, sea mist, golden hour coastal photography'
+            },
+            'desert': {
+                id: 'desert',
+                name: 'Desert',
+                icon: '🏜️',
+                category: 'nature',
+                description: 'Vast desert landscape with sand dunes, salt flats, red sandstone canyons, Joshua trees, dramatic sky, Saharan or American Southwest atmosphere'
+            },
+            'forest': {
+                id: 'forest',
+                name: 'Forest',
+                icon: '🌲',
+                category: 'nature',
+                description: 'Misty ancient forest with towering trees, moss-covered oaks, golden light rays through canopy, ferns, fallen leaves, enchanted woodland atmosphere'
+            },
+            'meadow': {
+                id: 'meadow',
+                name: 'Meadow',
+                icon: '🌻',
+                category: 'nature',
+                description: 'Rolling wildflower meadow with tall grasses, distant mountains, dramatic sky, lavender fields, pastoral romantic landscape'
+            },
+            'storm-king': {
+                id: 'storm-king',
+                name: 'Sculpture Park',
+                icon: '🗿',
+                category: 'nature',
+                description: 'Storm King Art Center style landscape with monumental steel sculptures, rolling hills, vast sky, contemporary art meets nature, Hudson Valley mountains'
+            }
+        };
+
+        // Get locations by category
+        function getLocationsByCategory(category) {
+            return Object.values(LOCATIONS).filter(loc => loc.category === category);
+        }
+
+        // Initialize
+        function init() {
+            renderLocationGrids();
+            setupEventListeners();
+            updateCounts();
+        }
+
+        // Render Location Grids by category
+        function renderLocationGrids() {
+            const interiorGrid = document.getElementById('interiorGrid');
+            const urbanGrid = document.getElementById('urbanGrid');
+            const natureGrid = document.getElementById('natureGrid');
+
+            interiorGrid.innerHTML = getLocationsByCategory('interior').map(loc => createLocationCard(loc)).join('');
+            urbanGrid.innerHTML = getLocationsByCategory('urban').map(loc => createLocationCard(loc)).join('');
+            natureGrid.innerHTML = getLocationsByCategory('nature').map(loc => createLocationCard(loc)).join('');
+        }
+
+        function createLocationCard(location) {
+            return `
+                <div class="location-card" data-location-id="${location.id}" onclick="toggleLocation('${location.id}')">
+                    <div class="location-preview">${location.icon}</div>
+                    <div class="check-mark">✓</div>
+                    <div class="location-name">${location.name}</div>
+                </div>
+            `;
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            document.getElementById('variationSlider').addEventListener('input', (e) => {
+                state.variations = parseInt(e.target.value);
+                document.getElementById('variationValue').textContent = state.variations;
+                updateCounts();
+            });
+        }
+
+        // Toggle Location Selection
+        function toggleLocation(locationId) {
+            const index = state.selectedLocations.indexOf(locationId);
+            const card = document.querySelector(`[data-location-id="${locationId}"]`);
+
+            if (index > -1) {
+                state.selectedLocations.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                if (state.selectedLocations.length < MAX_LOCATIONS) {
+                    state.selectedLocations.push(locationId);
+                    card.classList.add('selected');
+                }
+            }
+
+            // Update disabled state
+            const allCards = document.querySelectorAll('.location-card');
+            allCards.forEach(c => {
+                const isSelected = c.classList.contains('selected');
+                if (state.selectedLocations.length >= MAX_LOCATIONS && !isSelected) {
+                    c.classList.add('disabled');
+                } else {
+                    c.classList.remove('disabled');
+                }
+            });
+
+            updateCounts();
+        }
+
+        // Update Counts
+        function updateCounts() {
+            const locationCount = state.selectedLocations.length;
+            const promptCount = locationCount * state.variations;
+
+            document.getElementById('locationCount').textContent = `${locationCount} / ${MAX_LOCATIONS} selected`;
+            document.getElementById('promptCount').textContent = promptCount;
+            document.getElementById('generatePromptsBtn').disabled = locationCount === 0;
+        }
+
+        // Generate Prompts using AI
+        async function generatePrompts() {
+            if (state.selectedLocations.length === 0) return;
+
+            state.generatedPrompts = {};
+            state.selectedPrompts = new Set();
+
+            const totalCalls = state.selectedLocations.length;
+            let completed = 0;
+
+            startLoadingAnimation(`Generating prompts... 0 / ${totalCalls}`);
+
+            // Generate prompts for each location in parallel
+            const promises = state.selectedLocations.map(async (locationId) => {
+                const location = LOCATIONS[locationId];
+
+                try {
+                    const response = await fetch('/api/prompts/environment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            idea: location.description,
+                            numPrompts: state.variations
+                        })
+                    });
+
+                    const data = await response.json();
+                    completed++;
+                    updateLoadingProgress(`Generating prompts... ${completed} / ${totalCalls}`);
+
+                    if (data.prompts && data.prompts.length > 0) {
+                        state.generatedPrompts[locationId] = data.prompts;
+                        // Auto-select all prompts
+                        data.prompts.forEach((_, idx) => {
+                            state.selectedPrompts.add(`${locationId}-${idx}`);
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error generating prompts for ${location.name}:`, error);
+                    completed++;
+                    updateLoadingProgress(`Generating prompts... ${completed} / ${totalCalls}`);
+                }
+            });
+
+            await Promise.all(promises);
+
+            stopLoadingAnimation();
+            renderPrompts();
+        }
+
+        // Render Generated Prompts
+        function renderPrompts() {
+            const section = document.getElementById('promptsSection');
+            const container = document.getElementById('promptsContainer');
+
+            section.classList.add('show');
+
+            container.innerHTML = state.selectedLocations.map(locationId => {
+                const location = LOCATIONS[locationId];
+                const prompts = state.generatedPrompts[locationId] || [];
+
+                return `
+                    <div class="prompt-group" data-location="${locationId}">
+                        <div class="prompt-group-header">
+                            <span class="location-icon">${location.icon}</span>
+                            <h3>${location.name}</h3>
+                        </div>
+                        <div class="prompt-list">
+                            ${prompts.map((prompt, idx) => {
+                                const promptId = `${locationId}-${idx}`;
+                                const isSelected = state.selectedPrompts.has(promptId);
+                                return `
+                                    <div class="prompt-item ${isSelected ? 'selected' : ''}"
+                                         data-prompt-id="${promptId}"
+                                         onclick="togglePrompt('${promptId}')">
+                                        <div class="prompt-check">✓</div>
+                                        <div class="prompt-actions">
+                                            <button class="prompt-action-btn" onclick="event.stopPropagation(); copyPrompt('${promptId}')" title="Copy">📋</button>
+                                        </div>
+                                        ${prompt}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Toggle prompt selection
+        function togglePrompt(promptId) {
+            if (state.selectedPrompts.has(promptId)) {
+                state.selectedPrompts.delete(promptId);
+            } else {
+                state.selectedPrompts.add(promptId);
+            }
+
+            const item = document.querySelector(`[data-prompt-id="${promptId}"]`);
+            item.classList.toggle('selected');
+        }
+
+        // Copy single prompt
+        function copyPrompt(promptId) {
+            const [locationId, idx] = promptId.split('-');
+            const prompt = state.generatedPrompts[locationId]?.[parseInt(idx)];
+            if (prompt) {
+                navigator.clipboard.writeText(prompt);
+                showCopyNotification();
+            }
+        }
+
+        // Copy all prompts
+        function copyAllPrompts() {
+            const allPrompts = [];
+            state.selectedLocations.forEach(locationId => {
+                const location = LOCATIONS[locationId];
+                const prompts = state.generatedPrompts[locationId] || [];
+                prompts.forEach(prompt => {
+                    allPrompts.push(`[${location.name}]\n${prompt}`);
+                });
+            });
+            navigator.clipboard.writeText(allPrompts.join('\n\n---\n\n'));
+            showCopyNotification(`Copied ${allPrompts.length} prompts!`);
+        }
+
+        // Copy selected prompts
+        function copySelectedPrompts() {
+            const selectedPrompts = [];
+            state.selectedPrompts.forEach(promptId => {
+                const [locationId, idx] = promptId.split('-');
+                const location = LOCATIONS[locationId];
+                const prompt = state.generatedPrompts[locationId]?.[parseInt(idx)];
+                if (prompt) {
+                    selectedPrompts.push(`[${location.name}]\n${prompt}`);
+                }
+            });
+            navigator.clipboard.writeText(selectedPrompts.join('\n\n---\n\n'));
+            showCopyNotification(`Copied ${selectedPrompts.length} prompts!`);
+        }
+
+        // Show copy notification
+        function showCopyNotification(message = 'Copied to clipboard!') {
+            const notification = document.getElementById('copyNotification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 2000);
+        }
+
+        // Generate Images from selected prompts
+        async function generateImages() {
+            if (state.selectedPrompts.size === 0) {
+                alert('Please select at least one prompt');
+                return;
+            }
+
+            state.results = [];
+            const tasks = [];
+
+            // Build task list from selected prompts
+            state.selectedPrompts.forEach(promptId => {
+                const [locationId, idx] = promptId.split('-');
+                const location = LOCATIONS[locationId];
+                const prompt = state.generatedPrompts[locationId]?.[parseInt(idx)];
+                if (prompt) {
+                    tasks.push({ location, prompt, promptIndex: parseInt(idx) });
+                }
+            });
+
+            startLoadingAnimation(`0 / ${tasks.length}`);
+
+            let completed = 0;
+            const concurrency = 10;
+            const results = [];
+
+            // Process in parallel batches
+            for (let i = 0; i < tasks.length; i += concurrency) {
+                const batch = tasks.slice(i, i + concurrency);
+                const batchPromises = batch.map(task => generateImage(task.location, task.prompt, task.promptIndex));
+                const batchResults = await Promise.all(batchPromises);
+                results.push(...batchResults);
+                completed += batch.length;
+                updateLoadingProgress(`${completed} / ${tasks.length}`);
+            }
+
+            state.results = results.filter(r => r !== null);
+
+            stopLoadingAnimation();
+            renderResults();
+        }
+
+        // Generate Single Image with timeout
+        async function generateImage(location, prompt, promptIndex) {
+            // Timeout wrapper - 90 seconds max per image
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timeout')), 90000)
+            );
+
+            try {
+                const apiCall = fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'reve',
+                        prompt: prompt,
+                        aspect_ratio: '4:3',
+                        num_images: 1
+                    })
+                }).then(res => res.json());
+
+                // Race between API call and timeout
+                const result = await Promise.race([apiCall, timeoutPromise]);
+
+                return {
+                    locationId: location.id,
+                    locationName: location.name,
+                    locationIcon: location.icon,
+                    promptIndex,
+                    imageUrl: result.images?.[0]?.url,
+                    prompt
+                };
+            } catch (error) {
+                console.error('Generation error:', error);
+                return null;
+            }
+        }
+
+        // Render Results (grouped by location)
+        function renderResults() {
+            const section = document.getElementById('resultsSection');
+            const container = document.getElementById('resultsContainer');
+
+            section.classList.add('show');
+
+            // Group results by location
+            const grouped = {};
+            state.results.forEach(result => {
+                if (!grouped[result.locationId]) {
+                    grouped[result.locationId] = {
+                        location: LOCATIONS[result.locationId],
+                        results: []
+                    };
+                }
+                grouped[result.locationId].results.push(result);
+            });
+
+            container.innerHTML = Object.values(grouped).map(group => `
+                <div class="location-group">
+                    <div class="location-group-header">
+                        <div class="location-icon">${group.location.icon}</div>
+                        <div>
+                            <h3>${group.location.name}</h3>
+                            <span>${group.results.length} images</span>
+                        </div>
+                    </div>
+                    <div class="results-grid">
+                        ${group.results.map((result, idx) => {
+                            const globalIndex = state.results.indexOf(result);
+                            return `
+                                <div class="result-card" onclick="openLightbox(${globalIndex})">
+                                    <div class="result-image">
+                                        <img src="${result.imageUrl}" alt="${result.locationName}">
+                                        <div class="result-overlay">
+                                            <button onclick="event.stopPropagation(); downloadSingle(${globalIndex})">Download</button>
+                                        </div>
+                                    </div>
+                                    <div class="result-meta">
+                                        <strong>${result.locationName}</strong>
+                                        Variation ${result.promptIndex + 1}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Download filename helper
+        function getDownloadFilename(result, index) {
+            const now = new Date();
+            const date = now.toISOString().slice(2, 10).replace(/-/g, '');
+            const time = now.toTimeString().slice(0, 5).replace(':', '');
+            const num = String(index + 1).padStart(2, '0');
+            const locationName = result.locationName.replace(/[\s\/]+/g, '');
+            return `Setset_Location_${locationName}_${date}_${time}_${num}`;
+        }
+
+        // Lightbox
+        let currentLightboxIndex = 0;
+
+        function openLightbox(index) {
+            currentLightboxIndex = index;
+            const result = state.results[index];
+
+            document.getElementById('lightboxImage').src = result.imageUrl;
+            document.getElementById('lightboxLocation').textContent = result.locationName;
+            document.getElementById('lightboxPrompt').textContent = result.prompt;
+
+            document.getElementById('lightbox').classList.add('show');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('show');
+        }
+
+        function navigateLightbox(direction) {
+            const newIndex = currentLightboxIndex + direction;
+            if (newIndex >= 0 && newIndex < state.results.length) {
+                openLightbox(newIndex);
+            }
+        }
+
+        // Downloads
+        function downloadCurrent() {
+            const result = state.results[currentLightboxIndex];
+            const filename = getDownloadFilename(result, currentLightboxIndex);
+            downloadImage(result.imageUrl, filename);
+        }
+
+        function downloadSingle(index) {
+            const result = state.results[index];
+            const filename = getDownloadFilename(result, index);
+            downloadImage(result.imageUrl, filename);
+        }
+
+        async function downloadImage(url, name) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${name}.png`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } catch (error) {
+                console.error('Download error:', error);
+            }
+        }
+
+        async function downloadAll() {
+            const now = new Date();
+            const date = now.toISOString().slice(2, 10).replace(/-/g, '');
+            const time = now.toTimeString().slice(0, 5).replace(':', '');
+
+            for (let i = 0; i < state.results.length; i++) {
+                const result = state.results[i];
+                const num = String(i + 1).padStart(2, '0');
+                const locationName = result.locationName.replace(/[\s\/]+/g, '');
+                const filename = `Setset_Location_${locationName}_${date}_${time}_${num}`;
+                await downloadImage(result.imageUrl, filename);
+                await new Promise(r => setTimeout(r, 500));
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('lightbox').classList.contains('show')) return;
+
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

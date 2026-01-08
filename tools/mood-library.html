@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Library</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--off-white);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--slate);
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .mood-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .mood-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .mood-images {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2px;
+            background: var(--gainsboro);
+        }
+
+        .mood-images img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .mood-info {
+            padding: 16px;
+        }
+
+        .mood-number {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .mood-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--carbon);
+            letter-spacing: -0.01em;
+        }
+
+        .mood-prompt {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--gainsboro);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--slate);
+        }
+
+        .mood-card.expanded .mood-prompt {
+            display: block;
+        }
+
+        .mood-actions {
+            display: none;
+            margin-top: 12px;
+            gap: 8px;
+        }
+
+        .mood-card.expanded .mood-actions {
+            display: flex;
+        }
+
+        .mood-actions button {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .mood-actions button:hover {
+            background: var(--off-white);
+            border-color: var(--ash-grey);
+        }
+
+        .mood-actions button.copied {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox img {
+            max-width: 80vw;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.5);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .lightbox-nav.prev { left: 20px; }
+        .lightbox-nav.next { right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mood Library</h1>
+        <p>50 editorial moods with 8 variations each (4 Female, 4 Male). Click to expand prompt.</p>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">&#8249;</button>
+        <button class="lightbox-nav next" onclick="navigateLightbox(1)">&#8250;</button>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="">
+        </div>
+    </div>
+
+    <script src="/shared/data/editorial-moods.js"></script>
+    <script>
+        // Build mood data - we only need 50 unique moods (use female as base)
+        const moods = EDITORIAL_MOODS_FEMALE.map((mood, idx) => {
+            const num = String(idx + 1).padStart(2, '0');
+            return {
+                id: mood.id,
+                name: mood.name,
+                prompt: mood.prompt,
+                index: idx + 1,
+                images: {
+                    f1: `/assets/moods/batch3/mood_${num}F1_${mood.id}.png`,
+                    f2: `/assets/moods/batch3/mood_${num}F2_${mood.id}.png`,
+                    f3: `/assets/moods/batch3/mood_${num}F3_${mood.id}.png`,
+                    f4: `/assets/moods/batch3/mood_${num}F4_${mood.id}.png`,
+                    m1: `/assets/moods/batch3/mood_${num}M1_${mood.id}.png`,
+                    m2: `/assets/moods/batch3/mood_${num}M2_${mood.id}.png`,
+                    m3: `/assets/moods/batch3/mood_${num}M3_${mood.id}.png`,
+                    m4: `/assets/moods/batch3/mood_${num}M4_${mood.id}.png`
+                }
+            };
+        });
+
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            // Alternating pattern: F1 M1 F2 M2 (row 1), F3 M3 F4 M4 (row 2)
+            grid.innerHTML = moods.map(mood => `
+                <div class="mood-card" data-id="${mood.id}" onclick="toggleCard(this, event)">
+                    <div class="mood-images">
+                        <img src="${mood.images.f1}" alt="${mood.name} F1" onclick="openLightbox('${mood.images.f1}', event)">
+                        <img src="${mood.images.m1}" alt="${mood.name} M1" onclick="openLightbox('${mood.images.m1}', event)">
+                        <img src="${mood.images.f2}" alt="${mood.name} F2" onclick="openLightbox('${mood.images.f2}', event)">
+                        <img src="${mood.images.m2}" alt="${mood.name} M2" onclick="openLightbox('${mood.images.m2}', event)">
+                        <img src="${mood.images.f3}" alt="${mood.name} F3" onclick="openLightbox('${mood.images.f3}', event)">
+                        <img src="${mood.images.m3}" alt="${mood.name} M3" onclick="openLightbox('${mood.images.m3}', event)">
+                        <img src="${mood.images.f4}" alt="${mood.name} F4" onclick="openLightbox('${mood.images.f4}', event)">
+                        <img src="${mood.images.m4}" alt="${mood.name} M4" onclick="openLightbox('${mood.images.m4}', event)">
+                    </div>
+                    <div class="mood-info">
+                        <div class="mood-number">${String(mood.index).padStart(2, '0')} / 50</div>
+                        <div class="mood-name">${mood.name}</div>
+                        <div class="mood-prompt">${mood.prompt}</div>
+                        <div class="mood-actions">
+                            <button onclick="copyPrompt('${mood.id}', this, event)">Copy Prompt</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleCard(card, event) {
+            // Don't toggle if clicking on image or button
+            if (event.target.tagName === 'IMG' || event.target.tagName === 'BUTTON') return;
+            card.classList.toggle('expanded');
+        }
+
+        function copyPrompt(id, button, event) {
+            event.stopPropagation();
+            const mood = moods.find(m => m.id === id);
+            if (!mood) return;
+
+            navigator.clipboard.writeText(mood.prompt).then(() => {
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy Prompt';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function openLightbox(src, event) {
+            event.stopPropagation();
+            buildImageList();
+            currentImageIndex = allImages.indexOf(src);
+            if (currentImageIndex === -1) currentImageIndex = 0;
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        // All images for navigation
+        let allImages = [];
+        let currentImageIndex = 0;
+
+        function buildImageList() {
+            allImages = [];
+            moods.forEach((mood) => {
+                // Match alternating display order: F1 M1 F2 M2 F3 M3 F4 M4
+                allImages.push(
+                    mood.images.f1, mood.images.m1, mood.images.f2, mood.images.m2,
+                    mood.images.f3, mood.images.m3, mood.images.f4, mood.images.m4
+                );
+            });
+        }
+
+        function navigateLightbox(direction) {
+            if (allImages.length === 0) return;
+            currentImageIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
+            document.getElementById('lightbox-img').src = allImages[currentImageIndex];
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') closeLightbox();
+        });
+
+        // Init
+        renderGrid();
+    </script>
+</body>
+</html>

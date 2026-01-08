@@ -25,6 +25,12 @@
             margin-bottom: var(--space-lg);
         }
 
+        .left-stack {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
         .generator-section {
             background: var(--off-white);
             padding: var(--space-md);
@@ -33,6 +39,23 @@
 
         .generator-section.full-width {
             grid-column: 1 / -1;
+        }
+
+        .category-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-xs);
+            flex: 1;
+        }
+
+        .category-grid .btn {
+            padding: 12px 8px;
+            font-size: var(--text-sm);
         }
 
         .section-title {
@@ -277,39 +300,42 @@
 
         <!-- Generator Controls -->
         <div class="generator-grid">
-            <!-- Gender -->
-            <div class="generator-section">
-                <div class="section-title">Gender</div>
-                <div class="gender-toggle">
-                    <button class="btn btn--toggle active" data-gender="female">Female</button>
-                    <button class="btn btn--toggle" data-gender="male">Male</button>
+            <!-- Left Column: Gender + Shot Type stacked -->
+            <div class="left-stack">
+                <!-- Gender -->
+                <div class="generator-section">
+                    <div class="section-title">Gender</div>
+                    <div class="gender-toggle">
+                        <button class="btn btn--toggle active" data-gender="female">Female</button>
+                        <button class="btn btn--toggle" data-gender="male">Male</button>
+                    </div>
+                </div>
+
+                <!-- Shot Type -->
+                <div class="generator-section">
+                    <div class="section-title">Shot Type</div>
+                    <select id="shot-select" style="width:100%; padding:16px 12px; font-size:13px; color:#000000; background:#ffffff; border:1px solid #ccc; border-radius:4px;">
+                        <option value="flatlay">Flat Lay (Top-down)</option>
+                        <option value="ghost">Ghost Mannequin</option>
+                        <option value="hanger">On Hanger</option>
+                        <option value="styled">Styled Arrangement</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Category -->
-            <div class="generator-section">
-                <div class="section-title">Category</div>
-                <select id="category-select" style="width:100%; padding:16px 12px; font-size:13px; color:#000000; background:#ffffff; border:1px solid #ccc; border-radius:4px;">
-                    <option value="top">Top (T-shirts, Blouses)</option>
-                    <option value="sweater">Sweater (Knits, Cardigans)</option>
-                    <option value="outerwear">Outerwear (Jackets, Coats)</option>
-                    <option value="dress">Dress</option>
-                    <option value="bottom">Bottom (Pants, Skirts)</option>
-                    <option value="shoes">Shoes</option>
-                    <option value="bag">Bag</option>
-                    <option value="accessories">Accessories (Eyewear, Jewelry)</option>
-                </select>
-            </div>
-
-            <!-- Shot Type -->
-            <div class="generator-section">
-                <div class="section-title">Shot Type</div>
-                <select id="shot-select" style="width:100%; padding:16px 12px; font-size:13px; color:#000000; background:#ffffff; border:1px solid #ccc; border-radius:4px;">
-                    <option value="flatlay">Flat Lay (Top-down)</option>
-                    <option value="ghost">Ghost Mannequin</option>
-                    <option value="hanger">On Hanger</option>
-                    <option value="styled">Styled Arrangement</option>
-                </select>
+            <!-- Category - Multi-select buttons, spans full height -->
+            <div class="generator-section category-section">
+                <div class="section-title">Categories (select multiple)</div>
+                <div class="category-grid" id="category-buttons">
+                    <button class="btn btn--toggle" data-category="top">Top</button>
+                    <button class="btn btn--toggle" data-category="sweater">Sweater</button>
+                    <button class="btn btn--toggle" data-category="outerwear">Outerwear</button>
+                    <button class="btn btn--toggle" data-category="dress">Dress</button>
+                    <button class="btn btn--toggle" data-category="bottom">Bottom</button>
+                    <button class="btn btn--toggle" data-category="shoes">Shoes</button>
+                    <button class="btn btn--toggle" data-category="bag">Bag</button>
+                    <button class="btn btn--toggle" data-category="accessories">Accessories</button>
+                </div>
             </div>
 
             <!-- Style -->
@@ -421,7 +447,7 @@
         // State
         const state = {
             genders: ['female'],  // Multi-select like styles
-            category: 'top',
+            categories: [],  // Multi-select categories
             shotType: 'flatlay',
             model: 'reve',
             aspectRatio: '3:4',
@@ -714,7 +740,7 @@
 
         // Elements
         const elements = {
-            categorySelect: document.getElementById('category-select'),
+            categoryButtons: document.getElementById('category-buttons'),
             shotSelect: document.getElementById('shot-select'),
             styleInput: document.getElementById('style-input'),
             calcDisplay: document.getElementById('calc-display'),
@@ -787,9 +813,20 @@
                 });
             });
 
-            // Category select
-            elements.categorySelect.addEventListener('change', () => {
-                state.category = elements.categorySelect.value;
+            // Category multi-select buttons
+            document.querySelectorAll('[data-category]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    const category = btn.dataset.category;
+                    if (btn.classList.contains('active')) {
+                        if (!state.categories.includes(category)) {
+                            state.categories.push(category);
+                        }
+                    } else {
+                        state.categories = state.categories.filter(c => c !== category);
+                    }
+                    updateCalc();
+                });
             });
 
             // Shot type select
@@ -831,11 +868,13 @@
             const cost = model ? model.costPerImage : 0.04;
             const styleCount = Math.max(state.stylePresets.length, 1);
             const genderCount = state.genders.length;
-            const totalImages = state.count * styleCount * genderCount;
+            const categoryCount = Math.max(state.categories.length, 1);
+            const totalImages = state.count * styleCount * genderCount * categoryCount;
             const total = (totalImages * cost).toFixed(2);
 
             // Build multiplier display
             const multipliers = [];
+            if (categoryCount > 1) multipliers.push(`${categoryCount} categories`);
             if (genderCount > 1) multipliers.push(`${genderCount} genders`);
             if (styleCount > 1) multipliers.push(`${styleCount} styles`);
 
@@ -844,6 +883,9 @@
             } else {
                 elements.calcDisplay.textContent = `${state.count} images @ $${cost} each = $${total}`;
             }
+
+            // Disable generate if no categories selected
+            elements.generateBtn.disabled = state.categories.length === 0;
         }
 
         function buildStyleString() {
@@ -946,9 +988,10 @@ Format:
             return basePrompts.map(p => p.item);
         }
 
-        function buildFinalPrompt(itemDescription, gender = null) {
+        function buildFinalPrompt(itemDescription, gender = null, category = null) {
             // Build the final prompt with the enhanced item description
-            const template = CATEGORY_PROMPTS[state.category]?.[state.shotType] || CATEGORY_PROMPTS.top.flatlay;
+            const categoryToUse = category || state.categories[0] || 'top';
+            const template = CATEGORY_PROMPTS[categoryToUse]?.[state.shotType] || CATEGORY_PROMPTS.top.flatlay;
             const styleString = buildStyleString();
             const genderToUse = gender || state.genders[0] || 'female';
 
@@ -959,7 +1002,7 @@ Format:
 
             // Reinforce flat lay camera angle at the end for flatlay shots
             if (state.shotType === 'flatlay') {
-                const isAccessoryType = ['shoes', 'bag', 'accessories'].includes(state.category);
+                const isAccessoryType = ['shoes', 'bag', 'accessories'].includes(categoryToUse);
                 if (isAccessoryType) {
                     prompt += ' IMPORTANT: 3/4 angle view from above, item facing forward, fully visible, no cropping.';
                 } else {
@@ -973,16 +1016,17 @@ Format:
         async function generate() {
             const totalStart = performance.now();
 
-            // Get genders and styles to generate
+            // Get categories, genders, and styles to generate
+            const categoriesToGenerate = [...state.categories];
             const gendersToGenerate = [...state.genders];
             const stylesToGenerate = state.stylePresets.length > 0 ? [...state.stylePresets] : [''];
-            const totalImages = state.count * stylesToGenerate.length * gendersToGenerate.length;
+            const totalImages = state.count * stylesToGenerate.length * gendersToGenerate.length * categoriesToGenerate.length;
 
             console.log('\n🚀 Starting generation...');
-            console.log(`   Category: ${state.category}`);
+            console.log(`   Categories: ${categoriesToGenerate.join(', ')}`);
             console.log(`   Genders: ${gendersToGenerate.join(', ')}`);
             console.log(`   Styles: ${stylesToGenerate.join(', ') || 'none'}`);
-            console.log(`   Count: ${state.count} × ${gendersToGenerate.length} genders × ${stylesToGenerate.length} styles = ${totalImages} total`);
+            console.log(`   Count: ${state.count} × ${categoriesToGenerate.length} categories × ${gendersToGenerate.length} genders × ${stylesToGenerate.length} styles = ${totalImages} total`);
 
             state.results = [];
             elements.resultsGrid.innerHTML = '';
@@ -998,34 +1042,37 @@ Format:
             console.log('\n📝 Getting all item descriptions in parallel...');
             const enhancementJobs = [];
 
-            for (const currentGender of gendersToGenerate) {
-                for (const currentStyle of stylesToGenerate) {
-                    // Get GENDER and STYLE-SPECIFIC item variations - SHUFFLE for no repeats
-                    const items = getItemsForGender(state.category, currentGender, currentStyle);
+            for (const currentCategory of categoriesToGenerate) {
+                for (const currentGender of gendersToGenerate) {
+                    for (const currentStyle of stylesToGenerate) {
+                        // Get GENDER and STYLE-SPECIFIC item variations - SHUFFLE for no repeats
+                        const items = getItemsForGender(currentCategory, currentGender, currentStyle);
 
-                    // Skip if no items for this gender/category combo (e.g., dresses for men)
-                    if (items.length === 0) {
-                        console.log(`   ⚠️ Skipping ${currentGender} ${state.category} - no items available`);
-                        continue;
+                        // Skip if no items for this gender/category combo (e.g., dresses for men)
+                        if (items.length === 0) {
+                            console.log(`   ⚠️ Skipping ${currentGender} ${currentCategory} - no items available`);
+                            continue;
+                        }
+
+                        const shuffled = [...items].sort(() => Math.random() - 0.5);
+                        // Take unique items, cycle through if we need more than available
+                        const selectedItems = [];
+                        for (let i = 0; i < state.count; i++) {
+                            selectedItems.push(shuffled[i % shuffled.length]);
+                        }
+
+                        // Build base item list for enhancement
+                        const basePrompts = selectedItems.map(item => ({ item }));
+
+                        // Create enhancement job
+                        enhancementJobs.push({
+                            category: currentCategory,
+                            gender: currentGender,
+                            style: currentStyle,
+                            selectedItems: selectedItems,
+                            basePrompts: basePrompts
+                        });
                     }
-
-                    const shuffled = [...items].sort(() => Math.random() - 0.5);
-                    // Take unique items, cycle through if we need more than available
-                    const selectedItems = [];
-                    for (let i = 0; i < state.count; i++) {
-                        selectedItems.push(shuffled[i % shuffled.length]);
-                    }
-
-                    // Build base item list for enhancement
-                    const basePrompts = selectedItems.map(item => ({ item }));
-
-                    // Create enhancement job
-                    enhancementJobs.push({
-                        gender: currentGender,
-                        style: currentStyle,
-                        selectedItems: selectedItems,
-                        basePrompts: basePrompts
-                    });
                 }
             }
 
@@ -1036,7 +1083,7 @@ Format:
                     // Temporarily set style for this call
                     state.stylePresets = job.style ? [job.style] : [];
                     const enhancedItems = await enhanceAllPrompts(job.basePrompts, job.gender);
-                    console.log(`   ✨ ${job.gender} / ${job.style || 'default'} descriptions ready`);
+                    console.log(`   ✨ ${job.category} / ${job.gender} / ${job.style || 'default'} descriptions ready`);
                     return {
                         ...job,
                         enhancedItems: enhancedItems
@@ -1050,13 +1097,13 @@ Format:
             const allPromises = [];
 
             enhancementResults.forEach((result) => {
-                const { gender, style, selectedItems, enhancedItems } = result;
+                const { category, gender, style, selectedItems, enhancedItems } = result;
 
                 // Temporarily set style for prompt building
                 state.stylePresets = style ? [style] : [];
 
                 enhancedItems.forEach((itemDesc, i) => {
-                    const finalPrompt = buildFinalPrompt(itemDesc, gender);
+                    const finalPrompt = buildFinalPrompt(itemDesc, gender, category);
 
                     const promise = (async () => {
                         const imgStart = performance.now();
@@ -1086,11 +1133,11 @@ Format:
                             const imgElapsed = ((performance.now() - imgStart) / 1000).toFixed(2);
 
                             if (data.images && data.images.length > 0) {
-                                console.log(`   [${imgElapsed}s] ✅ ${gender} ${itemDesc.substring(0, 35)}...`);
+                                console.log(`   [${imgElapsed}s] ✅ ${category} / ${gender} ${itemDesc.substring(0, 35)}...`);
                                 state.results.push({
                                     url: data.images[0].url,
                                     prompt: finalPrompt,
-                                    category: state.category,
+                                    category: category,
                                     item: selectedItems[i],
                                     itemDesc: itemDesc,
                                     gender: gender,

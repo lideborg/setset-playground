@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        body {
+            font-family: 'Avenir', 'Avenir Next', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1a3a4a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background video with crossfade */
+        .bg-video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: opacity 1s ease;
+        }
+
+        /* Chat container - centered, full height */
+        .chat-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            padding-bottom: 120px;
+            overflow: hidden;
+        }
+
+        /* Messages stack - column for upward flow */
+        .messages {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Smooth wrapper for each message */
+        .message-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            opacity: 1;
+            transform: translateY(0);
+            /* Smooth transitions with ease-in-out */
+            transition: transform 375ms ease-in-out,
+                        opacity 300ms ease-in-out,
+                        max-height 450ms ease-in-out,
+                        margin 375ms ease-in-out;
+            max-height: 600px;
+            padding: 2px; /* Space for the gradient border */
+            will-change: transform, opacity;
+        }
+
+        /* New messages start hidden and fade in */
+        .message-wrapper.entering {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        /* Faded messages - gradual fade levels */
+        .message-wrapper.fade-1 {
+            opacity: 0.6;
+            transform: translateY(-10px);
+        }
+
+        .message-wrapper.fade-2 {
+            opacity: 0.35;
+            transform: translateY(-25px);
+        }
+
+        .message-wrapper.fade-3 {
+            opacity: 0;
+            transform: translateY(-40px);
+            max-height: 0;
+            margin-top: -16px;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* AI Message Card - with animated gradient border */
+        .message-card {
+            background: linear-gradient(145deg, rgba(65, 95, 160, 0.92), rgba(55, 80, 140, 0.88));
+            border-radius: 12px;
+            padding: 24px 32px;
+            max-width: 100%;
+            position: relative;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animated gradient border using pseudo-element */
+        .message-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: 13px;
+            background: linear-gradient(
+                90deg,
+                rgba(90, 120, 180, 0.3),
+                rgba(130, 160, 210, 0.5),
+                rgba(160, 185, 230, 0.7),
+                rgba(130, 160, 210, 0.5),
+                rgba(90, 120, 180, 0.3),
+                rgba(130, 160, 210, 0.5),
+                rgba(160, 185, 230, 0.7),
+                rgba(130, 160, 210, 0.5),
+                rgba(90, 120, 180, 0.3)
+            );
+            background-size: 300% 100%;
+            z-index: -1;
+            animation: borderFlow 8s linear infinite;
+        }
+
+        /* Inner background to cover the gradient except border */
+        .message-card::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            bottom: 1px;
+            border-radius: 11px;
+            background: linear-gradient(145deg, rgba(65, 95, 160, 0.98), rgba(55, 80, 140, 0.95));
+            z-index: -1;
+        }
+
+        @keyframes borderFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        .message-card .body {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.6;
+        }
+
+        /* First word is bold */
+        .message-card .word.first-word {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Word animation for AI */
+        .message-card .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .message-card .word.visible {
+            animation: wordPop 400ms ease-out forwards;
+        }
+
+        @keyframes wordPop {
+            0% {
+                opacity: 0;
+                transform: translateY(6px);
+                color: #9bb8c8;
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                color: rgba(255, 255, 255, 0.85);
+            }
+        }
+
+        /* First word animates to white */
+        .message-card .word.first-word.visible {
+            animation: wordPopFirst 400ms ease-out forwards;
+        }
+
+        @keyframes wordPopFirst {
+            0% {
+                opacity: 0;
+                transform: translateY(6px);
+                color: #9bb8c8;
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                color: #ffffff;
+            }
+        }
+
+        /* User message (when they speak/type) */
+        .user-message {
+            background: linear-gradient(145deg, rgba(60, 90, 150, 0.9), rgba(50, 75, 130, 0.85));
+            border: 1px solid rgba(100, 130, 180, 0.4);
+            border-radius: 10px;
+            padding: 14px 20px;
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 500px;
+            min-height: 48px;
+        }
+
+        /* Live recording bubble */
+        .user-message.live-recording {
+            border-color: rgba(150, 180, 210, 0.5);
+        }
+
+        /* Recording cursor (blinking) */
+        .recording-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: rgba(255, 255, 255, 0.8);
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: cursorBlink 0.8s ease-in-out infinite;
+        }
+
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Word animation in user message */
+        .user-message .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        .user-message .word.visible {
+            animation: wordPopUser 300ms ease-out forwards;
+        }
+
+        @keyframes wordPopUser {
+            0% {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* Message cards don't have fade - wrapper handles it */
+        .message-card,
+        .user-message {
+            flex-shrink: 0;
+        }
+
+        /* Input area - bottom */
+        .input-area {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .text-input {
+            width: 400px;
+            flex-shrink: 0;
+            background: linear-gradient(145deg, rgba(55, 85, 145, 0.6), rgba(45, 70, 125, 0.55));
+            border: 1px solid rgba(90, 120, 170, 0.3);
+            border-radius: 10px;
+            padding: 14px 20px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .text-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .text-input:focus {
+            border-color: rgba(110, 140, 190, 0.5);
+            background: linear-gradient(145deg, rgba(65, 95, 155, 0.7), rgba(55, 80, 135, 0.65));
+        }
+
+        .mic-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: linear-gradient(145deg, rgba(55, 85, 145, 0.6), rgba(45, 70, 125, 0.55));
+            border: 1px solid rgba(90, 120, 170, 0.3);
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .mic-btn:hover {
+            background: linear-gradient(145deg, rgba(65, 95, 155, 0.7), rgba(55, 80, 135, 0.65));
+            border-color: rgba(110, 140, 190, 0.5);
+        }
+
+        .mic-btn.recording {
+            background: linear-gradient(145deg, #c85050, #a84040);
+            border-color: #e06060;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .mic-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: linear-gradient(145deg, rgba(55, 85, 145, 0.6), rgba(45, 70, 125, 0.55));
+            border: 1px solid rgba(90, 120, 170, 0.3);
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: linear-gradient(145deg, rgba(65, 95, 155, 0.7), rgba(55, 80, 135, 0.65));
+            border-color: rgba(110, 140, 190, 0.5);
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Recording indicator */
+        .recording-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #ff6b6b;
+            font-size: 13px;
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .recording-indicator.visible {
+            display: flex;
+        }
+
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background video with crossfade loop -->
+    <div class="bg-video-container">
+        <video class="bg-video" id="bg-video-1" autoplay muted playsinline>
+            <source src="/assets/chat/background.mp4" type="video/mp4">
+        </video>
+        <video class="bg-video" id="bg-video-2" muted playsinline style="opacity: 0;">
+            <source src="/assets/chat/background.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="chat-container">
+        <div class="messages" id="messages">
+            <!-- Messages will be added here dynamically -->
+        </div>
+    </div>
+
+    <div class="recording-indicator" id="recording-indicator">
+        <div class="recording-dot"></div>
+        <span>Listening...</span>
+    </div>
+
+    <div class="input-area">
+        <input type="text" class="text-input" id="text-input" placeholder="Type a message..." />
+        <button class="mic-btn" id="mic-btn" title="Hold to speak">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+        </button>
+        <button class="send-btn" id="send-btn" title="Send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // State
+        const state = {
+            messages: [],
+            isRecording: false,
+            recognition: null,
+            currentTranscript: '',
+            liveUserBubble: null,
+            liveWrapper: null,
+            lastDisplayedText: ''
+        };
+
+        // Initial welcome message
+        const WELCOME_MESSAGE = "Imagine having an AI model trained on your business. A model that understands your workflows, operations, predicts challenges, and helps you make informed decisions in real time. What aspect of your business would you like to explore first?";
+
+        // Elements
+        const messagesEl = document.getElementById('messages');
+        const textInput = document.getElementById('text-input');
+        const micBtn = document.getElementById('mic-btn');
+        const sendBtn = document.getElementById('send-btn');
+        const recordingIndicator = document.getElementById('recording-indicator');
+
+        // Initialize Speech Recognition
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn('Speech recognition not supported');
+                micBtn.style.display = 'none';
+                return;
+            }
+
+            state.recognition = new SpeechRecognition();
+            state.recognition.continuous = false;
+            state.recognition.interimResults = true;
+            state.recognition.lang = 'en-US';
+
+            state.recognition.onresult = (event) => {
+                state.currentTranscript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
+
+                // Update live bubble with transcript
+                if (state.liveUserBubble && state.currentTranscript) {
+                    updateLiveTranscript(state.currentTranscript);
+                }
+            };
+
+            state.recognition.onend = () => {
+                const transcript = state.currentTranscript.trim();
+                stopRecording();
+                if (transcript) {
+                    // Don't create new bubble - it already exists from live recording
+                    sendMessageFromVoice(transcript);
+                    state.currentTranscript = '';
+                }
+            };
+
+            state.recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                stopRecording();
+            };
+        }
+
+        // Start recording
+        function startRecording() {
+            if (!state.recognition) return;
+            state.isRecording = true;
+            state.currentTranscript = '';
+            state.lastDisplayedText = '';
+            micBtn.classList.add('recording');
+            recordingIndicator.classList.add('visible');
+
+            // Create live user bubble immediately wrapped
+            state.liveUserBubble = createUserMessage('');
+            state.liveUserBubble.classList.add('live-recording');
+            state.liveUserBubble.innerHTML = '<span class="recording-cursor"></span>';
+            state.liveWrapper = wrapMessage(state.liveUserBubble);
+            messagesEl.appendChild(state.liveWrapper);
+
+            // Update fade levels AFTER adding
+            updateFadeLevels();
+
+            state.recognition.start();
+        }
+
+        // Update live transcript with word-by-word animation
+        function updateLiveTranscript(text) {
+            if (!state.liveUserBubble) return;
+
+            // Normalize: lowercase everything for consistent display during recording
+            const normalizedText = text.toLowerCase();
+
+            // Only update if text actually changed (reduces flicker)
+            if (state.lastDisplayedText === normalizedText) return;
+            state.lastDisplayedText = normalizedText;
+
+            const words = normalizedText.split(/(\s+)/);
+            let html = '';
+
+            words.forEach((word, i) => {
+                if (word.trim()) {
+                    html += `<span class="word visible">${word}</span>`;
+                } else {
+                    html += word;
+                }
+            });
+
+            // Add recording cursor at the end
+            html += '<span class="recording-cursor"></span>';
+            state.liveUserBubble.innerHTML = html;
+        }
+
+        // Stop recording
+        function stopRecording() {
+            state.isRecording = false;
+            micBtn.classList.remove('recording');
+            recordingIndicator.classList.remove('visible');
+
+            // Remove recording cursor and finalize bubble
+            if (state.liveUserBubble) {
+                state.liveUserBubble.classList.remove('live-recording');
+                const cursor = state.liveUserBubble.querySelector('.recording-cursor');
+                if (cursor) cursor.remove();
+
+                // If empty, remove the wrapper
+                if (!state.currentTranscript.trim() && state.liveWrapper) {
+                    state.liveWrapper.remove();
+                }
+                state.liveUserBubble = null;
+                state.liveWrapper = null;
+            }
+
+            if (state.recognition) {
+                try { state.recognition.stop(); } catch (e) {}
+            }
+        }
+
+        // Create AI message card (just body text, first word bold)
+        function createMessageCard(text, animate = false) {
+            const card = document.createElement('div');
+            card.className = 'message-card';
+
+            const bodyEl = document.createElement('div');
+            bodyEl.className = 'body';
+
+            if (animate) {
+                bodyEl.dataset.text = text;
+            } else {
+                bodyEl.textContent = text;
+            }
+
+            card.appendChild(bodyEl);
+
+            return { card, bodyEl };
+        }
+
+        // Create user message bubble
+        function createUserMessage(content) {
+            const bubble = document.createElement('div');
+            bubble.className = 'user-message';
+            bubble.textContent = content;
+            return bubble;
+        }
+
+        // Create wrapper for smooth transitions
+        function wrapMessage(element) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper entering';
+            wrapper.appendChild(element);
+            // Remove entering class after a frame to trigger transition
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    wrapper.classList.remove('entering');
+                });
+            });
+            return wrapper;
+        }
+
+        // Animate text word by word
+        async function animateText(element, text, isTitle = false) {
+            element.innerHTML = '';
+            const words = text.split(/(\s+)/);
+
+            words.forEach(word => {
+                if (word.trim()) {
+                    const span = document.createElement('span');
+                    span.className = 'word';
+                    span.textContent = word;
+                    element.appendChild(span);
+                } else {
+                    element.appendChild(document.createTextNode(word));
+                }
+            });
+
+            const wordSpans = element.querySelectorAll('.word');
+            for (let i = 0; i < wordSpans.length; i++) {
+                const span = wordSpans[i];
+                span.classList.add('visible');
+
+                const word = span.textContent;
+                let delay = isTitle ? 60 : 50;
+                delay += Math.random() * 40;
+
+                if (word.match(/[.,!?;:]$/)) {
+                    delay += 80 + Math.random() * 60;
+                }
+
+                await new Promise(r => setTimeout(r, delay));
+            }
+        }
+
+        // Build span structure for text (used for measuring and animating)
+        function buildWordSpans(element, text, markFirstWord = false) {
+            element.innerHTML = '';
+            const words = text.split(/(\s+)/);
+            let isFirst = true;
+
+            words.forEach(word => {
+                if (word.trim()) {
+                    const span = document.createElement('span');
+                    span.className = 'word';
+                    if (markFirstWord && isFirst) {
+                        span.classList.add('first-word');
+                        isFirst = false;
+                    }
+                    span.textContent = word;
+                    element.appendChild(span);
+                } else {
+                    element.appendChild(document.createTextNode(word));
+                }
+            });
+        }
+
+        // Show AI response (appends to conversation)
+        async function showAIResponse(text, isWelcome = false) {
+            // Clear only for welcome message
+            if (isWelcome) {
+                messagesEl.innerHTML = '';
+            }
+
+            // Create and add the message card wrapped
+            const { card, bodyEl } = createMessageCard(text, true);
+            const wrapper = wrapMessage(card);
+            messagesEl.appendChild(wrapper);
+
+            // Update fade levels AFTER adding (so count is correct)
+            updateFadeLevels();
+
+            // Build spans with first word marked as bold
+            buildWordSpans(bodyEl, text, true);
+
+            // Make all words visible but transparent for accurate height measurement
+            const allWords = card.querySelectorAll('.word');
+            allWords.forEach(w => w.style.opacity = '0');
+
+            // Force layout and lock card height
+            const finalHeight = card.offsetHeight;
+            card.style.minHeight = finalHeight + 'px';
+
+            // Now animate each word with sporadic timing
+            for (let i = 0; i < allWords.length; i++) {
+                const span = allWords[i];
+                span.style.opacity = '';
+                span.classList.add('visible');
+
+                const word = span.textContent;
+                // More varied base delay (20-100ms range)
+                let delay = 20 + Math.random() * 80;
+
+                // Occasional longer pauses (15% chance)
+                if (Math.random() < 0.15) {
+                    delay += 60 + Math.random() * 100;
+                }
+
+                // Quick bursts - sometimes 2-3 words come fast
+                if (Math.random() < 0.25) {
+                    delay = 15 + Math.random() * 25;
+                }
+
+                // Punctuation still gets extra pause
+                if (word.match(/[.,!?;:]$/)) {
+                    delay += 80 + Math.random() * 80;
+                }
+
+                await new Promise(r => setTimeout(r, delay));
+            }
+
+            // Remove height lock after animation
+            card.style.minHeight = '';
+        }
+
+        // Update fade levels on all message wrappers
+        function updateFadeLevels() {
+            const allWrappers = messagesEl.querySelectorAll('.message-wrapper');
+            const count = allWrappers.length;
+
+            allWrappers.forEach((wrapper, index) => {
+                // Calculate how far back this message is from the newest
+                const fromEnd = count - 1 - index;
+
+                // Skip the newest one (let entering animation complete)
+                if (fromEnd === 0) {
+                    wrapper.classList.remove('fade-1', 'fade-2', 'fade-3');
+                    return;
+                }
+
+                // Remove existing fade classes before applying new ones
+                wrapper.classList.remove('fade-1', 'fade-2', 'fade-3', 'entering');
+
+                if (fromEnd >= 4) {
+                    wrapper.classList.add('fade-3'); // Fully faded (invisible)
+                } else if (fromEnd >= 2) {
+                    wrapper.classList.add('fade-2'); // More faded
+                } else if (fromEnd >= 1) {
+                    wrapper.classList.add('fade-1'); // Slightly faded
+                }
+            });
+
+            // Remove fully faded wrappers from DOM after transition completes
+            setTimeout(() => {
+                messagesEl.querySelectorAll('.message-wrapper.fade-3').forEach(w => w.remove());
+            }, 500);
+        }
+
+        // Send message from voice (bubble already exists in liveWrapper)
+        async function sendMessageFromVoice(content) {
+            if (!content) return;
+
+            // Add to state
+            state.messages.push({ role: 'user', content });
+
+            // Brief pause then get response
+            await new Promise(r => setTimeout(r, 200));
+
+            // Get AI response
+            await getAIResponse();
+        }
+
+        // Send message (from text input)
+        async function sendMessage(content) {
+            if (!content) return;
+
+            // Add user message to state
+            state.messages.push({ role: 'user', content });
+
+            // Add user message wrapped
+            const userMsg = createUserMessage(content);
+            const wrapper = wrapMessage(userMsg);
+            messagesEl.appendChild(wrapper);
+
+            // Update fade levels AFTER adding
+            updateFadeLevels();
+
+            // Brief pause
+            await new Promise(r => setTimeout(r, 200));
+
+            // Get AI response
+            await getAIResponse();
+        }
+
+        // Get AI response (shared by voice and text)
+        async function getAIResponse() {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: state.messages,
+                        returnSuggestions: true
+                    })
+                });
+
+                const data = await response.json();
+                const aiContent = data.content || data.message || 'Sorry, I could not generate a response.';
+
+                state.messages.push({ role: 'assistant', content: aiContent });
+
+                await showAIResponse(aiContent);
+
+            } catch (error) {
+                console.error('Chat error:', error);
+                await showAIResponse('Something went wrong. Please try again or hold the microphone to speak.');
+            }
+        }
+
+        // Send from text input
+        function sendFromInput() {
+            const content = textInput.value.trim();
+            if (content) {
+                textInput.value = '';
+                sendMessage(content);
+            }
+        }
+
+        // Show initial welcome
+        async function showWelcome() {
+            await showAIResponse(WELCOME_MESSAGE, true);
+        }
+
+        // Event listeners
+        micBtn.addEventListener('mousedown', startRecording);
+        micBtn.addEventListener('mouseup', stopRecording);
+        micBtn.addEventListener('mouseleave', () => {
+            if (state.isRecording) stopRecording();
+        });
+
+        // Touch support for mobile
+        micBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startRecording();
+        });
+        micBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            stopRecording();
+        });
+
+        // Send button click
+        sendBtn.addEventListener('click', sendFromInput);
+
+        // Enter key to send
+        textInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendFromInput();
+            }
+        });
+
+        // Initialize
+        initSpeechRecognition();
+        showWelcome();
+
+        // Background video crossfade loop
+        (function() {
+            const video1 = document.getElementById('bg-video-1');
+            const video2 = document.getElementById('bg-video-2');
+            const fadeTime = 1.5; // seconds before end to start crossfade
+            const maxOpacity = 0.6;
+            let crossfading = false;
+
+            function setupCrossfade(active, standby) {
+                crossfading = false;
+
+                active.addEventListener('timeupdate', function handler() {
+                    const timeLeft = active.duration - active.currentTime;
+
+                    if (timeLeft <= fadeTime && !crossfading) {
+                        crossfading = true;
+                        // Start standby at beginning, already playing
+                        standby.currentTime = 0;
+                        standby.play();
+                    }
+
+                    if (crossfading && timeLeft <= fadeTime) {
+                        // Calculate crossfade progress (0 to 1)
+                        const progress = 1 - (timeLeft / fadeTime);
+
+                        // Crossfade: standby fades in as active fades out
+                        // But keep total brightness constant
+                        standby.style.opacity = (progress * maxOpacity).toFixed(3);
+                        active.style.opacity = ((1 - progress) * maxOpacity).toFixed(3);
+                    }
+
+                    // When active video ends
+                    if (active.ended || timeLeft <= 0.05) {
+                        active.pause();
+                        active.style.opacity = '0';
+                        standby.style.opacity = maxOpacity;
+                        active.currentTime = 0;
+
+                        active.removeEventListener('timeupdate', handler);
+                        setupCrossfade(standby, active);
+                    }
+                });
+            }
+
+            video1.addEventListener('loadedmetadata', () => {
+                video1.style.opacity = maxOpacity;
+                video2.style.opacity = '0';
+                setupCrossfade(video1, video2);
+            });
+        })();
+    </script>
+</body>
+</html>

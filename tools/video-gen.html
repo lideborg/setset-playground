@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Generator</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        header {
+            margin-bottom: var(--space-lg);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Main layout */
+        .main-layout {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Controls panel */
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .panel-section {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Upload grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            padding: 6px;
+            border: 2px dashed var(--border-primary);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--accent-primary);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid #ccc;
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+            transition: all 0.2s;
+        }
+
+        .upload-slot:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--text-primary);
+            background: var(--bg-primary);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 9px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        .upload-slot.uploading::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot .upload-spinner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Movement grid */
+        .movement-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .movement-card {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .movement-card .video-wrapper {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .movement-card:hover .video-wrapper {
+            border-color: var(--text-tertiary);
+        }
+
+        .movement-card.selected .video-wrapper {
+            border-color: var(--accent-primary);
+        }
+
+        .movement-card video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .movement-card .movement-name {
+            text-align: center;
+            padding: 6px 0 0;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .movement-card.selected .movement-name {
+            color: var(--text-primary);
+        }
+
+        .movement-placeholder {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+        }
+
+        .movement-card:hover .movement-placeholder {
+            color: var(--text-secondary);
+        }
+
+        .movement-card.selected .movement-placeholder {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+        }
+
+        /* Settings dropdown */
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: var(--space-xs) 0;
+        }
+
+        .settings-toggle .arrow {
+            transition: transform 0.2s;
+        }
+
+        .settings-toggle.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .settings-content {
+            display: none;
+            padding-top: var(--space-sm);
+        }
+
+        .settings-content.open {
+            display: block;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .setting-row label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .setting-row select,
+        .setting-row input[type="number"] {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+        }
+
+        .setting-row select {
+            min-width: 100px;
+        }
+
+        .setting-row input[type="number"] {
+            width: 60px;
+            text-align: center;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Generate button */
+        .generate-section {
+            margin-top: var(--space-sm);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: var(--space-sm);
+            font-size: 0.875rem;
+        }
+
+        .stats-line {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-top: var(--space-xs);
+        }
+
+        /* Results section */
+        .results-section {
+            margin-top: var(--space-lg);
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            gap: var(--space-md);
+        }
+
+        .results-header h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .results-header .btn {
+            position: absolute;
+            right: var(--space-lg);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border-primary);
+        }
+
+        .result-card.generating {
+            opacity: 0.8;
+        }
+
+        .result-video {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+            background: var(--bg-tertiary);
+        }
+
+        .result-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: var(--bg-tertiary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+        }
+
+        .result-placeholder .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-primary);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result-placeholder p {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .result-info {
+            padding: var(--space-sm);
+        }
+
+        .result-movement {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .result-status {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: var(--space-xs);
+            margin-top: var(--space-xs);
+        }
+
+        .result-actions .btn {
+            flex: 1;
+            font-size: 0.65rem;
+            padding: 4px;
+            height: auto;
+        }
+
+        /* Progress bar */
+        .progress-section {
+            margin-top: var(--space-sm);
+            display: none;
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .progress-bar-bg {
+            height: 4px;
+            background: var(--border-primary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Lightbox video adjustments */
+        #video-lightbox .lightbox-next {
+            right: calc(33.333% + var(--space-lg) + var(--space-xl));
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Video Generator</h1>
+            <p>Upload images, select movements, generate fashion videos with Seedance</p>
+        </header>
+
+        <div class="main-layout">
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <!-- Upload Section -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <span class="section-title">1. Upload Images</span>
+                        <span class="section-title" id="upload-count">0 / 12 images</span>
+                    </div>
+                    <div class="upload-grid" id="upload-grid"></div>
+                    <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+                </div>
+
+                <!-- Movement Section -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <span class="section-title">2. Select Movement</span>
+                    </div>
+                    <div class="movement-grid" id="movement-grid"></div>
+                </div>
+
+                <!-- Settings Section -->
+                <div class="panel-section">
+                    <div class="settings-toggle" id="settings-toggle">
+                        <span class="section-title">Settings</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="settings-content" id="settings-content">
+                        <div class="setting-row">
+                            <label>Resolution</label>
+                            <select id="resolution">
+                                <option value="480p">480p (faster)</option>
+                                <option value="720p" selected>720p</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <label>Duration (sec)</label>
+                            <input type="number" id="duration" value="5" min="2" max="12">
+                        </div>
+                        <div class="setting-row">
+                            <label>Aspect Ratio</label>
+                            <select id="aspect-ratio">
+                                <option value="auto" selected>Auto (from image)</option>
+                                <option value="16:9">16:9</option>
+                                <option value="9:16">9:16</option>
+                                <option value="3:4">3:4</option>
+                                <option value="4:3">4:3</option>
+                                <option value="1:1">1:1</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="camera-fixed" checked>
+                                <label for="camera-fixed">Fixed Camera</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Section -->
+                <div class="generate-section">
+                    <button class="btn btn--primary generate-btn" id="generate-btn" disabled>
+                        Generate Videos
+                    </button>
+                    <div class="stats-line" id="stats-line">
+                        Select images and a movement to start
+                    </div>
+                    <div class="progress-section" id="progress-section">
+                        <div class="progress-header">
+                            <span id="progress-status">Generating...</span>
+                            <span id="progress-count">0 / 0</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inline Loader -->
+            <div class="inline-loader" id="inline-loader">
+                <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+                <div class="loader-progress" id="loader-progress">Preparing...</div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="results-section">
+                <div class="results-header">
+                    <h3>Generated Videos</h3>
+                    <button class="btn btn--secondary" id="download-all-btn" disabled>Download All</button>
+                </div>
+                <div class="results-grid" id="results-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Lightbox (using shared component styles) -->
+    <div class="lightbox" id="video-lightbox" onclick="if(event.target === this) closeVideoLightbox()">
+        <button class="lightbox-close" onclick="closeVideoLightbox()">&times;</button>
+        <button class="lightbox-nav lightbox-prev" onclick="navigateVideoLightbox(-1)">&#8249;</button>
+        <button class="lightbox-nav lightbox-next" onclick="navigateVideoLightbox(1)">&#8250;</button>
+        <div class="lightbox-content">
+            <div class="lightbox-left">
+                <video id="lightbox-video" controls loop autoplay style="max-width: 100%; max-height: 85vh; object-fit: contain;"></video>
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Movement</h3>
+                    <p class="lightbox-model-text" id="lightbox-video-movement"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-video-prompt" style="white-space: pre-wrap;"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-video-download">Download Video</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script src="/shared/data/video-movements.js"></script>
+    <script>
+        // Constants
+        const NUM_SLOTS = 12;
+
+        // State
+        const state = {
+            images: new Array(NUM_SLOTS).fill(null),  // Array of { file, url, dataUrl, selected, uploading } or null
+            selectedMovements: [],  // Array of movement IDs
+            results: [],         // Generated videos
+            generating: false,
+            lightboxIndex: 0     // Current video index in lightbox
+        };
+
+        let api;
+        let pasteTarget = null;  // { slotIndex: number }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            api = new API();
+
+            // Render upload grid
+            renderUploadGrid();
+
+            // Render movement grid
+            renderMovementGrid();
+
+            const uploadGrid = document.getElementById('upload-grid');
+            const fileInput = document.getElementById('file-input');
+
+            // File input change handler
+            fileInput.addEventListener('change', (e) => {
+                const targetSlot = e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null;
+                handleFileUpload(Array.from(e.target.files), targetSlot);
+                e.target.value = '';
+            });
+
+            // Drag and drop on grid
+            uploadGrid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadGrid.classList.add('drag-over');
+            });
+
+            uploadGrid.addEventListener('dragleave', () => {
+                uploadGrid.classList.remove('drag-over');
+            });
+
+            uploadGrid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadGrid.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0) handleFileUpload(files, null);
+            });
+
+            // Clipboard paste handler
+            document.addEventListener('paste', async (e) => {
+                if (!pasteTarget) return;
+
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            handleFileUpload([file], pasteTarget.slotIndex);
+                            clearPasteTarget();
+                        }
+                        break;
+                    }
+                }
+            });
+
+            // Keyboard handler
+            document.addEventListener('keydown', (e) => {
+                const lightbox = document.getElementById('video-lightbox');
+                if (!lightbox.classList.contains('visible')) return;
+
+                if (e.key === 'Escape') {
+                    closeVideoLightbox();
+                } else if (e.key === 'ArrowLeft') {
+                    navigateVideoLightbox(-1);
+                } else if (e.key === 'ArrowRight') {
+                    navigateVideoLightbox(1);
+                }
+            });
+
+            // Settings toggle
+            document.getElementById('settings-toggle').addEventListener('click', () => {
+                document.getElementById('settings-toggle').classList.toggle('open');
+                document.getElementById('settings-content').classList.toggle('open');
+            });
+
+            // Generate button
+            document.getElementById('generate-btn').addEventListener('click', generateVideos);
+
+            // Download all
+            document.getElementById('download-all-btn').addEventListener('click', downloadAll);
+
+            console.log('🎬 Video Generator initialized');
+        });
+
+        // Render upload grid with slots
+        function renderUploadGrid() {
+            const grid = document.getElementById('upload-grid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < NUM_SLOTS; i++) {
+                const slot = createUploadSlot(i);
+                grid.appendChild(slot);
+            }
+
+            updateUploadCount();
+        }
+
+        function createUploadSlot(slotIndex) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.dataset.slotIndex = slotIndex;
+
+            const img = state.images[slotIndex];
+            if (img) {
+                const isSelected = img.selected !== false;
+                const isUploading = img.uploading === true;
+                slot.classList.add('filled');
+                if (!isSelected) slot.classList.add('deselected');
+                if (isUploading) slot.classList.add('uploading');
+                slot.innerHTML = `
+                    <img src="${img.dataUrl}" alt="Image ${slotIndex + 1}">
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${slotIndex})">×</button>
+                    ${isUploading ? '<div class="upload-spinner"></div>' : ''}
+                `;
+            } else {
+                slot.innerHTML = '+';
+            }
+
+            // Single click: toggle selection if filled, or set paste target if empty
+            slot.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                if (state.images[slotIndex]) {
+                    // Toggle selection
+                    toggleImageSelection(slotIndex);
+                } else {
+                    setPasteTarget(slotIndex);
+                }
+            });
+
+            // Double-click opens file picker for empty slots
+            slot.addEventListener('dblclick', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                if (!state.images[slotIndex]) {
+                    const input = document.getElementById('file-input');
+                    input.dataset.targetSlot = slotIndex;
+                    input.click();
+                }
+            });
+
+            return slot;
+        }
+
+        function toggleImageSelection(index) {
+            const img = state.images[index];
+            if (!img) return;
+            img.selected = img.selected === false ? true : false;
+
+            // Just toggle the class, don't re-render the whole grid
+            const grid = document.getElementById('upload-grid');
+            const slot = grid.children[index];
+            if (slot) {
+                slot.classList.toggle('deselected', img.selected === false);
+            }
+            updateStats();
+        }
+
+        function setPasteTarget(slotIndex) {
+            clearPasteTarget();
+            pasteTarget = { slotIndex };
+            const grid = document.getElementById('upload-grid');
+            if (grid.children[slotIndex]) {
+                grid.children[slotIndex].classList.add('paste-ready');
+            }
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = null;
+        }
+
+        function updateUploadCount() {
+            const total = state.images.filter(img => img !== null).length;
+            const selected = state.images.filter(img => img !== null && img.selected !== false).length;
+            if (total === 0) {
+                document.getElementById('upload-count').textContent = `0 / ${NUM_SLOTS} images`;
+            } else {
+                document.getElementById('upload-count').textContent = `${selected} selected / ${total} uploaded`;
+            }
+        }
+
+        // Handle file uploads - show instantly, upload in background
+        function handleFileUpload(files, startIndex) {
+            // Reserve slots synchronously first to avoid race conditions
+            const reservations = [];
+            files.forEach((file, i) => {
+                if (!file.type.startsWith('image/')) return;
+
+                let index;
+                if (startIndex !== null) {
+                    index = startIndex + i;
+                } else {
+                    // Find next empty slot that hasn't been reserved
+                    index = state.images.findIndex((img, idx) =>
+                        !img && !reservations.some(r => r.index === idx)
+                    );
+                }
+                if (index === -1 || index >= NUM_SLOTS) return;
+                reservations.push({ file, index });
+            });
+
+            // Read files and show immediately, upload in background
+            reservations.forEach(({ file, index }) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const dataUrl = e.target.result;
+
+                    // Show image immediately with uploading state
+                    state.images[index] = { file, url: null, dataUrl, selected: true, uploading: true };
+                    renderUploadGrid();
+                    updateStats();
+
+                    // Upload in background
+                    const url = await uploadToStorage(file);
+                    if (state.images[index]) {  // Still exists
+                        state.images[index].url = url;
+                        state.images[index].uploading = false;
+                        renderUploadGrid();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function uploadToStorage(file) {
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                return data.url;
+            } catch (error) {
+                console.error('Upload failed:', error);
+                return null;
+            }
+        }
+
+        window.removeImage = function(index) {
+            // Remove the image and shift remaining images up (compact the array)
+            state.images.splice(index, 1);
+            // Add null at the end to maintain array length
+            state.images.push(null);
+            renderUploadGrid();
+            updateStats();
+        };
+
+        // Render movement grid (only called once on init)
+        function renderMovementGrid() {
+            const grid = document.getElementById('movement-grid');
+            grid.innerHTML = VIDEO_MOVEMENTS.map(movement => `
+                <div class="movement-card ${state.selectedMovements.includes(movement.id) ? 'selected' : ''}"
+                     data-id="${movement.id}">
+                    <div class="video-wrapper">
+                        <video src="${movement.thumbnail}" muted loop playsinline onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"></video>
+                        <div class="movement-placeholder" style="display:none;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                    <span class="movement-name">${movement.name}</span>
+                </div>
+            `).join('');
+
+            // Add click and hover handlers
+            grid.querySelectorAll('.movement-card').forEach(card => {
+                const video = card.querySelector('video');
+                const id = card.dataset.id;
+
+                // Click to toggle
+                card.addEventListener('click', () => toggleMovement(id));
+
+                // Hover to play video
+                card.addEventListener('mouseenter', () => video.play().catch(() => {}));
+                card.addEventListener('mouseleave', () => {
+                    video.pause();
+                    video.currentTime = 0;
+                });
+            });
+        }
+
+        function toggleMovement(id) {
+            const index = state.selectedMovements.indexOf(id);
+            if (index === -1) {
+                state.selectedMovements.push(id);
+            } else {
+                state.selectedMovements.splice(index, 1);
+            }
+
+            // Just toggle the class, don't re-render
+            const card = document.querySelector(`.movement-card[data-id="${id}"]`);
+            if (card) {
+                card.classList.toggle('selected', state.selectedMovements.includes(id));
+            }
+            updateStats();
+        }
+
+        // Update stats and button state
+        function updateStats() {
+            const allImages = state.images.filter(img => img !== null);
+            const selectedImages = allImages.filter(img => img.selected !== false && img.url);  // selected AND uploaded
+            const uploadingImages = allImages.filter(img => img.uploading);
+            const numSelected = selectedImages.length;
+            const numMovements = state.selectedMovements.length;
+            const hasMovements = numMovements > 0;
+            // Don't check state.generating - allow concurrent generation batches
+            const canGenerate = numSelected > 0 && hasMovements && uploadingImages.length === 0;
+
+            document.getElementById('generate-btn').disabled = !canGenerate;
+            updateUploadCount();
+
+            if (allImages.length === 0) {
+                document.getElementById('stats-line').textContent = 'Upload images to start';
+            } else if (uploadingImages.length > 0) {
+                document.getElementById('stats-line').textContent = `Uploading ${uploadingImages.length} image${uploadingImages.length > 1 ? 's' : ''}...`;
+            } else if (numSelected === 0) {
+                document.getElementById('stats-line').textContent = `${allImages.length} uploaded - click to select`;
+            } else if (!hasMovements) {
+                document.getElementById('stats-line').textContent = `${numSelected} selected - choose movement(s)`;
+            } else {
+                const totalVideos = numSelected * numMovements;
+                document.getElementById('stats-line').textContent = `${totalVideos} video${totalVideos > 1 ? 's' : ''} (${numSelected} image${numSelected > 1 ? 's' : ''} × ${numMovements} movement${numMovements > 1 ? 's' : ''})`;
+            }
+
+            document.getElementById('download-all-btn').disabled = state.results.filter(r => r.videoUrl).length === 0;
+        }
+
+        // Analyze image and build prompt
+        async function analyzeAndBuildPrompt(imageUrl, movement, settings) {
+            try {
+                // Analyze the image with movement context to build a coherent prompt
+                const analysisResponse = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: imageUrl,
+                        prompt: `You are creating a video prompt. Analyze this fashion image and write a prompt that describes:
+1. The subject and their current pose/posture (standing, sitting, leaning, etc.)
+2. What they're wearing (clothing style, colors)
+3. The setting/background
+
+Then incorporate this movement naturally: "${movement.description}"
+
+Write a single cohesive 2-3 sentence prompt that makes the movement work with the current pose. If the movement conflicts with the pose (e.g., "walking" but person is sitting), adapt it to make sense.
+
+Example output: "A woman in a black evening gown stands in a minimalist white studio. She remains almost completely still, barely moving, like a photograph subtly coming to life."
+
+Write ONLY the prompt, nothing else.`
+                    })
+                });
+
+                const analysisData = await analysisResponse.json();
+                let enhancedPrompt = analysisData.content || movement.fallbackPrompt;
+
+                // Add fixed camera instructions to prompt if enabled
+                if (settings.camera_fixed) {
+                    enhancedPrompt = `Static locked-off camera, no camera movement. ${enhancedPrompt} The camera remains completely still and fixed throughout.`;
+                }
+
+                console.log(`📝 Enhanced prompt: ${enhancedPrompt.substring(0, 100)}...`);
+                return enhancedPrompt;
+
+            } catch (error) {
+                console.error('Analysis failed, using fallback:', error);
+                let fallback = movement.fallbackPrompt;
+                if (settings.camera_fixed) {
+                    fallback = `Static locked-off camera, no camera movement. ${fallback} The camera remains completely still and fixed throughout.`;
+                }
+                return fallback;
+            }
+        }
+
+        // Generate videos
+        async function generateVideos() {
+            // Only use selected images that have been uploaded
+            const selectedImages = state.images.filter(img => img !== null && img.selected !== false && img.url);
+            if (selectedImages.length === 0 || state.selectedMovements.length === 0) return;
+
+            state.generating = true;  // Track that we're generating (for stats display)
+            // Don't clear state.results - append to existing
+
+            const movements = state.selectedMovements.map(id => getMovementById(id));
+            const settings = {
+                resolution: document.getElementById('resolution').value,
+                duration: parseInt(document.getElementById('duration').value),
+                aspect_ratio: document.getElementById('aspect-ratio').value,
+                camera_fixed: document.getElementById('camera-fixed').checked
+            };
+
+            const totalTasks = selectedImages.length * movements.length;
+
+            // Show progress and loader
+            document.getElementById('progress-section').classList.add('visible');
+            document.getElementById('progress-count').textContent = `0 / ${totalTasks}`;
+            document.getElementById('progress-bar').style.width = '0%';
+            // Don't disable generate button - allow concurrent batches
+
+            // Start the loader animation
+            startLoadingAnimation(`Generating ${totalTasks} video${totalTasks > 1 ? 's' : ''}...`);
+
+            // Show results section (don't clear - append to existing)
+            document.getElementById('results-section').classList.add('visible');
+
+            let completed = 0;
+
+            // Build all tasks
+            const tasks = [];
+            for (let i = 0; i < selectedImages.length; i++) {
+                const image = selectedImages[i];
+                for (let j = 0; j < movements.length; j++) {
+                    const movement = movements[j];
+                    const resultId = `result-${Date.now()}-${i}-${j}`;
+                    tasks.push({ image, movement, resultId });
+
+                    // Add placeholder immediately
+                    addResultPlaceholder(resultId, movement.name, image.dataUrl);
+                }
+            }
+
+            // Process all tasks in parallel
+            const promises = tasks.map(async ({ image, movement, resultId }) => {
+                let prompt = '';
+                try {
+                    // Analyze image and build enhanced prompt
+                    updateResultStatus(resultId, 'Analyzing...');
+                    prompt = await analyzeAndBuildPrompt(image.url, movement, settings);
+
+                    // Generate video
+                    updateResultStatus(resultId, 'Generating...');
+
+                    const response = await fetch('/api/video/seedance', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image_url: image.url,
+                            prompt: prompt,
+                            ...settings
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.video?.url) {
+                        const result = {
+                            id: resultId,
+                            videoUrl: data.video.url,
+                            url: data.video.url,  // For lightbox compatibility
+                            movement: movement.name,
+                            prompt: prompt,
+                            sourceImage: image.dataUrl
+                        };
+                        state.results.push(result);
+                        updateResultWithVideo(resultId, data.video.url, prompt);
+                        console.log(`✅ Video complete (${movement.name})`);
+                    } else {
+                        throw new Error(data.error || 'No video returned');
+                    }
+
+                } catch (error) {
+                    console.error(`❌ Video failed:`, error);
+                    updateResultStatus(resultId, `Failed: ${error.message}`);
+                    state.results.push({
+                        id: resultId,
+                        error: error.message,
+                        movement: movement.name,
+                        prompt: prompt,
+                        sourceImage: image.dataUrl
+                    });
+                }
+
+                // Update progress
+                completed++;
+                document.getElementById('progress-count').textContent = `${completed} / ${totalTasks}`;
+                document.getElementById('progress-bar').style.width = `${(completed / totalTasks) * 100}%`;
+            });
+
+            // Wait for all to complete
+            await Promise.all(promises);
+
+            // Stop the loader
+            stopLoadingAnimation();
+
+            document.getElementById('progress-status').textContent = 'Complete!';
+            state.generating = false;
+            updateStats();
+        }
+
+        // Add result placeholder
+        function addResultPlaceholder(id, movementName, sourceImage) {
+            const resultsSection = document.getElementById('results-section');
+            const grid = document.getElementById('results-grid');
+
+            // Show results section
+            resultsSection.classList.add('visible');
+
+            const html = `
+                <div class="result-card generating" id="${id}">
+                    <div class="result-placeholder">
+                        <div class="spinner"></div>
+                        <p id="${id}-status">Preparing...</p>
+                    </div>
+                    <div class="result-info">
+                        <div class="result-movement">${movementName}</div>
+                    </div>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', html);
+        }
+
+        // Update result status
+        function updateResultStatus(id, status) {
+            const statusEl = document.getElementById(`${id}-status`);
+            if (statusEl) statusEl.textContent = status;
+        }
+
+        // Update result with video
+        function updateResultWithVideo(id, videoUrl, prompt) {
+            const card = document.getElementById(id);
+            if (!card) return;
+
+            card.classList.remove('generating');
+            card.dataset.videoUrl = videoUrl;
+            card.dataset.prompt = prompt;
+
+            const placeholder = card.querySelector('.result-placeholder');
+            if (placeholder) {
+                placeholder.outerHTML = `
+                    <video class="result-video" src="${videoUrl}" loop muted playsinline></video>
+                `;
+            }
+
+            // Add click handler to open lightbox and hover to play
+            const video = card.querySelector('.result-video');
+            if (video) {
+                video.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openVideoLightbox(id);
+                });
+                video.style.cursor = 'pointer';
+
+                // Play on hover only
+                card.addEventListener('mouseenter', () => video.play().catch(() => {}));
+                card.addEventListener('mouseleave', () => {
+                    video.pause();
+                    video.currentTime = 0;
+                });
+            }
+
+            // Add actions
+            const info = card.querySelector('.result-info');
+            if (info && !info.querySelector('.result-actions')) {
+                info.innerHTML += `
+                    <div class="result-actions">
+                        <button class="btn btn--secondary" onclick="event.stopPropagation(); downloadVideo('${videoUrl}', '${id}')">Download</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Open video in lightbox
+        function openVideoLightbox(id) {
+            const completedVideos = state.results.filter(r => r.videoUrl);
+            const index = completedVideos.findIndex(r => r.id === id);
+            if (index === -1) return;
+
+            state.lightboxIndex = index;
+            updateVideoLightboxContent();
+            document.getElementById('video-lightbox').classList.add('visible');
+        }
+
+        function closeVideoLightbox() {
+            const lightbox = document.getElementById('video-lightbox');
+            const video = document.getElementById('lightbox-video');
+            lightbox.classList.remove('visible');
+            video.pause();
+        }
+
+        function navigateVideoLightbox(direction) {
+            const completedVideos = state.results.filter(r => r.videoUrl);
+            const newIndex = state.lightboxIndex + direction;
+            if (newIndex >= 0 && newIndex < completedVideos.length) {
+                state.lightboxIndex = newIndex;
+                updateVideoLightboxContent();
+            }
+        }
+
+        function updateVideoLightboxContent() {
+            const completedVideos = state.results.filter(r => r.videoUrl);
+            const result = completedVideos[state.lightboxIndex];
+            if (!result) return;
+
+            const video = document.getElementById('lightbox-video');
+            const promptEl = document.getElementById('lightbox-video-prompt');
+            const movementEl = document.getElementById('lightbox-video-movement');
+            const downloadBtn = document.getElementById('lightbox-video-download');
+
+            video.src = result.videoUrl;
+            promptEl.textContent = result.prompt || 'No prompt available';
+            movementEl.textContent = result.movement || '';
+            downloadBtn.onclick = () => downloadVideo(result.videoUrl, result.id);
+
+            video.play();
+        }
+
+        // Generate filename with proper naming convention
+        function generateFilename(movement, index) {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const num = String(index).padStart(2, '0');
+
+            // Clean movement name (remove spaces, capitalize)
+            const movementName = movement.replace(/\s+/g, '');
+
+            return `Setset_Video_${movementName}_${yy}${mm}${dd}_${hh}${min}_${num}.mp4`;
+        }
+
+        // Download video
+        window.downloadVideo = async function(url, resultId) {
+            // Find the result to get movement name
+            const result = state.results.find(r => r.id === resultId);
+            const movement = result?.movement || 'Unknown';
+            const resultIndex = state.results.filter(r => r.videoUrl).indexOf(result) + 1;
+
+            const filename = generateFilename(movement, resultIndex);
+
+            try {
+                const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(url)}`);
+                const blob = await response.blob();
+                const downloadUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                console.error('Download failed:', error);
+                // Fallback: open in new tab
+                window.open(url, '_blank');
+            }
+        }
+
+        // Download all videos
+        async function downloadAll() {
+            const videos = state.results.filter(r => r.videoUrl);
+            for (const result of videos) {
+                await downloadVideo(result.videoUrl, result.id);
+                await new Promise(r => setTimeout(r, 500));
+            }
+        }
+    </script>
+</body>
+</html>

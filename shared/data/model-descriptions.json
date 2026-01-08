@@ -121,7 +121,7 @@
   },
   {
     "id": "kai",
-    "name": "Kai Thompson",
+    "name": "Mia Parker",
     "gender": "male",
     "age_range": "early 20s",
     "ethnicity": "Black",
@@ -238,5 +238,29 @@
     "skin_tone": "dark brown",
     "distinctive_features": "smooth skin and symmetrical features",
     "overall_description": "A late 20s Black male with a short buzz cut and dark brown skin, featuring smooth skin and symmetrical features."
+  },
+  {
+    "id": "emily",
+    "name": "Emily Hart",
+    "gender": "female",
+    "age_range": "late 20s",
+    "ethnicity": "East Asian",
+    "hair_color": "black",
+    "hair_style": "slicked back, wet look",
+    "skin_tone": "light olive",
+    "distinctive_features": "natural dewy skin, strong bone structure, minimal makeup",
+    "overall_description": "A late 20s female with slicked back black hair, light olive skin, natural dewy complexion, and strong bone structure."
+  },
+  {
+    "id": "alex",
+    "name": "Alex Stone",
+    "gender": "male",
+    "age_range": "late 20s",
+    "ethnicity": "Hispanic/Latino",
+    "hair_color": "dark brown",
+    "hair_style": "short buzz cut",
+    "skin_tone": "medium tan",
+    "distinctive_features": "strong angular jawline, intense gaze, defined cheekbones",
+    "overall_description": "A late 20s male with a short buzz cut, medium tan skin, strong angular jawline, and defined cheekbones."
   }
 ]
