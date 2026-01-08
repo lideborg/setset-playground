@@ -168,8 +168,8 @@
             line-height: 1.6;
         }
 
-        /* First word is bold */
-        .message-card .word.first-word {
+        /* First sentence is bold */
+        .message-card .word.first-sentence {
             font-weight: 600;
             color: #ffffff;
         }
@@ -201,8 +201,8 @@
             }
         }
 
-        /* First word animates to white */
-        .message-card .word.first-word.visible {
+        /* First sentence animates to white */
+        .message-card .word.first-sentence.visible {
             animation: wordPopFirst 400ms ease-out forwards;
         }
 
@@ -240,20 +240,9 @@
             border-color: rgba(150, 180, 210, 0.5);
         }
 
-        /* Recording cursor (blinking) */
+        /* Recording cursor - hidden */
         .recording-cursor {
-            display: inline-block;
-            width: 2px;
-            height: 1em;
-            background: rgba(255, 255, 255, 0.8);
-            margin-left: 2px;
-            vertical-align: middle;
-            animation: cursorBlink 0.8s ease-in-out infinite;
-        }
-
-        @keyframes cursorBlink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+            display: none;
         }
 
         /* Word animation in user message */
@@ -522,7 +511,6 @@
             // Create live user bubble immediately wrapped
             state.liveUserBubble = createUserMessage('');
             state.liveUserBubble.classList.add('live-recording');
-            state.liveUserBubble.innerHTML = '<span class="recording-cursor"></span>';
             state.liveWrapper = wrapMessage(state.liveUserBubble);
             messagesEl.appendChild(state.liveWrapper);
 
@@ -536,8 +524,8 @@
         function updateLiveTranscript(text) {
             if (!state.liveUserBubble) return;
 
-            // Normalize: lowercase everything for consistent display during recording
-            const normalizedText = text.toLowerCase();
+            // Capitalize first letter, lowercase the rest
+            const normalizedText = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
             // Only update if text actually changed (reduces flicker)
             if (state.lastDisplayedText === normalizedText) return;
@@ -554,8 +542,6 @@
                 }
             });
 
-            // Add recording cursor at the end
-            html += '<span class="recording-cursor"></span>';
             state.liveUserBubble.innerHTML = html;
         }
 
@@ -565,11 +551,9 @@
             micBtn.classList.remove('recording');
             recordingIndicator.classList.remove('visible');
 
-            // Remove recording cursor and finalize bubble
+            // Finalize bubble
             if (state.liveUserBubble) {
                 state.liveUserBubble.classList.remove('live-recording');
-                const cursor = state.liveUserBubble.querySelector('.recording-cursor');
-                if (cursor) cursor.remove();
 
                 // If empty, remove the wrapper
                 if (!state.currentTranscript.trim() && state.liveWrapper) {
@@ -659,18 +643,21 @@
         }
 
         // Build span structure for text (used for measuring and animating)
-        function buildWordSpans(element, text, markFirstWord = false) {
+        function buildWordSpans(element, text, markFirstSentence = false) {
             element.innerHTML = '';
             const words = text.split(/(\s+)/);
-            let isFirst = true;
+            let inFirstSentence = true;
 
             words.forEach(word => {
                 if (word.trim()) {
                     const span = document.createElement('span');
                     span.className = 'word';
-                    if (markFirstWord && isFirst) {
-                        span.classList.add('first-word');
-                        isFirst = false;
+                    if (markFirstSentence && inFirstSentence) {
+                        span.classList.add('first-sentence');
+                        // Check if this word ends the first sentence
+                        if (word.match(/[.!?]$/)) {
+                            inFirstSentence = false;
+                        }
                     }
                     span.textContent = word;
                     element.appendChild(span);

@@ -4,1083 +4,465 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pose Library</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧍</text></svg>">
     <link rel="stylesheet" href="/shared/css/tokens.css">
-    <link rel="stylesheet" href="/shared/css/base.css">
     <link rel="stylesheet" href="/shared/css/components.css">
     <style>
-        .container {
-            max-width: 1400px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Filter bar */
-        .filter-bar {
+        body {
+            font-family: var(--font-sans);
+            background: var(--off-white);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--slate);
+            font-size: 14px;
+        }
+
+        /* Category tabs */
+        .tabs {
             display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            padding: var(--space-md);
-            background: var(--white);
-            border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--space-md);
+            gap: 8px;
+            max-width: 1400px;
+            margin: 0 auto 24px;
             flex-wrap: wrap;
         }
 
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-
-        .filter-label {
-            font-size: var(--text-xs);
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--slate);
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 4px;
-        }
-
-        .filter-btn {
-            padding: 6px 12px;
-            font-size: var(--text-xs);
+        .tab {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            background: var(--white);
             border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-sm);
-            background: var(--off-white);
-            color: var(--slate);
+            border-radius: 6px;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all 0.15s ease;
         }
 
-        .filter-btn:hover {
+        .tab:hover {
             border-color: var(--ash-grey);
         }
 
-        .filter-btn.active {
+        .tab.active {
             background: var(--jet);
             color: var(--white);
             border-color: var(--jet);
         }
 
-        .stats {
-            margin-left: auto;
-            font-size: var(--text-sm);
-            color: var(--slate);
+        .tab .count {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-left: 4px;
         }
 
-        /* Upload section */
-        .upload-section {
-            background: var(--white);
-            border: 2px dashed var(--gainsboro);
-            border-radius: var(--radius-md);
-            padding: var(--space-lg);
-            margin-bottom: var(--space-md);
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .upload-section:hover {
-            border-color: var(--jet);
-            background: var(--off-white);
-        }
-
-        .upload-section.drag-over {
-            border-color: var(--jet);
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: var(--space-sm);
-        }
-
-        .upload-text {
-            font-size: var(--text-md);
-            color: var(--slate);
-            margin-bottom: var(--space-xs);
-        }
-
-        .upload-hint {
-            font-size: var(--text-xs);
-            color: var(--ash-grey);
-        }
-
-        /* Pose grid */
-        .pose-grid {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: var(--space-md);
-        }
-
-        @media (min-width: 900px) {
-            .pose-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .pose-card {
             background: var(--white);
-            border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-md);
+            border-radius: 12px;
             overflow: hidden;
-            transition: all var(--transition-fast);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: box-shadow 0.2s ease;
         }
 
         .pose-card:hover {
-            border-color: var(--ash-grey);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
-        .pose-image {
-            aspect-ratio: 3/4;
+        .pose-images {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            background: var(--gainsboro);
+        }
+
+        .pose-images img {
             width: 100%;
+            aspect-ratio: 3/4;
             object-fit: cover;
-            cursor: pointer;
+            display: block;
         }
 
         .pose-info {
-            padding: var(--space-sm);
+            padding: 16px;
         }
 
-        .pose-gender {
-            display: inline-block;
-            padding: 2px 8px;
-            font-size: var(--text-2xs);
-            font-weight: 600;
-            text-transform: uppercase;
-            border-radius: var(--radius-xs);
-            margin-bottom: var(--space-xs);
-        }
-
-        .pose-gender.male {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .pose-gender.female {
-            background: #fce7f3;
-            color: #be185d;
-        }
-
-        .pose-gender.unisex {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .pose-categories {
+        .pose-meta {
             display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-bottom: var(--space-xs);
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .pose-number {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .pose-category {
+            font-size: 10px;
+            font-weight: 500;
             padding: 2px 6px;
-            font-size: 9px;
-            background: var(--off-white);
-            border-radius: var(--radius-xs);
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .pose-category.standing {
+            background: rgba(100, 100, 255, 0.1);
+            color: rgba(100, 100, 255, 0.8);
+        }
+
+        .pose-category.seated {
+            background: rgba(255, 150, 50, 0.1);
+            color: rgba(200, 120, 40, 0.9);
+        }
+
+        .pose-category.leaning {
+            background: rgba(100, 180, 100, 0.1);
+            color: rgba(80, 140, 80, 0.9);
+        }
+
+        .pose-category.movement {
+            background: rgba(200, 100, 200, 0.1);
+            color: rgba(160, 80, 160, 0.9);
+        }
+
+        .pose-category.portrait {
+            background: rgba(200, 150, 100, 0.1);
+            color: rgba(160, 120, 80, 0.9);
+        }
+
+        .pose-category.camera {
+            background: rgba(100, 180, 200, 0.1);
+            color: rgba(80, 140, 160, 0.9);
+        }
+
+        .pose-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--carbon);
+            letter-spacing: -0.01em;
+        }
+
+        .pose-prompt {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--gainsboro);
+            font-size: 13px;
+            line-height: 1.6;
             color: var(--slate);
         }
 
-        .pose-description {
-            font-size: var(--text-xs);
-            color: var(--slate);
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .pose-card.expanded .pose-prompt {
+            display: block;
         }
 
         .pose-actions {
+            display: none;
+            margin-top: 12px;
+            gap: 8px;
+        }
+
+        .pose-card.expanded .pose-actions {
             display: flex;
-            gap: 4px;
-            margin-top: var(--space-xs);
-            padding-top: var(--space-xs);
-            border-top: 1px solid var(--gainsboro);
         }
 
-        .pose-action-btn {
-            flex: 1;
-            padding: 4px 8px;
-            font-size: var(--text-2xs);
+        .pose-actions button {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
             border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-xs);
             background: var(--white);
-            color: var(--slate);
+            border-radius: 6px;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all 0.15s ease;
         }
 
-        .pose-action-btn:hover {
+        .pose-actions button:hover {
             background: var(--off-white);
+            border-color: var(--ash-grey);
         }
 
-        .pose-action-btn.delete:hover {
-            background: #fee2e2;
-            border-color: #fca5a5;
-            color: #dc2626;
+        .pose-actions button.copied {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
         }
 
-        /* Analyze modal */
-        .modal {
+        /* Lightbox */
+        .lightbox {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0,0,0,0.95);
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            padding: var(--space-lg);
+            padding: 40px;
         }
 
-        .modal.visible {
+        .lightbox.active {
             display: flex;
         }
 
-        .modal-content {
-            background: var(--white);
-            border-radius: var(--radius-md);
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            padding: var(--space-md);
-            border-bottom: 1px solid var(--gainsboro);
+        .lightbox-content {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
         }
 
-        .modal-title {
-            font-size: var(--text-md);
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--slate);
-        }
-
-        .modal-body {
-            padding: var(--space-md);
-        }
-
-        .modal-image {
-            width: 100%;
-            max-height: 300px;
+        .lightbox img {
+            max-width: 80vw;
+            max-height: 85vh;
             object-fit: contain;
-            background: var(--off-white);
-            border-radius: var(--radius-sm);
-            margin-bottom: var(--space-md);
         }
 
-        .form-group {
-            margin-bottom: var(--space-md);
-        }
-
-        .form-label {
-            display: block;
-            font-size: var(--text-xs);
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--slate);
-            margin-bottom: var(--space-xs);
-        }
-
-        .form-select, .form-textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-sm);
-            font-size: var(--text-sm);
-            font-family: inherit;
-        }
-
-        .form-textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .category-checkboxes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-xs);
-        }
-
-        .category-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            background: var(--off-white);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-size: var(--text-xs);
-            transition: all var(--transition-fast);
-        }
-
-        .category-checkbox:hover {
-            background: var(--gainsboro);
-        }
-
-        .category-checkbox.selected {
-            background: var(--jet);
-            color: var(--white);
-        }
-
-        .category-checkbox input {
-            display: none;
-        }
-
-        /* Tag groups in modal */
-        .tag-group {
-            margin-bottom: var(--space-md);
-        }
-
-        .tag-group-label {
-            font-size: var(--text-2xs);
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--ash-grey);
-            margin-bottom: var(--space-xs);
-            display: block;
-        }
-
-        .tag-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
-        .tag-btn {
-            padding: 4px 10px;
-            font-size: var(--text-xs);
-            border: 1px solid var(--gainsboro);
-            border-radius: var(--radius-sm);
-            background: var(--off-white);
-            color: var(--slate);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .tag-btn:hover {
-            border-color: var(--ash-grey);
-        }
-
-        .tag-btn.selected {
-            background: var(--jet);
-            color: var(--white);
-            border-color: var(--jet);
-        }
-
-        /* Active tag filters */
-        .active-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .active-filter {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            background: var(--jet);
-            color: var(--white);
-            border-radius: var(--radius-sm);
-            font-size: var(--text-xs);
-        }
-
-        .active-filter .remove {
-            cursor: pointer;
-            opacity: 0.7;
-        }
-
-        .active-filter .remove:hover {
-            opacity: 1;
-        }
-
-        .clear-filters {
-            font-size: var(--text-xs);
-            color: var(--slate);
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        .clear-filters:hover {
-            color: var(--carbon);
-        }
-
-        .modal-footer {
-            padding: var(--space-md);
-            border-top: 1px solid var(--gainsboro);
-            display: flex;
-            gap: var(--space-sm);
-            justify-content: flex-end;
-        }
-
-        /* Loading state */
-        .analyzing {
-            text-align: center;
-            padding: var(--space-lg);
-        }
-
-        .analyzing-text {
-            font-size: var(--text-sm);
-            color: var(--slate);
-            margin-top: var(--space-sm);
-        }
-
-        .spinner {
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
             width: 40px;
             height: 40px;
-            border: 3px solid var(--gainsboro);
-            border-top-color: var(--jet);
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 24px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+            cursor: pointer;
+            transition: background 0.2s ease;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
         }
 
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: var(--space-xl);
-            color: var(--slate);
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.5);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: var(--space-sm);
-            opacity: 0.5;
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
         }
 
-        input[type="file"] {
-            display: none;
-        }
+        .lightbox-nav.prev { left: 20px; }
+        .lightbox-nav.next { right: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="hero">
-            <h1>Pose Library</h1>
-            <p class="hero-subtitle">Collect, categorize, and browse reference poses</p>
-        </div>
-
-        <!-- Upload Section -->
-        <div class="upload-section" id="upload-section">
-            <div class="upload-icon">📸</div>
-            <div class="upload-text">Drop pose images here or click to upload</div>
-            <div class="upload-hint">Images will be analyzed and categorized automatically</div>
-        </div>
-        <input type="file" id="file-input" accept="image/*" multiple>
-
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-group">
-                <span class="filter-label">Gender</span>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="male">Male</button>
-                    <button class="filter-btn" data-filter="female">Female</button>
-                    <button class="filter-btn" data-filter="unisex">Unisex</button>
-                </div>
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">Tags</span>
-                <select class="form-select" id="tag-filter" style="width: auto; padding: 6px 12px;">
-                    <option value="">+ Add filter</option>
-                </select>
-            </div>
-            <div class="active-filters" id="active-filters"></div>
-            <div class="stats" id="stats">0 poses</div>
-        </div>
-
-        <!-- Pose Grid -->
-        <div class="pose-grid" id="pose-grid">
-            <div class="empty-state">
-                <div class="empty-state-icon">🧍</div>
-                <p>No poses yet. Upload some images to get started!</p>
-            </div>
-        </div>
+    <div class="header">
+        <h1>Pose Library</h1>
+        <p>50 editorial poses with Female & Male variations. Click to expand prompt.</p>
     </div>
 
-    <!-- Analyze/Edit Modal -->
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title" id="modal-title">Analyze Pose</span>
-                <button class="modal-close" id="modal-close">&times;</button>
-            </div>
-            <div class="modal-body" id="modal-body">
-                <img src="" alt="" class="modal-image" id="modal-image">
+    <div class="tabs" id="tabs"></div>
 
-                <div id="analyzing-state" class="analyzing" style="display: none;">
-                    <div class="spinner"></div>
-                    <div class="analyzing-text">Analyzing pose...</div>
-                </div>
+    <div class="grid" id="grid"></div>
 
-                <div id="form-state">
-                    <div class="form-group">
-                        <label class="form-label">Gender</label>
-                        <div class="filter-buttons">
-                            <button class="filter-btn" data-gender="male">Male</button>
-                            <button class="filter-btn" data-gender="female">Female</button>
-                            <button class="filter-btn" data-gender="unisex">Unisex</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Tags</label>
-                        <div id="tag-groups"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-textarea" id="pose-description" placeholder="Describe the pose for prompt generation..."></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="modal-cancel">Cancel</button>
-                <button class="btn btn--primary" id="modal-save">Save Pose</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lightbox -->
     <div class="lightbox" id="lightbox">
-        <div class="lightbox-content" style="max-width: 800px;">
-            <button class="lightbox-close" id="lightbox-close">&times;</button>
-            <div class="lightbox-left">
-                <img src="" alt="" class="lightbox-image" id="lightbox-image">
-            </div>
-            <div class="lightbox-right">
-                <div class="lightbox-section">
-                    <h3 class="lightbox-section-title">Gender</h3>
-                    <p id="lightbox-gender"></p>
-                </div>
-                <div class="lightbox-section">
-                    <h3 class="lightbox-section-title">Categories</h3>
-                    <p id="lightbox-categories"></p>
-                </div>
-                <div class="lightbox-section">
-                    <h3 class="lightbox-section-title">Description</h3>
-                    <p id="lightbox-description"></p>
-                </div>
-            </div>
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">&#8249;</button>
+        <button class="lightbox-nav next" onclick="navigateLightbox(1)">&#8250;</button>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="">
         </div>
     </div>
 
-    <script src="/shared/js/utils.js"></script>
-    <script src="/shared/js/api.js"></script>
+    <script src="/shared/data/editorial-poses.js"></script>
     <script>
-        // Tag system organized by groups
-        const TAG_GROUPS = {
-            'Framing': ['full-body', 'three-quarter', 'half-body', 'close-up'],
-            'Orientation': ['frontal', '3/4-angle', 'profile', 'back-view', 'over-shoulder'],
-            'Stance': ['standing', 'sitting', 'walking', 'leaning', 'floor', 'crouching'],
-            'Arms': ['arms-at-sides', 'hands-in-pockets', 'hands-on-hips', 'arms-crossed', 'arms-raised', 'touching-face', 'holding-garment', 'hands-clasped'],
-            'Legs': ['feet-together', 'weight-shifted', 'wide-stance', 'legs-crossed', 'one-knee-bent'],
-            'Mood': ['confident', 'relaxed', 'editorial', 'dynamic', 'candid'],
-            'Use Case': ['e-commerce', 'lookbook', 'campaign', 'social'],
-            'Props': ['with-chair', 'with-stool', 'against-wall', 'with-bag']
-        };
+        let currentFilter = 'all';
 
-        // Flatten all tags for easy lookup
-        const ALL_TAGS = Object.values(TAG_GROUPS).flat();
+        // Build pose data with codes and image paths
+        const poses = EDITORIAL_POSES_FEMALE.map((pose, idx) => {
+            const code = String(idx + 1).padStart(2, '0');
+            return {
+                ...pose,
+                index: idx + 1,
+                code: code,
+                images: {
+                    f1: `/assets/poses/pose_${code}F1_${pose.id}.png`,
+                    f2: `/assets/poses/pose_${code}F2_${pose.id}.png`,
+                    m1: `/assets/poses/pose_${code}M1_${pose.id}.png`,
+                    m2: `/assets/poses/pose_${code}M2_${pose.id}.png`
+                },
+                // Get male prompt for display
+                malePrompt: EDITORIAL_POSES_MALE[idx]?.prompt || ''
+            };
+        });
 
-        // State
-        const state = {
-            poses: [],
-            filterGender: 'all',
-            filterTags: [],  // Array of active tag filters
-            currentPose: null,
-            currentImageData: null,
-            selectedTags: []  // Tags selected in modal
-        };
+        // Category counts
+        const categoryCounts = {};
+        poses.forEach(p => {
+            categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
+        });
 
-        // DOM Elements
-        const elements = {
-            uploadSection: document.getElementById('upload-section'),
-            fileInput: document.getElementById('file-input'),
-            poseGrid: document.getElementById('pose-grid'),
-            stats: document.getElementById('stats'),
-            tagFilter: document.getElementById('tag-filter'),
-            activeFilters: document.getElementById('active-filters'),
-            modal: document.getElementById('modal'),
-            modalTitle: document.getElementById('modal-title'),
-            modalImage: document.getElementById('modal-image'),
-            modalBody: document.getElementById('modal-body'),
-            analyzingState: document.getElementById('analyzing-state'),
-            formState: document.getElementById('form-state'),
-            tagGroups: document.getElementById('tag-groups'),
-            poseDescription: document.getElementById('pose-description'),
-            lightbox: document.getElementById('lightbox'),
-            lightboxImage: document.getElementById('lightbox-image'),
-            lightboxGender: document.getElementById('lightbox-gender'),
-            lightboxCategories: document.getElementById('lightbox-categories'),
-            lightboxDescription: document.getElementById('lightbox-description')
-        };
+        const categories = [
+            { id: 'standing', name: 'Standing' },
+            { id: 'seated', name: 'Seated' },
+            { id: 'leaning', name: 'Leaning' },
+            { id: 'movement', name: 'Movement' },
+            { id: 'portrait', name: 'Portrait' },
+            { id: 'camera', name: 'Camera' }
+        ];
 
-        // Initialize
-        async function init() {
-            await loadPoses();
-            setupEventListeners();
-            populateTagFilter();
-            renderTagGroups();
-            renderPoses();
+        function renderTabs() {
+            const totalCount = poses.length;
+            let html = `<div class="tab ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">All <span class="count">(${totalCount})</span></div>`;
+
+            categories.forEach(cat => {
+                const count = categoryCounts[cat.id] || 0;
+                html += `<div class="tab ${currentFilter === cat.id ? 'active' : ''}" onclick="setFilter('${cat.id}')">${cat.name} <span class="count">(${count})</span></div>`;
+            });
+
+            document.getElementById('tabs').innerHTML = html;
         }
 
-        // Load poses from JSON file (with localStorage override for custom additions)
-        async function loadPoses() {
-            try {
-                // First load from JSON file
-                const response = await fetch('/shared/data/pose-library.json');
-                const data = await response.json();
-                state.poses = data.poses || [];
-
-                // Then merge any localStorage additions
-                const localSaved = localStorage.getItem('poseLibrary_custom');
-                if (localSaved) {
-                    const customPoses = JSON.parse(localSaved);
-                    // Add custom poses that aren't already in the library
-                    customPoses.forEach(cp => {
-                        if (!state.poses.find(p => p.id === cp.id)) {
-                            state.poses.push(cp);
-                        }
-                    });
-                }
-            } catch (e) {
-                console.error('Failed to load pose library:', e);
-                // Fallback to localStorage only
-                const saved = localStorage.getItem('poseLibrary_custom');
-                if (saved) {
-                    state.poses = JSON.parse(saved);
-                }
-            }
+        function setFilter(filter) {
+            currentFilter = filter;
+            renderTabs();
+            renderGrid();
         }
 
-        // Save custom poses to localStorage (file-based poses are read-only)
-        function savePoses() {
-            // Only save custom poses (those without imagePath starting with /assets/)
-            const customPoses = state.poses.filter(p => !p.imagePath?.startsWith('/assets/'));
-            localStorage.setItem('poseLibrary_custom', JSON.stringify(customPoses));
+        function getFilteredPoses() {
+            if (currentFilter === 'all') return poses;
+            return poses.filter(p => p.category === currentFilter);
         }
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Upload
-            elements.uploadSection.addEventListener('click', () => elements.fileInput.click());
-            elements.uploadSection.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                elements.uploadSection.classList.add('drag-over');
-            });
-            elements.uploadSection.addEventListener('dragleave', () => {
-                elements.uploadSection.classList.remove('drag-over');
-            });
-            elements.uploadSection.addEventListener('drop', (e) => {
-                e.preventDefault();
-                elements.uploadSection.classList.remove('drag-over');
-                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-                handleFiles(files);
-            });
-            elements.fileInput.addEventListener('change', (e) => {
-                handleFiles(Array.from(e.target.files));
-                e.target.value = '';
-            });
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            const filtered = getFilteredPoses();
 
-            // Filters
-            document.querySelectorAll('.filter-bar .filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    state.filterGender = btn.dataset.filter;
-                    renderPoses();
-                });
-            });
-
-            // Tag filter dropdown
-            elements.tagFilter.addEventListener('change', () => {
-                const tag = elements.tagFilter.value;
-                if (tag && !state.filterTags.includes(tag)) {
-                    state.filterTags.push(tag);
-                    renderActiveFilters();
-                    renderPoses();
-                }
-                elements.tagFilter.value = '';
-            });
-
-            // Modal
-            document.getElementById('modal-close').addEventListener('click', closeModal);
-            document.getElementById('modal-cancel').addEventListener('click', closeModal);
-            document.getElementById('modal-save').addEventListener('click', savePose);
-
-            // Gender buttons in modal
-            document.querySelectorAll('[data-gender]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('[data-gender]').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                });
-            });
-
-            // Lightbox
-            document.getElementById('lightbox-close').addEventListener('click', () => {
-                elements.lightbox.classList.remove('visible');
-            });
-            elements.lightbox.addEventListener('click', (e) => {
-                if (e.target === elements.lightbox) {
-                    elements.lightbox.classList.remove('visible');
-                }
-            });
-        }
-
-        // Populate tag filter dropdown (grouped)
-        function populateTagFilter() {
-            Object.entries(TAG_GROUPS).forEach(([group, tags]) => {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = group;
-                tags.forEach(tag => {
-                    const option = document.createElement('option');
-                    option.value = tag;
-                    option.textContent = formatTag(tag);
-                    optgroup.appendChild(option);
-                });
-                elements.tagFilter.appendChild(optgroup);
-            });
-        }
-
-        // Format tag for display
-        function formatTag(tag) {
-            return tag.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        }
-
-        // Render active filter tags
-        function renderActiveFilters() {
-            if (state.filterTags.length === 0) {
-                elements.activeFilters.innerHTML = '';
-                return;
-            }
-
-            elements.activeFilters.innerHTML = state.filterTags.map(tag => `
-                <span class="active-filter">
-                    ${formatTag(tag)}
-                    <span class="remove" onclick="removeFilter('${tag}')">&times;</span>
-                </span>
-            `).join('') + `<span class="clear-filters" onclick="clearFilters()">Clear all</span>`;
-        }
-
-        // Remove a filter tag
-        function removeFilter(tag) {
-            state.filterTags = state.filterTags.filter(t => t !== tag);
-            renderActiveFilters();
-            renderPoses();
-        }
-        window.removeFilter = removeFilter;
-
-        // Clear all filters
-        function clearFilters() {
-            state.filterTags = [];
-            renderActiveFilters();
-            renderPoses();
-        }
-        window.clearFilters = clearFilters;
-
-        // Render tag groups in modal
-        function renderTagGroups() {
-            elements.tagGroups.innerHTML = Object.entries(TAG_GROUPS).map(([group, tags]) => `
-                <div class="tag-group">
-                    <span class="tag-group-label">${group}</span>
-                    <div class="tag-buttons">
-                        ${tags.map(tag => `
-                            <button type="button" class="tag-btn" data-tag="${tag}">${formatTag(tag)}</button>
-                        `).join('')}
+            grid.innerHTML = filtered.map(pose => `
+                <div class="pose-card" data-id="${pose.id}" onclick="toggleCard(this, event)">
+                    <div class="pose-images">
+                        <img src="${pose.images.f1}" alt="${pose.name} F1" onclick="openLightbox('${pose.images.f1}', event)">
+                        <img src="${pose.images.m1}" alt="${pose.name} M1" onclick="openLightbox('${pose.images.m1}', event)">
+                        <img src="${pose.images.f2}" alt="${pose.name} F2" onclick="openLightbox('${pose.images.f2}', event)">
+                        <img src="${pose.images.m2}" alt="${pose.name} M2" onclick="openLightbox('${pose.images.m2}', event)">
+                    </div>
+                    <div class="pose-info">
+                        <div class="pose-meta">
+                            <span class="pose-number">${pose.code}</span>
+                            <span class="pose-category ${pose.category}">${pose.category}</span>
+                        </div>
+                        <div class="pose-name">${pose.name}</div>
+                        <div class="pose-prompt">${pose.prompt}</div>
+                        <div class="pose-actions">
+                            <button onclick="copyPrompt('${pose.id}', 'female', this, event)">Copy Female</button>
+                            <button onclick="copyPrompt('${pose.id}', 'male', this, event)">Copy Male</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
-
-            // Add click handlers
-            elements.tagGroups.querySelectorAll('.tag-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btn.classList.toggle('selected');
-                    const tag = btn.dataset.tag;
-                    if (btn.classList.contains('selected')) {
-                        if (!state.selectedTags.includes(tag)) {
-                            state.selectedTags.push(tag);
-                        }
-                    } else {
-                        state.selectedTags = state.selectedTags.filter(t => t !== tag);
-                    }
-                });
-            });
         }
 
-        // Handle file uploads
-        async function handleFiles(files) {
-            for (const file of files) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    state.currentImageData = e.target.result;
-                    state.currentPose = null;
-                    openModal(true);
-                    await analyzePose(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
+        function toggleCard(card, event) {
+            if (event.target.tagName === 'IMG' || event.target.tagName === 'BUTTON') return;
+            card.classList.toggle('expanded');
         }
 
-        // Analyze pose with AI
-        async function analyzePose(imageData) {
-            elements.analyzingState.style.display = 'block';
-            elements.formState.style.display = 'none';
-
-            try {
-                // Upload image
-                const uploadResult = await api.uploadBase64(imageData);
-
-                // Build tag list for AI
-                const tagList = ALL_TAGS.join(', ');
-
-                // Analyze with Claude
-                const analysisPrompt = `Analyze this pose image for a fashion photography pose library. Select ALL applicable tags from the list below.
-
-Available tags: ${tagList}
-
-Respond in JSON format only:
-
-{
-    "gender": "male" | "female" | "unisex",
-    "tags": ["array of applicable tags from the list above - select all that apply"],
-    "description": "A detailed description of the pose for image generation prompts. Include body position, arm placement, head direction, weight distribution, and overall mood/energy."
-}`;
-
-                const result = await api.analyzeImages([uploadResult.url], analysisPrompt);
-
-                if (result.content) {
-                    // Try to parse JSON from response
-                    let analysis;
-                    try {
-                        // Find JSON in the response
-                        const jsonMatch = result.content.match(/\{[\s\S]*\}/);
-                        if (jsonMatch) {
-                            analysis = JSON.parse(jsonMatch[0]);
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse analysis:', e);
-                    }
-
-                    if (analysis) {
-                        // Set gender
-                        document.querySelectorAll('[data-gender]').forEach(btn => {
-                            btn.classList.toggle('active', btn.dataset.gender === analysis.gender);
-                        });
-
-                        // Set tags (support both 'tags' and legacy 'categories')
-                        const tags = analysis.tags || analysis.categories || [];
-                        state.selectedTags = tags.filter(t => ALL_TAGS.includes(t));
-                        elements.tagGroups.querySelectorAll('.tag-btn').forEach(btn => {
-                            const isSelected = state.selectedTags.includes(btn.dataset.tag);
-                            btn.classList.toggle('selected', isSelected);
-                        });
-
-                        // Set description
-                        elements.poseDescription.value = analysis.description || '';
-                    }
-                }
-            } catch (error) {
-                console.error('Analysis error:', error);
-            } finally {
-                elements.analyzingState.style.display = 'none';
-                elements.formState.style.display = 'block';
-            }
-        }
-
-        // Open modal
-        function openModal(isNew = false) {
-            elements.modalTitle.textContent = isNew ? 'Analyze Pose' : 'Edit Pose';
-            const imageSrc = state.currentImageData || state.currentPose?.imagePath || state.currentPose?.image || '';
-            elements.modalImage.src = imageSrc;
-            elements.modal.classList.add('visible');
-
-            if (!isNew && state.currentPose) {
-                // Populate form with existing data
-                document.querySelectorAll('[data-gender]').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.gender === state.currentPose.gender);
-                });
-
-                // Set tags (support both 'tags' and legacy 'categories')
-                const tags = state.currentPose.tags || state.currentPose.categories || [];
-                state.selectedTags = [...tags];
-                elements.tagGroups.querySelectorAll('.tag-btn').forEach(btn => {
-                    const isSelected = state.selectedTags.includes(btn.dataset.tag);
-                    btn.classList.toggle('selected', isSelected);
-                });
-
-                elements.poseDescription.value = state.currentPose.description || '';
-            } else {
-                state.selectedTags = [];
-            }
-        }
-
-        // Close modal
-        function closeModal() {
-            elements.modal.classList.remove('visible');
-            state.currentPose = null;
-            state.currentImageData = null;
-            state.selectedTags = [];
-
-            // Reset form
-            document.querySelectorAll('[data-gender]').forEach(btn => btn.classList.remove('active'));
-            elements.tagGroups.querySelectorAll('.tag-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            elements.poseDescription.value = '';
-        }
-
-        // Save pose
-        function savePose() {
-            const gender = document.querySelector('[data-gender].active')?.dataset.gender || 'unisex';
-            const tags = [...state.selectedTags];
-            const description = elements.poseDescription.value.trim();
-
-            if (state.currentPose) {
-                // Update existing
-                state.currentPose.gender = gender;
-                state.currentPose.tags = tags;
-                delete state.currentPose.categories; // Migrate from old format
-                state.currentPose.description = description;
-            } else {
-                // Add new
-                const newPose = {
-                    id: Date.now().toString(),
-                    image: state.currentImageData,
-                    gender,
-                    tags,
-                    description,
-                    createdAt: new Date().toISOString()
-                };
-                state.poses.push(newPose);
-            }
-
-            savePoses();
-            renderPoses();
-            closeModal();
-        }
-
-        // Delete pose
-        function deletePose(id) {
-            if (confirm('Delete this pose?')) {
-                state.poses = state.poses.filter(p => p.id !== id);
-                savePoses();
-                renderPoses();
-            }
-        }
-
-        // Edit pose
-        function editPose(id) {
-            state.currentPose = state.poses.find(p => p.id === id);
-            state.currentImageData = null;
-            openModal(false);
-        }
-
-        // View pose in lightbox
-        function viewPose(id) {
-            const pose = state.poses.find(p => p.id === id);
+        function copyPrompt(id, gender, button, event) {
+            event.stopPropagation();
+            const pose = poses.find(p => p.id === id);
             if (!pose) return;
 
-            const tags = getPoseTags(pose);
-            const imageSrc = pose.imagePath || pose.image;
-            elements.lightboxImage.src = imageSrc;
-            elements.lightboxGender.textContent = pose.gender.charAt(0).toUpperCase() + pose.gender.slice(1);
-            elements.lightboxCategories.textContent = tags.map(t => formatTag(t)).join(', ') || 'None';
-            elements.lightboxDescription.textContent = pose.description || 'No description';
-            elements.lightbox.classList.add('visible');
+            const prompt = gender === 'female' ? pose.prompt : pose.malePrompt;
+            navigator.clipboard.writeText(prompt).then(() => {
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = gender === 'female' ? 'Copy Female' : 'Copy Male';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
         }
 
-        // Get pose tags (support both new 'tags' and legacy 'categories')
-        function getPoseTags(pose) {
-            return pose.tags || pose.categories || [];
+        function openLightbox(src, event) {
+            event.stopPropagation();
+            buildImageList();
+            currentImageIndex = allImages.indexOf(src);
+            if (currentImageIndex === -1) currentImageIndex = 0;
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('active');
         }
 
-        // Render poses
-        function renderPoses() {
-            let filtered = state.poses;
-
-            // Filter by gender
-            if (state.filterGender !== 'all') {
-                filtered = filtered.filter(p => p.gender === state.filterGender);
-            }
-
-            // Filter by tags (must have ALL selected tags)
-            if (state.filterTags.length > 0) {
-                filtered = filtered.filter(p => {
-                    const poseTags = getPoseTags(p);
-                    return state.filterTags.every(tag => poseTags.includes(tag));
-                });
-            }
-
-            // Update stats
-            elements.stats.textContent = `${filtered.length} pose${filtered.length !== 1 ? 's' : ''}`;
-
-            if (filtered.length === 0) {
-                elements.poseGrid.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <div class="empty-state-icon">🧍</div>
-                        <p>${state.poses.length === 0 ? 'No poses yet. Upload some images to get started!' : 'No poses match the current filters.'}</p>
-                    </div>
-                `;
-                return;
-            }
-
-            elements.poseGrid.innerHTML = filtered.map(pose => {
-                const tags = getPoseTags(pose);
-                const imageSrc = pose.imagePath || pose.image;
-                const isFileBased = pose.imagePath?.startsWith('/assets/');
-                return `
-                <div class="pose-card">
-                    <img src="${imageSrc}" alt="Pose" class="pose-image" onclick="viewPose('${pose.id}')">
-                    <div class="pose-info">
-                        <span class="pose-gender ${pose.gender}">${pose.gender}</span>
-                        <div class="pose-categories">
-                            ${tags.slice(0, 4).map(tag => `<span class="pose-category">${formatTag(tag)}</span>`).join('')}
-                            ${tags.length > 4 ? `<span class="pose-category">+${tags.length - 4}</span>` : ''}
-                        </div>
-                        <div class="pose-description">${pose.description || 'No description'}</div>
-                        <div class="pose-actions">
-                            <button class="pose-action-btn" onclick="editPose('${pose.id}')">Edit</button>
-                            ${!isFileBased ? `<button class="pose-action-btn delete" onclick="deletePose('${pose.id}')">Delete</button>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `}).join('');
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
         }
 
-        // Make functions global for onclick handlers
-        window.viewPose = viewPose;
-        window.editPose = editPose;
-        window.deletePose = deletePose;
+        let allImages = [];
+        let currentImageIndex = 0;
 
-        // Initialize
-        init();
+        function buildImageList() {
+            allImages = [];
+            getFilteredPoses().forEach(pose => {
+                allImages.push(pose.images.f1, pose.images.m1, pose.images.f2, pose.images.m2);
+            });
+        }
+
+        function navigateLightbox(direction) {
+            if (allImages.length === 0) return;
+            currentImageIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
+            document.getElementById('lightbox-img').src = allImages[currentImageIndex];
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') closeLightbox();
+        });
+
+        // Init
+        renderTabs();
+        renderGrid();
     </script>
 </body>
 </html>
