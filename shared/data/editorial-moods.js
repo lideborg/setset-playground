@@ -18,7 +18,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'chiaroscuro-drama',
         name: 'Chiaroscuro Drama',
-        prompt: 'Renaissance-inspired lighting with rich brown shadows but slightly cooler tones than typical golden hour, single dramatic side light from 45 degrees, subject wearing something on upper body, three-quarter view of face, contemplative distant gaze looking past the camera into memory, skin tones emerging from velvety darkness, theatrical and painterly, color photography with muted warm palette'
+        prompt: 'Renaissance-inspired lighting with rich brown shadows but slightly cooler tones than typical golden hour, single dramatic side light from 45 degrees, subject seated or hand resting on a surface like a chair arm or table edge, wearing something on upper body, three-quarter view of face, contemplative distant gaze looking past the camera into memory, skin tones emerging from velvety darkness, theatrical and painterly, color photography with muted warm palette'
     },
     {
         id: 'motion-blur-candid',
@@ -28,7 +28,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'flash-rawness',
         name: 'Flash Rawness',
-        prompt: 'Direct on-camera flash creating harsh shadows on the wall behind, subject caught completely off-guard with surprised wide-eyed expression, hand reaching toward camera creating depth in the frame, messy undone hair, wearing something casual, 90s disposable camera party photography aesthetic, deliberately imperfect and chaotic, beautiful in its rawness, color photography'
+        prompt: 'Direct on-camera flash creating harsh shadows on the wall behind, subject caught in a fun spontaneous moment interacting with the photographer - laughing, mid-conversation, reacting to something said, messy undone hair, wearing something casual, 90s disposable camera party photography aesthetic, deliberately imperfect and chaotic, beautiful in its rawness, color photography'
     },
     {
         id: 'beauty-closeup',
@@ -38,7 +38,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'graphic-shadows',
         name: 'Graphic Shadows',
-        prompt: 'High contrast with geometric shadow patterns from venetian blinds slicing across the face in parallel vertical lines, stern powerful expression with clenched jaw, graphic shapes creating abstract composition, wearing minimal top, strong directional light, color photography with desaturated tones'
+        prompt: 'Minimal white or grey photo studio, artistic gobo lighting casting geometric shadow patterns across face and body, abstract shapes like stripes circles or grids creating graphic composition, can be high contrast or softly diffused light with gentle shadow patterns, subject wearing simple elegant minimal clothing in neutral tones, confident powerful expression, editorial fashion meets fine art photography, clean studio environment, color photography'
     },
     {
         id: 'wet-look',
@@ -48,32 +48,32 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'soft-diffusion',
         name: 'Soft Diffusion Dream',
-        prompt: 'Dreamy pro-mist filter soft focus creating glowing edges, soft pastel background gradient in pink lavender or peach tones, ethereal luminous skin that seems to emit light, serene peaceful expression with soft gaze, wearing something light and flowy, romantic and otherworldly, consistent dreamy aesthetic, color photography'
+        prompt: 'Super dreamy heavy diffusion filter like shooting through vaseline or strong pro-mist creating extremely soft glowing edges and halation around highlights, soft pastel background gradient in pink lavender or peach tones, ethereal luminous skin that seems to emit light, serene peaceful expression with soft gaze, wearing something light and flowy, romantic and otherworldly, maximum dreamy soft focus aesthetic, color photography'
     },
     {
         id: 'glass-distortion',
         name: 'Glass Distortion',
-        prompt: 'Shot through textured glass frosted glass or prism creating beautiful distortion and light refraction, face still recognizable but abstracted through the glass, interesting light patterns and color shifts from refraction, wearing something simple, experimental and artistic, color photography with prismatic effects'
+        prompt: 'Shot through very lightly textured or frosted glass creating subtle soft distortion, face clearly recognizable with just slight blur or warping effect, very minimal refraction - no rainbow or prismatic color effects, just gentle organic distortion like looking through old window glass, wearing something simple, experimental and artistic but subtle, color photography with natural tones'
     },
     {
         id: 'window-light-natural',
         name: 'Window Light Natural',
-        prompt: 'Soft diffused natural light from a large window to the side, documentary-style intimacy, subject wearing a simple top or sweater, deep in private thought with downcast eyes and slight furrow in brow, completely authentic and unguarded stolen moment, real human vulnerability elevated to art, color photography'
+        prompt: 'Soft diffused natural light from a large window to the side, subject seated on a window ledge or chair near the window, or standing with hand resting on the window frame, documentary-style intimacy, wearing a simple top or sweater, deep in private thought with downcast eyes and slight furrow in brow, completely authentic and unguarded stolen moment, real human vulnerability elevated to art, color photography'
     },
     {
         id: 'architectural-minimalism',
         name: 'Architectural Minimalism',
-        prompt: 'Subject in clean modern architectural space with concrete walls geometric shadows or minimal furniture, strong directional light from large windows creating dramatic shadows, wearing simple contemporary clothing, composed confident expression, fashion meets architecture, clean lines and negative space, color photography'
+        prompt: 'Subject in clean modern architectural space with concrete walls geometric shadows or minimal furniture, interacting with the environment - leaning against a wall, sitting on a concrete ledge, hand trailing along a surface, or framed by architectural elements, strong directional light from large windows creating dramatic shadows, wearing simple contemporary clothing, composed confident expression, fashion meets architecture, clean lines and negative space, color photography'
     },
     {
         id: 'texture-contrast',
         name: 'Texture Contrast',
-        prompt: 'Subject positioned against clean concrete or minimal modern architectural wall, smooth youthful skin creating striking contrast with textured but clean background, defiant confident expression with slight smirk chin raised, wearing edgy minimal clothing, modern urban aesthetic not grungy, color photography'
+        prompt: 'Subject positioned against clean concrete or minimal modern architectural wall, body making contact with the surface - shoulder pressed against wall, back leaning, or hand resting on textured surface, smooth youthful skin creating striking contrast with textured but clean background, confident elegant expression, wearing simple refined minimal clothing in neutral or white tones, sophisticated modern aesthetic, clean and minimal not edgy, color photography'
     },
     {
         id: 'mirror-reflection',
         name: 'Mirror Reflection',
-        prompt: 'Captured through a minimal modern mirror or glass panels with clean lines creating a doubled layered image, contemporary gallery-like setting with neutral tones, subject wearing something simple, making knowing eye contact through the reflection, psychological depth and intimacy, reflections and layers, color photography'
+        prompt: 'Geometric composition using minimal modern mirrors or glass panels, subject positioned to create interesting angles and multiple reflections, body fragments visible in different mirrors creating deconstructed artistic effect, contemporary gallery-like setting with neutral tones, wearing simple elegant clothing, strong confident pose creating architectural lines with body, editorial art photography with layered reflections, color photography'
     },
     {
         id: 'deep-shadow-mystery',
@@ -83,12 +83,12 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'studio-color-pop',
         name: 'Studio Color Pop',
-        prompt: 'Vibrant saturated backdrop in bold color, female subject wearing bold colorful clothing that pops against background, confident playful expression, bold punchy and commercial yet maintaining editorial sophistication, color photography'
+        prompt: 'Clean studio backdrop in a nice muted or dusty color - soft terracotta, dusty rose, sage green, muted blue, warm beige - not too saturated or bold, subject wearing clothing that complements or subtly contrasts the background, confident playful expression, refined and commercial yet maintaining editorial sophistication, color photography'
     },
     {
         id: 'szilveszter-mako',
         name: 'Szilveszter Makó Painterly',
-        prompt: 'Theatrical painterly portrait using only natural daylight no flash, muted desaturated color palette with Renaissance and Dadaist influences, handmade textured backdrop or draped fabric set piece, subject wearing timeless elegant clothing, melancholic atmospheric mood with dreamlike ethereal quality, soft diffused window light, fine art meets fashion photography, color photography with faded muted tones'
+        prompt: 'Painterly portrait using only natural daylight no flash, muted desaturated color palette, raw textured backdrop with abstract props - crumpled paper, draped raw canvas, found objects, dried flowers, creating artistic tension, subject wearing simple contemporary clothing not period costume, melancholic atmospheric mood with dreamlike quality but grounded in reality, soft diffused window light, fine art meets fashion photography, color photography with faded muted tones'
     },
     {
         id: 'nadav-kander',
@@ -98,7 +98,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'natural-daylight-environment',
         name: 'Natural Daylight Environment',
-        prompt: 'Soft overcast outdoor daylight with environmental context and depth of field, true accurate colors, wearing casual everyday clothing, relaxed genuine asymmetrical half-smile, approachable elevated to editorial status, beauty in authenticity, can include background elements, color photography'
+        prompt: 'Soft overcast outdoor daylight with environmental context and depth of field, subject interacting naturally with surroundings - sitting on steps, leaning on a railing, walking along a path, or hand brushing against foliage, true accurate colors, wearing casual everyday clothing, relaxed genuine expression, approachable elevated to editorial status, beauty in authenticity, color photography'
     },
     {
         id: 'gymnasium-athletic',
@@ -128,7 +128,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'rembrandt-classic',
         name: 'Rembrandt Classic',
-        prompt: 'Traditional 45-degree Rembrandt lighting creating signature triangle shadow on far cheek, dark moody background, wearing something elegant or simple, serious dignified expression conveying inner depth, timeless portrait lighting technique, museum-worthy gravitas, color photography with rich warm tones'
+        prompt: 'Traditional 45-degree Rembrandt lighting creating signature triangle shadow on far cheek, dark moody background, subject seated in a chair or with hand resting on a surface, wearing something elegant or simple, serious dignified expression conveying inner depth, timeless portrait lighting technique, museum-worthy gravitas, color photography with rich warm tones'
     },
     {
         id: 'motion-blur',
@@ -138,7 +138,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'editorial-beauty-extreme',
         name: 'Editorial Beauty Extreme',
-        prompt: 'Elevated editorial makeup with one striking element like a bold graphic liner or a single unusual color on lips or eyes, minimal but impactful makeup artistry, strong beauty lighting with clean skin, sleek pulled-back hair, focus on one deliberate makeup statement not overwhelming, high fashion restraint, confident striking expression, color photography'
+        prompt: 'Elevated but minimal beauty makeup - one subtle element like a perfect red lip OR defined mascara OR soft natural blush, makeup should feel real and wearable like a luxury beauty campaign for Chanel or Dior, strong beauty lighting with clean luminous skin, sleek hair, focus on enhancing natural beauty not transforming, elegant restraint, confident striking expression, color photography'
     },
     {
         id: 'hands-in-frame',
@@ -148,17 +148,17 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'smoke-atmosphere',
         name: 'Smoke and Atmosphere',
-        prompt: 'Subtle haze or smoke diffusing the light creating atmospheric depth, mysterious expression with knowing eyes, wearing something dark or elegant, noir femininity with secrets and stories, documentary smoky room feeling, color photography with muted tones'
+        prompt: 'Subtle haze or smoke diffusing the light creating atmospheric depth, subject in a warm intimate setting like a restaurant or cafe - seated at a table, near a window, candlelight or warm ambient light, mysterious expression with knowing eyes, wearing something elegant, sophisticated and intimate not too dark or noir, warm documentary feeling, color photography with warm muted tones'
     },
     {
         id: 'harsh-noon-sun',
         name: 'Harsh Noon Sun',
-        prompt: 'Unflinching direct overhead midday sunlight creating extreme contrast and under-eye shadows, no diffusion or fill, wearing simple summer clothing, raw unforgiving natural light, confident expression owning every harsh highlight, beauty that doesnt need flattering light, color photography'
+        prompt: 'Unflinching direct overhead midday sunlight creating extreme contrast and under-eye shadows, no diffusion or fill, natural outdoor setting - garden, field, beach, countryside - never urban or city streets, no brick buildings or grungy backgrounds, wearing simple summer clothing, raw unforgiving natural light, confident expression owning every harsh highlight, beauty that doesnt need flattering light, color photography'
     },
     {
         id: 'analog-warmth',
         name: 'Analog Warmth',
-        prompt: 'Warm analog film aesthetic with gentle color shifts and slightly lifted blacks, subtle film grain texture, subject can be slightly out of focus or have gentle motion blur adding life, wearing casual clothing, relaxed unstudied expression with casual glance, nostalgic warmth, authentic and human, color photography'
+        prompt: 'Warm analog film aesthetic with gentle color shifts and slightly lifted blacks, subtle film grain texture, subject in a casual natural pose - sitting on a couch, leaning on a counter, or mid-gesture in conversation, can be slightly out of focus or have gentle motion blur adding life, wearing casual clothing, relaxed unstudied expression with casual glance, nostalgic warmth, authentic and human, color photography'
     },
     {
         id: 'helmut-newton-power',
@@ -193,7 +193,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'harsh-fill-flash-daylight',
         name: 'Harsh Fill Flash Daylight',
-        prompt: 'Strong fill flash in bright daylight creating that flat punchy slightly overexposed look, outdoor setting, wearing casual clothing, direct and confident expression, snapshot aesthetic but intentional, harsh midday sun mixed with flash, color photography'
+        prompt: 'Strong fill flash in bright daylight creating flat punchy slightly overexposed look, outdoor setting with natural environment like park or street, camera at eye level or slightly above, warm natural daylight tones not blue, wearing casual summer clothing, direct confident expression looking straight at camera, snapshot editorial aesthetic, harsh midday sun mixed with on-camera flash, color photography'
     },
     {
         id: 'bounced-flash-soft',
@@ -213,7 +213,7 @@ const EDITORIAL_MOODS_FEMALE = [
     {
         id: 'mario-testino-raw',
         name: 'Mario Testino Raw',
-        prompt: 'Natural lighting that feels raw and real not overly golden or polished, genuine energy and confidence, wearing effortless clothing, authentic moment not staged beach glamour, real-world context, celebration of natural beauty without heavy styling, color photography'
+        prompt: 'Natural lighting that feels raw and real not overly golden or polished, subject in motion or interacting with environment - walking, sitting on the ground, hand pushing hair back, genuine energy and confidence, wearing effortless clothing, authentic moment not staged glamour, real-world context, celebration of natural beauty without heavy styling, color photography'
     },
     {
         id: 'nick-knight-experimental',
@@ -271,7 +271,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'chiaroscuro-drama',
         name: 'Chiaroscuro Drama',
-        prompt: 'Renaissance-inspired lighting with rich brown shadows but slightly cooler tones than typical golden hour, single dramatic side light from 45 degrees, subject wearing something on upper body, three-quarter view revealing strong bone structure, contemplative gaze looking past the camera into distance, masculine features emerging from velvety darkness like an old master portrait, color photography'
+        prompt: 'Renaissance-inspired lighting with rich brown shadows but slightly cooler tones than typical golden hour, single dramatic side light from 45 degrees, subject seated or hand resting on a surface like a chair arm or table edge, wearing something on upper body, three-quarter view revealing strong bone structure, contemplative gaze looking past the camera into distance, masculine features emerging from velvety darkness like an old master portrait, color photography'
     },
     {
         id: 'motion-blur-candid',
@@ -281,7 +281,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'flash-rawness',
         name: 'Flash Rawness',
-        prompt: 'Direct on-camera flash creating harsh shadows on wall behind, caught off-guard with surprised expression, hand reaching toward camera or element in foreground creating depth, wearing casual shirt or jacket collar askew, 90s backstage photography aesthetic, deliberately imperfect and spontaneous, authentic chaos, color photography'
+        prompt: 'Direct on-camera flash creating harsh shadows on wall behind, subject caught in a fun spontaneous moment interacting with the photographer - laughing, mid-conversation, reacting to something said, messy undone hair, wearing casual shirt or jacket collar askew, 90s backstage photography aesthetic, deliberately imperfect and spontaneous, authentic chaos, color photography'
     },
     {
         id: 'skin-texture-study',
@@ -291,7 +291,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'graphic-shadows',
         name: 'Graphic Shadows',
-        prompt: 'High contrast with geometric shadow patterns from venetian blinds slicing across face in vertical lines, stern powerful expression with clenched jaw and narrowed eyes, wearing simple shirt, graphic shapes creating abstract composition, cinematic intensity, color photography with desaturated tones'
+        prompt: 'Minimal white or grey photo studio, artistic gobo lighting casting geometric shadow patterns across face and body, abstract shapes like stripes circles or grids creating graphic composition, can be high contrast or softly diffused light with gentle shadow patterns, subject wearing simple elegant minimal clothing in neutral tones, confident powerful expression, editorial fashion meets fine art photography, clean studio environment, color photography'
     },
     {
         id: 'wet-look',
@@ -301,27 +301,27 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'soft-diffusion',
         name: 'Soft Diffusion Dream',
-        prompt: 'Dreamy soft focus creating glowing edges, soft pastel or neutral background gradient, ethereal quality with luminous skin, wearing something light colored, serene peaceful expression with soft distant gaze, romantic and contemplative, consistent with female version aesthetic, color photography'
+        prompt: 'Super dreamy heavy diffusion filter like shooting through vaseline or strong pro-mist creating extremely soft glowing edges and halation around highlights, soft pastel or neutral background gradient, ethereal quality with luminous skin, wearing something light colored, serene peaceful expression with soft distant gaze, romantic and contemplative, maximum dreamy soft focus aesthetic, color photography'
     },
     {
         id: 'glass-distortion',
         name: 'Glass Distortion',
-        prompt: 'Shot through textured glass frosted glass or prism creating beautiful distortion and light refraction, face still recognizable but abstracted through the glass, interesting light patterns and color shifts from refraction, wearing something simple, experimental and artistic, color photography with prismatic effects'
+        prompt: 'Shot through very lightly textured or frosted glass creating subtle soft distortion, face clearly recognizable with just slight blur or warping effect, very minimal refraction - no rainbow or prismatic color effects, just gentle organic distortion like looking through old window glass, wearing something simple, experimental and artistic but subtle, color photography with natural tones'
     },
     {
         id: 'window-light-natural',
         name: 'Window Light Natural',
-        prompt: 'Soft diffused natural light from large window, documentary-style authenticity, subject wearing a simple shirt or sweater, deep in thought with downcast eyes and relaxed mouth, completely unguarded private moment, real human vulnerability strength in softness, color photography'
+        prompt: 'Soft diffused natural light from large window, subject seated on a window ledge or chair near the window, or standing with hand resting on the window frame, documentary-style authenticity, wearing a simple shirt or sweater, deep in thought with downcast eyes and relaxed mouth, completely unguarded private moment, real human vulnerability strength in softness, color photography'
     },
     {
         id: 'architectural-minimalism',
         name: 'Architectural Minimalism',
-        prompt: 'Subject in clean modern architectural space with concrete walls geometric shadows or minimal furniture, strong directional light from large windows creating dramatic shadows, wearing simple contemporary clothing, composed confident expression, fashion meets architecture, clean lines and negative space, color photography'
+        prompt: 'Subject in clean modern architectural space with concrete walls geometric shadows or minimal furniture, interacting with the environment - leaning against a wall, sitting on a concrete ledge, hand trailing along a surface, or framed by architectural elements, strong directional light from large windows creating dramatic shadows, wearing simple contemporary clothing, composed confident expression, fashion meets architecture, clean lines and negative space, color photography'
     },
     {
         id: 'texture-contrast',
         name: 'Texture Contrast',
-        prompt: 'Subject against clean concrete or minimal modern architectural wall, refined masculine features creating striking contrast with textured but clean background, defiant confident expression with direct stare, wearing edgy minimal clothing, modern urban not grungy, color photography'
+        prompt: 'Subject against clean concrete or minimal modern architectural wall, body making contact with the surface - shoulder pressed against wall, back leaning, or hand resting on textured surface, refined masculine features creating striking contrast with textured but clean background, confident expression with direct stare, wearing simple minimal clothing, modern urban not grungy, color photography'
     },
     {
         id: 'mirror-reflection',
@@ -336,12 +336,12 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'studio-color-pop',
         name: 'Studio Color Pop',
-        prompt: 'Vibrant saturated backdrop in bold color, male subject wearing neutral toned clothing like navy charcoal or cream that complements but doesnt compete with background, confident composed expression, bold punchy commercial yet editorial sophistication, color photography'
+        prompt: 'Clean studio backdrop in a nice muted or dusty color - soft terracotta, dusty rose, sage green, muted blue, warm beige - not too saturated or bold, subject wearing clothing that complements or subtly contrasts the background, confident composed expression, refined and commercial yet maintaining editorial sophistication, color photography'
     },
     {
         id: 'szilveszter-mako',
         name: 'Szilveszter Makó Painterly',
-        prompt: 'Theatrical painterly portrait using only natural daylight no flash, muted desaturated color palette with Renaissance and Dadaist influences, handmade textured backdrop or draped fabric set piece, subject wearing timeless elegant clothing, melancholic atmospheric mood with dreamlike ethereal quality, soft diffused window light, fine art meets fashion photography, masculine gravitas with artistic sensitivity, color photography with faded muted tones'
+        prompt: 'Painterly portrait using only natural daylight no flash, muted desaturated color palette, raw textured backdrop with abstract props - crumpled paper, draped raw canvas, found objects, dried flowers, creating artistic tension, subject wearing simple contemporary clothing not period costume, melancholic atmospheric mood with dreamlike quality but grounded in reality, soft diffused window light, fine art meets fashion photography, color photography with faded muted tones'
     },
     {
         id: 'nadav-kander',
@@ -351,7 +351,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'natural-daylight-environment',
         name: 'Natural Daylight Environment',
-        prompt: 'Soft overcast daylight with environmental context and depth of field, even and truthful illumination, wearing casual everyday clothing, relaxed genuine expression with natural subtle smile, approachable everyman elevated to editorial, authentic masculinity without performance, color photography'
+        prompt: 'Soft overcast outdoor daylight with environmental context and depth of field, subject interacting naturally with surroundings - sitting on steps, leaning on a railing, walking along a path, or hand brushing against a surface, even and truthful illumination, wearing casual everyday clothing, relaxed genuine expression, approachable everyman elevated to editorial, authentic masculinity without performance, color photography'
     },
     {
         id: 'gymnasium-athletic',
@@ -381,7 +381,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'rembrandt-classic',
         name: 'Rembrandt Classic',
-        prompt: 'Traditional 45-degree Rembrandt lighting with signature cheek triangle shadow, dark atmospheric background, wearing something elegant or simple, dignified serious expression, timeless portrait technique museum-worthy gravitas, color photography with rich warm tones'
+        prompt: 'Traditional 45-degree Rembrandt lighting with signature cheek triangle shadow, dark atmospheric background, subject seated in a chair or with hand resting on a surface, wearing something elegant or simple, dignified serious expression, timeless portrait technique museum-worthy gravitas, color photography with rich warm tones'
     },
     {
         id: 'motion-blur-energy',
@@ -391,7 +391,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'editorial-beauty-extreme',
         name: 'Editorial Beauty Extreme',
-        prompt: 'Elevated editorial grooming with one striking element like a subtle graphic element near eye or unusual color accent, minimal but impactful artistry, strong beauty lighting with clean skin, sleek styled hair, focus on one deliberate statement not overwhelming, high fashion male beauty editorial with restraint, confident striking expression, color photography'
+        prompt: 'Elevated male grooming editorial - clean perfect skin, well-groomed brows, subtle healthy glow, strong beauty lighting emphasizing bone structure and skin texture, sleek styled hair, feels like a luxury skincare or fragrance campaign, focus on natural masculine beauty not transformation, confident striking expression, color photography'
     },
     {
         id: 'hands-in-frame',
@@ -401,17 +401,17 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'smoke-atmosphere',
         name: 'Smoke and Atmosphere',
-        prompt: 'Subtle haze or smoke diffusing the light, atmospheric depth, mysterious expression with hooded eyes, wearing something dark, noir masculinity secrets and stories, the interesting man in a smoky room documentary feeling, color photography with muted tones'
+        prompt: 'Subtle haze or smoke diffusing the light creating atmospheric depth, subject in a warm intimate setting like a restaurant or cafe - seated at a table, near a window, candlelight or warm ambient light, mysterious expression with knowing eyes, wearing something elegant, sophisticated and intimate not too dark or noir, warm documentary feeling, color photography with warm muted tones'
     },
     {
         id: 'harsh-daylight-raw',
         name: 'Harsh Daylight Raw',
-        prompt: 'Unforgiving direct overhead sun, extreme contrast with hard shadows, no flattering diffusion, wearing simple summer clothing, raw unflinching honesty, confidence that doesnt need soft lighting, masculinity that owns its flaws, color photography'
+        prompt: 'Unforgiving direct overhead sun, extreme contrast with hard shadows, no flattering diffusion, natural outdoor setting - garden, field, beach, countryside - never urban or city streets, no brick buildings or grungy backgrounds, wearing simple summer clothing, raw unflinching honesty, confidence that doesnt need soft lighting, masculinity that owns its flaws, color photography'
     },
     {
         id: 'analog-warmth',
         name: 'Analog Warmth',
-        prompt: 'Warm analog film aesthetic with gentle color shifts and slightly lifted blacks, subtle film grain texture, subject can be slightly out of focus or have gentle motion blur adding life, wearing casual clothing, relaxed unstudied expression with casual glance, nostalgic warmth authentic and human, color photography'
+        prompt: 'Warm analog film aesthetic with gentle color shifts and slightly lifted blacks, subtle film grain texture, subject in a casual natural pose - sitting on a couch, leaning on a counter, or mid-gesture in conversation, can be slightly out of focus or have gentle motion blur adding life, wearing casual clothing, relaxed unstudied expression with casual glance, nostalgic warmth authentic and human, color photography'
     },
     {
         id: 'helmut-newton-power',
@@ -446,7 +446,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'harsh-fill-flash-daylight',
         name: 'Harsh Fill Flash Daylight',
-        prompt: 'Strong fill flash in bright daylight creating flat punchy slightly overexposed look with powerful presence, outdoor setting shot from slightly below eye level making subject look commanding and dominant, wearing casual clothing, direct confident powerful expression owning the frame, snapshot aesthetic but intentional, harsh midday sun mixed with flash, color photography'
+        prompt: 'Strong fill flash in bright daylight creating flat punchy slightly overexposed look, outdoor setting with natural environment like park or street, camera at eye level or slightly above, warm natural daylight tones not blue, wearing casual summer clothing, direct confident expression looking straight at camera, snapshot editorial aesthetic, harsh midday sun mixed with on-camera flash, color photography'
     },
     {
         id: 'bounced-flash-soft',
@@ -466,7 +466,7 @@ const EDITORIAL_MOODS_MALE = [
     {
         id: 'mario-testino-raw',
         name: 'Mario Testino Raw',
-        prompt: 'Natural lighting that feels raw and real not overly golden or polished, genuine energy and confidence, wearing effortless clothing, authentic moment not staged beach glamour, real-world context, masculine beauty as natural celebration, color photography'
+        prompt: 'Natural lighting that feels raw and real not overly golden or polished, subject in motion or interacting with environment - walking, sitting on the ground, hand running through hair, genuine energy and confidence, wearing effortless clothing, authentic moment not staged glamour, real-world context, masculine beauty as natural celebration, color photography'
     },
     {
         id: 'nick-knight-experimental',

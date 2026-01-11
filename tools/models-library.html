@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Models Library</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Models Grid */
+        .models-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .section-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--carbon);
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .model-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .model-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .model-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .model-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 6px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-label {
+            font-size: var(--text-2xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--carbon);
+            margin-bottom: var(--space-xs);
+            display: block;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 500;
+            background: var(--white);
+            color: var(--slate);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .filter-tag:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .filter-tag.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        .filter-tag .count {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-left: 3px;
+        }
+
+        /* Results count */
+        .results-count {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+        }
+
+        /* No results message */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--slate);
+            grid-column: 1 / -1;
+        }
+
+        .no-results h3 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        /* Lightbox - Setset style with side panel */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-container {
+            display: flex;
+            max-width: 90vw;
+            max-height: 90vh;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .lightbox-image-wrap {
+            flex: 0 0 auto;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-image-wrap img {
+            max-width: 55vw;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+
+        .lightbox-panel {
+            width: 280px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .lightbox-panel h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .lightbox-panel .description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .lightbox-panel .tags-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .lightbox-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .lightbox-tags .tag {
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 500;
+            background: #f0f0f0;
+            color: #555;
+            border-radius: 4px;
+        }
+
+        .lightbox-tags .tag.gender-male {
+            background: rgba(100, 150, 255, 0.15);
+            color: rgba(60, 100, 200, 0.9);
+        }
+
+        .lightbox-tags .tag.gender-female {
+            background: rgba(255, 100, 150, 0.15);
+            color: rgba(200, 80, 120, 0.9);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(0,0,0,0.7);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(0,0,0,0.3);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(0,0,0,0.6);
+        }
+
+        .lightbox-nav.prev { left: 20px; }
+        .lightbox-nav.next { right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Models Library</h1>
+            <p class="hero-subtitle">32 diverse talent models with categorization tags</p>
+        </div>
+
+        <!-- Models Grid -->
+        <div class="models-section">
+            <div class="section-header">
+                <div class="section-title">All Models</div>
+                <div class="results-count" id="results-count"></div>
+            </div>
+            <div class="models-grid" id="models-grid"></div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Gender</label>
+                    <div class="filter-tags" id="gender-filters"></div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Age Range</label>
+                    <div class="filter-tags" id="age-filters"></div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Ethnicity</label>
+                    <div class="filter-tags" id="ethnicity-filters"></div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Hair</label>
+                    <div class="filter-tags" id="hair-filters"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">&#8249;</button>
+        <button class="lightbox-nav next" onclick="navigateLightbox(1)">&#8250;</button>
+        <div class="lightbox-container">
+            <div class="lightbox-image-wrap">
+                <img id="lightbox-img" src="" alt="">
+            </div>
+            <div class="lightbox-panel" id="lightbox-panel"></div>
+        </div>
+    </div>
+
+    <script>
+        const MODELS = [
+            {
+                id: 'james',
+                name: 'James Wilson',
+                image: '/shared/images/talent/talent-01_JamesWilson.png',
+                description: 'Clean-cut professional with approachable demeanor',
+                tags: ['male', 'young', 'caucasian', 'dark-hair', 'professional']
+            },
+            {
+                id: 'maya',
+                name: 'Maya Johnson',
+                image: '/shared/images/talent/talent-02_MayaJohnson.png',
+                description: 'Sophisticated with natural elegance and warm presence',
+                tags: ['female', 'young', 'black', 'dark-hair', 'elegant']
+            },
+            {
+                id: 'river',
+                name: 'River Blake',
+                image: '/shared/images/talent/talent-03_RiverBlake.png',
+                description: 'Edgy androgynous style with artistic energy',
+                tags: ['male', 'young', 'caucasian', 'dark-hair', 'edgy', 'artistic']
+            },
+            {
+                id: 'emma',
+                name: 'Emma Sullivan',
+                image: '/shared/images/talent/talent-04_EmmaSullivan.png',
+                description: 'Girl-next-door charm with natural beauty',
+                tags: ['female', 'young', 'caucasian', 'light-hair', 'natural', 'casual']
+            },
+            {
+                id: 'marcus',
+                name: 'Marcus Brown',
+                image: '/shared/images/talent/talent-05_MarcusBrown.png',
+                description: 'Athletic build with confident urban style',
+                tags: ['male', 'young', 'black', 'dark-hair', 'athletic', 'urban']
+            },
+            {
+                id: 'zara',
+                name: 'Zara Mitchell',
+                image: '/shared/images/talent/talent-06_ZaraMitchell.png',
+                description: 'Bold features with striking fashion-forward presence',
+                tags: ['female', 'young', 'middle-eastern', 'dark-hair', 'bold', 'fashion-forward']
+            },
+            {
+                id: 'sophia',
+                name: 'Sophia Anderson',
+                image: '/shared/images/talent/talent-07_SophiaAnderson.png',
+                description: 'Classic beauty with timeless elegance',
+                tags: ['female', 'young', 'caucasian', 'light-hair', 'elegant', 'classic']
+            },
+            {
+                id: 'liam',
+                name: 'Liam Garcia',
+                image: '/shared/images/talent/talent-08_LiamGarcia.png',
+                description: 'Rugged charm with strong masculine features',
+                tags: ['male', 'young', 'latino', 'dark-hair', 'rugged', 'masculine']
+            },
+            {
+                id: 'nina',
+                name: 'Nina Davis',
+                image: '/shared/images/talent/talent-09_NinaDavis.png',
+                description: 'Radiant smile with youthful energy and warmth',
+                tags: ['female', 'young', 'black', 'dark-hair', 'radiant', 'warm']
+            },
+            {
+                id: 'mateo',
+                name: 'Ava Martinez',
+                image: '/shared/images/talent/talent-10_AvaMartinez.png',
+                description: 'Sophisticated latino with refined presence',
+                tags: ['male', 'adult', 'latino', 'dark-hair', 'sophisticated']
+            },
+            {
+                id: 'luna',
+                name: 'Luna Park',
+                image: '/shared/images/talent/talent-11_LunaPark.png',
+                description: 'Ethereal beauty with artistic sensibility',
+                tags: ['female', 'young', 'asian', 'dark-hair', 'ethereal', 'artistic']
+            },
+            {
+                id: 'noah',
+                name: 'Noah Chen',
+                image: '/shared/images/talent/talent-12_NoahChen.png',
+                description: 'Modern style with clean contemporary look',
+                tags: ['male', 'young', 'asian', 'dark-hair', 'modern', 'clean']
+            },
+            {
+                id: 'mia',
+                name: 'Mia Parker',
+                image: '/shared/images/talent/talent-13_MiaParker.png',
+                description: 'Fresh-faced with youthful exuberance',
+                tags: ['female', 'young', 'caucasian', 'light-hair', 'fresh', 'youthful']
+            },
+            {
+                id: 'riley',
+                name: 'Riley Morgan',
+                image: '/shared/images/talent/talent-14_RileyMorgan.png',
+                description: 'Androgynous style with confident attitude',
+                tags: ['male', 'young', 'asian', 'dark-hair', 'androgynous', 'confident']
+            },
+            {
+                id: 'jordan',
+                name: 'Jordan Lee',
+                image: '/shared/images/talent/talent-15_JordanLee.png',
+                description: 'Alternative edge with creative flair',
+                tags: ['male', 'young', 'asian', 'dark-hair', 'alternative', 'creative']
+            },
+            {
+                id: 'isabella',
+                name: 'Isabella Rodriguez',
+                image: '/shared/images/talent/talent-16_IsabellaRodriguez.png',
+                description: 'Glamorous presence with striking features',
+                tags: ['female', 'young', 'latina', 'dark-hair', 'glamorous', 'striking']
+            },
+            {
+                id: 'quinn',
+                name: 'Quinn Santos',
+                image: '/shared/images/talent/talent-17_QuinnSantos.png',
+                description: 'Casual cool with relaxed confidence',
+                tags: ['male', 'young', 'latino', 'dark-hair', 'casual', 'cool']
+            },
+            {
+                id: 'casey',
+                name: 'Casey White',
+                image: '/shared/images/talent/talent-18_CaseyWhite.png',
+                description: 'Tomboyish charm with athletic energy',
+                tags: ['female', 'young', 'caucasian', 'light-hair', 'athletic', 'tomboyish']
+            },
+            {
+                id: 'sam',
+                name: 'Sam Wilson',
+                image: '/shared/images/talent/talent-19_SamWilson.png',
+                description: 'Minimalist aesthetic with understated style',
+                tags: ['female', 'young', 'caucasian', 'light-hair', 'minimalist', 'understated']
+            },
+            {
+                id: 'drew',
+                name: 'Drew Martinez',
+                image: '/shared/images/talent/talent-20_DrewMartinez.png',
+                description: 'Bold personality with vibrant energy',
+                tags: ['male', 'young', 'asian', 'dark-hair', 'bold', 'vibrant']
+            },
+            {
+                id: 'avery',
+                name: 'Avery Taylor',
+                image: '/shared/images/talent/talent-21_AveryTaylor.png',
+                description: 'Refined elegance with mature sophistication',
+                tags: ['female', 'adult', 'caucasian', 'light-hair', 'refined', 'sophisticated']
+            },
+            {
+                id: 'parker',
+                name: 'Parker Miller',
+                image: '/shared/images/talent/talent-22_ParkerMiller.png',
+                description: 'Classic masculine appeal with distinguished look',
+                tags: ['male', 'adult', 'caucasian', 'dark-hair', 'classic', 'distinguished']
+            },
+            {
+                id: 'morgan',
+                name: 'Morgan Kim',
+                image: '/shared/images/talent/talent-23_MorganKim.png',
+                description: 'Contemporary style with polished presence',
+                tags: ['male', 'young', 'asian', 'dark-hair', 'contemporary', 'polished']
+            },
+            {
+                id: 'andre',
+                name: 'Andre Jackson',
+                image: '/shared/images/talent/talent-24_AndreJackson.png',
+                description: 'Strong presence with commanding confidence',
+                tags: ['male', 'adult', 'black', 'dark-hair', 'strong', 'commanding']
+            },
+            {
+                id: 'damon',
+                name: 'Damon Carter',
+                image: '/shared/images/talent/talent-25_DamonCarter.png',
+                description: 'Mature charisma with experienced demeanor',
+                tags: ['male', 'mature', 'black', 'grey-hair', 'charismatic', 'experienced']
+            },
+            {
+                id: 'nikolai',
+                name: 'Nikolai Volkov',
+                image: '/shared/images/talent/talent-26_NikolaiVolkov.png',
+                description: 'Silver fox appeal with distinguished maturity',
+                tags: ['male', 'mature', 'caucasian', 'grey-hair', 'distinguished', 'silver-fox']
+            },
+            {
+                id: 'sofia',
+                name: 'Sofia Rodriguez',
+                image: '/shared/images/talent/talent-27_SofiaRodriguez.png',
+                description: 'Warm presence with approachable beauty',
+                tags: ['female', 'young', 'latina', 'dark-hair', 'warm', 'approachable']
+            },
+            {
+                id: 'finn',
+                name: 'Finn O\'Connor',
+                image: '/shared/images/talent/talent-28_FinnOConnor.png',
+                description: 'Boyish charm with athletic build',
+                tags: ['male', 'young', 'caucasian', 'red-hair', 'boyish', 'athletic']
+            },
+            {
+                id: 'clara',
+                name: 'Clara Devereaux',
+                image: '/shared/images/talent/talent-29_ClaraDevereaux.png',
+                description: 'Timeless elegance with classic beauty',
+                tags: ['female', 'adult', 'caucasian', 'light-hair', 'timeless', 'classic']
+            },
+            {
+                id: 'zoe',
+                name: 'Simone Park',
+                image: '/shared/images/talent/talent-30_ZoeWashington.png',
+                description: 'Dynamic energy with vibrant personality',
+                tags: ['female', 'young', 'black', 'dark-hair', 'dynamic', 'vibrant']
+            },
+            {
+                id: 'emily',
+                name: 'Emily Hart',
+                image: '/shared/images/talent/talent-31_EmilyHart.png',
+                description: 'Gentle beauty with soft feminine features',
+                tags: ['female', 'young', 'asian', 'dark-hair', 'gentle', 'feminine']
+            },
+            {
+                id: 'alex',
+                name: 'Alex Stone',
+                image: '/shared/images/talent/talent-32_AlexStone.png',
+                description: 'Versatile look with adaptable style',
+                tags: ['male', 'young', 'latino', 'dark-hair', 'versatile', 'adaptable']
+            }
+        ];
+
+        // Filter state
+        let activeFilters = {
+            gender: [],
+            age: [],
+            ethnicity: [],
+            hair: []
+        };
+
+        // Extract unique tags by category
+        function extractTags() {
+            const categories = {
+                gender: new Set(),
+                age: new Set(),
+                ethnicity: new Set(),
+                hair: new Set()
+            };
+
+            const genderTags = ['male', 'female'];
+            const ageTags = ['young', 'adult', 'mature'];
+            const ethnicityTags = ['caucasian', 'black', 'asian', 'latino', 'latina', 'middle-eastern'];
+            const hairTags = ['dark-hair', 'light-hair', 'red-hair', 'grey-hair'];
+
+            MODELS.forEach(model => {
+                model.tags.forEach(tag => {
+                    if (genderTags.includes(tag)) categories.gender.add(tag);
+                    else if (ageTags.includes(tag)) categories.age.add(tag);
+                    else if (ethnicityTags.includes(tag)) categories.ethnicity.add(tag);
+                    else if (hairTags.includes(tag)) categories.hair.add(tag);
+                });
+            });
+
+            return {
+                gender: Array.from(categories.gender),
+                age: Array.from(categories.age),
+                ethnicity: Array.from(categories.ethnicity),
+                hair: Array.from(categories.hair)
+            };
+        }
+
+        // Count models with tag
+        function countModelsWithTag(tag) {
+            return MODELS.filter(m => m.tags.includes(tag)).length;
+        }
+
+        // Render filter tags
+        function renderFilters() {
+            const tags = extractTags();
+
+            Object.keys(tags).forEach(category => {
+                const container = document.getElementById(`${category}-filters`);
+                container.innerHTML = tags[category].map(tag => {
+                    const count = countModelsWithTag(tag);
+                    const isActive = activeFilters[category].includes(tag);
+                    return `
+                        <div class="filter-tag ${isActive ? 'active' : ''}"
+                             data-category="${category}"
+                             data-tag="${tag}"
+                             onclick="toggleFilter('${category}', '${tag}')">
+                            ${tag.replace(/-/g, ' ')}
+                            <span class="count">(${count})</span>
+                        </div>
+                    `;
+                }).join('');
+            });
+        }
+
+        // Toggle filter
+        function toggleFilter(category, tag) {
+            const index = activeFilters[category].indexOf(tag);
+            if (index === -1) {
+                activeFilters[category].push(tag);
+            } else {
+                activeFilters[category].splice(index, 1);
+            }
+            renderFilters();
+            renderGrid();
+        }
+
+        // Filter models based on active filters
+        function getFilteredModels() {
+            return MODELS.filter(model => {
+                for (const category in activeFilters) {
+                    const filters = activeFilters[category];
+                    if (filters.length > 0) {
+                        const hasMatch = filters.some(tag => model.tags.includes(tag));
+                        if (!hasMatch) return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        // Render models grid
+        function renderGrid() {
+            const grid = document.getElementById('models-grid');
+            const filtered = getFilteredModels();
+
+            // Update results count
+            const total = MODELS.length;
+            const showing = filtered.length;
+            document.getElementById('results-count').textContent =
+                showing === total ? `${total} models` : `${showing} of ${total}`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <h3>No models found</h3>
+                        <p>Try adjusting your filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(model => {
+                // Use thumbnail for grid display
+                const thumbImage = model.image.replace('/talent/', '/talent/thumbs/');
+                return `
+                <div class="model-card" data-id="${model.id}" onclick="openLightbox('${model.id}')">
+                    <img src="${thumbImage}" alt="${model.name}" loading="lazy">
+                    <div class="model-name">${model.name}</div>
+                </div>
+            `}).join('');
+        }
+
+        // Lightbox functionality
+        let currentModelIndex = 0;
+        let filteredModels = [];
+
+        function openLightbox(modelId) {
+            filteredModels = getFilteredModels();
+            currentModelIndex = filteredModels.findIndex(m => m.id === modelId);
+            if (currentModelIndex === -1) currentModelIndex = 0;
+
+            showLightboxModel(currentModelIndex);
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        function showLightboxModel(index) {
+            const model = filteredModels[index];
+            // Use full-res image in lightbox
+            document.getElementById('lightbox-img').src = model.image;
+            document.getElementById('lightbox-panel').innerHTML = `
+                <h3>${model.name}</h3>
+                <p class="description">${model.description}</p>
+                <div class="tags-label">Tags</div>
+                <div class="lightbox-tags">
+                    ${model.tags.map(tag => {
+                        const genderClass = tag === 'male' ? 'gender-male' : tag === 'female' ? 'gender-female' : '';
+                        return `<span class="tag ${genderClass}">${tag.replace(/-/g, ' ')}</span>`;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        function navigateLightbox(direction) {
+            if (filteredModels.length === 0) return;
+            currentModelIndex = (currentModelIndex + direction + filteredModels.length) % filteredModels.length;
+            showLightboxModel(currentModelIndex);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('lightbox').classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.classList.contains('lightbox')) closeLightbox();
+        });
+
+        // Init
+        renderFilters();
+        renderGrid();
+    </script>
+</body>
+</html>

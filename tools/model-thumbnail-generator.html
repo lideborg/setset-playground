@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Model Thumbnail Generator</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Talent Grid */
+        .talent-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .section-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--carbon);
+        }
+
+        .selection-controls {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .talent-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .talent-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .talent-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .talent-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .talent-card.selected {
+            border-color: var(--jet);
+            border-width: 2px;
+        }
+
+        .talent-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: var(--jet);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .talent-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            font-size: 9px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Template Section */
+        .template-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .template-tabs {
+            display: flex;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-md);
+        }
+
+        .template-tab {
+            padding: 8px 16px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        .template-tab:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .template-tab.active {
+            background: var(--jet);
+            color: white;
+            border-color: var(--jet);
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: var(--space-xs);
+        }
+
+        .template-card {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .template-card .thumbnail {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gainsboro);
+        }
+
+        /* Setset templates are 3:4 portrait */
+        .template-card .thumbnail.setset-thumb {
+            aspect-ratio: 3/4;
+        }
+
+        /* Playground templates are wider to fit M+F side by side */
+        .template-card .thumbnail.playground-thumb {
+            aspect-ratio: 3/2;
+        }
+
+        .template-card .thumbnail-pair {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .template-card .thumbnail-pair img {
+            width: 50%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .template-card .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .template-card .thumbnail.no-image {
+            color: var(--ash-grey);
+            font-size: 24px;
+        }
+
+        .template-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .template-card.selected {
+            border-color: var(--jet);
+            border-width: 2px;
+        }
+
+        .template-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: var(--jet);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .template-card .info {
+            padding: 6px 6px 2px;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--carbon);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .template-card .framing-btns {
+            display: flex;
+            gap: 2px;
+            padding: 4px 4px 6px;
+            justify-content: center;
+        }
+
+        .template-card .framing-btn {
+            font-size: 8px;
+            padding: 2px 4px;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            border-radius: 3px;
+            cursor: pointer;
+            color: var(--slate);
+            transition: all 0.15s ease;
+        }
+
+        .template-card .framing-btn:hover {
+            border-color: var(--ash-grey);
+            color: var(--carbon);
+        }
+
+        .template-card .framing-btn.active {
+            background: var(--jet);
+            color: white;
+            border-color: var(--jet);
+        }
+
+        /* Settings */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .setting-section {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+        }
+
+        .setting-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+            margin-bottom: var(--space-sm);
+        }
+
+        .setting-toggle {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .setting-toggle .btn {
+            flex: 1;
+            min-width: 60px;
+        }
+
+        /* Slider */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: var(--gainsboro);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            width: 28px;
+            text-align: center;
+            font-size: var(--text-base);
+            font-weight: 600;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            text-align: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .calc-display {
+            font-size: var(--text-md);
+            color: var(--carbon);
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            margin-bottom: var(--space-lg);
+            padding: var(--space-lg);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .progress-bar-container {
+            height: 8px;
+            background: var(--off-white);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .result-card.generating {
+            aspect-ratio: 3/4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .result-card:hover {
+            border-color: var(--jet);
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-sm);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .result-card:hover .result-overlay {
+            opacity: 1;
+        }
+
+        .result-info {
+            color: white;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .result-btn {
+            padding: 6px 12px;
+            background: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .result-btn:hover {
+            background: var(--jet);
+            color: white;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .gen-info {
+            font-size: 11px;
+            color: var(--slate);
+            text-align: center;
+        }
+
+        /* Result Lightbox */
+        .result-lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-lightbox.active {
+            display: flex;
+        }
+
+        .result-lightbox-container {
+            display: flex;
+            max-width: 90vw;
+            max-height: 90vh;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .result-lightbox-image {
+            flex: 0 0 auto;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-lightbox-image img {
+            max-width: 55vw;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+
+        .result-lightbox-panel {
+            width: 320px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            overflow-y: auto;
+        }
+
+        .result-lightbox-panel h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .result-lightbox-panel .meta {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .result-lightbox-panel .prompt-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .result-lightbox-panel .prompt-text {
+            font-size: 12px;
+            color: #444;
+            line-height: 1.5;
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-lightbox-panel .download-btn {
+            margin-top: auto;
+            padding: 12px 20px;
+            background: var(--jet);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .result-lightbox-panel .download-btn:hover {
+            background: #333;
+        }
+
+        .result-lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .result-lightbox-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .result-lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-lightbox-nav:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .result-lightbox-nav.prev { left: 20px; }
+        .result-lightbox-nav.next { right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Model Thumbnail Generator</h1>
+            <p class="hero-subtitle">Generate editorial thumbnails for models using Setset or Playground styles</p>
+        </div>
+
+        <!-- Talent Selection -->
+        <div class="talent-section">
+            <div class="section-header">
+                <div class="section-title">Select Models (<span id="selected-count">0</span>/30)</div>
+                <div class="selection-controls">
+                    <button class="btn btn--sm" onclick="selectAllModels()">Select All</button>
+                    <button class="btn btn--sm" onclick="clearModelSelection()">Clear</button>
+                </div>
+            </div>
+            <div class="talent-grid" id="talent-grid"></div>
+        </div>
+
+        <!-- Template Selection -->
+        <div class="template-section">
+            <div class="section-header">
+                <div class="section-title">Select Templates (<span id="template-count">0</span> selected)</div>
+                <div class="selection-controls">
+                    <button class="btn btn--sm" onclick="selectAllTemplates()">Select All</button>
+                    <button class="btn btn--sm" onclick="clearTemplateSelection()">Clear</button>
+                </div>
+            </div>
+            <div class="template-tabs">
+                <div class="template-tab active" data-tab="setset">Setset</div>
+                <div class="template-tab" data-tab="playground">Playground</div>
+                <button class="btn btn--sm" style="margin-left: auto;" onclick="randomizeFramings()">Randomize</button>
+                <button class="btn btn--sm" onclick="clearTemplateSelection()">Clear</button>
+            </div>
+            <div class="template-grid" id="template-grid"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-grid">
+            <div class="setting-section">
+                <div class="setting-title">Resolution</div>
+                <div class="setting-toggle">
+                    <button class="btn btn--toggle" data-resolution="1024">1K</button>
+                    <button class="btn btn--toggle active" data-resolution="2048">2K</button>
+                    <button class="btn btn--toggle" data-resolution="4096">4K</button>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <div class="setting-title">Aspect Ratio</div>
+                <div class="setting-toggle">
+                    <button class="btn btn--toggle active" data-aspect="3:4">3:4</button>
+                    <button class="btn btn--toggle" data-aspect="4:5">4:5</button>
+                    <button class="btn btn--toggle" data-aspect="1:1">1:1</button>
+                </div>
+            </div>
+
+            <div class="setting-section" style="grid-column: span 2;">
+                <div class="setting-title">Variations per Template</div>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="variations-slider" min="1" max="8" value="1">
+                    <span class="slider-value" id="variations-value">1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate -->
+        <div class="generate-section">
+            <div class="calc-display" id="calc-display">Select models and templates to generate</div>
+            <button class="btn btn--primary btn--lg" id="generate-btn" disabled>Generate Thumbnails</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Generated Thumbnails</h2>
+                <button class="btn" onclick="downloadAll()">Download All</button>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Result Lightbox -->
+    <div class="result-lightbox" id="result-lightbox">
+        <button class="result-lightbox-close" onclick="closeResultLightbox()">&times;</button>
+        <button class="result-lightbox-nav prev" onclick="navigateResultLightbox(-1)">&#8249;</button>
+        <button class="result-lightbox-nav next" onclick="navigateResultLightbox(1)">&#8250;</button>
+        <div class="result-lightbox-container">
+            <div class="result-lightbox-image">
+                <img id="result-lightbox-img" src="" alt="">
+            </div>
+            <div class="result-lightbox-panel" id="result-lightbox-panel"></div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/data/editorial-moods.js"></script>
+    <script>
+        // ============ DATA ============
+
+        const MODELS = [
+            { id: 1, name: 'James Wilson', gender: 'male' },
+            { id: 2, name: 'Maya Johnson', gender: 'female' },
+            { id: 3, name: 'River Blake', gender: 'male' },
+            { id: 4, name: 'Emma Sullivan', gender: 'female' },
+            { id: 5, name: 'Marcus Brown', gender: 'male' },
+            { id: 6, name: 'Zara Mitchell', gender: 'female' },
+            { id: 7, name: 'Sophia Anderson', gender: 'female' },
+            { id: 8, name: 'Liam Garcia', gender: 'male' },
+            { id: 9, name: 'Nina Davis', gender: 'female' },
+            { id: 10, name: 'Ava Martinez', gender: 'male' },
+            { id: 11, name: 'Luna Park', gender: 'female' },
+            { id: 12, name: 'Noah Chen', gender: 'male' },
+            { id: 13, name: 'Mia Parker', gender: 'female' },
+            { id: 14, name: 'Riley Morgan', gender: 'male' },
+            { id: 15, name: 'Jordan Lee', gender: 'male' },
+            { id: 16, name: 'Isabella Rodriguez', gender: 'female' },
+            { id: 17, name: 'Quinn Santos', gender: 'female' },
+            { id: 18, name: 'Casey White', gender: 'female' },
+            { id: 19, name: 'Sam Wilson', gender: 'female' },
+            { id: 20, name: 'Drew Martinez', gender: 'male' },
+            { id: 21, name: 'Avery Taylor', gender: 'female' },
+            { id: 22, name: 'Parker Miller', gender: 'male' },
+            { id: 23, name: 'Morgan Kim', gender: 'male' },
+            { id: 24, name: 'Andre Jackson', gender: 'male' },
+            { id: 25, name: 'Damon Carter', gender: 'male' },
+            { id: 26, name: 'Nikolai Volkov', gender: 'male' },
+            { id: 27, name: 'Sofia Rodriguez', gender: 'female' },
+            { id: 28, name: 'Finn O\'Connor', gender: 'male' },
+            { id: 29, name: 'Clara Devereaux', gender: 'female' },
+            { id: 30, name: 'Simone Park', gender: 'female', filename: 'ZoeWashington' }
+        ];
+
+        // Setset Templates
+        const SETSET_TEMPLATES = [];
+
+        function initSetsetTemplates() {
+            const setsetModels = [
+                { id: 1, name: 'James Wilson', style: 'Black shirt urban, confident gaze' },
+                { id: 2, name: 'Maya Johnson', style: 'Blue sweater casual, warm tones' },
+                { id: 3, name: 'River Blake', style: 'Black turtleneck, blue background' },
+                { id: 4, name: 'Emma Sullivan', style: 'Green polo casual, natural light' },
+                { id: 5, name: 'Marcus Brown', style: 'White shirt formal, studio' },
+                { id: 6, name: 'Zara Mitchell', style: 'Purple hoodie casual, relaxed' },
+                { id: 7, name: 'Sophia Anderson', style: 'Black crop, minimal' },
+                { id: 8, name: 'Liam Garcia', style: 'Grey sweater, warm tones' },
+                { id: 9, name: 'Nina Davis', style: 'Black top, dramatic lighting' },
+                { id: 10, name: 'Kai Zhang', style: 'Beige coat layered, editorial' },
+                { id: 11, name: 'Luna Park', style: 'Black dress elegant' },
+                { id: 12, name: 'Noah Chen', style: 'Cream sweater relaxed' },
+                { id: 13, name: 'Mia Parker', style: 'White t-shirt minimal, window light' },
+                { id: 14, name: 'Riley Morgan', style: 'Black harness top, dramatic' },
+                { id: 15, name: 'Isabella Rodriguez', style: 'Grey turtleneck sophisticated' },
+                { id: 16, name: 'Jordan Lee', style: 'Beige blazer arms crossed, warm' },
+                { id: 17, name: 'Quinn Santos', style: 'Cream top minimal, soft light' },
+                { id: 18, name: 'Casey White', style: 'Black long sleeve, dark mood' },
+                { id: 19, name: 'Sam Wilson', style: 'Grey tank athletic, strong' },
+                { id: 20, name: 'Drew Martinez', style: 'Blue top casual sitting' },
+                { id: 21, name: 'Parker Miller', style: 'Cream sweater casual, soft' },
+                { id: 22, name: 'Avery Taylor', style: 'Brown blazer professional' },
+                { id: 23, name: 'Morgan Kim', style: 'Tan tank minimal, warm' },
+                { id: 24, name: 'Andre Jackson', style: 'Tan casual, modern' }
+            ];
+
+            setsetModels.forEach(m => {
+                const paddedId = m.id.toString().padStart(2, '0');
+                const fileName = m.name.replace(/[' ]/g, '');
+                SETSET_TEMPLATES.push({
+                    id: `setset-${m.id}`,
+                    name: m.style.split(',')[0],
+                    description: m.style,
+                    thumbnail: `/assets/setset-editorial/talent-${paddedId}_${fileName}.jpg`,
+                    prompt: `High-end editorial fashion photograph. ${m.style}. Professional model pose with confident expression, beautiful lighting, sharp focus, magazine quality photography.`
+                });
+            });
+        }
+
+        // Playground Templates
+        let PLAYGROUND_TEMPLATES = [];
+
+        function initPlaygroundTemplates() {
+            const moods = window.EDITORIAL_MOODS_FEMALE || [];
+            // Mood images are in /assets/moods/batch3/ with naming: mood_XXY#_id.png
+            // XX = mood number (01-50), Y = gender (F/M), # = variant (1-4)
+            PLAYGROUND_TEMPLATES = moods.map((mood, index) => {
+                const moodNum = String(index + 1).padStart(2, '0');
+                // Pick random variants for both genders
+                const variantF = Math.floor(Math.random() * 4) + 1;
+                const variantM = Math.floor(Math.random() * 4) + 1;
+                return {
+                    id: mood.id,
+                    name: mood.name,
+                    description: mood.prompt.substring(0, 60) + '...',
+                    thumbnailF: `/assets/moods/batch3/mood_${moodNum}F${variantF}_${mood.id}.png`,
+                    thumbnailM: `/assets/moods/batch3/mood_${moodNum}M${variantM}_${mood.id}.png`,
+                    prompt: mood.prompt,
+                    promptMale: (window.EDITORIAL_MOODS_MALE || []).find(m => m.id === mood.id)?.prompt || mood.prompt
+                };
+            });
+        }
+
+        // ============ AI PROMPT ENHANCEMENT SYSTEM (like Setset app) ============
+
+        // System prompt for GPT-4o-mini to generate high-quality editorial prompts
+        const THUMBNAIL_SYSTEM_PROMPT = `You are an expert AI prompt engineer specializing in high-end fashion photography thumbnails. Your task is to create a professional photography prompt for a model thumbnail.
+
+🎯 CRITICAL: EVERY prompt must exude HIGH-FASHION MODEL ENERGY - these are professional fashion models, not ordinary people. They should look like they belong in Vogue, not a basic catalog. Think: powerful, confident, editorial presence.
+
+**MODEL PRESENCE REQUIREMENTS:**
+- Use powerful descriptors: "fierce", "commanding", "magnetic", "intense", "editorial confidence", "runway-ready"
+- Describe expressions as: "piercing gaze", "powerful stare", "smoldering intensity", "editorial cool"
+- Body language should be: "confident posture", "model grace", "fashion-forward stance", "editorial poise"
+- AVOID generic terms: "standing normally", "regular pose" - always elevate to model-level
+
+**COMPOSITION & FRAMING RULES:**
+- ALWAYS specify framing: "full-body shot from head to feet", "half-body shot from waist up", or "three-quarter shot"
+- Include camera details: lens (35mm, 50mm, 85mm), eye-level perspective
+- For full-body: "complete figure visible from head to feet"
+- For half-body: "cropped at natural waist, upper body filling 80% of frame"
+
+**POSE DESCRIPTION GUIDELINES:**
+- Be SPECIFIC about body positioning: weight distribution, arm placement, shoulder angle
+- Include asymmetry for interest: weight shifted, one arm different from other
+- Describe the energy: "commanding presence", "magnetic intensity", "powerful stance"
+
+**GENDER-SPECIFIC STYLING:**
+FEMALE:
+- Can include subtle makeup: "soft natural makeup", "bold lip color", "winged eyeliner"
+- Can include minimal jewelry: "thin gold chain necklace", "small stud earrings", "delicate bracelet"
+- NO heavy makeup, NO statement jewelry, keep it editorial-minimal
+
+MALE:
+- NO makeup descriptors AT ALL
+- Can include: "wearing watch", "thin chain necklace"
+- Focus on natural masculine features, strong jawline, defined features
+
+**LIGHTING:**
+- Use professional lighting terms: "dramatic studio lighting with controlled shadows"
+- "High-contrast fashion lighting with directional key light"
+- "Professional studio lighting with dimensional contrast"
+
+OUTPUT FORMAT:
+Return ONLY a single prompt starting with "A photorealistic..." - no explanations, no numbering, no additional text.`;
+
+        // Pose pools organized by framing type - includes scene interaction for more natural, dynamic shots
+        const POSE_POOLS = {
+            fullBody: {
+                female: [
+                    'leaning casually against a white wall with one shoulder, arms relaxed, weight on back leg, effortless cool gaze into camera',
+                    'sitting on edge of white platform or step, one leg extended, hands resting naturally, looking up at camera with confident expression',
+                    'walking toward camera mid-stride, natural arm swing, wind catching hair slightly, purposeful confident movement',
+                    'standing near window light, one hand touching the wall surface, natural daylight creating soft shadows, contemplative but fierce gaze',
+                    'perched on a simple white stool, legs crossed elegantly, hands resting on knee, direct powerful stare',
+                    'leaning forward slightly with hands on thighs, dynamic engaged pose, intense editorial gaze, ready to move energy',
+                    'back against wall sliding down slightly in relaxed pose, one knee bent, casual but commanding presence',
+                    'sitting cross-legged on floor, hands in lap, looking up at camera, intimate grounded energy'
+                ],
+                male: [
+                    'leaning against wall with shoulder, arms crossed loosely, one foot flat against wall, effortless masculine cool',
+                    'sitting on steps or platform, elbows on knees, hands clasped, direct intense gaze, contemplative strength',
+                    'walking with purpose toward camera, natural confident stride, arms relaxed at sides, powerful forward momentum',
+                    'standing near architectural element, one hand resting on surface, weight shifted, natural masculine presence',
+                    'seated on simple stool or bench, legs apart, hands on thighs, direct commanding gaze',
+                    'leaning forward from seated position, forearms on knees, intimate intense eye contact',
+                    'back against wall, hands in pockets, one leg bent with foot flat on wall, relaxed confidence',
+                    'crouching or squatting naturally, arms resting on knees, looking up at camera, grounded energy'
+                ]
+            },
+            halfBody: {
+                female: [
+                    'leaning on forearms against surface like a ledge or table, looking up at camera, intimate powerful gaze',
+                    'hands resting on edge of something just out of frame, shoulders relaxed, natural confident expression',
+                    'one elbow propped on surface, chin resting on hand, thoughtful editorial gaze with attitude',
+                    'arms loosely crossed, leaning back slightly against something, casual cool with fierce eyes',
+                    'hands behind head stretching naturally, elbows out, confident relaxed expression',
+                    'one hand touching neck or collarbone, other arm relaxed, soft but intense gaze'
+                ],
+                male: [
+                    'forearms resting on ledge or surface, leaning forward, direct intense gaze into camera',
+                    'one arm propped on surface, other hand relaxed, natural masculine confidence',
+                    'leaning back against something with arms crossed, commanding casual presence',
+                    'hand running through hair naturally, caught mid-gesture, effortless cool',
+                    'chin resting on clasped hands, elbows on surface, thoughtful intense stare',
+                    'one hand on back of neck, stretching naturally, relaxed masculine energy'
+                ]
+            },
+            threeQuarter: {
+                female: [
+                    'walking along a wall trailing fingers on the surface, looking back at camera over shoulder, movement and mystery',
+                    'sitting on edge of something with legs dangling, hands gripping edge, playful confident energy',
+                    'leaning into doorway or corner, body angled toward camera, flirtatious powerful gaze',
+                    'mid-step on stairs or steps, hand on railing, dynamic movement captured, fierce expression',
+                    'turning from a surface she was leaning on, caught mid-movement, hair swinging, spontaneous energy',
+                    'sitting sideways on bench or ledge, legs tucked, looking back at camera, intimate cool'
+                ],
+                male: [
+                    'walking past textured wall, one hand brushing surface, looking at camera mid-stride, effortless movement',
+                    'sitting on steps with elbows on knees, three-quarter view, contemplative masculine energy',
+                    'leaning in doorway with arms braced on frame, body turned toward camera, commanding presence',
+                    'ascending or descending steps, hand on rail, caught mid-motion, dynamic editorial moment',
+                    'pushing off from wall he was leaning on, transitional movement, powerful casual energy',
+                    'seated on ground against wall, one knee up, arm resting on it, grounded masculine cool'
+                ]
+            }
+        };
+
+        // Framing types with their specifications
+        const FRAMING_SPECS = {
+            fullBody: {
+                framing: 'full-length head-to-toe portrait',
+                lens: ['35mm', '50mm'],
+                composition: 'Complete figure visible from head to feet',
+                aspectHint: 'full body shot'
+            },
+            halfBody: {
+                framing: 'half-body portrait from waist up',
+                lens: ['50mm', '85mm'],
+                composition: 'Upper body filling 80% of frame, cropped at natural waist',
+                aspectHint: 'half body shot from waist up'
+            },
+            threeQuarter: {
+                framing: 'three-quarter body portrait',
+                lens: ['35mm', '50mm', '70mm'],
+                composition: 'Body from mid-thigh to head, dynamic composition',
+                aspectHint: 'three-quarter body shot'
+            }
+        };
+
+        // Lighting variations
+        const LIGHTING_OPTIONS = [
+            'Dramatic studio lighting with controlled shadows creating depth and dimension, highlighting facial features',
+            'High-contrast fashion lighting with directional key light creating refined shadows and editorial intensity',
+            'Professional studio lighting with dimensional contrast, soft fill light maintaining detail in shadows',
+            'Dynamic editorial lighting emphasizing cheekbones and jawline, creating magazine-quality definition',
+            'Soft yet directional studio lighting creating beautiful modeling on features, subtle gradient shadows'
+        ];
+
+        // Accessory options by gender - used ~40% of the time for variety
+        const ACCESSORIES = {
+            female: [
+                // Jewelry
+                'thin gold chain necklace',
+                'small stud earrings',
+                'delicate silver bracelet',
+                'thin silver chain necklace',
+                'small hoop earrings',
+                'simple pendant necklace',
+                // Bags/Objects
+                'holding a minimal leather bag',
+                'small clutch in hand',
+                'holding sunglasses casually'
+            ],
+            male: [
+                // Jewelry/Watches
+                'simple elegant watch',
+                'thin chain necklace',
+                'minimal leather watch',
+                'subtle silver bracelet',
+                // Bags/Objects
+                'holding a leather bag',
+                'holding sunglasses'
+            ]
+        };
+
+        // Get random accessory - returns empty string 60% of the time for variety
+        function getRandomAccessory(gender) {
+            if (Math.random() > 0.4) return ''; // 60% no accessory
+            const pool = ACCESSORIES[gender] || ACCESSORIES.female;
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // Makeup for females only - subtle, minimal
+        const FEMALE_MAKEUP = [
+            'soft natural makeup',
+            'subtle red lip',
+            'defined mascara',
+            'dewy skin with natural flush',
+            'soft blush on cheeks',
+            '' // No makeup mention - most common
+        ];
+
+        // Get random makeup - returns empty 70% of time
+        function getRandomMakeup() {
+            if (Math.random() > 0.3) return '';
+            return FEMALE_MAKEUP[Math.floor(Math.random() * (FEMALE_MAKEUP.length - 1))]; // Skip the empty one
+        }
+
+        // Background options
+        const BACKGROUNDS = [
+            'seamless white photo studio background',
+            'clean white studio with subtle gradient',
+            'professional white cyclorama studio',
+            'bright white backdrop with soft shadows on floor'
+        ];
+
+        // Expression pool - varied but minimal, natural expressions
+        const EXPRESSION_POOL = [
+            'with completely neutral blank expression, direct stare into lens',
+            'with soft knowing half-smile, eyes relaxed',
+            'with slight smirk, one corner of mouth raised, playful confidence',
+            'with genuine warm smile showing teeth, eyes crinkling naturally',
+            'with contemplative distant gaze, looking past camera',
+            'with quiet laugh, head tilted slightly, natural joy',
+            'with serious intense stare, slight furrow in brow',
+            'with soft sensual heavy-lidded gaze, lips slightly parted',
+            'with bright genuine laugh, caught mid-moment',
+            'with subtle mysterious smile, knowing something we dont',
+            'with relaxed easy grin, approachable warmth',
+            'with fierce piercing stare, commanding presence',
+            'with dreamy soft expression, peaceful and serene',
+            'with confident smirk, chin slightly raised',
+            'with candid mid-laugh expression, completely natural'
+        ];
+
+        // High-fashion editorial poses - confident, commanding, model energy
+        const EDITORIAL_POSES = {
+            fullBody: [
+                'powerful contrapposto stance, one hip out, hand on waist, commanding the frame',
+                'confident stride mid-walk, shoulders back, owning the space',
+                'leaning against wall with attitude, one foot up, effortless cool',
+                'seated with elegant crossed legs, back straight, regal presence',
+                'standing tall with arms relaxed at sides, chin lifted, powerful stillness',
+                'dynamic pose with weight shifted, creating strong S-curve silhouette'
+            ],
+            halfBody: [
+                'shoulders angled, chin lifted, commanding editorial presence',
+                'hand near face or neck, creating interesting composition',
+                'arms crossed with confidence, direct powerful gaze',
+                'leaning forward slightly, engaging intensely with camera',
+                'head tilted with knowing expression, magnetic presence',
+                'one shoulder dropped creating asymmetry, fierce energy'
+            ],
+            threeQuarter: [
+                'walking with purpose, caught mid-stride, dynamic energy',
+                'turning toward camera, over-shoulder glance, mysterious allure',
+                'leaning into the frame, body angled, editorial tension',
+                'seated with one knee up, relaxed but commanding',
+                'moving through space with grace, hair catching motion',
+                'powerful stance with architectural body positioning'
+            ],
+            closeUp: [
+                'face filling frame, intense direct eye contact',
+                'slight head tilt, piercing gaze into lens',
+                'chin slightly raised, confident commanding expression',
+                'three-quarter face angle, dramatic and sculptural',
+                'looking slightly off-camera then back, magnetic pull',
+                'head turned with eyes meeting camera, intimate intensity'
+            ]
+        };
+
+        // Expression variations to add variety - these get added to give different moods
+        const EXPRESSION_ADDITIONS = [
+            'with a slight knowing smile',
+            'with intense serious gaze',
+            'with soft genuine smile reaching the eyes',
+            'with fierce determined expression',
+            'with relaxed confident smirk',
+            'with quiet contemplative look',
+            'with bright natural laugh',
+            'with sultry half-lidded gaze',
+            'with playful mischievous expression',
+            'with serene peaceful expression',
+            'with powerful commanding stare',
+            'with vulnerable authentic moment'
+        ];
+
+        // Fit/styling presets - randomly applied for variety
+        const FIT_STYLES = {
+            regular: {
+                name: 'Regular',
+                descriptor: 'clean well-fitted',
+                examples: {
+                    female: [
+                        'fitted white ribbed tank top',
+                        'simple black t-shirt',
+                        'clean cream silk blouse',
+                        'minimal grey cotton tee',
+                        'simple white button-down shirt',
+                        'fitted navy knit top',
+                        'clean black tank top',
+                        'simple off-white linen shirt'
+                    ],
+                    male: [
+                        'clean white t-shirt',
+                        'simple black crew neck',
+                        'fitted grey cotton tee',
+                        'minimal navy polo',
+                        'clean white button-down shirt',
+                        'simple cream knit sweater',
+                        'fitted black henley',
+                        'clean charcoal t-shirt'
+                    ]
+                }
+            },
+            oversized: {
+                name: 'Oversized',
+                descriptor: 'relaxed oversized',
+                examples: {
+                    female: [
+                        'oversized white cotton shirt falling off one shoulder',
+                        'big cream knit sweater with dropped shoulders',
+                        'loose oversized grey blazer',
+                        'baggy white t-shirt',
+                        'oversized black cashmere sweater',
+                        'large cream linen shirt worn open over tank',
+                        'oversized navy wool coat',
+                        'big soft grey sweatshirt'
+                    ],
+                    male: [
+                        'oversized white oxford shirt untucked',
+                        'big cream wool sweater',
+                        'loose oversized grey blazer',
+                        'baggy black t-shirt',
+                        'oversized charcoal cashmere crew',
+                        'large navy cotton shirt',
+                        'oversized camel coat',
+                        'big soft grey hoodie'
+                    ]
+                }
+            },
+            messy: {
+                name: 'Messy',
+                descriptor: 'undone lived-in',
+                examples: {
+                    female: [
+                        'wrinkled white shirt half-tucked',
+                        'slouchy cream sweater slipping off shoulder',
+                        'rumpled grey t-shirt',
+                        'disheveled black blazer over white tank',
+                        'crumpled linen shirt sleeves pushed up',
+                        'worn-in vintage band tee',
+                        'messy layered tanks',
+                        'undone white button-down with rolled sleeves'
+                    ],
+                    male: [
+                        'wrinkled white shirt collar open',
+                        'slouchy grey sweater',
+                        'rumpled black t-shirt',
+                        'disheveled navy blazer over white tee',
+                        'crumpled linen shirt sleeves rolled',
+                        'worn-in vintage tee',
+                        'messy layered shirts',
+                        'undone white oxford with top buttons open'
+                    ]
+                }
+            }
+        };
+
+        // Occasional color pops (used sparingly - maybe 20% of the time)
+        const COLOR_POPS = [
+            'deep forest green',
+            'rich burgundy',
+            'dusty blue',
+            'terracotta',
+            'olive',
+            'rust orange',
+            'deep plum'
+        ];
+
+        // Bottoms/pants pools organized by fit style
+        const BOTTOMS_STYLES = {
+            regular: {
+                name: 'Regular',
+                examples: {
+                    female: [
+                        'tailored black trousers',
+                        'straight-leg dark indigo jeans',
+                        'clean navy wool trousers',
+                        'fitted charcoal pants',
+                        'simple black cigarette pants',
+                        'tailored grey wool trousers',
+                        'straight black jeans',
+                        'classic dark wash denim'
+                    ],
+                    male: [
+                        'tailored black trousers',
+                        'straight-leg dark indigo jeans',
+                        'clean navy suit pants',
+                        'fitted charcoal wool trousers',
+                        'simple black dress pants',
+                        'tailored grey trousers',
+                        'straight black jeans',
+                        'classic dark wash denim'
+                    ]
+                }
+            },
+            oversized: {
+                name: 'Oversized',
+                examples: {
+                    female: [
+                        'wide-leg black trousers',
+                        'baggy dark jeans',
+                        'oversized pleated grey pants',
+                        'loose high-waisted black trousers',
+                        'wide cream linen pants',
+                        'baggy vintage wash denim',
+                        'oversized navy wool trousers',
+                        'relaxed wide-leg charcoal pants'
+                    ],
+                    male: [
+                        'wide-leg black trousers',
+                        'baggy dark jeans',
+                        'oversized pleated grey pants',
+                        'loose black suit pants',
+                        'wide cream linen trousers',
+                        'baggy vintage wash denim',
+                        'oversized navy wool trousers',
+                        'relaxed wide-leg charcoal pants'
+                    ]
+                }
+            },
+            messy: {
+                name: 'Messy',
+                examples: {
+                    female: [
+                        'worn-in black jeans',
+                        'distressed dark denim',
+                        'wrinkled black trousers',
+                        'faded grey jeans',
+                        'slouchy vintage denim',
+                        'rumpled navy pants',
+                        'lived-in dark wash jeans',
+                        'relaxed broken-in black pants'
+                    ],
+                    male: [
+                        'worn-in black jeans',
+                        'distressed dark denim',
+                        'wrinkled black trousers',
+                        'faded grey jeans',
+                        'slouchy vintage denim',
+                        'rumpled navy suit pants',
+                        'lived-in dark wash jeans',
+                        'relaxed broken-in black pants'
+                    ]
+                }
+            }
+        };
+
+        // Get random fit style and clothing items (top + bottoms)
+        function getRandomClothing(gender) {
+            // Pick fit style: 50% regular, 30% oversized, 20% messy
+            const rand = Math.random();
+            let fitKey;
+            if (rand < 0.5) fitKey = 'regular';
+            else if (rand < 0.8) fitKey = 'oversized';
+            else fitKey = 'messy';
+
+            const fit = FIT_STYLES[fitKey];
+            const topExamples = fit.examples[gender] || fit.examples.female;
+            let top = topExamples[Math.floor(Math.random() * topExamples.length)];
+
+            // Get bottoms from the same fit style for cohesive look
+            const bottomsFit = BOTTOMS_STYLES[fitKey];
+            const bottomExamples = bottomsFit.examples[gender] || bottomsFit.examples.female;
+            let bottoms = bottomExamples[Math.floor(Math.random() * bottomExamples.length)];
+
+            // 15% chance to add a color pop to the top (replace white/grey/black with color)
+            if (Math.random() < 0.15) {
+                const colorPop = COLOR_POPS[Math.floor(Math.random() * COLOR_POPS.length)];
+                // Only replace neutral colors
+                top = top.replace(/white|grey|gray|black|cream|charcoal/i, colorPop);
+            }
+
+            return {
+                fit: fit.name,
+                top,
+                bottoms,
+                // Combined description for full outfit
+                clothing: `${top} and ${bottoms}`
+            };
+        }
+
+        // Function to build prompt - uses the template's prompt which already has lighting, background, expression, etc.
+        // We add framing, pose, expression, and clothing variation for high-fashion editorial feel
+        function buildEditorialPrompt(model, template, variationIndex) {
+            const gender = model.gender;
+
+            // Get the template's full prompt - this has the lighting, background, mood, expression already
+            let templatePrompt = template.prompt || '';
+
+            // For Playground templates, use gender-specific prompt if available
+            if (gender === 'male' && template.promptMale) {
+                templatePrompt = template.promptMale;
+            }
+
+            // If no template prompt, fall back to generic editorial
+            if (!templatePrompt) {
+                return buildGenericEditorialPrompt(model, variationIndex);
+            }
+
+            // Strip out vague clothing descriptions from template - we'll add our own
+            // This removes phrases like "wearing something simple", "casual clothing", etc.
+            templatePrompt = templatePrompt
+                .replace(/,?\s*wearing\s+[^,.]+(,|\.)/gi, '$1')
+                .replace(/,?\s*subject\s+wearing\s+[^,.]+/gi, '')
+                .replace(/,?\s*in\s+(casual|simple|minimal|everyday)\s+clothing/gi, '')
+                .replace(/,?\s*(casual|simple)\s+clothing/gi, '');
+
+            // Get the framing for this specific template
+            const framingType = getTemplateFraming(template.id);
+
+            // Get framing description
+            const framingDescriptions = {
+                fullBody: 'Full body shot',
+                halfBody: 'Half body shot from waist up',
+                threeQuarter: 'Three-quarter body shot',
+                closeUp: 'Close-up portrait'
+            };
+            const framingDesc = framingDescriptions[framingType];
+
+            // Select high-fashion editorial pose
+            const poses = EDITORIAL_POSES[framingType];
+            const pose = poses[Math.floor(Math.random() * poses.length)];
+
+            // Select expression variation to add variety
+            const expressionAdd = EXPRESSION_ADDITIONS[Math.floor(Math.random() * EXPRESSION_ADDITIONS.length)];
+
+            // Get random clothing with fit style
+            const clothingData = getRandomClothing(gender);
+
+            // Build clothing description based on framing
+            // Full body and three-quarter: mention full outfit (top + bottoms)
+            // Half body: just mention top
+            // Close-up: minimal clothing mention (just neckline hint)
+            let clothingDesc;
+            if (framingType === 'fullBody' || framingType === 'threeQuarter') {
+                clothingDesc = clothingData.clothing; // "top and bottoms"
+            } else if (framingType === 'halfBody') {
+                clothingDesc = clothingData.top; // Just the top
+            } else {
+                // Close-up - just hint at neckline/collar
+                const necklineHints = [
+                    'visible collar of a minimal top',
+                    'hint of a simple neckline',
+                    'clean simple clothing visible at neckline'
+                ];
+                clothingDesc = necklineHints[Math.floor(Math.random() * necklineHints.length)];
+            }
+
+            // Gender descriptor
+            const genderDescriptor = gender === 'male' ? 'male fashion model' : 'female fashion model';
+
+            // Get optional accessory (40% chance)
+            const accessory = getRandomAccessory(gender);
+            const accessoryDesc = accessory ? `, ${accessory}` : '';
+
+            // Get optional makeup for females (30% chance)
+            const makeup = gender === 'female' ? getRandomMakeup() : '';
+            const makeupDesc = makeup ? `, ${makeup}` : '';
+
+            // Build prompt: framing + pose + expression + clothing + accessories + template's mood/lighting
+            // Clothing is specified explicitly, overriding any vague template clothing
+            const prompt = `${framingDesc} of this exact same ${genderDescriptor}, ${pose}, ${expressionAdd}, wearing ${clothingDesc}${accessoryDesc}${makeupDesc}. ${templatePrompt}. High-fashion editorial energy, model naturally integrated in the scene. Keep exact same face and identity as reference image.`;
+
+            return prompt;
+        }
+
+        // Fallback generic prompt builder when template has no prompt
+        function buildGenericEditorialPrompt(model, variationIndex) {
+            const gender = model.gender;
+
+            // Select framing type based on variation
+            const framingTypes = ['fullBody', 'halfBody', 'threeQuarter'];
+            const framingType = framingTypes[variationIndex % 3];
+            const framing = FRAMING_SPECS[framingType];
+
+            // Select random pose from the pool for this framing+gender
+            const posePool = POSE_POOLS[framingType][gender] || POSE_POOLS[framingType].female;
+            const pose = posePool[Math.floor(Math.random() * posePool.length)];
+
+            // Select random expression from the pool
+            const expression = EXPRESSION_POOL[Math.floor(Math.random() * EXPRESSION_POOL.length)];
+
+            // Select random lighting
+            const lighting = LIGHTING_OPTIONS[Math.floor(Math.random() * LIGHTING_OPTIONS.length)];
+
+            // Get clothing using the new fit-based system
+            const clothingData = getRandomClothing(gender);
+            // Use full outfit for full body, just top for half body
+            const clothing = (framingType === 'fullBody' || framingType === 'threeQuarter')
+                ? clothingData.clothing
+                : clothingData.top;
+
+            // Select background
+            const background = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
+
+            // Gender descriptor
+            const genderDescriptor = gender === 'male' ? 'male fashion model' : 'female fashion model';
+
+            // Get optional accessory (40% chance)
+            const accessory = getRandomAccessory(gender);
+            const accessoryDesc = accessory ? `, ${accessory}` : '';
+
+            // Get optional makeup for females (30% chance)
+            const makeup = gender === 'female' ? getRandomMakeup() : '';
+            const makeupDesc = makeup ? `, ${makeup}` : '';
+
+            // Build prompt
+            let prompt = `${framing.aspectHint.charAt(0).toUpperCase() + framing.aspectHint.slice(1)} of this exact same ${genderDescriptor} maintaining identical facial features. Showing ${pose}, ${expression}, wearing ${clothing}${accessoryDesc}${makeupDesc}. Set in ${background}. ${lighting}. ${framing.composition}. Keep exact same face and identity as reference image.`;
+
+            return prompt;
+        }
+
+        // Async function to use GPT to enhance prompts (like Setset's generatePromptForPose)
+        // NOTE: Currently disabled as the /api/chat endpoint has a fixed system prompt
+        // Instead, we use our comprehensive local prompt builder which is already excellent
+        async function enhancePromptWithAI(baseInfo, model) {
+            // For now, skip AI enhancement and use local builder
+            // The local builder is already comprehensive with proper framing, poses, lighting etc.
+            return null;
+
+            /* Future: If we add a generic prompt endpoint, enable this:
+            const gender = model.gender;
+            const genderDescriptor = gender === 'male' ? 'male' : 'female';
+
+            // Build user prompt for GPT
+            const userPrompt = `Create a professional fashion photography prompt for a ${genderDescriptor} model thumbnail.
+
+Style context: ${baseInfo.style || 'Editorial fashion'}
+Framing: ${baseInfo.framing || 'Full body or half body'}
+Model gender: ${genderDescriptor}
+
+CRITICAL REMINDERS:
+- ${gender === 'male' ? 'NO makeup for male model - keep completely natural' : 'Can include subtle makeup like soft natural makeup or bold lip'}
+- ${gender === 'male' ? 'Can include watch or thin chain necklace only' : 'Can include minimal jewelry like thin chain, small earrings'}
+- Must specify exact framing (full-body, half-body, or three-quarter)
+- Must include fierce/commanding/editorial presence descriptors
+- Must include specific pose with body positioning details
+- Must include professional studio lighting description
+- Output a single prompt starting with "A photorealistic..."`;
+
+            try {
+                const response = await fetch('/api/prompts/thumbnail', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        systemPrompt: THUMBNAIL_SYSTEM_PROMPT,
+                        userPrompt: userPrompt
+                    })
+                });
+
+                if (!response.ok) {
+                    console.warn('AI enhancement failed, using local generation');
+                    return null;
+                }
+
+                const data = await response.json();
+                const aiPrompt = data.prompt?.trim();
+
+                if (aiPrompt && aiPrompt.startsWith('A photorealistic')) {
+                    return aiPrompt;
+                }
+                return null;
+            } catch (error) {
+                console.warn('AI prompt enhancement error:', error);
+                return null;
+            }
+            */
+        }
+
+        // Main function to get the final prompt - tries AI first, falls back to local
+        async function getEnhancedPrompt(model, template, variationIndex) {
+            // First try AI enhancement (like Setset does)
+            const aiPrompt = await enhancePromptWithAI({
+                style: template.prompt || template.description,
+                framing: ['Full body shot', 'Half body shot from waist up', 'Three-quarter body shot'][variationIndex % 3]
+            }, model);
+
+            if (aiPrompt) {
+                return aiPrompt;
+            }
+
+            // Fallback to local prompt building
+            return buildEditorialPrompt(model, template, variationIndex);
+        }
+
+        // ============ STATE ============
+
+        let selectedModels = new Set();
+        let selectedTemplates = new Set();
+        let currentTab = 'setset';
+        let settings = {
+            resolution: 2048,
+            aspectRatio: '3:4',
+            variations: 1
+        };
+        // Per-template framing settings - defaults to 'halfBody'
+        let templateFramings = {};
+        let results = [];
+        let isGenerating = false;
+
+        function getTemplateFraming(templateId) {
+            return templateFramings[templateId] || 'halfBody';
+        }
+
+        function setTemplateFraming(templateId, framing, event) {
+            if (event) event.stopPropagation(); // Don't toggle selection when clicking framing
+            templateFramings[templateId] = framing;
+            // Only re-render if called from a click (with event), not from randomize
+            if (event) renderTemplateGrid();
+        }
+
+        // ============ UI ============
+
+        function getModelFileName(model) {
+            const padded = model.id.toString().padStart(2, '0');
+            const name = model.filename || model.name.replace(/[' ]/g, '');
+            return `talent-${padded}_${name}.png`;
+        }
+
+        function renderTalentGrid() {
+            const grid = document.getElementById('talent-grid');
+            grid.innerHTML = MODELS.map(model => {
+                const fileName = getModelFileName(model);
+                return `
+                    <div class="talent-card ${selectedModels.has(model.id) ? 'selected' : ''}"
+                         data-id="${model.id}" onclick="toggleModel(${model.id})">
+                        <img src="/shared/images/talent/thumbs/${fileName}" alt="${model.name}" loading="lazy">
+                        <div class="talent-name">${model.name.split(' ')[0]}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTemplateGrid() {
+            const grid = document.getElementById('template-grid');
+            const templates = currentTab === 'setset' ? SETSET_TEMPLATES : PLAYGROUND_TEMPLATES;
+
+            grid.innerHTML = templates.map(template => {
+                // Playground templates have thumbnailF and thumbnailM for both genders
+                const hasPlaygroundThumbs = template.thumbnailF && template.thumbnailM;
+                const hasSetsetThumb = template.thumbnail;
+                const thumbClass = hasPlaygroundThumbs ? 'playground-thumb' : 'setset-thumb';
+                const currentFraming = getTemplateFraming(template.id);
+
+                let thumbnailHtml;
+                if (hasPlaygroundThumbs) {
+                    // Show both male and female side by side
+                    thumbnailHtml = `
+                        <div class="thumbnail-pair">
+                            <img src="${template.thumbnailF}" alt="${template.name} Female" loading="lazy" onerror="this.style.opacity='0.3';">
+                            <img src="${template.thumbnailM}" alt="${template.name} Male" loading="lazy" onerror="this.style.opacity='0.3';">
+                        </div>
+                    `;
+                } else if (hasSetsetThumb) {
+                    thumbnailHtml = `<img src="${template.thumbnail}" alt="${template.name}" loading="lazy" onerror="this.parentElement.classList.add('no-image'); this.style.display='none';">`;
+                } else {
+                    thumbnailHtml = '+';
+                }
+
+                return `
+                    <div class="template-card ${selectedTemplates.has(template.id) ? 'selected' : ''}"
+                         data-id="${template.id}" onclick="toggleTemplate('${template.id}')">
+                        <div class="thumbnail ${thumbClass} ${!hasPlaygroundThumbs && !hasSetsetThumb ? 'no-image' : ''}">
+                            ${thumbnailHtml}
+                        </div>
+                        <div class="info">${template.name}</div>
+                        <div class="framing-btns">
+                            <button class="framing-btn ${currentFraming === 'fullBody' ? 'active' : ''}"
+                                    onclick="setTemplateFraming('${template.id}', 'fullBody', event)">Full</button>
+                            <button class="framing-btn ${currentFraming === 'halfBody' ? 'active' : ''}"
+                                    onclick="setTemplateFraming('${template.id}', 'halfBody', event)">Half</button>
+                            <button class="framing-btn ${currentFraming === 'threeQuarter' ? 'active' : ''}"
+                                    onclick="setTemplateFraming('${template.id}', 'threeQuarter', event)">3/4</button>
+                            <button class="framing-btn ${currentFraming === 'closeUp' ? 'active' : ''}"
+                                    onclick="setTemplateFraming('${template.id}', 'closeUp', event)">Portrait</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCounts() {
+            const totalImages = selectedModels.size * selectedTemplates.size * settings.variations;
+
+            document.getElementById('selected-count').textContent = selectedModels.size;
+            document.getElementById('template-count').textContent = selectedTemplates.size;
+
+            const btn = document.getElementById('generate-btn');
+            const calc = document.getElementById('calc-display');
+
+            if (selectedModels.size === 0 || selectedTemplates.size === 0) {
+                calc.textContent = 'Select models and templates to generate';
+                btn.disabled = true;
+            } else {
+                calc.textContent = `${selectedModels.size} models × ${selectedTemplates.size} templates × ${settings.variations} variations = ${totalImages} images`;
+                btn.disabled = isGenerating;
+            }
+        }
+
+        // ============ INTERACTIONS ============
+
+        function toggleModel(id) {
+            if (selectedModels.has(id)) {
+                selectedModels.delete(id);
+            } else {
+                selectedModels.add(id);
+            }
+            document.querySelector(`.talent-card[data-id="${id}"]`).classList.toggle('selected');
+            updateCounts();
+        }
+
+        function toggleTemplate(id) {
+            if (selectedTemplates.has(id)) {
+                selectedTemplates.delete(id);
+            } else {
+                selectedTemplates.add(id);
+            }
+            document.querySelector(`.template-card[data-id="${id}"]`).classList.toggle('selected');
+            updateCounts();
+        }
+
+        function selectAllModels() {
+            MODELS.forEach(m => selectedModels.add(m.id));
+            renderTalentGrid();
+            updateCounts();
+        }
+
+        function clearModelSelection() {
+            selectedModels.clear();
+            renderTalentGrid();
+            updateCounts();
+        }
+
+        function selectAllTemplates() {
+            // Select all from current tab only
+            const templates = currentTab === 'setset' ? SETSET_TEMPLATES : PLAYGROUND_TEMPLATES;
+            templates.forEach(t => selectedTemplates.add(t.id));
+            renderTemplateGrid();
+            updateCounts();
+        }
+
+        function clearTemplateSelection() {
+            // Clear ALL selections from both tabs
+            selectedTemplates.clear();
+            renderTemplateGrid();
+            updateCounts();
+        }
+
+        function randomizeFramings() {
+            // Randomize framing for all templates (both tabs)
+            const framingTypes = ['fullBody', 'halfBody', 'threeQuarter', 'closeUp'];
+            const allTemplates = [...SETSET_TEMPLATES, ...PLAYGROUND_TEMPLATES];
+
+            allTemplates.forEach(template => {
+                const randomFraming = framingTypes[Math.floor(Math.random() * framingTypes.length)];
+                setTemplateFraming(template.id, randomFraming);
+            });
+
+            // Re-render to show updated buttons
+            renderTemplateGrid();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.template-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+            // Don't clear selections - keep them across tabs
+            renderTemplateGrid();
+            updateCounts();
+        }
+
+        // ============ GENERATION ============
+
+        async function generateThumbnails() {
+            if (isGenerating) return;
+            isGenerating = true;
+            updateCounts();
+
+            const resultsGrid = document.getElementById('results-grid');
+            resultsGrid.innerHTML = '';
+            results = [];
+
+            // Build queue - check both Setset AND Playground templates
+            // Sort by template first, then female before male within each template
+            const queue = [];
+            const allTemplates = [...SETSET_TEMPLATES, ...PLAYGROUND_TEMPLATES];
+
+            // Get selected models and sort: females first, then males
+            const selectedModelsList = Array.from(selectedModels)
+                .map(id => MODELS.find(m => m.id === id))
+                .filter(Boolean)
+                .sort((a, b) => {
+                    if (a.gender === 'female' && b.gender === 'male') return -1;
+                    if (a.gender === 'male' && b.gender === 'female') return 1;
+                    return 0;
+                });
+
+            // Loop templates first, then models (so results are grouped by template)
+            selectedTemplates.forEach(templateId => {
+                const template = allTemplates.find(t => t.id === templateId);
+                if (template) {
+                    selectedModelsList.forEach(model => {
+                        for (let v = 0; v < settings.variations; v++) {
+                            queue.push({ model, template, variation: v });
+                        }
+                    });
+                }
+            });
+
+            // Show progress
+            document.getElementById('progress-section').classList.add('visible');
+            document.getElementById('results-section').classList.add('visible');
+            document.getElementById('progress-count').textContent = `0 / ${queue.length}`;
+            document.getElementById('progress-bar').style.width = '0%';
+
+            // Create placeholder cards
+            queue.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'result-card generating';
+                card.id = `result-${index}`;
+                card.innerHTML = `
+                    <div class="spinner"></div>
+                    <div class="gen-info">${item.model.name}</div>
+                    <div class="gen-info">${item.template.name} #${item.variation + 1}</div>
+                `;
+                resultsGrid.appendChild(card);
+            });
+
+            // Process in batches of 6
+            let completed = 0;
+            const batchSize = 6;
+
+            for (let i = 0; i < queue.length; i += batchSize) {
+                const batch = queue.slice(i, i + batchSize);
+
+                await Promise.all(batch.map(async (item, batchIndex) => {
+                    const index = i + batchIndex;
+                    try {
+                        const result = await generateSingleThumbnail(item.model, item.template, item.variation);
+                        updateResultCard(index, result, item);
+                    } catch (error) {
+                        console.error('Generation failed:', error);
+                        updateResultCard(index, { error: error.message }, item);
+                    }
+
+                    completed++;
+                    document.getElementById('progress-count').textContent = `${completed} / ${queue.length}`;
+                    document.getElementById('progress-bar').style.width = `${(completed / queue.length) * 100}%`;
+                }));
+            }
+
+            isGenerating = false;
+            updateCounts();
+            document.getElementById('progress-section').classList.remove('visible');
+        }
+
+        // Cache uploaded image URLs to avoid re-uploading
+        const uploadedImageCache = new Map();
+
+        async function getUploadedImageUrl(model) {
+            const cacheKey = model.id;
+            if (uploadedImageCache.has(cacheKey)) {
+                return uploadedImageCache.get(cacheKey);
+            }
+
+            const fileName = getModelFileName(model);
+            const localPath = `/shared/images/talent/${fileName}`;
+
+            // Fetch the image and convert to base64
+            const response = await fetch(localPath);
+            const blob = await response.blob();
+
+            // Convert blob to base64 data URL
+            const dataUrl = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+
+            // Upload to fal storage
+            const uploadResult = await api.uploadBase64(dataUrl);
+            const hostedUrl = uploadResult.url;
+
+            uploadedImageCache.set(cacheKey, hostedUrl);
+            return hostedUrl;
+        }
+
+        async function generateSingleThumbnail(model, template, variationIndex) {
+            // Get publicly accessible URL for the model image
+            const imageUrl = await getUploadedImageUrl(model);
+
+            // Use the new AI-enhanced prompt system (like Setset app)
+            // This builds comprehensive prompts with proper framing, poses, lighting, etc.
+            const enhancedPrompt = await getEnhancedPrompt(model, template, variationIndex);
+
+            // Prefix with the critical instruction to use the person as model
+            const fullPrompt = `Use this exact person as the model, maintaining their identical facial features and bone structure. ${enhancedPrompt}`;
+
+            const [w, h] = settings.aspectRatio.split(':').map(Number);
+            const maxDim = settings.resolution;
+            let width, height;
+            if (w > h) {
+                width = maxDim;
+                height = Math.round(maxDim * h / w);
+            } else {
+                height = maxDim;
+                width = Math.round(maxDim * w / h);
+            }
+
+            const response = await api.remixImage('nano-pro', {
+                image_urls: [imageUrl],
+                prompt: fullPrompt,
+                image_size: { width, height },
+                num_images: 1,
+                output_format: 'jpeg'
+            });
+
+            return {
+                url: response.images?.[0]?.url,
+                model,
+                template,
+                variation: variationIndex,
+                prompt: fullPrompt
+            };
+        }
+
+        function updateResultCard(index, result, item) {
+            const card = document.getElementById(`result-${index}`);
+            if (!card) return;
+
+            if (result.error) {
+                card.innerHTML = `
+                    <div style="padding: 20px; text-align: center;">
+                        <div style="color: #e74c3c; margin-bottom: 8px;">Error</div>
+                        <div style="font-size: 10px; color: var(--slate);">${result.error}</div>
+                    </div>
+                `;
+            } else if (result.url) {
+                card.className = 'result-card';
+                card.dataset.resultIndex = results.length;
+                card.onclick = () => openResultLightbox(parseInt(card.dataset.resultIndex));
+                card.innerHTML = `
+                    <img src="${result.url}" alt="${item.model.name} - ${item.template.name}">
+                    <div class="result-overlay">
+                        <div class="result-info">${item.model.name} - ${item.template.name}</div>
+                        <button class="result-btn" onclick="event.stopPropagation(); downloadImage('${result.url}', '${item.model.name}_${item.template.id}_v${item.variation + 1}')">Download</button>
+                    </div>
+                `;
+                results.push(result);
+            }
+        }
+
+        async function downloadImage(url, name) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${name.replace(/\s+/g, '_')}.jpg`;
+                link.click();
+            } catch (error) {
+                console.error('Download failed:', error);
+            }
+        }
+
+        function downloadAll() {
+            results.forEach((result, index) => {
+                setTimeout(() => {
+                    downloadImage(result.url, `${result.model.name}_${result.template.id}_v${result.variation + 1}`);
+                }, index * 200);
+            });
+        }
+
+        // ============ INIT ============
+
+        function init() {
+            initSetsetTemplates();
+            initPlaygroundTemplates();
+
+            renderTalentGrid();
+            renderTemplateGrid();
+            updateCounts();
+
+            // Tab switching
+            document.querySelectorAll('.template-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+
+            // Resolution toggle
+            document.querySelectorAll('[data-resolution]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-resolution]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    settings.resolution = parseInt(btn.dataset.resolution);
+                });
+            });
+
+            // Aspect ratio toggle
+            document.querySelectorAll('[data-aspect]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('[data-aspect]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    settings.aspectRatio = btn.dataset.aspect;
+                });
+            });
+
+            // Variations slider
+            const slider = document.getElementById('variations-slider');
+            const sliderValue = document.getElementById('variations-value');
+            slider.addEventListener('input', () => {
+                settings.variations = parseInt(slider.value);
+                sliderValue.textContent = slider.value;
+                updateCounts();
+            });
+
+            // Generate button
+            document.getElementById('generate-btn').addEventListener('click', generateThumbnails);
+        }
+
+        init();
+
+        // ============ RESULT LIGHTBOX ============
+
+        let currentResultIndex = 0;
+
+        function openResultLightbox(index) {
+            if (index < 0 || index >= results.length) return;
+            currentResultIndex = index;
+            showResultInLightbox(index);
+            document.getElementById('result-lightbox').classList.add('active');
+        }
+
+        function showResultInLightbox(index) {
+            const result = results[index];
+            if (!result) return;
+
+            document.getElementById('result-lightbox-img').src = result.url;
+            document.getElementById('result-lightbox-panel').innerHTML = `
+                <h3>${result.model.name}</h3>
+                <div class="meta">${result.template.name} - Variation ${result.variation + 1}</div>
+                <div class="prompt-label">Prompt Used</div>
+                <div class="prompt-text">${result.prompt}</div>
+                <button class="download-btn" onclick="downloadImage('${result.url}', '${result.model.name}_${result.template.id}_v${result.variation + 1}')">Download Image</button>
+            `;
+        }
+
+        function closeResultLightbox() {
+            document.getElementById('result-lightbox').classList.remove('active');
+        }
+
+        function navigateResultLightbox(direction) {
+            if (results.length === 0) return;
+            currentResultIndex = (currentResultIndex + direction + results.length) % results.length;
+            showResultInLightbox(currentResultIndex);
+        }
+
+        // Keyboard navigation for result lightbox
+        document.addEventListener('keydown', (e) => {
+            const lightbox = document.getElementById('result-lightbox');
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'Escape') closeResultLightbox();
+            if (e.key === 'ArrowLeft') navigateResultLightbox(-1);
+            if (e.key === 'ArrowRight') navigateResultLightbox(1);
+        });
+
+        // Close on background click
+        document.getElementById('result-lightbox').addEventListener('click', (e) => {
+            if (e.target.classList.contains('result-lightbox')) closeResultLightbox();
+        });
+    </script>
+</body>
+</html>
