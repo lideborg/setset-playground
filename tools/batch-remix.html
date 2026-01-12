@@ -392,6 +392,14 @@
             display: none;
         }
 
+        /* Results header with download button */
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+
         /* Lightbox nav */
         .lightbox-nav {
             position: absolute;
@@ -449,8 +457,8 @@
             <div class="setting-item" id="resolution-item">
                 <label>Res:</label>
                 <div class="btn-group-compact" id="resolution-buttons">
-                    <button class="active" data-value="1K">1K</button>
-                    <button data-value="2K">2K</button>
+                    <button data-value="1K">1K</button>
+                    <button class="active" data-value="2K">2K</button>
                     <button data-value="4K">4K</button>
                 </div>
             </div>
@@ -504,6 +512,7 @@
         <div class="results-section" id="results-section">
             <div class="results-header">
                 <h2>Results</h2>
+                <button class="btn btn--secondary" id="download-all-btn">Download All</button>
             </div>
             <div class="results-grid" id="results-grid"></div>
         </div>
@@ -558,7 +567,7 @@
             numSets: 1,
             selectedModel: 'nanopro',
             aspectRatio: '3:4',
-            resolution: '1K',
+            resolution: '2K',
             seeds: 1,
             inputs: 6,
             results: [],
@@ -1088,7 +1097,8 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                 const pMode = set.primaryMode || '1x1';
                 const sMode = set.secondaryMode || '1x1';
 
-                for (const prompt of prompts) {
+                for (let promptIndex = 0; promptIndex < prompts.length; promptIndex++) {
+                    const prompt = prompts[promptIndex];
                     // Build primary groups based on mode
                     const primaryGroups = pMode === 'group'
                         ? [primaryImgs]  // All primaries as one group
@@ -1108,6 +1118,7 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                                 additionalPrimaries: primaryGroup.slice(1),  // Rest as additional
                                 secondaries: secondaryGroup,
                                 prompt,
+                                promptIndex: promptIndex + 1,  // 1-based for filename
                                 isGroup: primaryGroup.length > 1
                             });
                         }
@@ -1129,6 +1140,8 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             elements.progressSection.classList.add('visible');
             elements.generateBtn.disabled = true;
             state.results = [];
+            renderedResultsCount = 0;
+            elements.resultsGrid.innerHTML = '';
 
             let completed = 0;
             let uploading = 0;
@@ -1204,6 +1217,7 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                         state.results.push({
                             url: data.images[0].url,
                             prompt: task.prompt,
+                            promptIndex: task.promptIndex,
                             model: model.name,
                             setIndex: task.setIndex,
                             sourceImages: imageUrls
@@ -1230,21 +1244,34 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             elements.generateBtn.disabled = false;
         }
 
-        // Render results
+        // Track how many results have been rendered
+        let renderedResultsCount = 0;
+
+        // Render results - incremental append to avoid replacing existing images
         function renderResults() {
             if (state.results.length === 0) {
                 elements.resultsSection.classList.remove('visible');
+                renderedResultsCount = 0;
                 return;
             }
 
             elements.resultsSection.classList.add('visible');
-            elements.resultsGrid.innerHTML = state.results.map((result, index) => `
-                <div class="result-card" onclick="openLightbox(${index})">
-                    <img src="${result.url}" alt="Result ${index + 1}" class="result-image">
+
+            // Only append new results (don't replace existing ones)
+            for (let i = renderedResultsCount; i < state.results.length; i++) {
+                const result = state.results[i];
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.dataset.index = i;
+                card.onclick = () => openLightbox(i);
+                card.innerHTML = `
+                    <img src="${result.url}" alt="Result ${i + 1}" class="result-image">
                     <span class="set-tag">Set ${result.setIndex + 1}</span>
                     <span class="model-tag">${result.model}</span>
-                </div>
-            `).join('');
+                `;
+                elements.resultsGrid.appendChild(card);
+            }
+            renderedResultsCount = state.results.length;
         }
 
         // Lightbox
@@ -1295,9 +1322,32 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             const dd = String(now.getDate()).padStart(2, '0');
             const hh = String(now.getHours()).padStart(2, '0');
             const min = String(now.getMinutes()).padStart(2, '0');
+            const promptNum = String(result.promptIndex || 1).padStart(2, '0');
             const num = String(state.lightboxIndex + 1).padStart(2, '0');
-            const filename = `Setset_Remix_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
+            const filename = `Setset_Batch_${promptNum}_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
             downloadFile(result.url, filename);
+        });
+
+        // Download All button
+        document.getElementById('download-all-btn').addEventListener('click', async () => {
+            if (state.results.length === 0) return;
+
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+
+            for (let i = 0; i < state.results.length; i++) {
+                const result = state.results[i];
+                const promptNum = String(result.promptIndex || 1).padStart(2, '0');
+                const num = String(i + 1).padStart(2, '0');
+                const filename = `Setset_Batch_${promptNum}_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
+                await downloadFile(result.url, filename);
+                // Small delay between downloads to avoid browser blocking
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
         });
 
         // Keyboard navigation
