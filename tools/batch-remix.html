@@ -345,6 +345,21 @@
             font-weight: 400;
         }
 
+        .btn-cancel {
+            background: var(--red, #dc2626);
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .btn-cancel:hover {
+            background: #b91c1c;
+        }
+
         /* Inline loader styles are in /shared/css/components.css */
 
         /* Results */
@@ -501,6 +516,7 @@
             <div class="progress-header">
                 <span class="progress-title" id="progress-title">Generating</span>
                 <span class="progress-count" id="progress-count">0 / 0</span>
+                <button class="btn-cancel" id="cancel-btn">Cancel</button>
             </div>
             <div class="progress-bar-container">
                 <div class="progress-bar" id="progress-bar"></div>
@@ -561,6 +577,7 @@
         // State
         let sets = []; // Array of set data
         let pasteTarget = null;  // { setIndex: number, type: 'primary'|'secondary', slotIndex: number }
+        let activeControllers = [];  // Track AbortControllers for cancellation
         let state = {
             numSets: 1,
             selectedModel: 'nanopro',
@@ -591,6 +608,7 @@
             progressTitle: document.getElementById('progress-title'),
             progressCount: document.getElementById('progress-count'),
             progressBar: document.getElementById('progress-bar'),
+            cancelBtn: document.getElementById('cancel-btn'),
             inlineLoader: document.getElementById('inline-loader'),
             loaderMessage: document.getElementById('loader-message'),
             loaderProgress: document.getElementById('loader-progress'),

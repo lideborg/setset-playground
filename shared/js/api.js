@@ -46,12 +46,16 @@ class API {
 
     /**
      * Remix/transform image using fal.ai
+     * @param {string} model - Model endpoint
+     * @param {object} params - Generation parameters
+     * @param {AbortSignal} [signal] - Optional abort signal for cancellation
      */
-    async remixImage(model, params) {
+    async remixImage(model, params, signal) {
         const response = await fetch(`${this.baseUrl}/api/remix`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model, falKey: this.falKey, ...params })
+            body: JSON.stringify({ model, falKey: this.falKey, ...params }),
+            signal
         });
 
         if (!response.ok) {
@@ -102,13 +106,16 @@ class API {
 
     /**
      * Upload base64 data URL and get hosted URL
+     * @param {string} dataUrl - Base64 data URL
+     * @param {AbortSignal} [signal] - Optional abort signal for cancellation
      * @returns {Promise<{url: string}>} Object with hosted URL
      */
-    async uploadBase64(dataUrl) {
+    async uploadBase64(dataUrl, signal) {
         const response = await fetch(`${this.baseUrl}/api/upload-base64`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dataUrl, falKey: this.falKey })
+            body: JSON.stringify({ dataUrl, falKey: this.falKey }),
+            signal
         });
 
         if (!response.ok) {
