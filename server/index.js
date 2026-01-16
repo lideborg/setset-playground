@@ -1696,12 +1696,9 @@ app.post('/api/upload-base64', async (req, res) => {
         // Configure fal with the appropriate key for this request
         fal.config({ credentials: getFalKey(req) });
 
-        // Create a Blob from the buffer
+        // Create a Blob from the buffer and upload using fal client
         const blob = new Blob([buffer], { type: mimeType });
-        const file = new File([blob], 'image.jpg', { type: mimeType });
-
-        // Upload using fal client
-        const url = await fal.storage.upload(file);
+        const url = await fal.storage.upload(blob);
 
         console.log(`📥 [Upload] URL:`, url);
         res.json({ url });
