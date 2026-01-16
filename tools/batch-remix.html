@@ -1171,7 +1171,6 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
 
             // Show progress
             elements.progressSection.classList.add('visible');
-            elements.generateBtn.disabled = true;
 
             let completed = 0;
             let uploading = 0;
@@ -1270,7 +1269,6 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             // Done
             stopLoadingAnimation();
             elements.progressSection.classList.remove('visible');
-            elements.generateBtn.disabled = false;
         }
 
         // Render results
@@ -1341,6 +1339,14 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             const num = String(state.lightboxIndex + 1).padStart(2, '0');
             const filename = `Setset_Remix_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
             downloadFile(result.url, filename);
+        });
+
+        // Cmd+Enter to generate
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.metaKey && !elements.generateBtn.disabled) {
+                e.preventDefault();
+                elements.generateBtn.click();
+            }
         });
 
         // Keyboard navigation
