@@ -295,10 +295,11 @@ app.post('/api/video', async (req, res) => {
  * POST /api/video/seedance
  * Generate video from images using Seedance (ByteDance) model
  * Supports image-to-video with movement prompts
+ * model_version: '1.0' or '1.5' (default: '1.5')
  */
 app.post('/api/video/seedance', async (req, res) => {
     try {
-        const { image_url, prompt, aspect_ratio, resolution, duration, camera_fixed, seed, end_image_url } = req.body;
+        const { image_url, prompt, aspect_ratio, resolution, duration, camera_fixed, seed, end_image_url, model_version } = req.body;
 
         if (!image_url || !prompt) {
             return res.status(400).json({ error: 'image_url and prompt are required' });
@@ -307,7 +308,11 @@ app.post('/api/video/seedance', async (req, res) => {
         // Configure fal with the appropriate key
         fal.config({ credentials: getFalKey(req) });
 
-        const endpoint = 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video';
+        // Select endpoint based on model version
+        const version = model_version || '1.5';
+        const endpoint = version === '1.0'
+            ? 'fal-ai/bytedance/seedance/v1/pro/image-to-video'
+            : 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video';
 
         // Build params - duration must be string enum "2"-"12"
         const durationNum = Math.min(12, Math.max(2, parseInt(duration) || 5));
@@ -356,22 +361,34 @@ app.post('/api/video/seedance', async (req, res) => {
             }
         }
 
+        // Validate resolution for each version
+        // v1.0: supports 480p, 720p, 1080p
+        // v1.5: supports 480p, 720p only
+        let finalResolution = resolution || '720p';
+        if (version === '1.5' && finalResolution === '1080p') {
+            finalResolution = '720p';  // Downgrade for v1.5
+        }
+
         const params = {
             prompt,
             image_url,
             duration: String(durationNum),  // String enum: "2", "3", ... "12"
             aspect_ratio: finalAspectRatio,
-            resolution: resolution || '720p',
-            enable_safety_checker: false,
-            generate_audio: false  // Always disable audio generation
+            resolution: finalResolution,
+            enable_safety_checker: false
         };
+
+        // v1.5 has generate_audio option, v1.0 does not
+        if (version === '1.5') {
+            params.generate_audio = false;
+        }
 
         if (seed !== undefined && seed !== -1) params.seed = seed;
         if (camera_fixed) params.camera_fixed = true;
         if (end_image_url) params.end_image_url = end_image_url;
 
-        console.log(`🎬 [Seedance] Generating video...`);
-        console.log(`🎬 [Seedance] Params:`, JSON.stringify(params, null, 2));
+        console.log(`🎬 [Seedance v${version}] Generating video...`);
+        console.log(`🎬 [Seedance v${version}] Params:`, JSON.stringify(params, null, 2));
 
         // Use fal.subscribe for long-running video generation
         const result = await fal.subscribe(endpoint, {
@@ -379,12 +396,12 @@ app.post('/api/video/seedance', async (req, res) => {
             logs: true,
             onQueueUpdate: (update) => {
                 if (update.status === 'IN_PROGRESS') {
-                    console.log(`🎬 [Seedance] Progress: ${update.logs?.map(l => l.message).join(', ') || 'processing...'}`);
+                    console.log(`🎬 [Seedance v${version}] Progress: ${update.logs?.map(l => l.message).join(', ') || 'processing...'}`);
                 }
             }
         });
 
-        console.log(`✅ [Seedance] Complete:`, JSON.stringify(result.data, null, 2));
+        console.log(`✅ [Seedance v${version}] Complete:`, JSON.stringify(result.data, null, 2));
 
         res.json(result.data);
     } catch (error) {

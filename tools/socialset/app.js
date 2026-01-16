@@ -3,36 +3,36 @@
 
 // SetSet Talent Roster
 const SETSET_MODELS = [
-    { id: 'james', name: 'James Wilson', image: '/shared/images/talent/talent-01_JamesWilson.png' },
-    { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png' },
-    { id: 'river', name: 'River Blake', image: '/shared/images/talent/talent-03_RiverBlake.png' },
-    { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png' },
-    { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/talent-05_MarcusBrown.png' },
-    { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png' },
-    { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png' },
-    { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/talent-08_LiamGarcia.png' },
-    { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png' },
-    { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png' },
-    { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png' },
-    { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png' },
-    { id: 'mia', name: 'Mia Parker', image: '/shared/images/talent/talent-13_MiaParker.png' },
-    { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png' },
-    { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png' },
-    { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
-    { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/talent-17_QuinnSantos.png' },
-    { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png' },
-    { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png' },
-    { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/talent-20_DrewMartinez.png' },
-    { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png' },
-    { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png' },
-    { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png' },
-    { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png' },
-    { id: 'damon', name: 'Damon Carter', image: '/shared/images/talent/talent-25_DamonCarter.png' },
-    { id: 'nikolai', name: 'Nikolai Volkov', image: '/shared/images/talent/talent-26_NikolaiVolkov.png' },
-    { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/talent-27_SofiaRodriguez.png' },
-    { id: 'finn', name: 'Finn O\'Connor', image: '/shared/images/talent/talent-28_FinnOConnor.png' },
-    { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/talent-29_ClaraDevereaux.png' },
-    { id: 'zoe', name: 'Zoe Washington', image: '/shared/images/talent/talent-30_ZoeWashington.png' }
+    { id: 'james', name: 'James Wilson', image: '/shared/images/talent/talent-01_JamesWilson.png', thumb: '/shared/images/talent/thumbs/talent-01_JamesWilson.png' },
+    { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png', thumb: '/shared/images/talent/thumbs/talent-02_MayaJohnson.png' },
+    { id: 'river', name: 'River Blake', image: '/shared/images/talent/talent-03_RiverBlake.png', thumb: '/shared/images/talent/thumbs/talent-03_RiverBlake.png' },
+    { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png', thumb: '/shared/images/talent/thumbs/talent-04_EmmaSullivan.png' },
+    { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/talent-05_MarcusBrown.png', thumb: '/shared/images/talent/thumbs/talent-05_MarcusBrown.png' },
+    { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png', thumb: '/shared/images/talent/thumbs/talent-06_ZaraMitchell.png' },
+    { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png', thumb: '/shared/images/talent/thumbs/talent-07_SophiaAnderson.png' },
+    { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/talent-08_LiamGarcia.png', thumb: '/shared/images/talent/thumbs/talent-08_LiamGarcia.png' },
+    { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png', thumb: '/shared/images/talent/thumbs/talent-09_NinaDavis.png' },
+    { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/talent-10_AvaMartinez.png', thumb: '/shared/images/talent/thumbs/talent-10_AvaMartinez.png' },
+    { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png', thumb: '/shared/images/talent/thumbs/talent-11_LunaPark.png' },
+    { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/talent-12_NoahChen.png', thumb: '/shared/images/talent/thumbs/talent-12_NoahChen.png' },
+    { id: 'mia', name: 'Mia Parker', image: '/shared/images/talent/talent-13_MiaParker.png', thumb: '/shared/images/talent/thumbs/talent-13_MiaParker.png' },
+    { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/talent-14_RileyMorgan.png', thumb: '/shared/images/talent/thumbs/talent-14_RileyMorgan.png' },
+    { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/talent-15_JordanLee.png', thumb: '/shared/images/talent/thumbs/talent-15_JordanLee.png' },
+    { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png', thumb: '/shared/images/talent/thumbs/talent-16_IsabellaRodriguez.png' },
+    { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/talent-17_QuinnSantos.png', thumb: '/shared/images/talent/thumbs/talent-17_QuinnSantos.png' },
+    { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png', thumb: '/shared/images/talent/thumbs/talent-18_CaseyWhite.png' },
+    { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png', thumb: '/shared/images/talent/thumbs/talent-19_SamWilson.png' },
+    { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/talent-20_DrewMartinez.png', thumb: '/shared/images/talent/thumbs/talent-20_DrewMartinez.png' },
+    { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png', thumb: '/shared/images/talent/thumbs/talent-21_AveryTaylor.png' },
+    { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/talent-22_ParkerMiller.png', thumb: '/shared/images/talent/thumbs/talent-22_ParkerMiller.png' },
+    { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/talent-23_MorganKim.png', thumb: '/shared/images/talent/thumbs/talent-23_MorganKim.png' },
+    { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/talent-24_AndreJackson.png', thumb: '/shared/images/talent/thumbs/talent-24_AndreJackson.png' },
+    { id: 'damon', name: 'Damon Carter', image: '/shared/images/talent/talent-25_DamonCarter.png', thumb: '/shared/images/talent/thumbs/talent-25_DamonCarter.png' },
+    { id: 'nikolai', name: 'Nikolai Volkov', image: '/shared/images/talent/talent-26_NikolaiVolkov.png', thumb: '/shared/images/talent/thumbs/talent-26_NikolaiVolkov.png' },
+    { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/talent-27_SofiaRodriguez.png', thumb: '/shared/images/talent/thumbs/talent-27_SofiaRodriguez.png' },
+    { id: 'finn', name: 'Finn O\'Connor', image: '/shared/images/talent/talent-28_FinnOConnor.png', thumb: '/shared/images/talent/thumbs/talent-28_FinnOConnor.png' },
+    { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/talent-29_ClaraDevereaux.png', thumb: '/shared/images/talent/thumbs/talent-29_ClaraDevereaux.png' },
+    { id: 'zoe', name: 'Zoe Washington', image: '/shared/images/talent/talent-30_ZoeWashington.png', thumb: '/shared/images/talent/thumbs/talent-30_ZoeWashington.png' }
 ];
 
 // State Management
@@ -161,7 +161,7 @@ function renderModels() {
         <div class="model-card ${state.selectedModel?.id === model.id ? 'selected' : ''}"
              data-model-id="${model.id}"
              onclick="selectModel('${model.id}')">
-            <img src="${model.image}"
+            <img src="${model.thumb || model.image}"
                  alt="${model.name}"
                  onerror="this.onerror=null; this.style.background='var(--silver)'">
             <div class="check-mark">✓</div>

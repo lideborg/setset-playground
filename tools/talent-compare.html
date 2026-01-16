@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talent Image Comparison</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #111;
+            color: #fff;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #888;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #222;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .card.flagged {
+            border: 3px solid #f00;
+        }
+        .card-header {
+            padding: 10px 15px;
+            background: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header h3 {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .card-header .number {
+            background: #555;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .comparison {
+            display: flex;
+            position: relative;
+        }
+        .comparison img {
+            width: 50%;
+            height: auto;
+            display: block;
+        }
+        .label {
+            position: absolute;
+            bottom: 10px;
+            padding: 4px 8px;
+            background: rgba(0,0,0,0.7);
+            font-size: 11px;
+            border-radius: 4px;
+        }
+        .label.old { left: 10px; }
+        .label.new { right: 10px; }
+        .divider {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #fff;
+        }
+        .flag-btn {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background: rgba(255,0,0,0.8);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .card:hover .flag-btn {
+            opacity: 1;
+        }
+        .flag-btn.flagged {
+            background: rgba(0,255,0,0.8);
+        }
+        .summary {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            padding: 15px 30px;
+            border-radius: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .summary span {
+            color: #888;
+        }
+        .summary .count {
+            color: #f00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Talent Image Comparison - Old vs New</h1>
+    <p class="info">Click "Flag" on any card where the match looks incorrect. Old image on left, new on right.</p>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="summary">
+        <span>Flagged: <span class="count" id="flagCount">0</span></span>
+        <button onclick="showFlagged()">Show Flagged Only</button>
+        <button onclick="showAll()">Show All</button>
+    </div>
+
+    <script>
+        const talent = [
+            { id: 1, name: 'James Wilson' },
+            { id: 2, name: 'Maya Johnson' },
+            { id: 3, name: 'River Blake' },
+            { id: 4, name: 'Emma Sullivan' },
+            { id: 5, name: 'Marcus Brown' },
+            { id: 6, name: 'Zara Mitchell' },
+            { id: 7, name: 'Sophia Anderson' },
+            { id: 8, name: 'Liam Garcia' },
+            { id: 9, name: 'Nina Davis' },
+            { id: 10, name: 'Ava Martinez' },
+            { id: 11, name: 'Luna Park' },
+            { id: 12, name: 'Noah Chen' },
+            { id: 13, name: 'Mia Parker' },
+            { id: 14, name: 'Riley Morgan' },
+            { id: 15, name: 'Jordan Lee' },
+            { id: 16, name: 'Isabella Rodriguez' },
+            { id: 17, name: 'Quinn Santos' },
+            { id: 18, name: 'Casey White' },
+            { id: 19, name: 'Sam Wilson' },
+            { id: 20, name: 'Drew Martinez' },
+            { id: 21, name: 'Avery Taylor' },
+            { id: 22, name: 'Parker Miller' },
+            { id: 23, name: 'Morgan Kim' },
+            { id: 24, name: 'Andre Jackson' },
+            { id: 25, name: 'Damon Carter' },
+            { id: 26, name: 'Nikolai Volkov' },
+            { id: 27, name: 'Sofia Rodriguez' },
+            { id: 28, name: 'Finn O\'Connor' },
+            { id: 29, name: 'Clara Devereaux' },
+            { id: 30, name: 'Zoe Washington' }
+        ];
+
+        const flagged = new Set(JSON.parse(localStorage.getItem('flaggedTalent') || '[]'));
+
+        function padId(id) {
+            return id.toString().padStart(2, '0');
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            talent.forEach(t => {
+                const isFlagged = flagged.has(t.id);
+                const card = document.createElement('div');
+                card.className = 'card' + (isFlagged ? ' flagged' : '');
+                card.id = `card-${t.id}`;
+
+                const fileName = `talent-${padId(t.id)}_${t.name.replace(/[' ]/g, match => match === ' ' ? '' : '')}.png`;
+                const backupPath = `/shared/images/talent/backup_20260109/${fileName}`;
+                const newPath = `/shared/images/talent/${fileName}`;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3>${t.name}</h3>
+                        <span class="number">#${t.id}</span>
+                    </div>
+                    <div class="comparison">
+                        <img src="${backupPath}" alt="Old ${t.name}" onerror="this.style.background='#333'">
+                        <img src="${newPath}" alt="New ${t.name}">
+                        <div class="divider"></div>
+                        <span class="label old">OLD</span>
+                        <span class="label new">NEW</span>
+                    </div>
+                    <button class="flag-btn ${isFlagged ? 'flagged' : ''}" onclick="toggleFlag(${t.id})">
+                        ${isFlagged ? 'Unflag' : 'Flag'}
+                    </button>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            updateCount();
+        }
+
+        function toggleFlag(id) {
+            if (flagged.has(id)) {
+                flagged.delete(id);
+            } else {
+                flagged.add(id);
+            }
+            localStorage.setItem('flaggedTalent', JSON.stringify([...flagged]));
+            renderGrid();
+        }
+
+        function updateCount() {
+            document.getElementById('flagCount').textContent = flagged.size;
+        }
+
+        function showFlagged() {
+            document.querySelectorAll('.card').forEach(card => {
+                const id = parseInt(card.id.split('-')[1]);
+                card.style.display = flagged.has(id) ? 'block' : 'none';
+            });
+        }
+
+        function showAll() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.display = 'block';
+            });
+        }
+
+        renderGrid();
+    </script>
+</body>
+</html>

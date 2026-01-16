@@ -301,6 +301,47 @@
             height: 14px;
         }
 
+        /* Duration slider */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .duration-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border-primary);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .duration-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .duration-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        #duration-value {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 24px;
+        }
+
         /* Generate button */
         .generate-section {
             margin-top: var(--space-sm);
@@ -504,15 +545,26 @@
                     </div>
                     <div class="settings-content" id="settings-content">
                         <div class="setting-row">
+                            <label>Model</label>
+                            <select id="model-version">
+                                <option value="1.5" selected>Seedance 1.5</option>
+                                <option value="1.0">Seedance 1.0</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
                             <label>Resolution</label>
                             <select id="resolution">
                                 <option value="480p">480p (faster)</option>
                                 <option value="720p" selected>720p</option>
+                                <option value="1080p" id="resolution-1080p" style="display: none;">1080p (higher quality)</option>
                             </select>
                         </div>
                         <div class="setting-row">
-                            <label>Duration (sec)</label>
-                            <input type="number" id="duration" value="5" min="2" max="12">
+                            <label>Duration</label>
+                            <div class="slider-container">
+                                <input type="range" id="duration" min="2" max="12" value="5" class="duration-slider">
+                                <span id="duration-value">5s</span>
+                            </div>
                         </div>
                         <div class="setting-row">
                             <label>Aspect Ratio</label>
@@ -523,6 +575,7 @@
                                 <option value="3:4">3:4</option>
                                 <option value="4:3">4:3</option>
                                 <option value="1:1">1:1</option>
+                                <option value="21:9">21:9 (ultra-wide)</option>
                             </select>
                         </div>
                         <div class="setting-row">
@@ -688,6 +741,32 @@
             document.getElementById('settings-toggle').addEventListener('click', () => {
                 document.getElementById('settings-toggle').classList.toggle('open');
                 document.getElementById('settings-content').classList.toggle('open');
+            });
+
+            // Model version change handler
+            document.getElementById('model-version').addEventListener('change', (e) => {
+                const version = e.target.value;
+                const resolution1080p = document.getElementById('resolution-1080p');
+                const resolutionSelect = document.getElementById('resolution');
+
+                if (version === '1.0') {
+                    // Show 1080p option for Seedance 1.0
+                    resolution1080p.style.display = '';
+                } else {
+                    // Hide 1080p option for Seedance 1.5
+                    resolution1080p.style.display = 'none';
+                    // Reset to 720p if 1080p was selected
+                    if (resolutionSelect.value === '1080p') {
+                        resolutionSelect.value = '720p';
+                    }
+                }
+            });
+
+            // Duration slider handler
+            const durationSlider = document.getElementById('duration');
+            const durationValue = document.getElementById('duration-value');
+            durationSlider.addEventListener('input', () => {
+                durationValue.textContent = durationSlider.value + 's';
             });
 
             // Generate button
@@ -955,18 +1034,22 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         image: imageUrl,
-                        prompt: `You are creating a video prompt. Analyze this fashion image and write a prompt that describes:
-1. The subject and their current pose/posture (standing, sitting, leaning, etc.)
-2. What they're wearing (clothing style, colors)
-3. The setting/background
+                        prompt: `You are creating a video prompt for a VERY SUBTLE fashion video. The movement must be extremely minimal and controlled.
 
-Then incorporate this movement naturally: "${movement.description}"
+Analyze this fashion image briefly (pose, clothing, setting), then incorporate this movement: "${movement.description}"
 
-Write a single cohesive 2-3 sentence prompt that makes the movement work with the current pose. If the movement conflicts with the pose (e.g., "walking" but person is sitting), adapt it to make sense.
+CRITICAL RULES:
+- Movement must be EXTREMELY SUBTLE and SLOW
+- Only ONE small action, then freeze
+- Most of the body stays completely still
+- Like a photograph barely coming to life
+- No extra movements, fidgeting, or expressions beyond what's specified
 
-Example output: "A woman in a black evening gown stands in a minimalist white studio. She remains almost completely still, barely moving, like a photograph subtly coming to life."
+Write a 2-3 sentence prompt. Emphasize how minimal and controlled the movement is.
 
-Write ONLY the prompt, nothing else.`
+Example: "A woman in a black gown stands frozen. She slowly shifts her gaze once to the right, then freezes completely. Only her eyes move, everything else remains perfectly still."
+
+Write ONLY the prompt.`
                     })
                 });
 
@@ -1002,6 +1085,7 @@ Write ONLY the prompt, nothing else.`
 
             const movements = state.selectedMovements.map(id => getMovementById(id));
             const settings = {
+                model_version: document.getElementById('model-version').value,
                 resolution: document.getElementById('resolution').value,
                 duration: parseInt(document.getElementById('duration').value),
                 aspect_ratio: document.getElementById('aspect-ratio').value,

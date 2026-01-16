@@ -370,7 +370,7 @@
     <div class="container">
         <header>
             <h1>Pose Generator</h1>
-            <p>Select poses to generate reference images (male & female versions, white studio)</p>
+            <p>Select poses to generate reference images (92 poses: 50 original + 42 Setset, male & female versions)</p>
         </header>
 
         <div class="layout">
@@ -379,9 +379,12 @@
                 <div class="controls-header">
                     <h3>Select Poses</h3>
                     <div class="selection-buttons">
-                        <button class="btn btn--secondary" id="select-all-btn">All 50</button>
+                        <button class="btn btn--secondary" id="select-all-btn">All 92</button>
+                        <button class="btn btn--secondary" id="select-original-btn">Original 50</button>
+                        <button class="btn btn--secondary" id="select-setset-btn">Setset 42</button>
                         <button class="btn btn--secondary" id="deselect-all-btn">None</button>
                         <button class="btn btn--secondary" id="select-random-10-btn">Random 10</button>
+                        <button class="btn btn--secondary" id="select-troubleshoot-btn" style="background: #ff6b6b; color: white;">Troubleshoot</button>
                     </div>
                 </div>
 
@@ -449,13 +452,25 @@
 
         let api, elements;
 
-        // Build pose list with codes
+        // Build pose list with codes (original 50 + setset 42 = 92 total)
         function buildPoseList() {
-            return EDITORIAL_POSES_FEMALE.map((pose, idx) => ({
+            // Original poses (1-50)
+            const originalPoses = EDITORIAL_POSES_FEMALE.map((pose, idx) => ({
                 ...pose,
                 index: idx + 1,
-                code: String(idx + 1).padStart(2, '0')
+                code: String(idx + 1).padStart(2, '0'),
+                isSetset: false
             }));
+
+            // Setset poses (51-92)
+            const setsetPoses = SETSET_POSES_FEMALE.map((pose, idx) => ({
+                ...pose,
+                index: idx + 51,
+                code: String(idx + 51).padStart(2, '0'),
+                isSetset: true
+            }));
+
+            return [...originalPoses, ...setsetPoses];
         }
 
         // Get images per pose setting
@@ -466,16 +481,32 @@
         // Render category tabs
         function renderCategoryTabs() {
             const allCount = state.poses.length;
+            const originalCount = EDITORIAL_POSES_FEMALE.length;
+            const setsetCount = SETSET_POSES_FEMALE.length;
+
             let html = `<div class="category-tab ${state.activeCategory === 'all' ? 'active' : ''}" data-category="all">
                 All <span class="count">(${allCount})</span>
             </div>`;
 
+            // Original categories
+            html += `<div style="margin-left: 8px; border-left: 1px solid var(--border-primary); padding-left: 8px; display: flex; gap: 4px;">`;
             for (const cat of POSE_CATEGORIES) {
                 const isActive = state.activeCategory === cat.id;
                 html += `<div class="category-tab ${isActive ? 'active' : ''}" data-category="${cat.id}">
                     ${cat.name} <span class="count">(${cat.count})</span>
                 </div>`;
             }
+            html += `</div>`;
+
+            // Setset categories
+            html += `<div style="margin-left: 8px; border-left: 1px solid var(--border-primary); padding-left: 8px; display: flex; gap: 4px;">`;
+            for (const cat of SETSET_POSE_CATEGORIES) {
+                const isActive = state.activeCategory === cat.id;
+                html += `<div class="category-tab ${isActive ? 'active' : ''}" data-category="${cat.id}">
+                    ${cat.name} <span class="count">(${cat.count})</span>
+                </div>`;
+            }
+            html += `</div>`;
 
             elements.categoryTabs.innerHTML = html;
 
@@ -616,8 +647,13 @@
         }
 
         // Get prompt for a pose and gender
-        function getPromptForPose(poseId, gender) {
-            const poses = gender === 'female' ? EDITORIAL_POSES_FEMALE : EDITORIAL_POSES_MALE;
+        function getPromptForPose(poseId, gender, isSetset) {
+            let poses;
+            if (isSetset) {
+                poses = gender === 'female' ? SETSET_POSES_FEMALE : SETSET_POSES_MALE;
+            } else {
+                poses = gender === 'female' ? EDITORIAL_POSES_FEMALE : EDITORIAL_POSES_MALE;
+            }
             const pose = poses.find(p => p.id === poseId);
             return pose ? pose.prompt : null;
         }
@@ -627,7 +663,7 @@
             addGeneratingPlaceholder(genTask);
 
             try {
-                const prompt = getPromptForPose(genTask.pose.id, genTask.gender);
+                const prompt = getPromptForPose(genTask.pose.id, genTask.gender, genTask.pose.isSetset);
                 if (!prompt) {
                     console.error(`No prompt found for ${genTask.pose.id} ${genTask.gender}`);
                     return null;
@@ -792,6 +828,18 @@
             renderChecklist();
         }
 
+        function selectOriginal() {
+            state.selected.clear();
+            state.poses.filter(p => !p.isSetset).forEach(p => state.selected.add(p.id));
+            renderChecklist();
+        }
+
+        function selectSetset() {
+            state.selected.clear();
+            state.poses.filter(p => p.isSetset).forEach(p => state.selected.add(p.id));
+            renderChecklist();
+        }
+
         function deselectAll() {
             state.selected.clear();
             renderChecklist();
@@ -801,6 +849,23 @@
             state.selected.clear();
             const shuffled = [...state.poses].sort(() => Math.random() - 0.5);
             shuffled.slice(0, 10).forEach(p => state.selected.add(p.id));
+            renderChecklist();
+        }
+
+        // Troubleshoot - select poses that need testing/fixing
+        function selectTroubleshoot() {
+            state.selected.clear();
+            // List of pose IDs that are being worked on / need testing
+            const troubleshootPoses = [
+                'setset-studio-arms-behind-back', // Arms behind back - testing
+                'setset-studio-leaning-back' // Leaning back casual - new pose
+            ];
+
+            state.poses.forEach(p => {
+                if (troubleshootPoses.includes(p.id)) {
+                    state.selected.add(p.id);
+                }
+            });
             renderChecklist();
         }
 
@@ -830,8 +895,11 @@
 
             // Selection buttons
             document.getElementById('select-all-btn').addEventListener('click', selectAll);
+            document.getElementById('select-original-btn').addEventListener('click', selectOriginal);
+            document.getElementById('select-setset-btn').addEventListener('click', selectSetset);
             document.getElementById('deselect-all-btn').addEventListener('click', deselectAll);
             document.getElementById('select-random-10-btn').addEventListener('click', selectRandom10);
+            document.getElementById('select-troubleshoot-btn').addEventListener('click', selectTroubleshoot);
 
             // Images per pose change handler
             elements.imagesPerPose.addEventListener('change', updateStats);
@@ -843,8 +911,9 @@
             elements.downloadAllBtn.addEventListener('click', downloadAll);
 
             console.log('Pose Generator initialized');
-            console.log(`   ${state.poses.length} poses loaded (x2 genders)`);
-            console.log(`   Categories: ${POSE_CATEGORIES.map(c => c.name).join(', ')}`);
+            console.log(`   ${state.poses.length} poses loaded (50 original + 42 setset, x2 genders)`);
+            console.log(`   Original Categories: ${POSE_CATEGORIES.map(c => c.name).join(', ')}`);
+            console.log(`   Setset Categories: ${SETSET_POSE_CATEGORIES.map(c => c.name).join(', ')}`);
         });
     </script>
 </body>

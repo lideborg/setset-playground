@@ -470,6 +470,13 @@
                     <button data-value="24">24</button>
                 </div>
             </div>
+            <div class="setting-item">
+                <label>Prompts:</label>
+                <div class="btn-group-compact" id="prompt-mode-buttons">
+                    <button class="active" data-value="all">All × All</button>
+                    <button data-value="sequential">Sequential</button>
+                </div>
+            </div>
         </div>
 
         <!-- Sets Container -->
@@ -561,6 +568,7 @@
             resolution: '1K',
             seeds: 1,
             inputs: 6,
+            promptMode: 'all',  // 'all' = all×all, 'sequential' = 1:1 mapping
             results: [],
             lightboxIndex: 0
         };
@@ -1024,6 +1032,16 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             }
         });
 
+        // Prompt mode buttons (All×All vs Sequential)
+        document.getElementById('prompt-mode-buttons').addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                document.querySelectorAll('#prompt-mode-buttons button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.promptMode = e.target.dataset.value;
+                updateCalculator();
+            }
+        });
+
         // Update calculator
         function updateCalculator() {
             let totalImages = 0;
@@ -1047,7 +1065,13 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                     const primaryCount = pMode === 'group' ? 1 : numPrimary;
                     const secondaryCount = sMode === 'group' ? 1 : (numSecondary || 1);
 
-                    totalImages += primaryCount * secondaryCount * numPrompts;
+                    if (state.promptMode === 'sequential') {
+                        // Sequential: each image combo gets one prompt (prompts loop if fewer)
+                        totalImages += primaryCount * secondaryCount;
+                    } else {
+                        // All×All: every prompt applies to every image combo
+                        totalImages += primaryCount * secondaryCount * numPrompts;
+                    }
                 }
             }
 
@@ -1060,7 +1084,8 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
             const cost = totalImages * costPerImage;
 
             const seedsText = state.seeds > 1 ? ` × ${state.seeds} seeds` : '';
-            elements.calcDisplay.textContent = `${totalImages} images from ${state.numSets} set${state.numSets > 1 ? 's' : ''}${seedsText}`;
+            const modeText = state.promptMode === 'sequential' ? ' (sequential)' : '';
+            elements.calcDisplay.textContent = `${totalImages} images from ${state.numSets} set${state.numSets > 1 ? 's' : ''}${seedsText}${modeText}`;
             elements.costValue.textContent = formatCost(cost);
             elements.generateBtn.disabled = !hasValidSet;
         }
@@ -1088,28 +1113,47 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                 const pMode = set.primaryMode || '1x1';
                 const sMode = set.secondaryMode || '1x1';
 
-                for (const prompt of prompts) {
-                    // Build primary groups based on mode
-                    const primaryGroups = pMode === 'group'
-                        ? [primaryImgs]  // All primaries as one group
-                        : primaryImgs.map(p => [p]);  // Each primary separate
+                // Build primary groups based on mode
+                const primaryGroups = pMode === 'group'
+                    ? [primaryImgs]  // All primaries as one group
+                    : primaryImgs.map(p => [p]);  // Each primary separate
 
-                    // Build secondary groups based on mode
-                    const secondaryGroups = sMode === 'group'
-                        ? [secondaryImgs]  // All secondaries as one group
-                        : (secondaryImgs.length > 0 ? secondaryImgs.map(s => [s]) : [[]]);  // Each secondary separate, or empty if none
+                // Build secondary groups based on mode
+                const secondaryGroups = sMode === 'group'
+                    ? [secondaryImgs]  // All secondaries as one group
+                    : (secondaryImgs.length > 0 ? secondaryImgs.map(s => [s]) : [[]]);  // Each secondary separate, or empty if none
 
-                    // Create tasks for each combination
+                if (state.promptMode === 'sequential') {
+                    // Sequential mode: assign prompts 1:1 with image combinations, looping if needed
+                    let promptIndex = 0;
                     for (const primaryGroup of primaryGroups) {
                         for (const secondaryGroup of secondaryGroups) {
+                            const prompt = prompts[promptIndex % prompts.length];
                             allTasks.push({
                                 setIndex,
-                                primary: primaryGroup[0],  // First as main primary
-                                additionalPrimaries: primaryGroup.slice(1),  // Rest as additional
+                                primary: primaryGroup[0],
+                                additionalPrimaries: primaryGroup.slice(1),
                                 secondaries: secondaryGroup,
                                 prompt,
                                 isGroup: primaryGroup.length > 1
                             });
+                            promptIndex++;
+                        }
+                    }
+                } else {
+                    // All×All mode: every prompt applies to every image combination
+                    for (const prompt of prompts) {
+                        for (const primaryGroup of primaryGroups) {
+                            for (const secondaryGroup of secondaryGroups) {
+                                allTasks.push({
+                                    setIndex,
+                                    primary: primaryGroup[0],
+                                    additionalPrimaries: primaryGroup.slice(1),
+                                    secondaries: secondaryGroup,
+                                    prompt,
+                                    isGroup: primaryGroup.length > 1
+                                });
+                            }
                         }
                     }
                 }
