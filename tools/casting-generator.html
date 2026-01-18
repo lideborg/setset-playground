@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Casting Generator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        .container {
+            max-width: 1000px;
+        }
+
+        /* Section styling */
+        .generator-section {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .section-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+        }
+
+        .section-subtitle {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        /* Portrait/Product upload grids */
+        .upload-grid {
+            display: grid;
+            gap: 6px;
+            padding: var(--space-sm);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+        }
+
+        .upload-grid.portraits {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .upload-grid.products {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot.filled.selected {
+            border-width: 2px;
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled.deselected {
+            opacity: 0.4;
+            border-color: var(--gainsboro);
+        }
+
+        .upload-slot.filled.deselected img {
+            filter: grayscale(100%);
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-count {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Campaign brief textarea */
+        .brief-textarea {
+            width: 100%;
+            padding: var(--space-sm);
+            font-size: var(--text-sm);
+            font-family: var(--font-sans);
+            color: var(--carbon);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+
+        .brief-textarea:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .brief-textarea::placeholder {
+            color: var(--slate);
+        }
+
+        /* Controls row */
+        .controls-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-sm);
+        }
+
+        @media (max-width: 1000px) {
+            .controls-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .controls-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .energy-slider {
+            gap: var(--space-2xs);
+        }
+
+        .energy-label {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group {
+            background: var(--off-white);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+        }
+
+        .control-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+            margin-bottom: var(--space-xs);
+        }
+
+        /* Button groups */
+        .button-group {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .button-group .btn {
+            flex: 1;
+            min-width: auto;
+            padding: 8px 12px;
+            font-size: var(--text-xs);
+        }
+
+        /* Slider */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gainsboro);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Generate section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .cost-breakdown {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+            margin-top: 2px;
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            margin-bottom: var(--space-md);
+            padding: var(--space-md);
+            background: var(--white);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xs);
+        }
+
+        .progress-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: var(--off-white);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Inline loader */
+        .inline-loader {
+            display: none;
+            text-align: center;
+            padding: var(--space-xl) var(--space-lg);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .inline-loader.visible {
+            display: block;
+        }
+
+        .loader-message {
+            font-size: var(--text-lg);
+            font-weight: 500;
+            color: var(--jet);
+            margin-bottom: var(--space-sm);
+            transition: opacity 0.25s ease;
+        }
+
+        .loader-message.fade-out {
+            opacity: 0;
+        }
+
+        .loader-message.fade-in {
+            opacity: 1;
+        }
+
+        .loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-header h2 {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        @media (max-width: 800px) {
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .result-card:hover {
+            border-color: var(--jet);
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-card .type-tag {
+            position: absolute;
+            top: var(--space-xs);
+            left: var(--space-xs);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: var(--radius-xs);
+            text-transform: uppercase;
+        }
+
+        .result-card .portrait-tag {
+            position: absolute;
+            bottom: var(--space-xs);
+            left: var(--space-xs);
+            width: 32px;
+            height: 40px;
+            border-radius: var(--radius-xs);
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            object-fit: cover;
+        }
+
+        .result-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            background: var(--off-white);
+        }
+
+        .result-placeholder .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result-placeholder p {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        /* Lightbox overrides */
+        .lightbox-content {
+            grid-template-columns: 1fr 300px;
+        }
+
+        .lightbox-source-images {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .lightbox-source-images img {
+            width: 50px;
+            height: 66px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Casting Generator</h1>
+            <p class="hero-subtitle">Create campaign imagery from portrait photos</p>
+        </div>
+
+        <!-- Portraits Upload -->
+        <div class="generator-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Portraits</div>
+                    <div class="section-subtitle">Upload face/portrait photos - click to select/deselect</div>
+                </div>
+                <div class="upload-count" id="portrait-count">0 selected</div>
+            </div>
+            <div class="upload-grid portraits" id="portraits-grid"></div>
+            <input type="file" id="portraits-input" accept="image/*" multiple>
+        </div>
+
+        <!-- Products Upload -->
+        <div class="generator-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Products (Optional)</div>
+                    <div class="section-subtitle">Upload product images to include in shots</div>
+                </div>
+                <div class="upload-count" id="product-count">0 uploaded</div>
+            </div>
+            <div class="upload-grid products" id="products-grid"></div>
+            <input type="file" id="products-input" accept="image/*" multiple>
+        </div>
+
+        <!-- Campaign Brief -->
+        <div class="generator-section">
+            <div class="section-header">
+                <div class="section-title">Campaign Brief</div>
+            </div>
+            <textarea class="brief-textarea" id="campaign-brief" placeholder="Describe your campaign...
+
+Example: Fearless Summer - Volcanic black sand beaches, dramatic cliff edges, golden hour desert. Bold confident energy, wind-blown movement, luxurious swimwear.
+
+Include: locations/environments, mood/energy, clothing context, any specific styling notes."></textarea>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="controls-row">
+            <!-- Image Types -->
+            <div class="control-group">
+                <div class="control-label">Image Types</div>
+                <div class="button-group" id="type-group">
+                    <button class="btn btn--toggle active" data-value="studio">Studio</button>
+                    <button class="btn btn--toggle active" data-value="campaign">Campaign</button>
+                    <button class="btn btn--toggle active" data-value="portrait">Portrait</button>
+                </div>
+            </div>
+
+            <!-- Images Per Portrait -->
+            <div class="control-group">
+                <div class="control-label">Per Portrait</div>
+                <div class="slider-row">
+                    <input type="range" class="slider" id="per-portrait-slider" min="1" max="6" value="2">
+                    <span class="slider-value" id="per-portrait-value">2</span>
+                </div>
+            </div>
+
+            <!-- Group Shots -->
+            <div class="control-group">
+                <div class="control-label">Group Shots</div>
+                <div class="slider-row">
+                    <input type="range" class="slider" id="group-shots-slider" min="0" max="100" value="0" step="10">
+                    <span class="slider-value" id="group-shots-value">0%</span>
+                </div>
+            </div>
+
+            <!-- Energy/Interaction Style -->
+            <div class="control-group">
+                <div class="control-label">Energy</div>
+                <div class="slider-row energy-slider">
+                    <span class="energy-label">Fem</span>
+                    <input type="range" class="slider" id="energy-slider" min="0" max="100" value="50" step="10">
+                    <span class="energy-label">Masc</span>
+                </div>
+            </div>
+
+            <!-- Aspect Ratio -->
+            <div class="control-group">
+                <div class="control-label">Ratio</div>
+                <div class="button-group" id="ratio-group">
+                    <button class="btn btn--toggle active" data-value="3:4">3:4</button>
+                    <button class="btn btn--toggle" data-value="4:3">4:3</button>
+                    <button class="btn btn--toggle" data-value="1:1">1:1</button>
+                </div>
+            </div>
+
+            <!-- Resolution -->
+            <div class="control-group">
+                <div class="control-label">Resolution</div>
+                <div class="button-group" id="resolution-group">
+                    <button class="btn btn--toggle" data-value="1K">1K</button>
+                    <button class="btn btn--toggle active" data-value="2K">2K</button>
+                    <button class="btn btn--toggle" data-value="4K">4K</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate -->
+        <div class="generate-section">
+            <div>
+                <div class="calc-display" id="calc-display">0 images</div>
+                <div class="cost-breakdown" id="cost-breakdown">$0.04/image at 2K</div>
+            </div>
+            <button class="btn btn--primary" id="generate-btn" disabled>
+                Generate <span class="btn-cost" id="cost-value">$0.00</span>
+            </button>
+        </div>
+
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Analyzing campaign...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title" id="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <button class="btn" id="download-all-btn">Download All</button>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightbox-close">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev">&larr;</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next">&rarr;</button>
+        <div class="lightbox-content">
+            <div class="lightbox-left">
+                <img class="lightbox-image" id="lightbox-image" src="" alt="Generated image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Type</h3>
+                    <p class="lightbox-model-text" id="lightbox-type"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Source</h3>
+                    <div class="lightbox-source-images" id="lightbox-sources"></div>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script src="/shared/data/editorial-moods.js"></script>
+    <script>
+        // State
+        const state = {
+            portraits: [],      // { url, file, selected }
+            products: [],       // { url, file }
+            brief: '',
+            imageTypes: ['studio', 'campaign', 'portrait'],
+            perPortrait: 2,
+            groupShotsPercent: 0,  // 0-100% of images will be 2-3 person group shots
+            energyStyle: 50,       // 0 = feminine, 100 = masculine
+            aspectRatio: '3:4',
+            resolution: '2K',
+            results: [],
+            generating: false,
+            lightboxIndex: 0,
+            // Analysis results
+            campaignAnalysis: null,
+            productAnalysis: null
+        };
+
+        // Feminine interaction prompts - softer, more intimate, flowing
+        const FEMININE_INTERACTIONS = [
+            // Gentle touch
+            'gently leaning into each other, soft connection',
+            'one hand resting softly on the others shoulder',
+            'fingers lightly intertwined, delicate touch',
+            'soft embrace, heads close together',
+            'one gently touching the others face, tender moment',
+            'gentle caress on the arm, intimate gesture',
+            'one wrapping arms around the other from behind, warm embrace',
+            'holding hands softly, connected',
+            'one playing with the others hair gently',
+            'light touch on the small of the back',
+            // Close proximity
+            'sitting close together, legs touching',
+            'foreheads almost touching, intimate moment',
+            'one whispering softly to the other',
+            'cheek to cheek, soft gaze',
+            'nestled together, comfortable closeness',
+            'one resting head on the others shoulder',
+            'curled up together, relaxed intimacy',
+            // Soft poses
+            'graceful poses intertwined, flowing lines',
+            'soft mirrored positions, balletic',
+            'one draped elegantly over the other',
+            'gentle lean, soft body language',
+            'feminine stance, one hip cocked, close together',
+            'soft gazes exchanged, tender energy',
+            'delicate hand gestures, elegant interaction',
+            // Movement
+            'walking arm in arm, graceful stride',
+            'twirling together playfully, joyful',
+            'soft laughter, genuine connection',
+            'one guiding the other gently by the hand'
+        ];
+
+        // Masculine interaction prompts - stronger, confident, bro-like
+        const MASCULINE_INTERACTIONS = [
+            // Strong stances
+            'standing shoulder to shoulder, confident power stance',
+            'arms crossed, leaning against wall together, cool',
+            'hands in pockets, relaxed but strong presence',
+            'back to back, strong posture, commanding',
+            'standing tall, minimal contact, confident',
+            'chest out, strong presence together',
+            'wide stance, grounded and powerful',
+            'legs apart, confident athletic stance',
+            // Bro interactions
+            'one with arm slung casually over the others shoulder',
+            'playful shoulder bump, bros',
+            'competitive playful stance, friendly rivalry',
+            'laughing together confidently, genuine bro moment',
+            'fist bump or handshake moment',
+            'one playfully shoving the other, friends',
+            'leaning on each other casually, comfortable',
+            // Seated/Leaning
+            'sitting apart but engaged, confident spacing',
+            'one leaning against something, other standing nearby',
+            'sprawled casually, taking up space',
+            'sitting with legs spread, relaxed dominance',
+            // Walking/Movement
+            'walking side by side with purpose, determined',
+            'striding confidently, matched pace',
+            'one walking slightly ahead, leadership energy',
+            // Editorial strong
+            'strong geometric positioning, angular',
+            'power poses side by side, commanding',
+            'athletic stance, ready energy',
+            'muscular tension, strong forms',
+            'stoic expressions, powerful presence together'
+        ];
+
+        // Neutral interactions - can work for any energy level
+        const NEUTRAL_INTERACTIONS = [
+            'standing side by side, relaxed editorial pose',
+            'standing together, one slightly in front of the other',
+            'looking at camera together, natural chemistry',
+            'walking together, caught mid-stride',
+            'seated side by side, editorial pose',
+            'layered composition, depth in framing',
+            'fashion editorial, dynamic positioning',
+            'looking in same direction, shared focus',
+            'candid moment, natural interaction',
+            'editorial stance, complementary poses'
+        ];
+
+        // Feminine solo pose/energy modifiers
+        const FEMININE_SOLO_ENERGY = [
+            'soft graceful stance, one hip gently cocked',
+            'delicate pose, flowing body lines',
+            'gentle expression, soft dreamy gaze',
+            'elegant posture, relaxed shoulders',
+            'feminine confidence, soft power',
+            'head tilted softly, gentle look',
+            'graceful hand placement, elegant gesture',
+            'soft serene expression, peaceful energy',
+            'relaxed open body language, inviting',
+            'subtle smile, warm gentle eyes',
+            'flowing pose, balletic grace',
+            'soft vulnerability, tender moment',
+            'gentle lean, soft curves',
+            'ethereal presence, dreamlike',
+            'quiet confidence, soft strength',
+            'delicate features highlighted, soft lighting feel',
+            'romantic energy, soft and feminine',
+            'gentle movement, flowing fabric',
+            'soft gaze slightly downward, contemplative',
+            'one hand near face, delicate gesture'
+        ];
+
+        // Masculine solo pose/energy modifiers
+        const MASCULINE_SOLO_ENERGY = [
+            'strong grounded stance, powerful presence',
+            'confident posture, shoulders back',
+            'intense direct gaze, commanding',
+            'athletic tension, ready energy',
+            'bold stance, taking up space',
+            'stoic expression, strong jaw',
+            'arms crossed confidently, powerful',
+            'hands in pockets, relaxed strength',
+            'wide stance, grounded and solid',
+            'piercing stare, intense focus',
+            'muscular presence, strong form',
+            'confident lean, casual power',
+            'assertive body language, dominant',
+            'strong silhouette, angular pose',
+            'raw masculine energy, bold',
+            'powerful stance, commanding attention',
+            'brooding intensity, mysterious strength',
+            'athletic pose, dynamic power',
+            'squared shoulders, direct confrontation',
+            'strong hands, purposeful gesture'
+        ];
+
+        // Neutral solo energy
+        const NEUTRAL_SOLO_ENERGY = [
+            'natural relaxed stance',
+            'editorial pose, balanced',
+            'natural expression, authentic',
+            'comfortable posture, easy confidence',
+            'candid moment, natural energy'
+        ];
+
+        const PORTRAIT_SLOTS = 12;
+        const PRODUCT_SLOTS = 6;
+        const COST_PER_IMAGE = 0.04;  // nano-pro cost
+
+        // Image type labels
+        const TYPE_LABELS = {
+            studio: 'Studio',
+            campaign: 'Campaign',
+            portrait: 'Portrait',
+            'studio-group': 'Studio Group',
+            'campaign-group': 'Campaign Group',
+            'portrait-group': 'Portrait Group'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPortraitGrid();
+            renderProductGrid();
+            setupEventListeners();
+            updateCalculator();
+        });
+
+        function renderPortraitGrid() {
+            const grid = document.getElementById('portraits-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < PORTRAIT_SLOTS; i++) {
+                grid.appendChild(createUploadSlot(i, 'portrait'));
+            }
+            renderImages('portrait');
+        }
+
+        function renderProductGrid() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < PRODUCT_SLOTS; i++) {
+                grid.appendChild(createUploadSlot(i, 'product'));
+            }
+            renderImages('product');
+        }
+
+        function createUploadSlot(index, type) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.innerHTML = '+';
+            slot.dataset.index = index;
+            slot.dataset.type = type;
+
+            slot.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const images = type === 'portrait' ? state.portraits : state.products;
+                if (images[index]) {
+                    // Toggle selection for portraits
+                    if (type === 'portrait') {
+                        images[index].selected = !images[index].selected;
+                        renderImages(type);
+                        updateCalculator();
+                    }
+                } else {
+                    // Set as paste target for Cmd+V
+                    setPasteTarget(type, index);
+                }
+            });
+
+            // Double-click opens file picker
+            slot.addEventListener('dblclick', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const images = type === 'portrait' ? state.portraits : state.products;
+                if (!images[index]) {
+                    const input = document.getElementById(type === 'portrait' ? 'portraits-input' : 'products-input');
+                    input.dataset.startIndex = index;
+                    input.click();
+                }
+            });
+
+            return slot;
+        }
+
+        function renderImages(type) {
+            const images = type === 'portrait' ? state.portraits : state.products;
+            const grid = document.getElementById(type === 'portrait' ? 'portraits-grid' : 'products-grid');
+            const slots = grid.querySelectorAll('.upload-slot');
+            const maxSlots = type === 'portrait' ? PORTRAIT_SLOTS : PRODUCT_SLOTS;
+
+            slots.forEach((slot, i) => {
+                if (images[i]) {
+                    const isSelected = type === 'product' || images[i].selected !== false;
+                    // Use thumbnail for display, original stays for upload
+                    const displayUrl = images[i].thumbUrl || images[i].url;
+                    slot.className = 'upload-slot filled ' + (isSelected ? 'selected' : 'deselected');
+                    slot.innerHTML = `
+                        <img src="${displayUrl}" alt="Image ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i}, '${type}')">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            });
+
+            // Update count
+            if (type === 'portrait') {
+                const selected = images.filter(p => p && p.selected !== false).length;
+                document.getElementById('portrait-count').textContent = `${selected} selected`;
+            } else {
+                document.getElementById('product-count').textContent = `${images.filter(p => p).length} uploaded`;
+            }
+        }
+
+        window.removeImage = function(index, type) {
+            const images = type === 'portrait' ? state.portraits : state.products;
+            images.splice(index, 1);
+            renderImages(type);
+            updateCalculator();
+        };
+
+        // Paste target for Cmd+V support
+        let pasteTarget = null;
+
+        function setPasteTarget(type, index) {
+            // Clear previous
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = { type, index };
+            // Highlight the slot
+            const grid = document.getElementById(type === 'portrait' ? 'portraits-grid' : 'products-grid');
+            if (grid && grid.children[index]) {
+                grid.children[index].classList.add('paste-ready');
+            }
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = null;
+        }
+
+        // Create thumbnail for display (keeps original for upload)
+        function createThumbnail(dataUrl, maxSize = 200) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Scale down to max size
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = Math.round(height * maxSize / width);
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = Math.round(width * maxSize / height);
+                            height = maxSize;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        function handleFileUpload(files, type, startIndex = null) {
+            const images = type === 'portrait' ? state.portraits : state.products;
+            const maxSlots = type === 'portrait' ? PORTRAIT_SLOTS : PRODUCT_SLOTS;
+
+            // Reserve slots synchronously first to avoid race conditions
+            const reservations = [];
+            files.forEach((file, i) => {
+                let index;
+                if (startIndex !== null) {
+                    index = startIndex + i;
+                } else {
+                    // Find next empty slot that hasn't been reserved yet
+                    index = images.findIndex((img, idx) =>
+                        !img && idx < maxSlots && !reservations.some(r => r.index === idx)
+                    );
+                    if (index === -1) {
+                        // Find next available slot beyond current length
+                        for (let j = images.length; j < maxSlots; j++) {
+                            if (!reservations.some(r => r.index === j)) {
+                                index = j;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (index === -1 || index >= maxSlots) return;
+                reservations.push({ file, index });
+            });
+
+            // Now read files asynchronously and create thumbnails
+            reservations.forEach(({ file, index }) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const fullUrl = e.target.result;
+                    const thumbUrl = await createThumbnail(fullUrl);
+
+                    images[index] = {
+                        file,
+                        url: fullUrl,      // Original for upload
+                        thumbUrl: thumbUrl, // Small thumbnail for display
+                        selected: true
+                    };
+                    renderImages(type);
+                    updateCalculator();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Handle paste from clipboard
+        async function handlePasteImage(dataUrl, type, index) {
+            const images = type === 'portrait' ? state.portraits : state.products;
+            const thumbUrl = await createThumbnail(dataUrl);
+
+            images[index] = {
+                file: null,  // No file object for pasted images
+                url: dataUrl,
+                thumbUrl: thumbUrl,
+                selected: true
+            };
+            renderImages(type);
+            updateCalculator();
+            clearPasteTarget();
+        }
+
+        function setupEventListeners() {
+            // File inputs
+            document.getElementById('portraits-input').addEventListener('change', (e) => {
+                const startIndex = e.target.dataset.startIndex ? parseInt(e.target.dataset.startIndex) : null;
+                handleFileUpload(Array.from(e.target.files), 'portrait', startIndex);
+                e.target.value = '';
+            });
+
+            document.getElementById('products-input').addEventListener('change', (e) => {
+                const startIndex = e.target.dataset.startIndex ? parseInt(e.target.dataset.startIndex) : null;
+                handleFileUpload(Array.from(e.target.files), 'product', startIndex);
+                e.target.value = '';
+            });
+
+            // Drag and drop
+            ['portraits-grid', 'products-grid'].forEach(gridId => {
+                const grid = document.getElementById(gridId);
+                const type = gridId === 'portraits-grid' ? 'portrait' : 'product';
+
+                grid.addEventListener('dragover', (e) => { e.preventDefault(); grid.classList.add('drag-over'); });
+                grid.addEventListener('dragleave', () => grid.classList.remove('drag-over'));
+                grid.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    grid.classList.remove('drag-over');
+                    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    if (files.length > 0) handleFileUpload(files, type);
+                });
+            });
+
+            // Campaign brief
+            document.getElementById('campaign-brief').addEventListener('input', (e) => {
+                state.brief = e.target.value;
+                updateCalculator();
+            });
+
+            // Image types (multi-select)
+            document.querySelectorAll('#type-group .btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value;
+                    const index = state.imageTypes.indexOf(value);
+
+                    if (index > -1) {
+                        if (state.imageTypes.length > 1) {
+                            state.imageTypes.splice(index, 1);
+                            btn.classList.remove('active');
+                        }
+                    } else {
+                        state.imageTypes.push(value);
+                        btn.classList.add('active');
+                    }
+                    updateCalculator();
+                });
+            });
+
+            // Per portrait slider
+            const perSlider = document.getElementById('per-portrait-slider');
+            const perValue = document.getElementById('per-portrait-value');
+            perSlider.addEventListener('input', (e) => {
+                state.perPortrait = parseInt(e.target.value);
+                perValue.textContent = state.perPortrait;
+                updateCalculator();
+            });
+
+            // Group shots slider
+            const groupSlider = document.getElementById('group-shots-slider');
+            const groupValue = document.getElementById('group-shots-value');
+            groupSlider.addEventListener('input', (e) => {
+                state.groupShotsPercent = parseInt(e.target.value);
+                groupValue.textContent = state.groupShotsPercent + '%';
+                updateCalculator();
+            });
+
+            // Energy slider (feminine to masculine)
+            const energySlider = document.getElementById('energy-slider');
+            energySlider.addEventListener('input', (e) => {
+                state.energyStyle = parseInt(e.target.value);
+            });
+
+            // Aspect ratio (single select)
+            document.querySelectorAll('#ratio-group .btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#ratio-group .btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.aspectRatio = btn.dataset.value;
+                });
+            });
+
+            // Resolution (single select)
+            document.querySelectorAll('#resolution-group .btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#resolution-group .btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.resolution = btn.dataset.value;
+                    updateCalculator();
+                });
+            });
+
+            // Generate button
+            document.getElementById('generate-btn').addEventListener('click', handleGenerate);
+
+            // Download all
+            document.getElementById('download-all-btn').addEventListener('click', downloadAll);
+
+            // Lightbox
+            document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+            document.getElementById('lightbox').addEventListener('click', (e) => {
+                if (e.target.id === 'lightbox') closeLightbox();
+            });
+            document.getElementById('lightbox-prev').addEventListener('click', () => navigateLightbox(-1));
+            document.getElementById('lightbox-next').addEventListener('click', () => navigateLightbox(1));
+            document.getElementById('lightbox-download').addEventListener('click', downloadCurrentImage);
+
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                if (!document.getElementById('lightbox').classList.contains('visible')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+            });
+
+            // Clipboard paste (Cmd+V)
+            document.addEventListener('paste', async (e) => {
+                if (!pasteTarget) return;
+
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = async (evt) => {
+                                await handlePasteImage(evt.target.result, pasteTarget.type, pasteTarget.index);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        function updateCalculator() {
+            const selectedPortraits = state.portraits.filter(p => p && p.selected !== false).length;
+            const totalImages = selectedPortraits * state.perPortrait;
+            const costMultiplier = state.resolution === '4K' ? 2 : 1;
+            const costPerImage = COST_PER_IMAGE * costMultiplier;
+            const cost = totalImages * costPerImage;
+
+            document.getElementById('calc-display').textContent =
+                `${selectedPortraits} portrait${selectedPortraits !== 1 ? 's' : ''} × ${state.perPortrait} = ${totalImages} images`;
+            document.getElementById('cost-breakdown').textContent =
+                `$${costPerImage.toFixed(2)}/image at ${state.resolution}`;
+            document.getElementById('cost-value').textContent = `$${cost.toFixed(2)}`;
+
+            const canGenerate = selectedPortraits > 0 && state.brief.trim().length > 0 && state.imageTypes.length > 0;
+            document.getElementById('generate-btn').disabled = !canGenerate;
+        }
+
+        // Main generation flow
+        async function handleGenerate() {
+            if (state.generating) return;
+            state.generating = true;
+
+            // Keep existing results - track starting index for new ones
+            const startIndex = state.results.length;
+
+            const selectedPortraits = state.portraits.filter(p => p && p.selected !== false);
+            const products = state.products.filter(p => p);
+            const totalImages = selectedPortraits.length * state.perPortrait;
+
+            document.getElementById('generate-btn').disabled = true;
+            // Don't clear existing results - keep them visible
+
+            try {
+                // Step 1: Show loader and analyze
+                document.getElementById('inline-loader').classList.add('visible');
+                startLoadingAnimation('Preparing...');
+
+                // Upload all images first
+                updateLoadingProgress('Uploading images...');
+                const portraitUploads = await Promise.all(
+                    selectedPortraits.map(p => api.uploadBase64(p.url))
+                );
+                const portraitUrls = portraitUploads.map(r => r.url);
+
+                let productUrls = [];
+                if (products.length > 0) {
+                    const productUploads = await Promise.all(
+                        products.map(p => api.uploadBase64(p.url))
+                    );
+                    productUrls = productUploads.map(r => r.url);
+                }
+
+                // Analyze campaign brief
+                updateLoadingProgress('Understanding campaign vision...');
+                const campaignAnalysis = await analyzeCampaignBrief(state.brief);
+                state.campaignAnalysis = campaignAnalysis;
+                console.log('Campaign analysis:', campaignAnalysis);
+
+                // Analyze products if any
+                if (productUrls.length > 0) {
+                    updateLoadingProgress('Analyzing products...');
+                    state.productAnalysis = await analyzeProducts(productUrls);
+                    console.log('Product analysis:', state.productAnalysis);
+                }
+
+                // Step 2: Generate prompts
+                updateLoadingProgress('Creating unique prompts...');
+                const tasks = buildGenerationTasks(selectedPortraits, portraitUrls, productUrls);
+                console.log(`Built ${tasks.length} generation tasks`);
+
+                // Stop loader, show progress
+                stopLoadingAnimation();
+                document.getElementById('inline-loader').classList.remove('visible');
+                document.getElementById('progress-section').classList.add('visible');
+                document.getElementById('progress-count').textContent = `0 / ${tasks.length}`;
+                document.getElementById('progress-bar').style.width = '0%';
+
+                // Create placeholders (append to existing results)
+                document.getElementById('results-section').classList.add('visible');
+                tasks.forEach((task, i) => {
+                    addResultPlaceholder(startIndex + i, task.type);
+                });
+
+                // Step 3: Generate images in parallel batches
+                let completed = 0;
+                const batchSize = 10;  // Increased batch size for efficiency
+
+                for (let i = 0; i < tasks.length; i += batchSize) {
+                    const batch = tasks.slice(i, i + batchSize);
+                    const batchPromises = batch.map(async (task, batchIndex) => {
+                        const taskIndex = i + batchIndex;
+                        const resultIndex = startIndex + taskIndex;  // Offset by existing results
+                        try {
+                            const params = {
+                                prompt: task.prompt,
+                                image_urls: task.imageUrls,
+                                num_images: 1,
+                                aspect_ratio: state.aspectRatio,
+                                output_format: 'png',
+                                resolution: state.resolution
+                            };
+
+                            const data = await api.remixImage('nano-pro', params);
+
+                            if (data.images && data.images[0]) {
+                                state.results[resultIndex] = {
+                                    url: data.images[0].url,
+                                    prompt: task.prompt,
+                                    type: task.type,
+                                    portraitUrl: task.portraitUrl,
+                                    sourceUrls: task.imageUrls
+                                };
+                                updateResultCard(resultIndex);
+                            }
+                        } catch (error) {
+                            console.error(`Generation ${resultIndex} failed:`, error);
+                            updateResultError(resultIndex);
+                        }
+
+                        completed++;
+                        document.getElementById('progress-count').textContent = `${completed} / ${tasks.length}`;
+                        document.getElementById('progress-bar').style.width = `${(completed / tasks.length) * 100}%`;
+                    });
+
+                    await Promise.all(batchPromises);
+                }
+
+                document.getElementById('progress-title').textContent = 'Complete';
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                stopLoadingAnimation();
+                document.getElementById('inline-loader').classList.remove('visible');
+                alert('Failed to generate: ' + error.message);
+            } finally {
+                state.generating = false;
+                document.getElementById('generate-btn').disabled = false;
+            }
+        }
+
+        // Analyze campaign brief with GPT
+        async function analyzeCampaignBrief(brief) {
+            const prompt = `Analyze this campaign brief and extract key elements for generating fashion campaign images.
+
+CAMPAIGN BRIEF:
+${brief}
+
+Extract and return a JSON object with:
+{
+    "locations": ["list of specific locations/environments mentioned"],
+    "mood": "overall mood/energy description",
+    "lighting": "suggested lighting style",
+    "clothingContext": "what type of clothing/styling fits this campaign",
+    "poseEnergy": "high energy/relaxed/editorial/etc",
+    "colorPalette": "suggested colors if mentioned"
+}
+
+Return ONLY valid JSON, no other text.`;
+
+            try {
+                const result = await api.analyzeImages([], prompt);
+                const jsonMatch = result.content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+            } catch (e) {
+                console.error('Campaign analysis error:', e);
+            }
+
+            // Fallback
+            return {
+                locations: ['editorial studio', 'natural environment'],
+                mood: 'confident editorial',
+                lighting: 'natural light',
+                clothingContext: 'high fashion editorial',
+                poseEnergy: 'editorial',
+                colorPalette: 'neutral tones'
+            };
+        }
+
+        // Analyze products with GPT
+        async function analyzeProducts(productUrls) {
+            const prompt = `Identify each product in these images. For each product, provide a brief description of what it is (e.g., "white cotton t-shirt", "orange bikini", "leather handbag").
+
+Format your response as a simple numbered list:
+1. [description]
+2. [description]
+
+Be specific about color, material, and type. Do NOT mention brand names.`;
+
+            try {
+                const result = await api.analyzeImages(productUrls, prompt);
+                return result.content;
+            } catch (e) {
+                console.error('Product analysis error:', e);
+                return null;
+            }
+        }
+
+        // Get interaction based on energy slider (0 = feminine, 100 = masculine)
+        function getEnergyBasedInteraction() {
+            const energy = state.energyStyle;
+            const roll = Math.random() * 100;
+
+            // Determine which pool to pick from based on energy
+            // At 0 (feminine): 80% feminine, 15% neutral, 5% masculine
+            // At 50 (balanced): 30% feminine, 40% neutral, 30% masculine
+            // At 100 (masculine): 5% feminine, 15% neutral, 80% masculine
+
+            const femWeight = Math.max(5, 80 - (energy * 0.75));   // 80 → 5
+            const mascWeight = Math.max(5, 5 + (energy * 0.75));   // 5 → 80
+            const neutralWeight = 100 - femWeight - mascWeight;     // Remainder
+
+            let pool;
+            if (roll < femWeight) {
+                pool = FEMININE_INTERACTIONS;
+            } else if (roll < femWeight + neutralWeight) {
+                pool = NEUTRAL_INTERACTIONS;
+            } else {
+                pool = MASCULINE_INTERACTIONS;
+            }
+
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // Get solo pose/energy based on energy slider (0 = feminine, 100 = masculine)
+        function getEnergyBasedSoloPose() {
+            const energy = state.energyStyle;
+            const roll = Math.random() * 100;
+
+            const femWeight = Math.max(5, 80 - (energy * 0.75));
+            const mascWeight = Math.max(5, 5 + (energy * 0.75));
+            const neutralWeight = 100 - femWeight - mascWeight;
+
+            let pool;
+            if (roll < femWeight) {
+                pool = FEMININE_SOLO_ENERGY;
+            } else if (roll < femWeight + neutralWeight) {
+                pool = NEUTRAL_SOLO_ENERGY;
+            } else {
+                pool = MASCULINE_SOLO_ENERGY;
+            }
+
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // Build generation tasks
+        function buildGenerationTasks(portraits, portraitUrls, productUrls) {
+            const tasks = [];
+            const analysis = state.campaignAnalysis || {};
+            const locations = analysis.locations || ['editorial setting'];
+            const mood = analysis.mood || 'confident editorial';
+            const lighting = analysis.lighting || 'natural light';
+            const clothingContext = analysis.clothingContext || 'editorial fashion';
+            const poseEnergy = analysis.poseEnergy || 'editorial';
+
+            // Parse product descriptions
+            const productDescriptions = [];
+            if (state.productAnalysis) {
+                const lines = state.productAnalysis.split('\n');
+                lines.forEach(line => {
+                    const match = line.match(/^\d+\.\s*(.+)/);
+                    if (match) productDescriptions.push(match[1].trim());
+                });
+            }
+
+            const noSplitting = 'Generate ONE SINGLE unified image only. Do NOT create a collage, grid, or multiple panels.';
+
+            // Calculate how many group shots we need
+            const totalTasks = portraits.length * state.perPortrait;
+            const groupShotCount = Math.floor(totalTasks * state.groupShotsPercent / 100);
+            const soloShotCount = totalTasks - groupShotCount;
+
+            // Helper to get random product
+            function getRandomProduct() {
+                if (productUrls.length === 0) return { text: '', url: null };
+                const idx = Math.floor(Math.random() * productUrls.length);
+                const desc = productDescriptions[idx] || 'the product from reference';
+                return { text: ` wearing ${desc}`, url: productUrls[idx] };
+            }
+
+            // Create solo tasks first
+            let portraitTaskCounter = new Array(portraits.length).fill(0);
+            for (let t = 0; t < soloShotCount; t++) {
+                // Find portrait with fewest tasks so far
+                let minTasks = Math.min(...portraitTaskCounter);
+                let eligibleIndices = portraitTaskCounter.map((c, i) => c === minTasks ? i : -1).filter(i => i >= 0);
+                const pIndex = eligibleIndices[Math.floor(Math.random() * eligibleIndices.length)];
+                portraitTaskCounter[pIndex]++;
+
+                const portraitUrl = portraitUrls[pIndex];
+                const portrait = portraits[pIndex];
+                const type = state.imageTypes[Math.floor(Math.random() * state.imageTypes.length)];
+                const location = locations[Math.floor(Math.random() * locations.length)];
+                const product = getRandomProduct();
+                const energyPose = getEnergyBasedSoloPose();
+
+                let prompt = '';
+                if (type === 'studio') {
+                    prompt = `${noSplitting} Place this exact person in a clean white studio${product.text}. ${energyPose}. Full-body shot, professional studio lighting, fashion e-commerce style.`;
+                } else if (type === 'campaign') {
+                    prompt = `${noSplitting} Place this exact person in ${location}${product.text}. ${energyPose}. Editorial campaign style, ${lighting}, high-end fashion photography, creative composition.`;
+                } else if (type === 'portrait') {
+                    prompt = `${noSplitting} Portrait of this exact person${product.text}. ${energyPose}. Waist-up framing, soft flattering lighting, fashion portrait style.`;
+                }
+
+                const imageUrls = [portraitUrl];
+                if (product.url) imageUrls.push(product.url);
+
+                tasks.push({
+                    type,
+                    prompt,
+                    imageUrls,
+                    portraitUrl: portrait.url || portrait.thumbUrl,
+                    portraitIndex: pIndex,
+                    isGroup: false
+                });
+            }
+
+            // Create group tasks (2-3 people)
+            if (groupShotCount > 0 && portraits.length >= 2) {
+                for (let g = 0; g < groupShotCount; g++) {
+                    // Random group size: 2 or 3 (if enough portraits)
+                    const maxGroupSize = Math.min(3, portraits.length);
+                    const groupSize = Math.random() < 0.7 ? 2 : maxGroupSize;  // 70% duos, 30% trios
+
+                    // Pick random portraits for the group
+                    const shuffled = [...Array(portraits.length).keys()].sort(() => Math.random() - 0.5);
+                    const groupIndices = shuffled.slice(0, groupSize);
+
+                    const type = state.imageTypes[Math.floor(Math.random() * state.imageTypes.length)];
+                    const location = locations[Math.floor(Math.random() * locations.length)];
+                    const groupInteraction = getEnergyBasedInteraction();
+                    const product = getRandomProduct();
+
+                    // Build people text
+                    const peopleText = groupSize === 2 ? 'these exact two people' : 'these exact three people';
+
+                    let prompt = '';
+                    if (type === 'studio') {
+                        prompt = `${noSplitting} Place ${peopleText} in a clean white studio${product.text}. ${groupInteraction}. Full-body shot, professional studio lighting, fashion e-commerce style, ${mood}.`;
+                    } else if (type === 'campaign') {
+                        prompt = `${noSplitting} Place ${peopleText} in ${location}${product.text}. ${groupInteraction}. Editorial campaign style, ${lighting}, ${mood}, high-end fashion photography, creative composition.`;
+                    } else if (type === 'portrait') {
+                        prompt = `${noSplitting} ${peopleText} together${product.text}. ${groupInteraction}. Waist-up framing, soft flattering lighting, ${mood}, fashion portrait style.`;
+                    }
+
+                    // Combine portrait URLs
+                    const imageUrls = groupIndices.map(i => portraitUrls[i]);
+                    if (product.url) imageUrls.push(product.url);
+
+                    // Use first person's portrait as the thumbnail
+                    const firstPortrait = portraits[groupIndices[0]];
+
+                    tasks.push({
+                        type: type + '-group',  // Mark as group shot
+                        prompt,
+                        imageUrls,
+                        portraitUrl: firstPortrait.url || firstPortrait.thumbUrl,
+                        portraitIndex: groupIndices[0],
+                        isGroup: true,
+                        groupSize
+                    });
+                }
+            }
+
+            // Shuffle tasks for variety
+            return tasks.sort(() => Math.random() - 0.5);
+        }
+
+        function addResultPlaceholder(index, type) {
+            const grid = document.getElementById('results-grid');
+            const html = `
+                <div class="result-card" id="result-${index}" data-index="${index}">
+                    <div class="result-placeholder">
+                        <div class="spinner"></div>
+                        <p>${TYPE_LABELS[type] || type}</p>
+                    </div>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', html);
+        }
+
+        function updateResultCard(index) {
+            const card = document.getElementById(`result-${index}`);
+            const result = state.results[index];
+            if (!card || !result) return;
+
+            card.innerHTML = `
+                <img src="${result.url}" alt="Generated image" onclick="openLightbox(${index})">
+                <span class="type-tag">${TYPE_LABELS[result.type] || result.type}</span>
+                <img src="${result.portraitUrl}" alt="Source portrait" class="portrait-tag">
+            `;
+        }
+
+        function updateResultError(index) {
+            const card = document.getElementById(`result-${index}`);
+            if (!card) return;
+            card.innerHTML = `<div class="result-placeholder"><p>Failed</p></div>`;
+        }
+
+        // Lightbox functions
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            document.getElementById('lightbox').classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        function navigateLightbox(direction) {
+            const validResults = state.results.filter(r => r && r.url);
+            const currentIndex = validResults.findIndex(r => r === state.results[state.lightboxIndex]);
+            const newIndex = currentIndex + direction;
+
+            if (newIndex >= 0 && newIndex < validResults.length) {
+                state.lightboxIndex = state.results.indexOf(validResults[newIndex]);
+                updateLightboxContent();
+            }
+        }
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            if (!result) return;
+
+            document.getElementById('lightbox-image').src = result.url;
+            document.getElementById('lightbox-type').textContent = TYPE_LABELS[result.type] || result.type;
+            document.getElementById('lightbox-prompt').textContent = result.prompt;
+            document.getElementById('lightbox-sources').innerHTML = result.sourceUrls.map(url =>
+                `<img src="${url}" alt="Source">`
+            ).join('');
+        }
+
+        function downloadCurrentImage() {
+            const result = state.results[state.lightboxIndex];
+            if (!result) return;
+            downloadImage(state.lightboxIndex);
+        }
+
+        async function downloadImage(index) {
+            const result = state.results[index];
+            if (!result || !result.url) return;
+
+            const typeLabel = (result.type || 'image').toLowerCase();
+            const filename = `Setset_Casting_${typeLabel}_${String(index + 1).padStart(2, '0')}_${Date.now()}.png`;
+
+            try {
+                const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(result.url)}`);
+                const blob = await response.blob();
+                const downloadUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                console.error('Download failed:', error);
+                window.open(result.url, '_blank');
+            }
+        }
+
+        async function downloadAll() {
+            const validResults = state.results.filter(r => r && r.url);
+            for (let i = 0; i < validResults.length; i++) {
+                const index = state.results.indexOf(validResults[i]);
+                await downloadImage(index);
+                await new Promise(r => setTimeout(r, 300));
+            }
+        }
+    </script>
+</body>
+</html>

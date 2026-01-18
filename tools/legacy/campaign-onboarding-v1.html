@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Campaign Onboarding</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        .container {
+            max-width: 1200px;
+        }
+
+        /* Section styling - Setset dialog style */
+        .onboarding-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-lg);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .section-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .section-title {
+            font-size: var(--text-base);
+            font-weight: 600;
+            color: var(--carbon);
+        }
+
+        .section-subtitle {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .section-count {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+        }
+
+        .section-content {
+            padding: var(--space-md) var(--space-lg);
+        }
+
+        /* Tabs - Setset style */
+        .tabs {
+            display: flex;
+            gap: 0;
+            background: var(--off-white);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            margin-bottom: var(--space-md);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px 16px;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--slate);
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .tab:hover {
+            color: var(--carbon);
+        }
+
+        .tab.active {
+            background: var(--white);
+            color: var(--carbon);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Models Grid - 9 wide */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 12px;
+            padding: 8px;
+        }
+
+        @media (max-width: 1100px) {
+            .models-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .models-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .models-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .model-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .model-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .model-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .model-card.selected {
+            border-color: var(--jet);
+        }
+
+        .model-card .check-indicator {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            background: var(--jet);
+            border-radius: var(--radius-xs);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .model-card.selected .check-indicator {
+            display: flex;
+        }
+
+        .model-card .model-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4px 6px;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+            font-size: 10px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Upload Grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            padding: 4px;
+        }
+
+        .upload-grid.drag-over {
+            background: var(--off-white);
+            border-radius: var(--radius-sm);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--ash-grey);
+            color: var(--ash-grey);
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-style: solid;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+            color: #2563eb;
+        }
+
+        .upload-slot.paste-ready::after {
+            content: 'Cmd+V';
+            position: absolute;
+            bottom: 4px;
+            font-size: 9px;
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        .upload-slot.filled {
+            border-style: solid;
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot.filled.selected {
+            border-width: 3px;
+        }
+
+        .upload-slot.filled.deselected {
+            opacity: 0.4;
+            border-color: var(--gainsboro);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Question Cards - Cleaner vertical layout */
+        .question-card {
+            margin-bottom: var(--space-xl);
+        }
+
+        .question-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .question-label {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--carbon);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .question-hint {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-bottom: var(--space-md);
+        }
+
+        /* Spectrum Options - 5 visual cards */
+        .spectrum-options {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .spectrum-options {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .spectrum-options {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .spectrum-option {
+            position: relative;
+            aspect-ratio: 3/4;
+            background: var(--off-white);
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 12px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .spectrum-option:hover {
+            border-color: var(--ash-grey);
+            background: var(--white);
+        }
+
+        .spectrum-option.active {
+            border-color: var(--jet);
+            background: var(--jet);
+        }
+
+        .spectrum-option .option-image {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            object-fit: cover;
+            transition: opacity var(--transition-fast);
+        }
+
+        .spectrum-option .option-image.default {
+            opacity: 1;
+        }
+
+        .spectrum-option .option-image.hover {
+            opacity: 0;
+        }
+
+        .spectrum-option:hover .option-image.default {
+            opacity: 0;
+        }
+
+        .spectrum-option:hover .option-image.hover {
+            opacity: 1;
+        }
+
+        .spectrum-option.active .option-image.default {
+            opacity: 0.85;
+        }
+
+        .spectrum-option.active .option-image.hover {
+            opacity: 0;
+        }
+
+        .spectrum-option.active:hover .option-image.default {
+            opacity: 0;
+        }
+
+        .spectrum-option.active:hover .option-image.hover {
+            opacity: 0.85;
+        }
+
+        .spectrum-option .option-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--white);
+            position: relative;
+            z-index: 1;
+            margin-bottom: 2px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        .spectrum-option .option-desc {
+            font-size: 10px;
+            color: rgba(255,255,255,0.85);
+            position: relative;
+            z-index: 1;
+            line-height: 1.3;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5);
+        }
+
+        /* Simple option buttons for image types, etc */
+        .options-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            padding: 10px 20px;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            background: var(--off-white);
+            color: var(--slate);
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .option-btn:hover {
+            border-color: var(--ash-grey);
+            color: var(--carbon);
+        }
+
+        .option-btn.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Slider with labels */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gainsboro);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* Brief textarea */
+        .brief-textarea {
+            width: 100%;
+            padding: var(--space-sm);
+            font-size: var(--text-sm);
+            font-family: var(--font-sans);
+            color: var(--carbon);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5;
+        }
+
+        .brief-textarea:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .brief-textarea::placeholder {
+            color: var(--slate);
+        }
+
+        /* Spectrum endpoints labels */
+        .spectrum-endpoints {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 10px;
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Settings row */
+        .settings-row {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .setting-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+            margin-bottom: var(--space-xs);
+        }
+
+        /* Generate section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-lg);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .generate-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .generate-summary {
+            font-size: var(--text-sm);
+            color: var(--carbon);
+        }
+
+        .generate-cost {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Inline loader */
+        .inline-loader {
+            display: none;
+            text-align: center;
+            padding: var(--space-xl) var(--space-lg);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .inline-loader.visible {
+            display: block;
+        }
+
+        .loader-message {
+            font-size: var(--text-lg);
+            font-weight: 500;
+            color: var(--jet);
+            margin-bottom: var(--space-sm);
+            transition: opacity 0.25s ease;
+        }
+
+        .loader-message.fade-out { opacity: 0; }
+        .loader-message.fade-in { opacity: 1; }
+
+        .loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            margin-bottom: var(--space-lg);
+            padding: var(--space-md);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xs);
+        }
+
+        .progress-title {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: var(--off-white);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-header h2 {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--carbon);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        @media (max-width: 800px) {
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid var(--gainsboro);
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .result-card:hover {
+            border-color: var(--jet);
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-card .type-tag {
+            position: absolute;
+            top: var(--space-xs);
+            left: var(--space-xs);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: var(--radius-xs);
+            text-transform: uppercase;
+        }
+
+        .result-card .portrait-tag {
+            position: absolute;
+            bottom: var(--space-xs);
+            left: var(--space-xs);
+            width: 32px;
+            height: 40px;
+            border-radius: var(--radius-xs);
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            object-fit: cover;
+        }
+
+        .result-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            background: var(--off-white);
+        }
+
+        .result-placeholder .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result-placeholder p {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Campaign Onboarding</h1>
+            <p class="hero-subtitle">Create campaign imagery through guided setup</p>
+        </div>
+
+        <!-- STEP 1: Models -->
+        <div class="onboarding-section">
+            <div class="section-header">
+                <div class="section-header-left">
+                    <div class="section-title">1. Choose Your Models</div>
+                    <div class="section-subtitle">Select from Setset talent or upload your own</div>
+                </div>
+                <div class="section-count" id="models-count">0 selected</div>
+            </div>
+            <div class="section-content">
+                <div class="tabs">
+                    <button class="tab active" data-tab="setset-models">Setset Models</button>
+                    <button class="tab" data-tab="upload-models">Upload Your Own</button>
+                </div>
+                <div class="tab-content active" id="setset-models">
+                    <div class="models-grid" id="models-grid"></div>
+                </div>
+                <div class="tab-content" id="upload-models">
+                    <div class="upload-grid" id="portraits-grid"></div>
+                    <input type="file" id="portraits-input" accept="image/*" multiple>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: Products -->
+        <div class="onboarding-section">
+            <div class="section-header">
+                <div class="section-header-left">
+                    <div class="section-title">2. Products (Optional)</div>
+                    <div class="section-subtitle">Add product images to feature in your shots</div>
+                </div>
+                <div class="section-count" id="products-count">0 uploaded</div>
+            </div>
+            <div class="section-content">
+                <div class="tabs">
+                    <button class="tab active" data-tab="no-products">No Products</button>
+                    <button class="tab" data-tab="upload-products">Upload Products</button>
+                </div>
+                <div class="tab-content active" id="no-products">
+                    <div style="text-align: center; padding: 40px; color: var(--slate);">
+                        <p>Skip this step if you don't need product placement</p>
+                    </div>
+                </div>
+                <div class="tab-content" id="upload-products">
+                    <div class="upload-grid" id="products-upload-grid"></div>
+                    <input type="file" id="products-input" accept="image/*" multiple>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Campaign Questions -->
+        <div class="onboarding-section">
+            <div class="section-header">
+                <div class="section-header-left">
+                    <div class="section-title">3. Campaign Vision</div>
+                    <div class="section-subtitle">Define your campaign aesthetic</div>
+                </div>
+            </div>
+            <div class="section-content">
+                <!-- Era Reference -->
+                <div class="question-card">
+                    <div class="question-label">Era Reference</div>
+                    <div class="spectrum-endpoints"><span>Nostalgic</span><span>Contemporary</span></div>
+                    <div class="spectrum-options" id="spectrum-era">
+                        <div class="spectrum-option" data-value="1990s">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ERA01M2_era-1990s.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ERA01F2_era-1990s.png" alt="">
+                            <div class="option-title">1990s</div>
+                            <div class="option-desc">Grunge, raw, analog</div>
+                        </div>
+                        <div class="spectrum-option" data-value="2000s">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ERA02F1_era-2000s.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ERA02M1_era-2000s.png" alt="">
+                            <div class="option-title">2000s</div>
+                            <div class="option-desc">Y2K, digital gloss</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="classic">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ERA03M2_era-classic.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ERA03F1_era-classic.png" alt="">
+                            <div class="option-title">Classic</div>
+                            <div class="option-desc">Refined elegance</div>
+                        </div>
+                        <div class="spectrum-option" data-value="modern">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ERA04F1_era-modern.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ERA04M1_era-modern.png" alt="">
+                            <div class="option-title">Modern</div>
+                            <div class="option-desc">Current trends</div>
+                        </div>
+                        <div class="spectrum-option" data-value="timeless">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ERA05M1_era-timeless.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ERA05F2_era-timeless.png" alt="">
+                            <div class="option-title">Timeless</div>
+                            <div class="option-desc">Era-agnostic</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Energy Level -->
+                <div class="question-card">
+                    <div class="question-label">Energy Level</div>
+                    <div class="spectrum-endpoints"><span>Restrained</span><span>Expressive</span></div>
+                    <div class="spectrum-options" id="spectrum-energy">
+                        <div class="spectrum-option" data-value="still">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENE01F2_energy-still.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENE01M1_energy-still.png" alt="">
+                            <div class="option-title">Still</div>
+                            <div class="option-desc">Meditative, quiet</div>
+                        </div>
+                        <div class="spectrum-option" data-value="controlled">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENE02M2_energy-controlled.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENE02F1_energy-controlled.png" alt="">
+                            <div class="option-title">Controlled</div>
+                            <div class="option-desc">Poised, composed</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="relaxed">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENE03F2_energy-relaxed.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENE03M1_energy-relaxed.png" alt="">
+                            <div class="option-title">Relaxed</div>
+                            <div class="option-desc">Natural presence</div>
+                        </div>
+                        <div class="spectrum-option" data-value="dynamic">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENE04M2_energy-dynamic.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENE04F2_energy-dynamic.png" alt="">
+                            <div class="option-title">Dynamic</div>
+                            <div class="option-desc">Movement, action</div>
+                        </div>
+                        <div class="spectrum-option" data-value="bold">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENE05F1_energy-bold.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENE05M2_energy-bold.png" alt="">
+                            <div class="option-title">Bold</div>
+                            <div class="option-desc">Intense, dramatic</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geographic Inspiration -->
+                <div class="question-card">
+                    <div class="question-label">Geographic Inspiration</div>
+                    <div class="spectrum-endpoints"><span>Mediterranean</span><span>Nordic</span></div>
+                    <div class="spectrum-options" id="spectrum-geo">
+                        <div class="spectrum-option" data-value="mediterranean">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_GEO01M1_geo-mediterranean.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_GEO01F1_geo-mediterranean.png" alt="">
+                            <div class="option-title">Mediterranean</div>
+                            <div class="option-desc">Coastal, terracotta</div>
+                        </div>
+                        <div class="spectrum-option" data-value="tropical">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_GEO02F1_geo-tropical.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_GEO02M1_geo-tropical.png" alt="">
+                            <div class="option-title">Tropical</div>
+                            <div class="option-desc">Lush, vibrant</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="global">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_GEO03M2_geo-global.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_GEO03F1_geo-global.png" alt="">
+                            <div class="option-title">Global</div>
+                            <div class="option-desc">Location-agnostic</div>
+                        </div>
+                        <div class="spectrum-option" data-value="desert">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_GEO04F1_geo-desert.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_GEO04M1_geo-desert.png" alt="">
+                            <div class="option-title">Desert</div>
+                            <div class="option-desc">Arid, earthy</div>
+                        </div>
+                        <div class="spectrum-option" data-value="nordic">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_GEO05M2_geo-nordic.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_GEO05F1_geo-nordic.png" alt="">
+                            <div class="option-title">Nordic</div>
+                            <div class="option-desc">Cool, minimal</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Environment Type -->
+                <div class="question-card">
+                    <div class="question-label">Environment Type</div>
+                    <div class="spectrum-endpoints"><span>Controlled</span><span>Natural</span></div>
+                    <div class="spectrum-options" id="spectrum-environment">
+                        <div class="spectrum-option" data-value="studio">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENV01F1_env-studio.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENV01M1_env-studio.png" alt="">
+                            <div class="option-title">Studio</div>
+                            <div class="option-desc">Clean, infinite</div>
+                        </div>
+                        <div class="spectrum-option" data-value="interior">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENV02M1_env-interior.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENV02F1_env-interior.png" alt="">
+                            <div class="option-title">Interior</div>
+                            <div class="option-desc">Architectural spaces</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="architectural">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENV03F2_env-architectural.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENV03M2_env-architectural.png" alt="">
+                            <div class="option-title">Architectural</div>
+                            <div class="option-desc">Design-forward spaces</div>
+                        </div>
+                        <div class="spectrum-option" data-value="pool">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENV04M1_env-pool.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENV04F2_env-pool.png" alt="">
+                            <div class="option-title">Pool</div>
+                            <div class="option-desc">Poolside, resort</div>
+                        </div>
+                        <div class="spectrum-option" data-value="nature">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_ENV05F1_env-nature.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_ENV05M2_env-nature.png" alt="">
+                            <div class="option-title">Nature</div>
+                            <div class="option-desc">Outdoor landscapes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Palette -->
+                <div class="question-card">
+                    <div class="question-label">Color Palette</div>
+                    <div class="spectrum-endpoints"><span>Muted</span><span>Cool</span></div>
+                    <div class="spectrum-options" id="spectrum-colors">
+                        <div class="spectrum-option" data-value="monochrome">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_COL01M1_colors-mono.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_COL01F1_colors-mono.png" alt="">
+                            <div class="option-title">Monochrome</div>
+                            <div class="option-desc">Black, white, grey</div>
+                        </div>
+                        <div class="spectrum-option" data-value="muted">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_COL02F2_colors-muted.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_COL02M2_colors-muted.png" alt="">
+                            <div class="option-title">Muted</div>
+                            <div class="option-desc">Soft, desaturated</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="neutral">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_COL03M1_colors-neutral.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_COL03F2_colors-neutral.png" alt="">
+                            <div class="option-title">Neutral</div>
+                            <div class="option-desc">Earth tones</div>
+                        </div>
+                        <div class="spectrum-option" data-value="warm">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_COL04F1_colors-warm.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_COL04M1_colors-warm.png" alt="">
+                            <div class="option-title">Warm</div>
+                            <div class="option-desc">Golden, terracotta</div>
+                        </div>
+                        <div class="spectrum-option" data-value="cool">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_COL05M1_colors-cool.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_COL05F1_colors-cool.png" alt="">
+                            <div class="option-title">Cool</div>
+                            <div class="option-desc">Blue, teal tones</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lighting Style -->
+                <div class="question-card">
+                    <div class="question-label">Lighting Style</div>
+                    <div class="spectrum-endpoints"><span>Soft</span><span>Hard</span></div>
+                    <div class="spectrum-options" id="spectrum-lighting">
+                        <div class="spectrum-option" data-value="soft">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_LIG01F2_light-soft.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_LIG01M2_light-soft.png" alt="">
+                            <div class="option-title">Soft</div>
+                            <div class="option-desc">Diffused, gentle</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="natural">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_LIG02M1_light-natural.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_LIG02F2_light-natural.png" alt="">
+                            <div class="option-title">Natural</div>
+                            <div class="option-desc">Daylight, balanced</div>
+                        </div>
+                        <div class="spectrum-option" data-value="golden">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_LIG03F1_light-golden.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_LIG03M1_light-golden.png" alt="">
+                            <div class="option-title">Golden</div>
+                            <div class="option-desc">Warm hour</div>
+                        </div>
+                        <div class="spectrum-option" data-value="dramatic">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_LIG04M2_light-dramatic.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_LIG04F1_light-dramatic.png" alt="">
+                            <div class="option-title">Dramatic</div>
+                            <div class="option-desc">High contrast</div>
+                        </div>
+                        <div class="spectrum-option" data-value="flash">
+                            <img class="option-image default" src="/assets/campaign-moods/campaign_LIG05F2_light-flash.png" alt="">
+                            <img class="option-image hover" src="/assets/campaign-moods/campaign_LIG05M2_light-flash.png" alt="">
+                            <div class="option-title">Flash</div>
+                            <div class="option-desc">Hard, direct</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campaign Brief (Optional) -->
+                <div class="question-card">
+                    <div class="question-label">Additional Notes (optional)</div>
+                    <div class="question-hint">Specific locations, styling notes, or brand references</div>
+                    <textarea class="brief-textarea" id="campaign-brief" placeholder="Example: Volcanic black sand beaches, lush Mediterranean gardens, golden hour. Wind-blown movement, luxurious resort wear."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: Output Settings -->
+        <div class="onboarding-section">
+            <div class="section-header">
+                <div class="section-header-left">
+                    <div class="section-title">4. Output Settings</div>
+                    <div class="section-subtitle">Image types, quantity, and format</div>
+                </div>
+            </div>
+            <div class="section-content">
+                <!-- Image Types as spectrum cards -->
+                <div class="question-card">
+                    <div class="question-label">Image Types</div>
+                    <div class="question-hint">Select one or more</div>
+                    <div class="spectrum-options" id="image-types" style="grid-template-columns: repeat(3, 1fr); max-width: 400px;">
+                        <div class="spectrum-option active" data-value="studio">
+                            <div class="option-title">Studio</div>
+                            <div class="option-desc">White backdrop</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="campaign">
+                            <div class="option-title">Campaign</div>
+                            <div class="option-desc">Editorial shots</div>
+                        </div>
+                        <div class="spectrum-option active" data-value="portrait">
+                            <div class="option-title">Close-up</div>
+                            <div class="option-desc">Portrait frames</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Images per Model -->
+                <div class="question-card">
+                    <div class="question-label">Images per Model</div>
+                    <div class="question-hint">Number of images generated for each selected model</div>
+                    <div class="options-row" id="images-per-model">
+                        <button class="option-btn" data-value="1">1</button>
+                        <button class="option-btn active" data-value="2">2</button>
+                        <button class="option-btn" data-value="3">3</button>
+                    </div>
+                </div>
+
+                <!-- Group Shots -->
+                <div class="question-card">
+                    <div class="question-label">Group Shots</div>
+                    <div class="question-hint">Models appearing together in the same image</div>
+                    <div class="options-row" id="group-options">
+                        <button class="option-btn active" data-value="solo">Solo Only</button>
+                        <button class="option-btn" data-value="some">Some Groups</button>
+                        <button class="option-btn" data-value="mostly">Mostly Groups</button>
+                    </div>
+                </div>
+
+                <!-- Format Settings -->
+                <div class="settings-row">
+                    <div class="setting-group">
+                        <div class="setting-label">Aspect Ratio</div>
+                        <div class="options-row" id="ratio-options">
+                            <button class="option-btn active" data-value="3:4">3:4</button>
+                            <button class="option-btn" data-value="4:3">4:3</button>
+                            <button class="option-btn" data-value="16:9">16:9</button>
+                            <button class="option-btn" data-value="1:1">1:1</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <div class="setting-label">Resolution</div>
+                        <div class="options-row" id="resolution-options">
+                            <button class="option-btn" data-value="1K">1K</button>
+                            <button class="option-btn active" data-value="2K">2K</button>
+                            <button class="option-btn" data-value="4K">4K</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate -->
+        <div class="generate-section">
+            <div class="generate-info">
+                <div class="generate-summary" id="generate-summary">Select models to continue</div>
+                <div class="generate-cost" id="generate-cost">$0.04/image at 2K</div>
+            </div>
+            <button class="btn btn--primary" id="generate-btn" disabled>
+                Generate <span class="btn-cost" id="cost-value">$0.00</span>
+            </button>
+        </div>
+
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Analyzing campaign...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title" id="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <button class="btn" id="download-all-btn">Download All</button>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightbox-close">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev">&larr;</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next">&rarr;</button>
+        <div class="lightbox-content">
+            <div class="lightbox-left">
+                <img class="lightbox-image" id="lightbox-image" src="" alt="Generated image">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Type</h3>
+                    <p class="lightbox-model-text" id="lightbox-type"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script>
+        // =====================
+        // MODELS DATA
+        // =====================
+        const SETSET_MODELS = [
+            { id: 'james', name: 'James Wilson', image: '/shared/images/talent/thumbs/talent-01_JamesWilson.png', fullImage: '/shared/images/talent/talent-01_JamesWilson.png' },
+            { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/thumbs/talent-02_MayaJohnson.png', fullImage: '/shared/images/talent/talent-02_MayaJohnson.png' },
+            { id: 'river', name: 'River Blake', image: '/shared/images/talent/thumbs/talent-03_RiverBlake.png', fullImage: '/shared/images/talent/talent-03_RiverBlake.png' },
+            { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/thumbs/talent-04_EmmaSullivan.png', fullImage: '/shared/images/talent/talent-04_EmmaSullivan.png' },
+            { id: 'marcus', name: 'Marcus Brown', image: '/shared/images/talent/thumbs/talent-05_MarcusBrown.png', fullImage: '/shared/images/talent/talent-05_MarcusBrown.png' },
+            { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/thumbs/talent-06_ZaraMitchell.png', fullImage: '/shared/images/talent/talent-06_ZaraMitchell.png' },
+            { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/thumbs/talent-07_SophiaAnderson.png', fullImage: '/shared/images/talent/talent-07_SophiaAnderson.png' },
+            { id: 'liam', name: 'Liam Garcia', image: '/shared/images/talent/thumbs/talent-08_LiamGarcia.png', fullImage: '/shared/images/talent/talent-08_LiamGarcia.png' },
+            { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/thumbs/talent-09_NinaDavis.png', fullImage: '/shared/images/talent/talent-09_NinaDavis.png' },
+            { id: 'ava', name: 'Ava Martinez', image: '/shared/images/talent/thumbs/talent-10_AvaMartinez.png', fullImage: '/shared/images/talent/talent-10_AvaMartinez.png' },
+            { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/thumbs/talent-11_LunaPark.png', fullImage: '/shared/images/talent/talent-11_LunaPark.png' },
+            { id: 'noah', name: 'Noah Chen', image: '/shared/images/talent/thumbs/talent-12_NoahChen.png', fullImage: '/shared/images/talent/talent-12_NoahChen.png' },
+            { id: 'mia', name: 'Mia Parker', image: '/shared/images/talent/thumbs/talent-13_MiaParker.png', fullImage: '/shared/images/talent/talent-13_MiaParker.png' },
+            { id: 'riley', name: 'Riley Morgan', image: '/shared/images/talent/thumbs/talent-14_RileyMorgan.png', fullImage: '/shared/images/talent/talent-14_RileyMorgan.png' },
+            { id: 'jordan', name: 'Jordan Lee', image: '/shared/images/talent/thumbs/talent-15_JordanLee.png', fullImage: '/shared/images/talent/talent-15_JordanLee.png' },
+            { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/thumbs/talent-16_IsabellaRodriguez.png', fullImage: '/shared/images/talent/talent-16_IsabellaRodriguez.png' },
+            { id: 'quinn', name: 'Quinn Santos', image: '/shared/images/talent/thumbs/talent-17_QuinnSantos.png', fullImage: '/shared/images/talent/talent-17_QuinnSantos.png' },
+            { id: 'casey', name: 'Casey White', image: '/shared/images/talent/thumbs/talent-18_CaseyWhite.png', fullImage: '/shared/images/talent/talent-18_CaseyWhite.png' },
+            { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/thumbs/talent-19_SamWilson.png', fullImage: '/shared/images/talent/talent-19_SamWilson.png' },
+            { id: 'drew', name: 'Drew Martinez', image: '/shared/images/talent/thumbs/talent-20_DrewMartinez.png', fullImage: '/shared/images/talent/talent-20_DrewMartinez.png' },
+            { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/thumbs/talent-21_AveryTaylor.png', fullImage: '/shared/images/talent/talent-21_AveryTaylor.png' },
+            { id: 'parker', name: 'Parker Miller', image: '/shared/images/talent/thumbs/talent-22_ParkerMiller.png', fullImage: '/shared/images/talent/talent-22_ParkerMiller.png' },
+            { id: 'morgan', name: 'Morgan Kim', image: '/shared/images/talent/thumbs/talent-23_MorganKim.png', fullImage: '/shared/images/talent/talent-23_MorganKim.png' },
+            { id: 'andre', name: 'Andre Jackson', image: '/shared/images/talent/thumbs/talent-24_AndreJackson.png', fullImage: '/shared/images/talent/talent-24_AndreJackson.png' },
+            { id: 'damon', name: 'Damon Carter', image: '/shared/images/talent/thumbs/talent-25_DamonCarter.png', fullImage: '/shared/images/talent/talent-25_DamonCarter.png' },
+            { id: 'nikolai', name: 'Nikolai Volkov', image: '/shared/images/talent/thumbs/talent-26_NikolaiVolkov.png', fullImage: '/shared/images/talent/talent-26_NikolaiVolkov.png' },
+            { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/thumbs/talent-27_SofiaRodriguez.png', fullImage: '/shared/images/talent/talent-27_SofiaRodriguez.png' },
+            { id: 'finn', name: 'Finn O\'Connor', image: '/shared/images/talent/thumbs/talent-28_FinnOConnor.png', fullImage: '/shared/images/talent/talent-28_FinnOConnor.png' },
+            { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/thumbs/talent-29_ClaraDevereaux.png', fullImage: '/shared/images/talent/talent-29_ClaraDevereaux.png' },
+            { id: 'simone', name: 'Simone Park', image: '/shared/images/talent/thumbs/talent-30_ZoeWashington.png', fullImage: '/shared/images/talent/talent-30_ZoeWashington.png' },
+            { id: 'emily', name: 'Emily Hart', image: '/shared/images/talent/thumbs/talent-31_EmilyHart.png', fullImage: '/shared/images/talent/talent-31_EmilyHart.png' },
+            { id: 'alex', name: 'Alex Stone', image: '/shared/images/talent/thumbs/talent-32_AlexStone.png', fullImage: '/shared/images/talent/talent-32_AlexStone.png' }
+        ];
+
+        // =====================
+        // STATE
+        // =====================
+        const state = {
+            // Models
+            selectedSetsetModels: [],  // IDs of selected Setset models
+            uploadedPortraits: [],     // { url, thumbUrl, file, selected }
+
+            // Products
+            uploadedProducts: [],      // { url, thumbUrl, file }
+
+            // Campaign vision (spectrum answers)
+            spectrum: {
+                era: 'classic',           // 1990s, 2000s, classic, modern, timeless
+                energy: 'relaxed',        // still, controlled, relaxed, dynamic, bold
+                geo: 'global',            // mediterranean, tropical, global, desert, nordic
+                environment: 'architectural', // studio, interior, architectural, pool, nature
+                colors: 'neutral',        // monochrome, muted, neutral, warm, cool
+                lighting: 'natural'       // soft, natural, golden, dramatic, flash
+            },
+            brief: '',
+
+            // Output settings
+            imageTypes: ['studio', 'campaign', 'portrait'],
+            imagesPerModel: 2,        // 1, 2, 3
+            groupOption: 'solo',      // 'solo', 'some', 'mostly'
+            aspectRatio: '3:4',
+            resolution: '2K',
+
+            // Generation
+            results: [],
+            generating: false,
+            lightboxIndex: 0,
+
+            // Analysis results
+            campaignAnalysis: null,
+            productAnalysis: null
+        };
+
+        const PORTRAIT_SLOTS = 12;
+        const PRODUCT_SLOTS = 6;
+        const COST_PER_IMAGE = 0.04;
+
+        // Spectrum-based prompt fragments
+        const SPECTRUM_PROMPTS = {
+            era: {
+                '1990s': '1990s aesthetic, film grain, raw analog feel, grunge',
+                '2000s': 'early 2000s Y2K style, digital gloss, tech-forward',
+                'classic': 'timeless classic elegance, refined sophistication',
+                'modern': 'contemporary modern aesthetic, current editorial trends',
+                'timeless': 'era-agnostic, universally elegant'
+            },
+            energy: {
+                'still': 'meditative stillness, quiet presence, serene, stoic expression',
+                'controlled': 'poised composure, controlled elegance, subtle emotion',
+                'relaxed': 'natural presence, effortless confidence, authentic expression',
+                'dynamic': 'movement and flow, active energy, engaging presence',
+                'bold': 'intense dramatic energy, powerful stance, commanding expression'
+            },
+            geo: {
+                'mediterranean': 'Mediterranean coastal vibes, terracotta warmth, olive groves',
+                'tropical': 'lush tropical setting, vibrant greenery, paradise',
+                'global': 'versatile global aesthetic, location-agnostic',
+                'desert': 'arid desert landscape, earthy tones, volcanic sand',
+                'nordic': 'Scandinavian minimal aesthetic, cool tones, clean'
+            },
+            environment: {
+                'studio': 'clean white studio backdrop, professional lighting',
+                'interior': 'architectural interior space, designed environment',
+                'architectural': 'design-forward architectural space, modern structure',
+                'pool': 'poolside setting, water and clean lines',
+                'nature': 'natural outdoor environment, landscape setting'
+            },
+            colors: {
+                'monochrome': 'black and white palette, grayscale',
+                'muted': 'soft desaturated tones, gentle colors',
+                'neutral': 'earth tones, natural color palette',
+                'warm': 'golden terracotta warmth, amber hues',
+                'cool': 'blue and teal tones, cool palette'
+            },
+            lighting: {
+                'soft': 'soft diffused gentle flattering light, beauty lighting',
+                'natural': 'natural daylight, balanced lighting',
+                'golden': 'golden hour warm light, magic hour',
+                'dramatic': 'high contrast dramatic lighting, strong shadows',
+                'flash': 'hard direct flash photography, raw harsh light'
+            }
+        };
+
+        // Build campaign style description from spectrum state
+        function buildCampaignStyle() {
+            const s = state.spectrum;
+            const parts = [];
+
+            // Add non-default selections to the style description
+            if (s.era !== 'classic') parts.push(SPECTRUM_PROMPTS.era[s.era]);
+            if (s.energy !== 'relaxed') parts.push(SPECTRUM_PROMPTS.energy[s.energy]);
+            if (s.geo !== 'global') parts.push(SPECTRUM_PROMPTS.geo[s.geo]);
+            if (s.environment !== 'architectural') parts.push(SPECTRUM_PROMPTS.environment[s.environment]);
+            if (s.colors !== 'neutral') parts.push(SPECTRUM_PROMPTS.colors[s.colors]);
+            if (s.lighting !== 'natural') parts.push(SPECTRUM_PROMPTS.lighting[s.lighting]);
+
+            return parts.length > 0 ? parts.join(', ') + '.' : 'natural editorial style.';
+        }
+
+        const TYPE_LABELS = {
+            studio: 'Studio',
+            campaign: 'Campaign',
+            portrait: 'Close-up',
+            'studio-group': 'Studio Group',
+            'campaign-group': 'Campaign Group',
+            'portrait-group': 'Portrait Group'
+        };
+
+        // =====================
+        // INITIALIZATION
+        // =====================
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSetsetModels();
+            renderPortraitUpload();
+            renderProductUpload();
+            setupEventListeners();
+            updateSummary();
+        });
+
+        // =====================
+        // RENDER FUNCTIONS
+        // =====================
+        function renderSetsetModels() {
+            const grid = document.getElementById('models-grid');
+            grid.innerHTML = SETSET_MODELS.map(model => `
+                <div class="model-card ${state.selectedSetsetModels.includes(model.id) ? 'selected' : ''}"
+                     data-id="${model.id}"
+                     onclick="toggleSetsetModel('${model.id}')">
+                    <img src="${model.image}" alt="${model.name}" loading="lazy">
+                    <div class="check-indicator">✓</div>
+                    <div class="model-name">${model.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderPortraitUpload() {
+            const grid = document.getElementById('portraits-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < PORTRAIT_SLOTS; i++) {
+                grid.appendChild(createUploadSlot(i, 'portrait'));
+            }
+            renderUploadedImages('portrait');
+        }
+
+        function renderProductUpload() {
+            const grid = document.getElementById('products-upload-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < PRODUCT_SLOTS; i++) {
+                grid.appendChild(createUploadSlot(i, 'product'));
+            }
+            renderUploadedImages('product');
+        }
+
+        // Paste target tracking
+        let pasteTarget = null;
+
+        function setPasteTarget(type, index) {
+            // Clear previous
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = { type, index };
+            // Highlight the slot
+            const grid = document.getElementById(type === 'portrait' ? 'portraits-grid' : 'products-upload-grid');
+            if (grid && grid.children[index]) {
+                grid.children[index].classList.add('paste-ready');
+            }
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = null;
+        }
+
+        function createUploadSlot(index, type) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.innerHTML = '+';
+            slot.dataset.index = index;
+            slot.dataset.type = type;
+
+            slot.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const images = type === 'portrait' ? state.uploadedPortraits : state.uploadedProducts;
+                if (images[index]) {
+                    if (type === 'portrait') {
+                        images[index].selected = !images[index].selected;
+                        renderUploadedImages(type);
+                        updateSummary();
+                    }
+                } else {
+                    // Set as paste target for Cmd+V
+                    setPasteTarget(type, index);
+                }
+            });
+
+            // Double-click opens file picker
+            slot.addEventListener('dblclick', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const images = type === 'portrait' ? state.uploadedPortraits : state.uploadedProducts;
+                if (!images[index]) {
+                    const input = document.getElementById(type === 'portrait' ? 'portraits-input' : 'products-input');
+                    input.dataset.startIndex = index;
+                    input.click();
+                }
+            });
+
+            return slot;
+        }
+
+        function renderUploadedImages(type) {
+            const images = type === 'portrait' ? state.uploadedPortraits : state.uploadedProducts;
+            const grid = document.getElementById(type === 'portrait' ? 'portraits-grid' : 'products-upload-grid');
+            const slots = grid.querySelectorAll('.upload-slot');
+            const maxSlots = type === 'portrait' ? PORTRAIT_SLOTS : PRODUCT_SLOTS;
+
+            slots.forEach((slot, i) => {
+                if (images[i]) {
+                    const isSelected = type === 'product' || images[i].selected !== false;
+                    const displayUrl = images[i].thumbUrl || images[i].url;
+                    slot.className = 'upload-slot filled ' + (isSelected ? 'selected' : 'deselected');
+                    slot.innerHTML = `
+                        <img src="${displayUrl}" alt="Image ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeUploadedImage(${i}, '${type}')">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            });
+
+            updateCounts();
+        }
+
+        window.removeUploadedImage = function(index, type) {
+            const images = type === 'portrait' ? state.uploadedPortraits : state.uploadedProducts;
+            images.splice(index, 1);
+            renderUploadedImages(type);
+            updateSummary();
+        };
+
+        function updateCounts() {
+            const setsetCount = state.selectedSetsetModels.length;
+            const uploadCount = state.uploadedPortraits.filter(p => p && p.selected !== false).length;
+            const totalModels = setsetCount + uploadCount;
+            document.getElementById('models-count').textContent = `${totalModels} selected`;
+            document.getElementById('products-count').textContent = `${state.uploadedProducts.filter(p => p).length} uploaded`;
+        }
+
+        // =====================
+        // MODEL SELECTION
+        // =====================
+        window.toggleSetsetModel = function(modelId) {
+            const index = state.selectedSetsetModels.indexOf(modelId);
+            if (index === -1) {
+                state.selectedSetsetModels.push(modelId);
+            } else {
+                state.selectedSetsetModels.splice(index, 1);
+            }
+            renderSetsetModels();
+            updateCounts();
+            updateSummary();
+        };
+
+        // =====================
+        // FILE UPLOAD
+        // =====================
+        function createThumbnail(dataUrl, maxSize = 200) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = Math.round(height * maxSize / width);
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = Math.round(width * maxSize / height);
+                            height = maxSize;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        function handleFileUpload(files, type, startIndex = null) {
+            const images = type === 'portrait' ? state.uploadedPortraits : state.uploadedProducts;
+            const maxSlots = type === 'portrait' ? PORTRAIT_SLOTS : PRODUCT_SLOTS;
+
+            const reservations = [];
+            files.forEach((file, i) => {
+                let index;
+                if (startIndex !== null) {
+                    index = startIndex + i;
+                } else {
+                    index = images.findIndex((img, idx) =>
+                        !img && idx < maxSlots && !reservations.some(r => r.index === idx)
+                    );
+                    if (index === -1) {
+                        for (let j = images.length; j < maxSlots; j++) {
+                            if (!reservations.some(r => r.index === j)) {
+                                index = j;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (index === -1 || index >= maxSlots) return;
+                reservations.push({ file, index });
+            });
+
+            reservations.forEach(({ file, index }) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const fullUrl = e.target.result;
+                    const thumbUrl = await createThumbnail(fullUrl);
+
+                    images[index] = {
+                        file,
+                        url: fullUrl,
+                        thumbUrl: thumbUrl,
+                        selected: true
+                    };
+                    renderUploadedImages(type);
+                    updateSummary();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // =====================
+        // EVENT LISTENERS
+        // =====================
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+                    const section = tab.closest('.onboarding-section');
+
+                    section.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    section.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // File inputs
+            document.getElementById('portraits-input').addEventListener('change', (e) => {
+                const startIndex = e.target.dataset.startIndex ? parseInt(e.target.dataset.startIndex) : null;
+                handleFileUpload(Array.from(e.target.files), 'portrait', startIndex);
+                e.target.value = '';
+            });
+
+            document.getElementById('products-input').addEventListener('change', (e) => {
+                const startIndex = e.target.dataset.startIndex ? parseInt(e.target.dataset.startIndex) : null;
+                handleFileUpload(Array.from(e.target.files), 'product', startIndex);
+                e.target.value = '';
+            });
+
+            // Drag and drop for portrait upload
+            const portraitsGrid = document.getElementById('portraits-grid');
+            portraitsGrid.addEventListener('dragover', (e) => { e.preventDefault(); portraitsGrid.classList.add('drag-over'); });
+            portraitsGrid.addEventListener('dragleave', () => portraitsGrid.classList.remove('drag-over'));
+            portraitsGrid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                portraitsGrid.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0) handleFileUpload(files, 'portrait');
+            });
+
+            // Drag and drop for product upload
+            const productsGrid = document.getElementById('products-upload-grid');
+            productsGrid.addEventListener('dragover', (e) => { e.preventDefault(); productsGrid.classList.add('drag-over'); });
+            productsGrid.addEventListener('dragleave', () => productsGrid.classList.remove('drag-over'));
+            productsGrid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                productsGrid.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                if (files.length > 0) handleFileUpload(files, 'product');
+            });
+
+            // Image types (multi-select)
+            document.querySelectorAll('#image-types .option-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value;
+                    const index = state.imageTypes.indexOf(value);
+
+                    if (index > -1) {
+                        if (state.imageTypes.length > 1) {
+                            state.imageTypes.splice(index, 1);
+                            btn.classList.remove('active');
+                        }
+                    } else {
+                        state.imageTypes.push(value);
+                        btn.classList.add('active');
+                    }
+                    updateSummary();
+                });
+            });
+
+            // Group options (single select)
+            document.querySelectorAll('#group-options .option-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#group-options .option-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.groupOption = btn.dataset.value;
+                });
+            });
+
+            // Spectrum options (single select per spectrum)
+            const spectrumIds = ['spectrum-era', 'spectrum-energy', 'spectrum-geo', 'spectrum-environment', 'spectrum-colors', 'spectrum-lighting'];
+            spectrumIds.forEach(spectrumId => {
+                const spectrumKey = spectrumId.replace('spectrum-', '');
+                document.querySelectorAll(`#${spectrumId} .spectrum-option`).forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        document.querySelectorAll(`#${spectrumId} .spectrum-option`).forEach(o => o.classList.remove('active'));
+                        opt.classList.add('active');
+                        state.spectrum[spectrumKey] = opt.dataset.value;
+                    });
+                });
+            });
+
+            // Image types (multi-select cards)
+            document.querySelectorAll('#image-types .spectrum-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    opt.classList.toggle('active');
+                    // Update state.imageTypes based on active cards
+                    state.imageTypes = Array.from(document.querySelectorAll('#image-types .spectrum-option.active'))
+                        .map(o => o.dataset.value);
+                    updateSummary();
+                });
+            });
+
+            // Images per model (single select)
+            document.querySelectorAll('#images-per-model .option-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#images-per-model .option-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.imagesPerModel = parseInt(btn.dataset.value);
+                    updateSummary();
+                });
+            });
+
+            // Brief textarea
+            document.getElementById('campaign-brief').addEventListener('input', (e) => {
+                state.brief = e.target.value;
+            });
+
+            // Aspect ratio (single select)
+            document.querySelectorAll('#ratio-options .option-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#ratio-options .option-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.aspectRatio = btn.dataset.value;
+                });
+            });
+
+            // Resolution (single select)
+            document.querySelectorAll('#resolution-options .option-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#resolution-options .option-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.resolution = btn.dataset.value;
+                    updateSummary();
+                });
+            });
+
+            // Generate button
+            document.getElementById('generate-btn').addEventListener('click', handleGenerate);
+
+            // Download all
+            document.getElementById('download-all-btn').addEventListener('click', downloadAll);
+
+            // Lightbox
+            document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+            document.getElementById('lightbox').addEventListener('click', (e) => {
+                if (e.target.id === 'lightbox') closeLightbox();
+            });
+            document.getElementById('lightbox-prev').addEventListener('click', () => navigateLightbox(-1));
+            document.getElementById('lightbox-next').addEventListener('click', () => navigateLightbox(1));
+            document.getElementById('lightbox-download').addEventListener('click', downloadCurrentImage);
+
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                if (!document.getElementById('lightbox').classList.contains('visible')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+            });
+
+            // Clipboard paste (Cmd+V)
+            document.addEventListener('paste', async (e) => {
+                if (!pasteTarget) return;
+
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = async (evt) => {
+                                const fullUrl = evt.target.result;
+                                const thumbUrl = await createThumbnail(fullUrl);
+                                const images = pasteTarget.type === 'portrait' ? state.uploadedPortraits : state.uploadedProducts;
+
+                                images[pasteTarget.index] = {
+                                    file: null,
+                                    url: fullUrl,
+                                    thumbUrl: thumbUrl,
+                                    selected: true
+                                };
+                                renderUploadedImages(pasteTarget.type);
+                                updateSummary();
+                                clearPasteTarget();
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        // =====================
+        // SUMMARY & COST
+        // =====================
+        function updateSummary() {
+            const setsetCount = state.selectedSetsetModels.length;
+            const uploadCount = state.uploadedPortraits.filter(p => p && p.selected !== false).length;
+            const totalModels = setsetCount + uploadCount;
+
+            const costMultiplier = state.resolution === '4K' ? 2 : 1;
+            const costPerImage = COST_PER_IMAGE * costMultiplier;
+            const totalCost = state.totalImages * costPerImage;
+
+            if (totalModels === 0) {
+                document.getElementById('generate-summary').textContent = 'Select models to continue';
+            } else {
+                document.getElementById('generate-summary').textContent =
+                    `${totalModels} model${totalModels !== 1 ? 's' : ''} × ${state.totalImages} images`;
+            }
+
+            document.getElementById('generate-cost').textContent = `$${costPerImage.toFixed(2)}/image at ${state.resolution}`;
+            document.getElementById('cost-value').textContent = `$${totalCost.toFixed(2)}`;
+
+            const canGenerate = totalModels > 0 && state.imageTypes.length > 0;
+            document.getElementById('generate-btn').disabled = !canGenerate;
+        }
+
+        // =====================
+        // GENERATION
+        // =====================
+        async function handleGenerate() {
+            if (state.generating) return;
+            state.generating = true;
+
+            const startIndex = state.results.length;
+            document.getElementById('generate-btn').disabled = true;
+
+            try {
+                // Show loader
+                document.getElementById('inline-loader').classList.add('visible');
+                startLoadingAnimation('Preparing...');
+
+                // Gather all selected models
+                const allModels = [];
+
+                // Setset models
+                for (const modelId of state.selectedSetsetModels) {
+                    const model = SETSET_MODELS.find(m => m.id === modelId);
+                    if (model) {
+                        allModels.push({
+                            id: model.id,
+                            name: model.name,
+                            imageUrl: model.fullImage,
+                            thumbUrl: model.image,
+                            isSetset: true
+                        });
+                    }
+                }
+
+                // Uploaded portraits
+                state.uploadedPortraits.forEach((p, i) => {
+                    if (p && p.selected !== false) {
+                        allModels.push({
+                            id: `uploaded-${i}`,
+                            name: `Model ${i + 1}`,
+                            imageUrl: p.url,
+                            thumbUrl: p.thumbUrl || p.url,
+                            isSetset: false
+                        });
+                    }
+                });
+
+                // Upload all portrait images
+                updateLoadingProgress('Uploading images...');
+                const portraitUploads = await Promise.all(
+                    allModels.map(async (m) => {
+                        if (m.isSetset) {
+                            // For Setset models, fetch and upload the image
+                            const response = await fetch(m.imageUrl);
+                            const blob = await response.blob();
+                            const reader = new FileReader();
+                            return new Promise((resolve) => {
+                                reader.onload = async () => {
+                                    const result = await api.uploadBase64(reader.result);
+                                    resolve({ ...m, uploadedUrl: result.url });
+                                };
+                                reader.readAsDataURL(blob);
+                            });
+                        } else {
+                            const result = await api.uploadBase64(m.imageUrl);
+                            return { ...m, uploadedUrl: result.url };
+                        }
+                    })
+                );
+
+                // Upload products if any
+                let productUrls = [];
+                const products = state.uploadedProducts.filter(p => p);
+                if (products.length > 0) {
+                    updateLoadingProgress('Uploading products...');
+                    const productUploads = await Promise.all(
+                        products.map(p => api.uploadBase64(p.url))
+                    );
+                    productUrls = productUploads.map(r => r.url);
+                }
+
+                // Analyze campaign brief if provided
+                if (state.brief.trim()) {
+                    updateLoadingProgress('Understanding campaign vision...');
+                    state.campaignAnalysis = await analyzeCampaignBrief(state.brief);
+                }
+
+                // Analyze products if any
+                if (productUrls.length > 0) {
+                    updateLoadingProgress('Analyzing products...');
+                    state.productAnalysis = await analyzeProducts(productUrls);
+                }
+
+                // Build generation tasks
+                updateLoadingProgress('Creating prompts...');
+                const tasks = buildGenerationTasks(portraitUploads, productUrls);
+
+                // Stop loader, show progress
+                stopLoadingAnimation();
+                document.getElementById('inline-loader').classList.remove('visible');
+                document.getElementById('progress-section').classList.add('visible');
+                document.getElementById('progress-count').textContent = `0 / ${tasks.length}`;
+                document.getElementById('progress-bar').style.width = '0%';
+
+                // Create placeholders
+                document.getElementById('results-section').classList.add('visible');
+                tasks.forEach((task, i) => {
+                    addResultPlaceholder(startIndex + i, task.type);
+                });
+
+                // Generate images in batches
+                let completed = 0;
+                const batchSize = 10;
+
+                for (let i = 0; i < tasks.length; i += batchSize) {
+                    const batch = tasks.slice(i, i + batchSize);
+                    const batchPromises = batch.map(async (task, batchIndex) => {
+                        const taskIndex = i + batchIndex;
+                        const resultIndex = startIndex + taskIndex;
+
+                        try {
+                            const params = {
+                                prompt: task.prompt,
+                                image_urls: task.imageUrls,
+                                num_images: 1,
+                                aspect_ratio: state.aspectRatio,
+                                output_format: 'png',
+                                resolution: state.resolution
+                            };
+
+                            const data = await api.remixImage('nano-pro', params);
+
+                            if (data.images && data.images[0]) {
+                                state.results[resultIndex] = {
+                                    url: data.images[0].url,
+                                    prompt: task.prompt,
+                                    type: task.type,
+                                    thumbUrl: task.thumbUrl
+                                };
+                                updateResultCard(resultIndex);
+                            }
+                        } catch (error) {
+                            console.error(`Generation ${resultIndex} failed:`, error);
+                            updateResultError(resultIndex);
+                        }
+
+                        completed++;
+                        document.getElementById('progress-count').textContent = `${completed} / ${tasks.length}`;
+                        document.getElementById('progress-bar').style.width = `${(completed / tasks.length) * 100}%`;
+                    });
+
+                    await Promise.all(batchPromises);
+                }
+
+                document.getElementById('progress-title').textContent = 'Complete';
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                stopLoadingAnimation();
+                document.getElementById('inline-loader').classList.remove('visible');
+                alert('Failed to generate: ' + error.message);
+            } finally {
+                state.generating = false;
+                document.getElementById('generate-btn').disabled = false;
+            }
+        }
+
+        async function analyzeCampaignBrief(brief) {
+            const prompt = `Analyze this campaign brief and extract key elements for generating fashion campaign images.
+
+CAMPAIGN BRIEF:
+${brief}
+
+Extract and return a JSON object with:
+{
+    "locations": ["list of specific locations/environments mentioned"],
+    "mood": "overall mood/energy description",
+    "lighting": "suggested lighting style",
+    "clothingContext": "what type of clothing/styling fits this campaign",
+    "poseEnergy": "high energy/relaxed/editorial/etc",
+    "colorPalette": "suggested colors if mentioned"
+}
+
+Return ONLY valid JSON, no other text.`;
+
+            try {
+                const result = await api.analyzeImages([], prompt);
+                const jsonMatch = result.content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+            } catch (e) {
+                console.error('Campaign analysis error:', e);
+            }
+
+            return {
+                locations: ['editorial studio', 'natural environment'],
+                mood: 'confident editorial',
+                lighting: 'natural light',
+                clothingContext: 'high fashion editorial',
+                poseEnergy: 'editorial',
+                colorPalette: 'neutral tones'
+            };
+        }
+
+        async function analyzeProducts(productUrls) {
+            const prompt = `Identify each product in these images. For each product, provide a brief description of what it is (e.g., "white cotton t-shirt", "orange bikini", "leather handbag").
+
+Format your response as a simple numbered list:
+1. [description]
+2. [description]
+
+Be specific about color, material, and type. Do NOT mention brand names.`;
+
+            try {
+                const result = await api.analyzeImages(productUrls, prompt);
+                return result.content;
+            } catch (e) {
+                console.error('Product analysis error:', e);
+                return null;
+            }
+        }
+
+        function buildGenerationTasks(models, productUrls) {
+            const tasks = [];
+            const analysis = state.campaignAnalysis || {};
+            const locations = analysis.locations || ['editorial setting'];
+
+            // Build style from spectrum selections
+            const campaignStyle = buildCampaignStyle();
+            const lighting = SPECTRUM_PROMPTS.lighting[state.spectrum.lighting];
+            const energy = SPECTRUM_PROMPTS.energy[state.spectrum.energy]; // Energy now includes expression
+
+            // Parse product descriptions
+            const productDescriptions = [];
+            if (state.productAnalysis) {
+                const lines = state.productAnalysis.split('\n');
+                lines.forEach(line => {
+                    const match = line.match(/^\d+\.\s*(.+)/);
+                    if (match) productDescriptions.push(match[1].trim());
+                });
+            }
+
+            const noSplitting = 'Generate ONE SINGLE unified image only. Do NOT create a collage, grid, or multiple panels.';
+
+            // Calculate total images based on models and imagesPerModel
+            const totalImages = models.length * state.imagesPerModel;
+
+            // Calculate group shot distribution
+            const groupPercent = state.groupOption === 'solo' ? 0 : state.groupOption === 'some' ? 30 : 60;
+            const groupShotCount = Math.floor(totalImages * groupPercent / 100);
+            const soloShotCount = totalImages - groupShotCount;
+
+            // Helper to get random product
+            function getRandomProduct() {
+                if (productUrls.length === 0) return { text: '', url: null };
+                const idx = Math.floor(Math.random() * productUrls.length);
+                const desc = productDescriptions[idx] || 'the product from reference';
+                return { text: ` wearing ${desc}`, url: productUrls[idx] };
+            }
+
+            // Get environment-appropriate location
+            function getLocation() {
+                const env = state.spectrum.environment;
+                const geo = state.spectrum.geo;
+
+                // If user provided specific locations via brief, use those
+                if (locations.length > 1 || locations[0] !== 'editorial setting') {
+                    return locations[Math.floor(Math.random() * locations.length)];
+                }
+
+                // Otherwise generate from spectrum settings
+                const envLocations = {
+                    'studio': ['clean white studio', 'minimal studio backdrop', 'professional studio'],
+                    'interior': ['modern architectural space', 'designer interior', 'luxury interior'],
+                    'mixed': ['varied editorial setting', 'dynamic environment'],
+                    'urban': ['city street', 'urban landscape', 'metropolitan setting'],
+                    'nature': ['natural landscape', 'outdoor environment', 'scenic nature']
+                };
+
+                const geoModifiers = {
+                    'mediterranean': 'Mediterranean coastal',
+                    'tropical': 'lush tropical',
+                    'neutral': '',
+                    'desert': 'arid desert',
+                    'nordic': 'Scandinavian'
+                };
+
+                const base = envLocations[env] || envLocations.mixed;
+                const modifier = geoModifiers[geo] || '';
+                const loc = base[Math.floor(Math.random() * base.length)];
+                return modifier ? `${modifier} ${loc}` : loc;
+            }
+
+            // Create solo tasks
+            for (let t = 0; t < soloShotCount; t++) {
+                const model = models[t % models.length];
+                const type = state.imageTypes[Math.floor(Math.random() * state.imageTypes.length)];
+                const location = getLocation();
+                const product = getRandomProduct();
+
+                let prompt = '';
+                if (type === 'studio') {
+                    prompt = `${noSplitting} Place this exact person in a clean white studio${product.text}. ${energy}. Full-body shot, professional studio lighting, fashion e-commerce style. ${campaignStyle}`;
+                } else if (type === 'campaign') {
+                    prompt = `${noSplitting} Place this exact person in ${location}${product.text}. ${energy}. Editorial campaign style, ${lighting}, high-end fashion photography. ${campaignStyle}`;
+                } else if (type === 'portrait') {
+                    prompt = `${noSplitting} Portrait of this exact person${product.text}. ${energy}. Waist-up framing, ${lighting}, fashion portrait style. ${campaignStyle}`;
+                }
+
+                const imageUrls = [model.uploadedUrl];
+                if (product.url) imageUrls.push(product.url);
+
+                tasks.push({
+                    type,
+                    prompt,
+                    imageUrls,
+                    thumbUrl: model.thumbUrl,
+                    isGroup: false
+                });
+            }
+
+            // Create group tasks
+            if (groupShotCount > 0 && models.length >= 2) {
+                for (let g = 0; g < groupShotCount; g++) {
+                    const maxGroupSize = Math.min(3, models.length);
+                    const groupSize = Math.random() < 0.7 ? 2 : maxGroupSize;
+
+                    const shuffled = [...Array(models.length).keys()].sort(() => Math.random() - 0.5);
+                    const groupIndices = shuffled.slice(0, groupSize);
+
+                    const type = state.imageTypes[Math.floor(Math.random() * state.imageTypes.length)];
+                    const location = getLocation();
+                    const product = getRandomProduct();
+
+                    const peopleText = groupSize === 2 ? 'these exact two people' : 'these exact three people';
+
+                    let prompt = '';
+                    if (type === 'studio') {
+                        prompt = `${noSplitting} Place ${peopleText} in a clean white studio${product.text}. ${energy}. Full-body shot, professional studio lighting, fashion e-commerce style. ${campaignStyle}`;
+                    } else if (type === 'campaign') {
+                        prompt = `${noSplitting} Place ${peopleText} in ${location}${product.text}. ${energy}. Editorial campaign style, ${lighting}, high-end fashion photography. ${campaignStyle}`;
+                    } else if (type === 'portrait') {
+                        prompt = `${noSplitting} ${peopleText} together${product.text}. ${energy}. Waist-up framing, ${lighting}, fashion portrait style. ${campaignStyle}`;
+                    }
+
+                    const imageUrls = groupIndices.map(i => models[i].uploadedUrl);
+                    if (product.url) imageUrls.push(product.url);
+
+                    const firstModel = models[groupIndices[0]];
+
+                    tasks.push({
+                        type: type + '-group',
+                        prompt,
+                        imageUrls,
+                        thumbUrl: firstModel.thumbUrl,
+                        isGroup: true,
+                        groupSize
+                    });
+                }
+            }
+
+            // Shuffle and trim to total
+            return tasks.sort(() => Math.random() - 0.5).slice(0, state.totalImages);
+        }
+
+        // =====================
+        // RESULTS RENDERING
+        // =====================
+        function addResultPlaceholder(index, type) {
+            const grid = document.getElementById('results-grid');
+            const html = `
+                <div class="result-card" id="result-${index}" data-index="${index}">
+                    <div class="result-placeholder">
+                        <div class="spinner"></div>
+                        <p>${TYPE_LABELS[type] || type}</p>
+                    </div>
+                </div>
+            `;
+            grid.insertAdjacentHTML('beforeend', html);
+        }
+
+        function updateResultCard(index) {
+            const card = document.getElementById(`result-${index}`);
+            const result = state.results[index];
+            if (!card || !result) return;
+
+            card.innerHTML = `
+                <img src="${result.url}" alt="Generated image" onclick="openLightbox(${index})">
+                <span class="type-tag">${TYPE_LABELS[result.type] || result.type}</span>
+                <img src="${result.thumbUrl}" alt="Source" class="portrait-tag">
+            `;
+        }
+
+        function updateResultError(index) {
+            const card = document.getElementById(`result-${index}`);
+            if (!card) return;
+            card.innerHTML = `<div class="result-placeholder"><p>Failed</p></div>`;
+        }
+
+        // =====================
+        // LIGHTBOX
+        // =====================
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            document.getElementById('lightbox').classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        function navigateLightbox(direction) {
+            const validResults = state.results.filter(r => r && r.url);
+            const currentIndex = validResults.findIndex(r => r === state.results[state.lightboxIndex]);
+            const newIndex = currentIndex + direction;
+
+            if (newIndex >= 0 && newIndex < validResults.length) {
+                state.lightboxIndex = state.results.indexOf(validResults[newIndex]);
+                updateLightboxContent();
+            }
+        }
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            if (!result) return;
+
+            document.getElementById('lightbox-image').src = result.url;
+            document.getElementById('lightbox-type').textContent = TYPE_LABELS[result.type] || result.type;
+            document.getElementById('lightbox-prompt').textContent = result.prompt;
+        }
+
+        function downloadCurrentImage() {
+            downloadImage(state.lightboxIndex);
+        }
+
+        async function downloadImage(index) {
+            const result = state.results[index];
+            if (!result || !result.url) return;
+
+            const typeLabel = (result.type || 'image').toLowerCase();
+            const filename = `Setset_Onboarding_${typeLabel}_${String(index + 1).padStart(2, '0')}_${Date.now()}.png`;
+
+            try {
+                const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(result.url)}`);
+                const blob = await response.blob();
+                const downloadUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                console.error('Download failed:', error);
+                window.open(result.url, '_blank');
+            }
+        }
+
+        async function downloadAll() {
+            const validResults = state.results.filter(r => r && r.url);
+            for (let i = 0; i < validResults.length; i++) {
+                const index = state.results.indexOf(validResults[i]);
+                await downloadImage(index);
+                await new Promise(r => setTimeout(r, 300));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -356,98 +356,82 @@
             text-transform: uppercase;
         }
 
-        /* Lightbox */
+        /* Lightbox - magazine cover style with responsive scaling */
         .lightbox {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-lg);
-        }
-
-        .lightbox.visible {
-            display: flex;
+            padding: 4vw;
         }
 
         .lightbox-content {
+            height: auto;
+            max-height: calc(100vh - 8vw);
+            width: 90vw;
+            max-width: 1600px;
+            grid-template-columns: 1fr minmax(250px, 20%);
+            gap: 0;
+        }
+
+        .lightbox-left {
+            background: var(--jet);
+            padding: 4vw;
             display: flex;
-            gap: var(--space-lg);
-            max-width: 1400px;
-            max-height: 90vh;
+            align-items: center;
+            justify-content: center;
         }
 
         .lightbox-image {
-            max-height: 85vh;
-            max-width: 60vw;
+            max-height: calc(100vh - 16vw);
+            max-width: 100%;
             object-fit: contain;
-            border-radius: var(--radius-md);
         }
 
-        .lightbox-info {
-            width: 320px;
-            background: var(--white);
-            border-radius: var(--radius-md);
-            padding: var(--space-md);
-            overflow-y: auto;
-            max-height: 85vh;
+        .lightbox-right {
+            min-width: 250px;
+            max-height: calc(100vh - 8vw);
+            padding: var(--space-lg);
         }
 
-        .lightbox-info h3 {
-            font-size: var(--text-xs);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--slate);
-            margin-bottom: var(--space-xs);
-        }
-
-        .lightbox-info p {
-            font-size: var(--text-sm);
-            color: var(--carbon);
+        .lightbox-section {
             margin-bottom: var(--space-md);
-            line-height: 1.5;
         }
 
-        .lightbox-close {
-            position: absolute;
-            top: var(--space-md);
-            right: var(--space-md);
-            width: 44px;
-            height: 44px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: var(--radius-sm);
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .lightbox-close:hover {
-            background: rgba(255,255,255,0.2);
+        .lightbox-prompt-text {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            font-size: var(--text-xs);
+            line-height: 1.6;
         }
 
         .lightbox-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: var(--radius-sm);
+            background: transparent;
             color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .lightbox-nav:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
         }
 
-        .lightbox-prev { left: var(--space-md); }
-        .lightbox-next { right: var(--space-md); }
+        .lightbox-prev {
+            left: 5vw;
+        }
+
+        .lightbox-next {
+            right: calc(20% + 5vw);
+        }
+
+        .lightbox-close {
+            top: 4vw;
+            right: 4vw;
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
 
         /* Inline Loader */
         .inline-loader {
@@ -510,6 +494,39 @@
                     <input type="range" class="people-slider" id="people-slider" min="0" max="100" value="30">
                     <span class="slider-label right">All</span>
                     <span class="slider-value" id="people-value">30%</span>
+                </div>
+            </div>
+
+            <!-- Gender (multi-select) -->
+            <div class="generator-section">
+                <div class="section-title">Gender</div>
+                <div class="button-group" id="gender-group">
+                    <button class="btn btn--toggle active" data-value="female">Female</button>
+                    <button class="btn btn--toggle active" data-value="male">Male</button>
+                </div>
+            </div>
+
+            <!-- Framing (multi-select) -->
+            <div class="generator-section">
+                <div class="section-title">Framing</div>
+                <div class="button-group" id="framing-group">
+                    <button class="btn btn--toggle active" data-value="full-body">Full Body</button>
+                    <button class="btn btn--toggle" data-value="half-body">Half Body</button>
+                    <button class="btn btn--toggle" data-value="portrait">Portrait</button>
+                </div>
+            </div>
+
+            <!-- Clothing Style -->
+            <div class="generator-section full-width">
+                <div class="section-title">Clothing</div>
+                <div class="button-group" id="clothing-group">
+                    <button class="btn btn--toggle active" data-value="auto">Auto</button>
+                    <button class="btn btn--toggle" data-value="editorial">Editorial</button>
+                    <button class="btn btn--toggle" data-value="luxury">Luxury</button>
+                    <button class="btn btn--toggle" data-value="casual">Casual</button>
+                    <button class="btn btn--toggle" data-value="formal">Formal</button>
+                    <button class="btn btn--toggle" data-value="athleisure">Athleisure</button>
+                    <button class="btn btn--toggle" data-value="swimwear">Swimwear</button>
                 </div>
             </div>
 
@@ -585,19 +602,27 @@
 
     <!-- Lightbox -->
     <div class="lightbox" id="lightbox" onclick="if(event.target === this) closeLightbox()">
-        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-        <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">&#8249;</button>
-        <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">&#8250;</button>
+        <button class="lightbox-close" id="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" onclick="navigateLightbox(-1)">&larr;</button>
+        <button class="lightbox-nav lightbox-next" id="lightbox-next" onclick="navigateLightbox(1)">&rarr;</button>
         <div class="lightbox-content">
-            <img class="lightbox-image" id="lightbox-image" src="" alt="Generated location">
-            <div class="lightbox-info">
-                <h3>Composition</h3>
-                <p id="lightbox-composition"></p>
-                <h3>Prompt</h3>
-                <p id="lightbox-prompt"></p>
-                <h3>Settings</h3>
-                <p id="lightbox-settings"></p>
-                <button class="btn btn--primary btn--block" id="lightbox-download">Download</button>
+            <div class="lightbox-left">
+                <img class="lightbox-image" id="lightbox-image" src="" alt="Generated location">
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Composition</h3>
+                    <p class="lightbox-model-text" id="lightbox-composition"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Settings</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-settings"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
             </div>
         </div>
     </div>
@@ -610,6 +635,9 @@
         const state = {
             description: '',
             peoplePercent: 30,
+            genders: ['female', 'male'],  // multi-select genders
+            framings: ['full-body'],  // multi-select framings
+            clothingStyle: 'auto',  // auto, editorial, casual, swimwear, streetwear, formal
             lighting: ['hard', 'soft'],  // multi-select lighting types
             models: ['reve'],
             aspectRatio: '4:3',
@@ -617,6 +645,13 @@
             results: [],
             generating: false,
             lightboxIndex: 0
+        };
+
+        // Framing descriptions for prompts
+        const FRAMING_DESCRIPTIONS = {
+            'full-body': 'full-body shot showing complete figure head to toe, entire person visible with feet on ground',
+            'half-body': 'half-body shot from waist up, showing torso, arms, and face clearly',
+            'portrait': 'portrait close-up from chest up, focus on face and upper body'
         };
 
         // Model costs per image
@@ -690,40 +725,51 @@
             return variations.length > 0 ? variations : LIGHTING_BY_TYPE.soft;
         }
 
-        // Editorial person placements - fierce and commanding presence
-        // These should feel like fashion editorial, not generic stock photos
-        const PERSON_PLACEMENTS = [
-            // Powerful poses
-            'a model standing with fierce confidence, direct challenging gaze at camera, commanding the space',
-            'a figure leaning against the wall with editorial intensity, smoldering look, owning the environment',
-            'someone seated on the floor with defiant expression, chin raised, fashion editorial pose',
-            'a model mid-stride walking toward camera with powerful presence, intense focused gaze',
-            'a figure framed in doorway with nonchalant editorial attitude, unbothered cool expression',
-            // Dynamic/artistic
-            'a person in motion blur walking through, editorial ghost effect, ethereal presence',
-            'silhouette of a figure against dramatic light, striking pose, fashion editorial',
-            'someone looking over shoulder with smoldering expression, caught mid-turn',
-            'a model crouched low with intense upward gaze, raw and powerful',
-            // Contextual but fierce
-            'a figure ascending stairs with commanding presence, looking back at camera',
-            'someone standing at window in contemplative but powerful pose, editorial stillness',
-            'a model interacting with architecture, hand trailing on surface, cool detachment',
-            // Scale figures (still editorial)
-            'a small figure in the distance, perfect posture, adding scale and editorial atmosphere',
-            'two figures in background conversation, stylish silhouettes, fashion context'
-        ];
-
-        // Fierce expression pool for people in locations
-        const FIERCE_EXPRESSIONS = [
-            'fierce intense gaze with slightly parted lips',
-            'intense powerful stare with clenched jaw',
-            'smoldering look with lips barely open',
-            'defiant expression with chin raised, challenging the camera',
-            'commanding presence with brow slightly furrowed',
-            'sharp piercing eyes with mouth firmly closed',
-            'editorial blank stare, fashion neutral but powerful',
-            'nonchalant model-off-duty expression, effortlessly cool',
-            'high fashion disdain, looking slightly past camera'
+        // Interaction prompts - adds life and variety to the scene (from location-generator)
+        const INTERACTION_PROMPTS = [
+            // Sitting
+            'sitting casually on a chair',
+            'sitting on the floor',
+            'perched on a stool',
+            'resting on a low bench',
+            'sitting on steps',
+            'sitting cross-legged on the ground',
+            'lounging on a couch',
+            'sitting on a window sill',
+            'sitting on the edge of a table',
+            'sitting backwards on a chair',
+            // Leaning
+            'leaning against the wall',
+            'leaning on a table',
+            'leaning in a doorway',
+            'leaning on a railing',
+            'leaning against a column',
+            'leaning on a window frame',
+            // Crouching/Kneeling
+            'crouching down',
+            'kneeling on one knee',
+            'squatting casually',
+            // Lying
+            'lying on the floor looking up',
+            'lying on a couch',
+            'sprawled on a rug',
+            // Dynamic poses
+            'walking through the space',
+            'mid-stride walking toward camera',
+            'turning to look over shoulder',
+            'adjusting their jacket',
+            'running hand through hair',
+            'arms crossed leaning back',
+            'hands in pockets relaxed stance',
+            'stretching arms overhead',
+            // Props/Objects
+            'holding a coffee cup',
+            'reading a magazine',
+            'holding sunglasses',
+            'draped in a blanket',
+            'wrapped in an oversized coat',
+            'holding flowers',
+            'carrying a bag over shoulder'
         ];
 
         // Initialize
@@ -744,6 +790,53 @@
             peopleSlider.addEventListener('input', (e) => {
                 state.peoplePercent = parseInt(e.target.value);
                 peopleValue.textContent = `${state.peoplePercent}%`;
+            });
+
+            // Gender multi-select (toggle)
+            document.querySelectorAll('#gender-group .btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value;
+                    const index = state.genders.indexOf(value);
+
+                    if (index > -1) {
+                        // Don't allow deselecting if it's the only one
+                        if (state.genders.length > 1) {
+                            state.genders.splice(index, 1);
+                            btn.classList.remove('active');
+                        }
+                    } else {
+                        state.genders.push(value);
+                        btn.classList.add('active');
+                    }
+                });
+            });
+
+            // Framing multi-select (toggle)
+            document.querySelectorAll('#framing-group .btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value;
+                    const index = state.framings.indexOf(value);
+
+                    if (index > -1) {
+                        // Don't allow deselecting if it's the only one
+                        if (state.framings.length > 1) {
+                            state.framings.splice(index, 1);
+                            btn.classList.remove('active');
+                        }
+                    } else {
+                        state.framings.push(value);
+                        btn.classList.add('active');
+                    }
+                });
+            });
+
+            // Clothing style single-select
+            document.querySelectorAll('#clothing-group .btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#clothing-group .btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.clothingStyle = btn.dataset.value;
+                });
             });
 
             // Lighting multi-select (toggle)
@@ -825,6 +918,295 @@
             document.getElementById('calc-display').textContent = `${state.resultCount} prompts × ${state.models.length} model${state.models.length > 1 ? 's' : ''} = ${totalImages} images ≈ $${totalCost.toFixed(2)}`;
         }
 
+        // Add people to the first X prompts programmatically
+        function addPeopleToPrompts(prompts, peopleCount) {
+            if (peopleCount === 0) return prompts;
+
+            const descLower = state.description ? state.description.toLowerCase() : '';
+            const isSoftMood = descLower.includes('soft') || descLower.includes('gentle') ||
+                              descLower.includes('warm') || descLower.includes('cozy');
+            const isBeachContext = descLower.includes('beach') || descLower.includes('pool') ||
+                                   descLower.includes('ocean') || descLower.includes('water') ||
+                                   descLower.includes('swim') || descLower.includes('resort');
+
+            // Modular clothing system: base + accessories + footwear
+            const CLOTHING_SYSTEM = {
+                editorial: {
+                    base: {
+                        female: [
+                            'wearing an elegant midi dress',
+                            'wearing tailored trousers with a silk blouse',
+                            'wearing a designer coat over a minimalist outfit',
+                            'wearing a flowing maxi skirt with a fitted top',
+                            'wearing a structured blazer with wide-leg pants',
+                            'wearing a knit sweater dress',
+                            'wearing an oversized coat draped over shoulders',
+                            'wearing a sleek jumpsuit',
+                            'wearing a wrap dress',
+                            'wearing high-waisted trousers with a tucked blouse'
+                        ],
+                        male: [
+                            'wearing tailored trousers with a crisp button-up shirt',
+                            'wearing a designer overcoat over a turtleneck',
+                            'wearing a blazer with relaxed-fit trousers',
+                            'wearing a knit sweater with tailored pants',
+                            'wearing a linen suit with open collar',
+                            'wearing a leather jacket over a simple tee',
+                            'wearing an oversized coat with slim trousers',
+                            'wearing a mock neck with pleated trousers',
+                            'wearing a deconstructed blazer with wide pants',
+                            'wearing a shawl-collar cardigan with fitted trousers'
+                        ]
+                    },
+                    accessories: ['with minimal gold jewelry', 'carrying a structured leather bag', 'with a silk scarf', 'with statement earrings', 'with a designer belt', ''],
+                    footwear: {
+                        female: ['in pointed-toe heels', 'in sleek ankle boots', 'in strappy sandals', 'in elegant mules', 'in classic pumps', ''],
+                        male: ['in leather dress shoes', 'in suede loafers', 'in Chelsea boots', 'in minimalist sneakers', 'in oxford shoes', '']
+                    }
+                },
+                luxury: {
+                    base: {
+                        female: [
+                            'wearing a minimalist slip dress',
+                            'wearing a cashmere coat',
+                            'wearing a simple white shirt and tailored black trousers',
+                            'wearing an understated beige knit set',
+                            'wearing a camel-tone wool coat',
+                            'wearing a cream silk blouse with navy trousers',
+                            'wearing a soft grey cashmere sweater dress',
+                            'wearing an ivory linen suit',
+                            'wearing a taupe merino wool co-ord'
+                        ],
+                        male: [
+                            'wearing a perfectly fitted navy suit with no tie',
+                            'wearing a cashmere sweater with tailored trousers',
+                            'wearing a minimalist white shirt and black pants',
+                            'wearing an unstructured linen blazer',
+                            'wearing a tonal grey wool outfit',
+                            'wearing a camel overcoat over neutral basics',
+                            'wearing a charcoal cashmere rollneck with grey trousers',
+                            'wearing an ivory knit with beige chinos',
+                            'wearing a soft grey suit with no tie'
+                        ]
+                    },
+                    accessories: ['with a discreet luxury watch', 'carrying a minimal leather tote', 'with a cashmere scarf draped', ''],
+                    footwear: {
+                        female: ['in Bottega-style woven sandals', 'in soft suede loafers', 'in minimal leather flats', 'in elegant kitten heels', ''],
+                        male: ['in soft suede loafers', 'in minimal leather sneakers', 'in handcrafted leather shoes', 'in understated dress shoes', '']
+                    }
+                },
+                casual: {
+                    base: {
+                        female: [
+                            'wearing jeans and a simple t-shirt',
+                            'wearing a casual sundress',
+                            'wearing denim shorts and a tank top',
+                            'wearing a hoodie and leggings',
+                            'wearing a relaxed linen shirt and shorts',
+                            'wearing a cozy oversized sweater with jeans',
+                            'wearing a denim jacket over a maxi dress',
+                            'wearing cargo pants with a cropped tee',
+                            'wearing a flannel shirt tied at waist with jeans'
+                        ],
+                        male: [
+                            'wearing jeans and a plain t-shirt',
+                            'wearing chinos and a polo shirt',
+                            'wearing shorts and a casual button-up',
+                            'wearing a hoodie and joggers',
+                            'wearing a relaxed linen shirt and shorts',
+                            'wearing a simple sweater with jeans',
+                            'wearing a denim jacket with black jeans',
+                            'wearing cargo shorts with a henley',
+                            'wearing a flannel shirt with chinos'
+                        ]
+                    },
+                    accessories: ['with a baseball cap', 'carrying a canvas tote', 'with a crossbody bag', 'wearing sunglasses', ''],
+                    footwear: {
+                        female: ['in white sneakers', 'in canvas slip-ons', 'in flat sandals', 'in Converse', 'in Birkenstocks', ''],
+                        male: ['in white sneakers', 'in canvas slip-ons', 'in leather sandals', 'in Vans', 'in boat shoes', '']
+                    }
+                },
+                formal: {
+                    base: {
+                        female: [
+                            'wearing an elegant evening gown',
+                            'wearing a sleek black cocktail dress',
+                            'wearing a tailored suit',
+                            'wearing a sophisticated midi dress',
+                            'wearing a sequined top with elegant trousers',
+                            'wearing a floor-length formal dress',
+                            'wearing a velvet slip dress',
+                            'wearing a structured satin gown',
+                            'wearing an off-shoulder evening dress'
+                        ],
+                        male: [
+                            'wearing a classic black tuxedo',
+                            'wearing a tailored three-piece suit',
+                            'wearing a formal suit with tie',
+                            'wearing a dinner jacket with dress pants',
+                            'wearing an elegant dark suit',
+                            'wearing a midnight blue tuxedo',
+                            'wearing a double-breasted suit',
+                            'wearing a velvet dinner jacket',
+                            'wearing a classic peak-lapel suit'
+                        ]
+                    },
+                    accessories: ['with diamond jewelry', 'with a clutch purse', 'with a pocket square', 'with cufflinks', 'with a statement necklace', ''],
+                    footwear: {
+                        female: ['in strappy stilettos', 'in elegant pointed heels', 'in embellished sandals', 'in satin pumps', ''],
+                        male: ['in patent leather oxfords', 'in polished dress shoes', 'in velvet loafers', 'in classic black brogues', '']
+                    }
+                },
+                athleisure: {
+                    base: {
+                        female: [
+                            'wearing yoga pants and a sports bra',
+                            'wearing a matching workout set',
+                            'wearing running shorts and a crop top',
+                            'wearing leggings with an oversized hoodie',
+                            'wearing a tennis skirt and fitted top',
+                            'wearing a seamless ribbed set',
+                            'wearing biker shorts with an oversized tee',
+                            'wearing a zip-up sports jacket with leggings',
+                            'wearing a cropped sweatshirt with high-waist leggings'
+                        ],
+                        male: [
+                            'wearing joggers and a fitted tank',
+                            'wearing athletic shorts and a compression top',
+                            'wearing a tracksuit',
+                            'wearing gym shorts and a hoodie',
+                            'wearing running tights with a performance tee',
+                            'wearing a tech fleece set',
+                            'wearing basketball shorts with a muscle tee',
+                            'wearing slim joggers with a quarter-zip',
+                            'wearing a windbreaker with training pants'
+                        ]
+                    },
+                    accessories: ['with a gym bag', 'with a fitness watch', 'with a headband', 'with wireless earbuds', ''],
+                    footwear: {
+                        female: ['in running shoes', 'in minimalist trainers', 'in Nike Air Max', 'in studio sneakers', ''],
+                        male: ['in running shoes', 'in training sneakers', 'in Nike or Adidas', 'in high-tops', '']
+                    }
+                },
+                swimwear: {
+                    base: {
+                        female: [
+                            'wearing a stylish one-piece swimsuit',
+                            'wearing an elegant bikini',
+                            'wearing a high-waisted bikini',
+                            'wearing a sleek monokini',
+                            'wearing a triangle bikini',
+                            'wearing a bandeau bikini top with high-cut bottoms',
+                            'wearing a plunging one-piece',
+                            'wearing a ribbed bikini set',
+                            'wearing a cut-out swimsuit'
+                        ],
+                        male: [
+                            'wearing tailored swim trunks',
+                            'wearing classic swim shorts',
+                            'wearing board shorts',
+                            'wearing fitted swim briefs',
+                            'wearing retro-style swim shorts',
+                            'wearing quick-dry swim trunks',
+                            'wearing patterned swim shorts',
+                            'wearing solid color swim briefs',
+                            'wearing linen-blend swim shorts'
+                        ]
+                    },
+                    accessories: ['with a sheer sarong', 'with oversized sunglasses', 'with a straw sun hat', 'with a beach tote', 'carrying a woven bag', 'with a linen cover-up', ''],
+                    footwear: {
+                        female: ['in minimal leather sandals', 'in strappy flat sandals', 'in elegant slides', 'in espadrilles', 'barefoot', ''],
+                        male: ['in leather slides', 'in minimal flip-flops', 'in canvas espadrilles', 'in woven sandals', 'barefoot', '']
+                    }
+                }
+            };
+
+            // Build a complete outfit from the system
+            function buildOutfit(style, gender) {
+                const system = CLOTHING_SYSTEM[style] || CLOTHING_SYSTEM.editorial;
+                const base = system.base[gender] || system.base.female;
+                const accessories = system.accessories;
+                const footwear = system.footwear[gender] || system.footwear.female;
+
+                // Pick random base
+                const baseOutfit = base[Math.floor(Math.random() * base.length)];
+
+                // 50% chance of accessory
+                const accessory = Math.random() < 0.5 ? accessories[Math.floor(Math.random() * accessories.length)] : '';
+
+                // 70% chance of footwear mention
+                const shoes = Math.random() < 0.7 ? footwear[Math.floor(Math.random() * footwear.length)] : '';
+
+                // Combine
+                let outfit = baseOutfit;
+                if (accessory) outfit += `, ${accessory}`;
+                if (shoes) outfit += `, ${shoes}`;
+
+                return outfit;
+            }
+
+            // Determine which style to use
+            function getClothingStyle() {
+                if (state.clothingStyle === 'auto') {
+                    if (isBeachContext) return 'swimwear';
+                    return 'editorial';
+                }
+                return state.clothingStyle;
+            }
+
+            const activeClothingStyle = getClothingStyle();
+
+            // Sentence structure templates for variety
+            const templates = [
+                (g, i, f, e, c) => `A ${g} fashion model ${i}, ${f}, ${e}, ${c}`,
+                (g, i, f, e, c) => `${f} of a ${g} model ${i}, ${e}, ${c}`,
+                (g, i, f, e, c) => `A ${g} model ${c}, ${i}, ${f}, ${e}`,
+                (g, i, f, e, c) => `${e}, a ${g} fashion model ${i}, ${f}, ${c}`,
+                (g, i, f, e, c) => `A fierce ${g} model ${c}, ${i} in the scene, ${f}, ${e}`
+            ];
+
+            // Shuffle prompts indices so people aren't always on first X
+            const indices = prompts.map((_, i) => i).sort(() => Math.random() - 0.5);
+            const peopleIndices = new Set(indices.slice(0, peopleCount));
+
+            return prompts.map((prompt, i) => {
+                if (!peopleIndices.has(i)) return prompt; // No person for this prompt
+
+                // Select gender - randomize instead of alternating
+                let gender;
+                if (state.genders.length === 2) {
+                    gender = Math.random() < 0.5 ? 'female' : 'male';
+                } else {
+                    gender = state.genders[0];
+                }
+
+                // Select framing - random from selected
+                const selectedFraming = state.framings[Math.floor(Math.random() * state.framings.length)];
+                const framingDesc = FRAMING_DESCRIPTIONS[selectedFraming];
+
+                // Get expression - pick from ALL pools but filter out closed eyes and open mouths
+                const allExpressions = ALL_EXPRESSIONS.filter(e =>
+                    !e.prompt.includes('closed') &&
+                    !e.prompt.includes('open mouth') &&
+                    !e.prompt.includes('mouth open')
+                );
+                const expression = allExpressions[Math.floor(Math.random() * allExpressions.length)];
+
+                // Get interaction - random
+                const interaction = INTERACTION_PROMPTS[Math.floor(Math.random() * INTERACTION_PROMPTS.length)];
+
+                // Build complete outfit (base + accessories + footwear)
+                const clothing = buildOutfit(activeClothingStyle, gender);
+
+                // Pick random template for sentence structure variety
+                const template = templates[Math.floor(Math.random() * templates.length)];
+                const personDesc = template(gender, interaction, framingDesc, expression.prompt, clothing);
+
+                // Append to prompt
+                return `${prompt}, ${personDesc}`;
+            });
+        }
+
         // Generate prompts via GPT
         async function generatePrompts(count) {
             // Calculate how many should have people
@@ -894,7 +1276,7 @@ SPECIAL (~10%): [Low Angle], [Foreground]
 Distribute across prompts: ${lightingInstruction}
 
 ===== PEOPLE =====
-${peopleCount > 0 ? `Include a person in ${peopleCount} of the ${count} prompts. When including people: editorial/fierce presence, commanding posture, confident expression. Person should feel like they belong in a fashion campaign.` : 'No people in these shots.'}
+DO NOT include any people in these prompts. Generate ONLY empty environment/backdrop descriptions. People will be added programmatically later.
 
 ===== FORMAT =====
 Start each with [CompositionType] then 2-3 sentences of vivid description.
@@ -937,7 +1319,8 @@ Return ONLY a JSON array of strings.`;
                         return promptText;
                     });
 
-                    return processedPrompts;
+                    // Now programmatically add people to the first X prompts
+                    return addPeopleToPrompts(processedPrompts, peopleCount);
                 }
 
                 throw new Error('Failed to parse prompts');
@@ -953,15 +1336,14 @@ Return ONLY a JSON array of strings.`;
             const baseDesc = state.description || 'Dramatic architectural interior with interesting lighting';
 
             // Check if description suggests softer mood
-            const descLower = state.description.toLowerCase();
+            const descLower = state.description ? state.description.toLowerCase() : '';
             const isSoftMood = descLower.includes('soft') || descLower.includes('gentle') ||
                               descLower.includes('warm') || descLower.includes('cozy');
 
             // Shuffle compositions
             const shuffledComps = [...COMPOSITION_TYPES].sort(() => Math.random() - 0.5);
             const shuffledLighting = [...getSelectedLighting()].sort(() => Math.random() - 0.5);
-            const shuffledPlacements = [...PERSON_PLACEMENTS].sort(() => Math.random() - 0.5);
-            const shuffledExpressions = [...FIERCE_EXPRESSIONS].sort(() => Math.random() - 0.5);
+            const shuffledInteractions = [...INTERACTION_PROMPTS].sort(() => Math.random() - 0.5);
 
             for (let i = 0; i < count; i++) {
                 const comp = shuffledComps[i % shuffledComps.length];
@@ -970,16 +1352,48 @@ Return ONLY a JSON array of strings.`;
 
                 let personText = '';
                 if (includePerson) {
-                    const placement = shuffledPlacements[i % shuffledPlacements.length];
-                    // For soft moods, adjust the expression
-                    if (isSoftMood) {
-                        personText = `, ${placement.replace(/fierce|defiant|intense|smoldering/gi, 'contemplative')}`;
+                    // Use ALL expressions but filter out closed eyes and open mouths
+                    const allExpressions = ALL_EXPRESSIONS.filter(e =>
+                        !e.prompt.includes('closed') &&
+                        !e.prompt.includes('open mouth') &&
+                        !e.prompt.includes('mouth open')
+                    );
+                    const expression = allExpressions[Math.floor(Math.random() * allExpressions.length)];
+                    const interaction = shuffledInteractions[i % shuffledInteractions.length];
+
+                    // Cycle through selected framings
+                    const selectedFraming = state.framings[i % state.framings.length];
+                    const framingDesc = FRAMING_DESCRIPTIONS[selectedFraming];
+
+                    // Select gender based on state
+                    let gender;
+                    if (state.genders.length === 2) {
+                        // 50/50 split
+                        gender = i % 2 === 0 ? 'female' : 'male';
                     } else {
-                        personText = `, ${placement}`;
+                        gender = state.genders[0];
                     }
+
+                    // Detect beach/water context for appropriate clothing
+                    const isBeachContext = descLower.includes('beach') || descLower.includes('pool') ||
+                                           descLower.includes('ocean') || descLower.includes('water') ||
+                                           descLower.includes('swim') || descLower.includes('resort');
+
+                    let clothing;
+                    if (isBeachContext) {
+                        clothing = gender === 'female'
+                            ? 'wearing stylish swimwear or resort wear'
+                            : 'wearing stylish swim trunks or resort wear';
+                    } else {
+                        clothing = gender === 'female'
+                            ? 'wearing editorial fashion (dress, tailored trousers with blouse, or designer coat)'
+                            : 'wearing editorial fashion (tailored trousers with button-up shirt, blazer, or designer coat)';
+                    }
+
+                    personText = `, a ${gender} model ${interaction}, ${framingDesc}, ${expression.prompt}, ${clothing}, commanding editorial presence`;
                 }
 
-                const prompt = `[${comp.label}] ${comp.desc}, ${baseDesc}, ${lighting}${personText}, professional editorial photography, photorealistic`;
+                const prompt = `[${comp.label}] ${comp.desc}, ${baseDesc}, ${lighting}${personText}, professional fashion photography, photorealistic`;
                 prompts.push(prompt);
             }
 
@@ -1044,9 +1458,9 @@ Return ONLY a JSON array of strings.`;
                 document.getElementById('results-section').classList.add('visible');
                 document.querySelector('.progress-title').textContent = 'Generating';
 
-                // Step 3: Generate images in parallel (batches of 4)
+                // Step 3: Generate images in parallel (batches of 10)
                 let completed = 0;
-                const batchSize = 4;
+                const batchSize = 10;
 
                 for (let i = 0; i < jobs.length; i += batchSize) {
                     const batch = jobs.slice(i, i + batchSize);

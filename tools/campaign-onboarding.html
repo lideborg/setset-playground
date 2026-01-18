@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Onboarding</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--off-white);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Sidebar Controls */
+        .sidebar-controls {
+            width: 380px;
+            background: var(--white);
+            border-right: 1px solid var(--gainsboro);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 24px;
+            gap: 16px;
+        }
+
+        /* Control Cards */
+        .control-card {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .control-card:hover {
+            border-color: var(--carbon);
+        }
+
+        .control-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .control-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .control-card-title svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .control-card-content {
+            font-size: 13px;
+            color: var(--slate);
+        }
+
+        /* Thumbnail Grid in Cards */
+        .thumbnail-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .thumbnail {
+            width: 48px;
+            aspect-ratio: 3/4;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--gainsboro);
+            background: var(--off-white);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-placeholder {
+            width: 48px;
+            aspect-ratio: 3/4;
+            border-radius: 4px;
+            border: 1px dashed var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ash-grey);
+        }
+
+        /* Settings Card - Collapsible */
+        .settings-card {
+            cursor: default;
+        }
+
+        .settings-header {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .settings-content {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .settings-content.open {
+            display: block;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-size: 13px;
+            color: var(--carbon);
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-value {
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Slider */
+        .slider {
+            width: 120px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: var(--gainsboro);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--carbon);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Radio buttons for resolution */
+        .resolution-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .resolution-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--gainsboro);
+            border-radius: 4px;
+            background: transparent;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .resolution-btn.active {
+            background: var(--carbon);
+            color: var(--white);
+            border-color: var(--carbon);
+        }
+
+        .resolution-btn:hover:not(.active) {
+            border-color: var(--ash-grey);
+        }
+
+        /* Generate Button */
+        .generate-section {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--gainsboro);
+        }
+
+        .generate-info {
+            text-align: center;
+            font-size: 12px;
+            color: var(--slate);
+            margin-bottom: 12px;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--carbon);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .generate-btn:hover {
+            background: var(--jet);
+        }
+
+        .generate-btn:disabled {
+            background: var(--gainsboro);
+            cursor: not-allowed;
+        }
+
+        /* Right Panel - Results */
+        .results-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--off-white);
+        }
+
+        .results-header {
+            padding: 16px 24px;
+            background: var(--white);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .results-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .result-card {
+            aspect-ratio: 3/4;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--slate);
+            text-align: center;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--ash-grey);
+        }
+
+        /* Dialog Overlay */
+        .dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .dialog-overlay.open {
+            display: flex;
+        }
+
+        .dialog {
+            background: var(--white);
+            border-radius: 12px;
+            width: 80vw;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .dialog-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gainsboro);
+            flex-shrink: 0;
+        }
+
+        .dialog-header-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .dialog-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .dialog-description {
+            font-size: 13px;
+            color: var(--slate);
+        }
+
+        .dialog-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--ash-grey);
+            border-radius: 4px;
+        }
+
+        .dialog-close:hover {
+            background: var(--off-white);
+            color: var(--carbon);
+        }
+
+        /* Step Navigation */
+        .step-nav {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: var(--gainsboro);
+            transition: background 0.15s ease;
+        }
+
+        .step-item.active .step-dot {
+            background: var(--carbon);
+        }
+
+        .step-item:hover .step-dot {
+            background: var(--ash-grey);
+        }
+
+        .step-item.active:hover .step-dot {
+            background: var(--carbon);
+        }
+
+        .step-label {
+            font-size: 9px;
+            color: var(--ash-grey);
+            margin-top: 4px;
+            transition: color 0.15s ease;
+        }
+
+        .step-item.active .step-label {
+            color: var(--carbon);
+            font-weight: 500;
+        }
+
+        .step-connector {
+            width: 16px;
+            height: 1px;
+            background: var(--gainsboro);
+            margin: 4px -2px 0 -2px;
+        }
+
+        /* Dialog Content */
+        .dialog-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+
+        /* Dialog Tabs */
+        .dialog-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .dialog-tab {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            font-size: 12px;
+            color: var(--slate);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .dialog-tab.active {
+            color: var(--carbon);
+            font-weight: 500;
+            border-bottom-color: var(--carbon);
+        }
+
+        .dialog-tab:hover {
+            background: var(--off-white);
+        }
+
+        /* Selection Grid */
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .selection-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .selection-card {
+            width: 100%;
+            aspect-ratio: 3/4;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .selection-card:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .selection-card.selected {
+            border-color: var(--carbon);
+        }
+
+        .selection-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .selection-checkmark {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: var(--carbon);
+            border-radius: 2px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .selection-card.selected .selection-checkmark {
+            display: flex;
+        }
+
+        .selection-checkmark svg {
+            width: 10px;
+            height: 10px;
+            color: white;
+        }
+
+        .selection-name {
+            font-size: 10px;
+            font-weight: 500;
+            text-align: center;
+            color: var(--slate);
+        }
+
+        /* Dialog Footer */
+        .dialog-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .dialog-footer-left {
+            font-size: 12px;
+            color: var(--ash-grey);
+        }
+
+        .dialog-footer-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .deselect-btn {
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: var(--ash-grey);
+            cursor: pointer;
+        }
+
+        .deselect-btn:hover {
+            color: var(--carbon);
+        }
+
+        .dialog-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .dialog-btn-outline {
+            background: transparent;
+            border: 1px solid var(--gainsboro);
+            color: var(--carbon);
+        }
+
+        .dialog-btn-outline:hover {
+            background: var(--off-white);
+        }
+
+        .dialog-btn-primary {
+            background: var(--carbon);
+            border: 1px solid var(--carbon);
+            color: var(--white);
+        }
+
+        .dialog-btn-primary:hover {
+            background: var(--jet);
+        }
+
+        /* Shot Setup Options */
+        .shot-section {
+            margin-bottom: 20px;
+        }
+
+        .shot-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+            margin-bottom: 10px;
+        }
+
+        .shot-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .shot-option {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 8px;
+            border: 1px solid var(--gainsboro);
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
+        .shot-option:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .shot-option.selected {
+            border-color: var(--carbon);
+            background: var(--off-white);
+        }
+
+        .shot-option-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .shot-option-desc {
+            font-size: 10px;
+            color: var(--slate);
+        }
+
+        /* Look/Vibe Grid */
+        .vibe-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .vibe-card {
+            aspect-ratio: 3/4;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .vibe-card:hover {
+            transform: scale(1.02);
+        }
+
+        .vibe-card.selected {
+            border-color: var(--carbon);
+        }
+
+        .vibe-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .vibe-card .hover-img {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .vibe-card:hover .hover-img {
+            opacity: 1;
+        }
+
+        .vibe-card:hover .default-img {
+            opacity: 0;
+        }
+
+        .vibe-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .vibe-checkmark {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 18px;
+            height: 18px;
+            background: var(--carbon);
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vibe-card.selected .vibe-checkmark {
+            display: flex;
+        }
+
+        .vibe-checkmark svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+        }
+
+        /* Product Upload Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            transition: all 0.15s ease;
+        }
+
+        .upload-slot:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .upload-slot.filled {
+            border-style: solid;
+            border-color: var(--gainsboro);
+        }
+
+        .upload-slot.filled img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .plus {
+            font-size: 24px;
+            font-weight: 300;
+            color: var(--ash-grey);
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .loading-overlay.visible {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gainsboro);
+            border-top-color: var(--carbon);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--slate);
+        }
+
+        .loading-progress {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--ash-grey);
+        }
+
+        /* Progress bar */
+        .progress-bar-container {
+            width: 200px;
+            height: 4px;
+            background: var(--gainsboro);
+            border-radius: 2px;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--carbon);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar Controls -->
+        <div class="sidebar-controls">
+            <!-- Models Card -->
+            <div class="control-card" onclick="openDialog('models')">
+                <div class="control-card-header">
+                    <div class="control-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Models
+                    </div>
+                </div>
+                <div class="control-card-content" id="models-preview">
+                    <span style="color: var(--ash-grey)">Click to select models</span>
+                </div>
+            </div>
+
+            <!-- Products Card -->
+            <div class="control-card" onclick="openDialog('products')">
+                <div class="control-card-header">
+                    <div class="control-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                            <path d="M3 6h18"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                        Products
+                    </div>
+                </div>
+                <div class="control-card-content" id="products-preview">
+                    <span style="color: var(--ash-grey)">Click to add products</span>
+                </div>
+            </div>
+
+            <!-- Shot Setup Card -->
+            <div class="control-card" onclick="openDialog('shots')">
+                <div class="control-card-header">
+                    <div class="control-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="9" cy="9" r="2"/>
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                        </svg>
+                        Shot Setup
+                    </div>
+                </div>
+                <div class="control-card-content" id="shots-preview">
+                    <span style="color: var(--ash-grey)">Click to configure shots</span>
+                </div>
+            </div>
+
+            <!-- Look Card -->
+            <div class="control-card" onclick="openDialog('look')">
+                <div class="control-card-header">
+                    <div class="control-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                        </svg>
+                        Look
+                    </div>
+                </div>
+                <div class="control-card-content" id="look-preview">
+                    <span style="color: var(--ash-grey)">Click to set campaign look</span>
+                </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="control-card settings-card">
+                <div class="settings-header" onclick="toggleSettings()">
+                    <div class="control-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6m0 6v10"/>
+                            <path d="m4.22 4.22 4.24 4.24m7.08 7.08 4.24 4.24"/>
+                            <path d="M1 12h6m6 0h10"/>
+                            <path d="m4.22 19.78 4.24-4.24m7.08-7.08 4.24-4.24"/>
+                        </svg>
+                        Settings
+                    </div>
+                    <svg id="settings-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ash-grey); transition: transform 0.2s;">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </div>
+                <div class="settings-content" id="settings-content">
+                    <div class="setting-row">
+                        <span class="setting-label">Total images</span>
+                        <div class="setting-control">
+                            <input type="range" class="slider" id="images-slider" min="1" max="20" value="6" oninput="updateImageCount(this.value)" style="width: 160px;">
+                            <span class="setting-value" id="images-value">6</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Resolution</span>
+                        <div class="resolution-options">
+                            <button class="resolution-btn" data-res="1024" onclick="setResolution('1024')">1K</button>
+                            <button class="resolution-btn active" data-res="2048" onclick="setResolution('2048')">2K</button>
+                            <button class="resolution-btn" data-res="4096" onclick="setResolution('4096')">4K</button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Aspect Ratio</span>
+                        <select id="aspect-ratio" onchange="state.aspectRatio = this.value; updateUI();" style="border: 1px solid var(--gainsboro); padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                            <option value="3:4">3:4 Portrait</option>
+                            <option value="4:5">4:5 Portrait</option>
+                            <option value="1:1">1:1 Square</option>
+                            <option value="4:3">4:3 Landscape</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Section -->
+            <div class="generate-section">
+                <div class="generate-info" id="generate-info">
+                    Select models and a look to generate
+                </div>
+                <button class="generate-btn" id="generate-btn" disabled onclick="handleGenerate()">
+                    Generate Campaign
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Panel - Results -->
+        <div class="results-panel">
+            <div class="results-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600;">Campaign Results</span>
+                <button onclick="clearResults()" style="background: none; border: 1px solid var(--gainsboro); padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">Clear All</button>
+            </div>
+            <div class="results-content">
+                <div class="empty-state" id="empty-state">
+                    <h3>No Results Yet</h3>
+                    <p>Configure your campaign and click Generate to create images</p>
+                </div>
+                <div class="results-grid" id="results-grid" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Models Dialog -->
+    <div class="dialog-overlay" id="models-dialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <div class="dialog-header-top">
+                    <div>
+                        <div class="dialog-title">Models</div>
+                        <div class="dialog-description">Choose models for your campaign (up to 4)</div>
+                    </div>
+                    <button class="dialog-close" onclick="closeDialog('models')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="step-nav">
+                    <div class="step-item active" onclick="openDialog('models')"><div class="step-dot"></div><div class="step-label">Models</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('products')"><div class="step-dot"></div><div class="step-label">Products</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('shots')"><div class="step-dot"></div><div class="step-label">Shots</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('look')"><div class="step-dot"></div><div class="step-label">Look</div></div>
+                </div>
+            </div>
+            <div class="dialog-content">
+                <div class="selection-grid" id="models-grid"></div>
+            </div>
+            <div class="dialog-footer">
+                <div class="dialog-footer-left"><span id="models-count">0 / 4 selected</span></div>
+                <div class="dialog-footer-right">
+                    <button class="deselect-btn" onclick="deselectAllModels()">Deselect All</button>
+                    <button class="dialog-btn dialog-btn-primary" onclick="openDialog('products')">Products</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Dialog -->
+    <div class="dialog-overlay" id="products-dialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <div class="dialog-header-top">
+                    <div>
+                        <div class="dialog-title">Products</div>
+                        <div class="dialog-description">Upload products to feature in your campaign</div>
+                    </div>
+                    <button class="dialog-close" onclick="closeDialog('products')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="step-nav">
+                    <div class="step-item" onclick="openDialog('models')"><div class="step-dot"></div><div class="step-label">Models</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item active" onclick="openDialog('products')"><div class="step-dot"></div><div class="step-label">Products</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('shots')"><div class="step-dot"></div><div class="step-label">Shots</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('look')"><div class="step-dot"></div><div class="step-label">Look</div></div>
+                </div>
+            </div>
+            <div class="dialog-content">
+                <p style="font-size: 12px; color: var(--slate); margin-bottom: 16px;">Drag and drop product images or click to upload</p>
+                <div class="product-grid" id="product-grid"></div>
+                <input type="file" id="product-input" accept="image/*" multiple style="display: none;">
+            </div>
+            <div class="dialog-footer">
+                <div class="dialog-footer-left"><span id="products-count">0 products</span></div>
+                <div class="dialog-footer-right">
+                    <button class="deselect-btn" onclick="clearProducts()">Clear All</button>
+                    <button class="dialog-btn dialog-btn-outline" onclick="openDialog('models')">Back</button>
+                    <button class="dialog-btn dialog-btn-primary" onclick="openDialog('shots')">Shot Setup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shot Setup Dialog -->
+    <div class="dialog-overlay" id="shots-dialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <div class="dialog-header-top">
+                    <div>
+                        <div class="dialog-title">Shot Setup</div>
+                        <div class="dialog-description">Configure image types and energy</div>
+                    </div>
+                    <button class="dialog-close" onclick="closeDialog('shots')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="step-nav">
+                    <div class="step-item" onclick="openDialog('models')"><div class="step-dot"></div><div class="step-label">Models</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('products')"><div class="step-dot"></div><div class="step-label">Products</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item active" onclick="openDialog('shots')"><div class="step-dot"></div><div class="step-label">Shots</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('look')"><div class="step-dot"></div><div class="step-label">Look</div></div>
+                </div>
+            </div>
+            <div class="dialog-content">
+                <div class="shot-section">
+                    <div class="shot-section-title">Image Types</div>
+                    <div class="shot-options" id="shot-types">
+                        <div class="shot-option selected" data-value="studio" onclick="toggleShotType('studio')">
+                            <div class="shot-option-title">Studio</div>
+                            <div class="shot-option-desc">Clean backdrop</div>
+                        </div>
+                        <div class="shot-option selected" data-value="campaign" onclick="toggleShotType('campaign')">
+                            <div class="shot-option-title">Campaign</div>
+                            <div class="shot-option-desc">Editorial</div>
+                        </div>
+                        <div class="shot-option selected" data-value="closeup" onclick="toggleShotType('closeup')">
+                            <div class="shot-option-title">Close-up</div>
+                            <div class="shot-option-desc">Portrait</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shot-section">
+                    <div class="shot-section-title">Group Shots</div>
+                    <div class="shot-options" id="grouping-options">
+                        <div class="shot-option selected" data-value="solo" onclick="selectGrouping('solo')">
+                            <div class="shot-option-title">Solo Only</div>
+                            <div class="shot-option-desc">Individual</div>
+                        </div>
+                        <div class="shot-option" data-value="some" onclick="selectGrouping('some')">
+                            <div class="shot-option-title">Some Groups</div>
+                            <div class="shot-option-desc">Mix</div>
+                        </div>
+                        <div class="shot-option" data-value="mostly" onclick="selectGrouping('mostly')">
+                            <div class="shot-option-title">Mostly Groups</div>
+                            <div class="shot-option-desc">Focus groups</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shot-section">
+                    <div class="shot-section-title">Energy</div>
+                    <div class="shot-options" id="energy-options">
+                        <div class="shot-option" data-value="masculine" onclick="selectEnergy('masculine')">
+                            <div class="shot-option-title">Masculine</div>
+                            <div class="shot-option-desc">Strong, bold</div>
+                        </div>
+                        <div class="shot-option selected" data-value="balanced" onclick="selectEnergy('balanced')">
+                            <div class="shot-option-title">Balanced</div>
+                            <div class="shot-option-desc">Neutral</div>
+                        </div>
+                        <div class="shot-option" data-value="feminine" onclick="selectEnergy('feminine')">
+                            <div class="shot-option-title">Feminine</div>
+                            <div class="shot-option-desc">Soft, elegant</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <div class="dialog-footer-left"></div>
+                <div class="dialog-footer-right">
+                    <button class="dialog-btn dialog-btn-outline" onclick="openDialog('products')">Back</button>
+                    <button class="dialog-btn dialog-btn-primary" onclick="openDialog('look')">Look</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Look Dialog -->
+    <div class="dialog-overlay" id="look-dialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <div class="dialog-header-top">
+                    <div>
+                        <div class="dialog-title">Look</div>
+                        <div class="dialog-description">Select 1-3 looks that match your campaign feel</div>
+                    </div>
+                    <button class="dialog-close" onclick="closeDialog('look')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="step-nav">
+                    <div class="step-item" onclick="openDialog('models')"><div class="step-dot"></div><div class="step-label">Models</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('products')"><div class="step-dot"></div><div class="step-label">Products</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" onclick="openDialog('shots')"><div class="step-dot"></div><div class="step-label">Shots</div></div>
+                    <div class="step-connector"></div>
+                    <div class="step-item active" onclick="openDialog('look')"><div class="step-dot"></div><div class="step-label">Look</div></div>
+                </div>
+            </div>
+            <div class="dialog-content">
+                <div class="dialog-tabs" id="look-tabs">
+                    <button class="dialog-tab active" data-tab="studio" onclick="switchLookTab('studio')">Studio & Light</button>
+                    <button class="dialog-tab" data-tab="environmental" onclick="switchLookTab('environmental')">Environmental</button>
+                    <button class="dialog-tab" data-tab="editorial" onclick="switchLookTab('editorial')">Editorial</button>
+                </div>
+                <div class="vibe-grid" id="look-grid"></div>
+            </div>
+            <div class="dialog-footer">
+                <div class="dialog-footer-left"><span id="look-count">0 / 3 selected</span></div>
+                <div class="dialog-footer-right">
+                    <button class="deselect-btn" onclick="deselectAllLooks()">Deselect All</button>
+                    <button class="dialog-btn dialog-btn-outline" onclick="openDialog('shots')">Back</button>
+                    <button class="dialog-btn dialog-btn-primary" onclick="closeDialog('look')">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loading-text">Generating...</div>
+        <div class="loading-progress" id="loading-progress"></div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/data/editorial-moods.js"></script>
+    <script>
+        // ==================== STATE ====================
+        const state = {
+            selectedModels: [],
+            productImages: new Array(8).fill(null),
+            shotTypes: ['studio', 'campaign', 'closeup'],
+            grouping: 'solo',
+            energy: 'balanced',
+            selectedLooks: [],
+            totalImages: 6,
+            resolution: '2048',
+            aspectRatio: '3:4',
+            results: []
+        };
+
+        // ==================== MODELS DATA ====================
+        const SETSET_MODELS = [
+            { id: 'james', name: 'James Wilson', preview: '/shared/images/talent/talent-01_JamesWilson.png', thumb: '/shared/images/talent/thumbs/talent-01_JamesWilson.png', gender: 'male' },
+            { id: 'maya', name: 'Maya Johnson', preview: '/shared/images/talent/talent-02_MayaJohnson.png', thumb: '/shared/images/talent/thumbs/talent-02_MayaJohnson.png', gender: 'female' },
+            { id: 'river', name: 'River Blake', preview: '/shared/images/talent/talent-03_RiverBlake.png', thumb: '/shared/images/talent/thumbs/talent-03_RiverBlake.png', gender: 'male' },
+            { id: 'emma', name: 'Emma Sullivan', preview: '/shared/images/talent/talent-04_EmmaSullivan.png', thumb: '/shared/images/talent/thumbs/talent-04_EmmaSullivan.png', gender: 'female' },
+            { id: 'marcus', name: 'Marcus Brown', preview: '/shared/images/talent/talent-05_MarcusBrown.png', thumb: '/shared/images/talent/thumbs/talent-05_MarcusBrown.png', gender: 'male' },
+            { id: 'zara', name: 'Zara Mitchell', preview: '/shared/images/talent/talent-06_ZaraMitchell.png', thumb: '/shared/images/talent/thumbs/talent-06_ZaraMitchell.png', gender: 'female' },
+            { id: 'sophia', name: 'Sophia Anderson', preview: '/shared/images/talent/talent-07_SophiaAnderson.png', thumb: '/shared/images/talent/thumbs/talent-07_SophiaAnderson.png', gender: 'female' },
+            { id: 'liam', name: 'Liam Garcia', preview: '/shared/images/talent/talent-08_LiamGarcia.png', thumb: '/shared/images/talent/thumbs/talent-08_LiamGarcia.png', gender: 'male' },
+            { id: 'nina', name: 'Nina Davis', preview: '/shared/images/talent/talent-09_NinaDavis.png', thumb: '/shared/images/talent/thumbs/talent-09_NinaDavis.png', gender: 'female' },
+            { id: 'mateo', name: 'Mateo Martinez', preview: '/shared/images/talent/talent-10_AvaMartinez.png', thumb: '/shared/images/talent/thumbs/talent-10_AvaMartinez.png', gender: 'male' },
+            { id: 'luna', name: 'Luna Park', preview: '/shared/images/talent/talent-11_LunaPark.png', thumb: '/shared/images/talent/thumbs/talent-11_LunaPark.png', gender: 'female' },
+            { id: 'noah', name: 'Noah Chen', preview: '/shared/images/talent/talent-12_NoahChen.png', thumb: '/shared/images/talent/thumbs/talent-12_NoahChen.png', gender: 'male' },
+            { id: 'mia', name: 'Mia Parker', preview: '/shared/images/talent/talent-13_MiaParker.png', thumb: '/shared/images/talent/thumbs/talent-13_MiaParker.png', gender: 'female' },
+            { id: 'riley', name: 'Riley Morgan', preview: '/shared/images/talent/talent-14_RileyMorgan.png', thumb: '/shared/images/talent/thumbs/talent-14_RileyMorgan.png', gender: 'female' },
+            { id: 'jordan', name: 'Jordan Lee', preview: '/shared/images/talent/talent-15_JordanLee.png', thumb: '/shared/images/talent/thumbs/talent-15_JordanLee.png', gender: 'male' },
+            { id: 'isabella', name: 'Isabella Rodriguez', preview: '/shared/images/talent/talent-16_IsabellaRodriguez.png', thumb: '/shared/images/talent/thumbs/talent-16_IsabellaRodriguez.png', gender: 'female' },
+            { id: 'quinn', name: 'Quinn Santos', preview: '/shared/images/talent/talent-17_QuinnSantos.png', thumb: '/shared/images/talent/thumbs/talent-17_QuinnSantos.png', gender: 'female' },
+            { id: 'casey', name: 'Casey White', preview: '/shared/images/talent/talent-18_CaseyWhite.png', thumb: '/shared/images/talent/thumbs/talent-18_CaseyWhite.png', gender: 'male' },
+            { id: 'sam', name: 'Sam Wilson', preview: '/shared/images/talent/talent-19_SamWilson.png', thumb: '/shared/images/talent/thumbs/talent-19_SamWilson.png', gender: 'male' },
+            { id: 'drew', name: 'Drew Martinez', preview: '/shared/images/talent/talent-20_DrewMartinez.png', thumb: '/shared/images/talent/thumbs/talent-20_DrewMartinez.png', gender: 'male' },
+            { id: 'avery', name: 'Avery Taylor', preview: '/shared/images/talent/talent-21_AveryTaylor.png', thumb: '/shared/images/talent/thumbs/talent-21_AveryTaylor.png', gender: 'female' },
+            { id: 'parker', name: 'Parker Miller', preview: '/shared/images/talent/talent-22_ParkerMiller.png', thumb: '/shared/images/talent/thumbs/talent-22_ParkerMiller.png', gender: 'male' },
+            { id: 'morgan', name: 'Morgan Kim', preview: '/shared/images/talent/talent-23_MorganKim.png', thumb: '/shared/images/talent/thumbs/talent-23_MorganKim.png', gender: 'female' },
+            { id: 'andre', name: 'Andre Jackson', preview: '/shared/images/talent/talent-24_AndreJackson.png', thumb: '/shared/images/talent/thumbs/talent-24_AndreJackson.png', gender: 'male' },
+            { id: 'damon', name: 'Damon Carter', preview: '/shared/images/talent/talent-25_DamonCarter.png', thumb: '/shared/images/talent/thumbs/talent-25_DamonCarter.png', gender: 'male' },
+            { id: 'nikolai', name: 'Nikolai Volkov', preview: '/shared/images/talent/talent-26_NikolaiVolkov.png', thumb: '/shared/images/talent/thumbs/talent-26_NikolaiVolkov.png', gender: 'male' },
+            { id: 'sofia', name: 'Sofia Rodriguez', preview: '/shared/images/talent/talent-27_SofiaRodriguez.png', thumb: '/shared/images/talent/thumbs/talent-27_SofiaRodriguez.png', gender: 'female' },
+            { id: 'finn', name: 'Finn O\'Connor', preview: '/shared/images/talent/talent-28_FinnOConnor.png', thumb: '/shared/images/talent/thumbs/talent-28_FinnOConnor.png', gender: 'male' },
+            { id: 'clara', name: 'Clara Devereaux', preview: '/shared/images/talent/talent-29_ClaraDevereaux.png', thumb: '/shared/images/talent/thumbs/talent-29_ClaraDevereaux.png', gender: 'female' },
+            { id: 'simone', name: 'Simone Park', preview: '/shared/images/talent/talent-30_ZoeWashington.png', thumb: '/shared/images/talent/thumbs/talent-30_ZoeWashington.png', gender: 'female' }
+        ];
+
+        // ==================== LOOK DATA ====================
+        const LOOK_CATEGORIES = {
+            'studio': {
+                name: 'Studio & Light',
+                looks: [
+                    { id: 'stark-minimalism', name: 'Stark Minimalism', defaultImg: '/assets/moods/batch1/mood_M01_stark-minimalism.png', hoverImg: '/assets/moods/batch1/mood_F01_stark-minimalism.png' },
+                    { id: 'chiaroscuro-drama', name: 'Chiaroscuro Drama', defaultImg: '/assets/moods/batch1/mood_F02_chiaroscuro-drama.png', hoverImg: '/assets/moods/batch1/mood_M02_chiaroscuro-drama.png' },
+                    { id: 'golden-hour', name: 'Golden Hour', defaultImg: '/assets/moods/batch1/mood_F03_golden-hour-intimacy.png', hoverImg: '/assets/moods/batch1/mood_M03_golden-hour-warmth.png' },
+                    { id: 'flash-rawness', name: 'Flash Rawness', defaultImg: '/assets/moods/batch1/mood_M04_flash-rawness.png', hoverImg: '/assets/moods/batch1/mood_F04_flash-rawness.png' },
+                    { id: 'soft-diffusion', name: 'Soft Diffusion', defaultImg: '/assets/moods/batch1/mood_F08_soft-diffusion.png', hoverImg: '/assets/moods/batch1/mood_M08_moody-desaturated.png' },
+                    { id: 'window-light', name: 'Window Light', defaultImg: '/assets/moods/batch1/mood_M10_window-light-natural.png', hoverImg: '/assets/moods/batch1/mood_F10_window-light-natural.png' },
+                    { id: 'deep-shadow', name: 'Deep Shadow', defaultImg: '/assets/moods/batch1/mood_F14_deep-shadow-mystery.png', hoverImg: '/assets/moods/batch1/mood_M14_deep-shadow-mystery.png' },
+                    { id: 'studio-color', name: 'Studio Color Pop', defaultImg: '/assets/moods/batch1/mood_M15_studio-color-bold.png', hoverImg: '/assets/moods/batch1/mood_F15_studio-color-pop.png' },
+                ]
+            },
+            'environmental': {
+                name: 'Environmental',
+                looks: [
+                    { id: 'environmental', name: 'Outdoor', defaultImg: '/assets/moods/batch1/mood_F20_environmental-outdoor.png', hoverImg: '/assets/moods/batch1/mood_M20_environmental-urban.png' },
+                    { id: 'harsh-sun', name: 'Harsh Noon Sun', defaultImg: '/assets/moods/batch1/mood_M29_harsh-daylight-raw.png', hoverImg: '/assets/moods/batch1/mood_F29_harsh-noon-sun.png' },
+                    { id: 'smoke-atmosphere', name: 'Smoke & Atmosphere', defaultImg: '/assets/moods/batch1/mood_F28_powder-explosion.png', hoverImg: '/assets/moods/batch1/mood_M28_smoke-atmosphere.png' },
+                    { id: 'vintage-film', name: 'Vintage Film', defaultImg: '/assets/moods/batch1/mood_M22_vintage-film-grain.png', hoverImg: '/assets/moods/batch1/mood_F22_vintage-film.png' },
+                    { id: 'analog-warmth', name: 'Analog Warmth', defaultImg: '/assets/moods/batch1/mood_F30_analog-imperfection.png', hoverImg: '/assets/moods/batch1/mood_M30_analog-warmth.png' },
+                    { id: 'rembrandt', name: 'Rembrandt Classic', defaultImg: '/assets/moods/batch1/mood_F24_rembrandt-classic.png', hoverImg: '/assets/moods/batch1/mood_M24_rembrandt-classic.png' },
+                    { id: 'motion-blur', name: 'Motion Blur', defaultImg: '/assets/moods/batch1/mood_M25_motion-blur-energy.png', hoverImg: '/assets/moods/batch1/mood_F25_motion-blur.png' },
+                ]
+            },
+            'editorial': {
+                name: 'Editorial',
+                looks: [
+                    { id: 'helmut-newton', name: 'Helmut Newton', defaultImg: '/assets/moods/batch1/mood_M31_helmut-newton-power.png', hoverImg: '/assets/moods/batch1/mood_F31_helmut-newton-power.png' },
+                    { id: 'richard-avedon', name: 'Avedon Stark', defaultImg: '/assets/moods/batch1/mood_F32_richard-avedon-stark.png', hoverImg: '/assets/moods/batch1/mood_M32_richard-avedon-stark.png' },
+                    { id: 'peter-lindbergh', name: 'Lindbergh Soul', defaultImg: '/assets/moods/batch1/mood_M33_peter-lindbergh-soul.png', hoverImg: '/assets/moods/batch1/mood_F33_peter-lindbergh-soul.png' },
+                    { id: 'steven-meisel', name: 'Meisel Glam', defaultImg: '/assets/moods/batch1/mood_F34_steven-meisel-glam.png', hoverImg: '/assets/moods/batch1/mood_M34_steven-meisel-glam.png' },
+                    { id: 'juergen-teller', name: 'Teller Raw', defaultImg: '/assets/moods/batch1/mood_F39_juergen-teller-raw.png', hoverImg: '/assets/moods/batch1/mood_M39_juergen-teller-raw.png' },
+                    { id: 'paolo-roversi', name: 'Roversi Ethereal', defaultImg: '/assets/moods/batch1/mood_M40_paolo-roversi-ethereal.png', hoverImg: '/assets/moods/batch1/mood_F40_paolo-roversi-ethereal.png' },
+                    { id: 'mario-testino', name: 'Testino Golden', defaultImg: '/assets/moods/batch1/mood_F41_mario-testino-golden.png', hoverImg: '/assets/moods/batch1/mood_M41_mario-testino-golden.png' },
+                    { id: 'nick-knight', name: 'Nick Knight', defaultImg: '/assets/moods/batch1/mood_M42_nick-knight-experimental.png', hoverImg: '/assets/moods/batch1/mood_F42_nick-knight-experimental.png' },
+                ]
+            }
+        };
+
+        const ALL_LOOKS = Object.values(LOOK_CATEGORIES).flatMap(cat => cat.looks);
+        let currentLookTab = 'studio';
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            renderModelsGrid();
+            renderProductGrid();
+            renderLookGrid();
+            setupProductUpload();
+            updateUI();
+        }
+
+        // ==================== RENDER FUNCTIONS ====================
+        function renderModelsGrid() {
+            const grid = document.getElementById('models-grid');
+            grid.innerHTML = SETSET_MODELS.map(model => `
+                <div class="selection-item">
+                    <div class="selection-card ${state.selectedModels.includes(model.id) ? 'selected' : ''}"
+                         onclick="toggleModel('${model.id}')">
+                        <img src="${model.thumb || model.preview}" alt="${model.name}">
+                        <div class="selection-checkmark">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="selection-name">${model.name.split(' ')[0]}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderProductGrid() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = state.productImages.map((img, i) => {
+                if (img) {
+                    return `
+                        <div class="upload-slot filled" data-index="${i}">
+                            <img src="${img.url}" alt="Product ${i + 1}">
+                            <button class="remove-btn" onclick="removeProduct(${i})">&times;</button>
+                        </div>
+                    `;
+                }
+                return `<div class="upload-slot" data-index="${i}" onclick="triggerProductUpload(${i})"><span class="plus">+</span></div>`;
+            }).join('');
+        }
+
+        function renderLookGrid() {
+            const grid = document.getElementById('look-grid');
+            const looks = LOOK_CATEGORIES[currentLookTab].looks;
+            grid.innerHTML = looks.map(look => `
+                <div class="vibe-card ${state.selectedLooks.includes(look.id) ? 'selected' : ''}"
+                     onclick="toggleLook('${look.id}')">
+                    <img class="default-img" src="${look.defaultImg}" alt="${look.name}">
+                    <img class="hover-img" src="${look.hoverImg}" alt="${look.name}">
+                    <div class="vibe-label">${look.name}</div>
+                    <div class="vibe-checkmark">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateUI() {
+            // Models preview
+            const modelsPreview = document.getElementById('models-preview');
+            if (state.selectedModels.length > 0) {
+                const thumbs = state.selectedModels.slice(0, 3).map(id => {
+                    const model = SETSET_MODELS.find(m => m.id === id);
+                    return `<div class="thumbnail"><img src="${model?.thumb || model?.preview}" alt=""></div>`;
+                }).join('');
+                const extra = state.selectedModels.length > 3 ? `<div class="thumbnail-placeholder">+${state.selectedModels.length - 3}</div>` : '';
+                modelsPreview.innerHTML = `<div class="thumbnail-row">${thumbs}${extra}</div>`;
+            } else {
+                modelsPreview.innerHTML = '<span style="color: var(--ash-grey)">Click to select models</span>';
+            }
+
+            // Products preview
+            const productsPreview = document.getElementById('products-preview');
+            const productCount = state.productImages.filter(p => p).length;
+            if (productCount > 0) {
+                const thumbs = state.productImages.filter(p => p).slice(0, 3).map(p =>
+                    `<div class="thumbnail"><img src="${p.url}" alt=""></div>`
+                ).join('');
+                productsPreview.innerHTML = `<div class="thumbnail-row">${thumbs}</div>`;
+            } else {
+                productsPreview.innerHTML = '<span style="color: var(--ash-grey)">Click to add products</span>';
+            }
+
+            // Shots preview
+            const shotsPreview = document.getElementById('shots-preview');
+            const typeLabels = state.shotTypes.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ');
+            const energyLabel = state.energy.charAt(0).toUpperCase() + state.energy.slice(1);
+            shotsPreview.innerHTML = `${typeLabels} &middot; ${energyLabel}`;
+
+            // Look preview
+            const lookPreview = document.getElementById('look-preview');
+            if (state.selectedLooks.length > 0) {
+                const thumbs = state.selectedLooks.slice(0, 3).map(id => {
+                    const look = ALL_LOOKS.find(l => l.id === id);
+                    return `<div class="thumbnail"><img src="${look?.defaultImg}" alt=""></div>`;
+                }).join('');
+                lookPreview.innerHTML = `<div class="thumbnail-row">${thumbs}</div>`;
+            } else {
+                lookPreview.innerHTML = '<span style="color: var(--ash-grey)">Click to set campaign look</span>';
+            }
+
+            // Dialog counts
+            document.getElementById('models-count').textContent = `${state.selectedModels.length} / 4 selected`;
+            document.getElementById('products-count').textContent = `${productCount} product${productCount !== 1 ? 's' : ''}`;
+            document.getElementById('look-count').textContent = `${state.selectedLooks.length} / 3 selected`;
+
+            // Generate info and button
+            const canGenerate = state.selectedModels.length > 0 && state.selectedLooks.length > 0 && state.shotTypes.length > 0;
+            document.getElementById('generate-btn').disabled = !canGenerate;
+
+            if (canGenerate) {
+                document.getElementById('generate-info').textContent =
+                    `${state.totalImages} image${state.totalImages > 1 ? 's' : ''} mixing ${state.selectedModels.length} model${state.selectedModels.length > 1 ? 's' : ''}, ${state.shotTypes.length} type${state.shotTypes.length > 1 ? 's' : ''}, ${state.selectedLooks.length} look${state.selectedLooks.length > 1 ? 's' : ''}`;
+            } else {
+                document.getElementById('generate-info').textContent = 'Select models and a look to generate';
+            }
+
+            // Re-render grids
+            renderModelsGrid();
+            renderLookGrid();
+        }
+
+        // ==================== DIALOG FUNCTIONS ====================
+        function openDialog(name) {
+            document.querySelectorAll('.dialog-overlay').forEach(d => d.classList.remove('open'));
+            document.getElementById(`${name}-dialog`).classList.add('open');
+        }
+
+        function closeDialog(name) {
+            document.getElementById(`${name}-dialog`).classList.remove('open');
+            updateUI();
+        }
+
+        // ==================== MODEL FUNCTIONS ====================
+        function toggleModel(id) {
+            const idx = state.selectedModels.indexOf(id);
+            if (idx > -1) {
+                state.selectedModels.splice(idx, 1);
+            } else if (state.selectedModels.length < 4) {
+                state.selectedModels.push(id);
+            }
+            updateUI();
+        }
+
+        function deselectAllModels() {
+            state.selectedModels = [];
+            updateUI();
+        }
+
+        // ==================== PRODUCT FUNCTIONS ====================
+        function setupProductUpload() {
+            const input = document.getElementById('product-input');
+            const grid = document.getElementById('product-grid');
+
+            input.addEventListener('change', (e) => {
+                handleProductFiles(Array.from(e.target.files), input.dataset.startIndex ? parseInt(input.dataset.startIndex) : null);
+                e.target.value = '';
+            });
+
+            grid.addEventListener('dragover', (e) => e.preventDefault());
+            grid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                handleProductFiles(files, null);
+            });
+        }
+
+        function triggerProductUpload(index) {
+            const input = document.getElementById('product-input');
+            input.dataset.startIndex = index;
+            input.click();
+        }
+
+        function handleProductFiles(files, startIndex) {
+            const targetIndices = [];
+            if (startIndex !== null) {
+                for (let i = 0; i < files.length; i++) {
+                    const idx = startIndex + i;
+                    if (idx < 8) targetIndices.push(idx);
+                }
+            } else {
+                for (let i = 0; i < files.length; i++) {
+                    const emptyIdx = state.productImages.findIndex((img, idx) => !img && !targetIndices.includes(idx));
+                    if (emptyIdx !== -1 && emptyIdx < 8) targetIndices.push(emptyIdx);
+                }
+            }
+
+            files.forEach((file, i) => {
+                if (i >= targetIndices.length) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.productImages[targetIndices[i]] = { file, url: e.target.result };
+                    renderProductGrid();
+                    updateUI();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeProduct(index) {
+            state.productImages[index] = null;
+            // Collapse remaining
+            const filled = state.productImages.filter(img => img);
+            for (let i = 0; i < 8; i++) {
+                state.productImages[i] = filled[i] || null;
+            }
+            renderProductGrid();
+            updateUI();
+        }
+
+        function clearProducts() {
+            state.productImages = new Array(8).fill(null);
+            renderProductGrid();
+            updateUI();
+        }
+
+        // ==================== SHOT FUNCTIONS ====================
+        function toggleShotType(type) {
+            const idx = state.shotTypes.indexOf(type);
+            if (idx > -1) {
+                if (state.shotTypes.length > 1) state.shotTypes.splice(idx, 1);
+            } else {
+                state.shotTypes.push(type);
+            }
+            document.querySelectorAll('#shot-types .shot-option').forEach(opt => {
+                opt.classList.toggle('selected', state.shotTypes.includes(opt.dataset.value));
+            });
+            updateUI();
+        }
+
+        function selectGrouping(value) {
+            state.grouping = value;
+            document.querySelectorAll('#grouping-options .shot-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.value === value);
+            });
+            updateUI(); // Update image count based on grouping
+        }
+
+        function selectEnergy(value) {
+            state.energy = value;
+            document.querySelectorAll('#energy-options .shot-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.value === value);
+            });
+            updateUI(); // Update preview
+        }
+
+        // ==================== LOOK FUNCTIONS ====================
+        function switchLookTab(tab) {
+            currentLookTab = tab;
+            document.querySelectorAll('#look-tabs .dialog-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+            renderLookGrid();
+        }
+
+        function toggleLook(id) {
+            const idx = state.selectedLooks.indexOf(id);
+            if (idx > -1) {
+                state.selectedLooks.splice(idx, 1);
+            } else if (state.selectedLooks.length < 3) {
+                state.selectedLooks.push(id);
+            }
+            updateUI();
+        }
+
+        function deselectAllLooks() {
+            state.selectedLooks = [];
+            updateUI();
+        }
+
+        // ==================== SETTINGS ====================
+        function toggleSettings() {
+            const content = document.getElementById('settings-content');
+            const chevron = document.getElementById('settings-chevron');
+            content.classList.toggle('open');
+            chevron.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : '';
+        }
+
+        function updateImageCount(value) {
+            state.totalImages = parseInt(value);
+            document.getElementById('images-value').textContent = value;
+            updateUI();
+        }
+
+        function setResolution(res) {
+            state.resolution = res;
+            document.querySelectorAll('.resolution-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.res === res);
+            });
+        }
+
+        // ==================== GENERATION ====================
+        let isGenerating = false;
+
+        // Helper to create model combinations based on grouping
+        function getModelCombinations() {
+            const models = state.selectedModels.map(id => SETSET_MODELS.find(m => m.id === id));
+            const combinations = [];
+
+            if (state.grouping === 'solo') {
+                // Solo only - each model individually
+                models.forEach(m => combinations.push([m]));
+            } else if (state.grouping === 'some') {
+                // Mix: some solo, some pairs, maybe one group
+                // First, add solo shots for each model
+                models.forEach(m => combinations.push([m]));
+                // Then add some pair combinations if we have 2+ models
+                if (models.length >= 2) {
+                    // Add a couple random pairs
+                    for (let i = 0; i < Math.min(2, models.length - 1); i++) {
+                        const pair = [models[i], models[(i + 1) % models.length]];
+                        combinations.push(pair);
+                    }
+                }
+                // Add full group if 3+ models
+                if (models.length >= 3) {
+                    combinations.push([...models]);
+                }
+            } else if (state.grouping === 'mostly') {
+                // Mostly groups - pairs and full group, fewer solos
+                // Add one solo per model
+                models.forEach(m => combinations.push([m]));
+                // Add all unique pairs
+                if (models.length >= 2) {
+                    for (let i = 0; i < models.length; i++) {
+                        for (let j = i + 1; j < models.length; j++) {
+                            combinations.push([models[i], models[j]]);
+                        }
+                    }
+                }
+                // Add full group multiple times if 3+ models
+                if (models.length >= 3) {
+                    combinations.push([...models]);
+                    combinations.push([...models]); // Add twice for emphasis
+                }
+            }
+
+            return combinations;
+        }
+
+        async function handleGenerate() {
+            if (state.selectedModels.length === 0 || state.selectedLooks.length === 0) return;
+            if (isGenerating) return; // Prevent double-clicks
+
+            isGenerating = true;
+            const generateBtn = document.getElementById('generate-btn');
+            const generateInfo = document.getElementById('generate-info');
+            const resultsGrid = document.getElementById('results-grid');
+            const emptyState = document.getElementById('empty-state');
+
+            // Show results grid, hide empty state
+            resultsGrid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            // Get all possible model combinations based on grouping
+            const modelCombinations = getModelCombinations();
+
+            // Build tasks by randomly picking from options
+            const tasks = [];
+            for (let i = 0; i < state.totalImages; i++) {
+                const modelGroup = modelCombinations[Math.floor(Math.random() * modelCombinations.length)];
+                const shotType = state.shotTypes[Math.floor(Math.random() * state.shotTypes.length)];
+                const lookId = state.selectedLooks[Math.floor(Math.random() * state.selectedLooks.length)];
+                tasks.push({ models: modelGroup, shotType, lookId });
+            }
+
+            const total = tasks.length;
+            let completed = 0;
+            const BATCH_SIZE = 6; // Run 6 requests in parallel
+
+            // Update button to show progress
+            generateBtn.textContent = `Generating 0/${total}...`;
+            generateBtn.disabled = true;
+
+            // Helper to upload a model image
+            async function uploadModelImage(model) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = async () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.naturalWidth;
+                            canvas.height = img.naturalHeight;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            canvas.toBlob(async (blob) => {
+                                if (!blob) {
+                                    reject(new Error('Failed to create blob from image'));
+                                    return;
+                                }
+                                const file = new File([blob], 'model.png', { type: 'image/png' });
+                                const upload = await api.uploadImage(file);
+                                resolve(upload);
+                            }, 'image/png');
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = () => reject(new Error('Failed to load model image'));
+                    img.src = model.preview;
+                });
+            }
+
+            // Pre-upload product images once (shared across all tasks)
+            const productUrls = [];
+            for (const product of state.productImages.filter(p => p)) {
+                try {
+                    const upload = await api.uploadBase64(product.url);
+                    productUrls.push(upload.url);
+                } catch (e) {
+                    console.error('Product upload error:', e);
+                }
+            }
+
+            // Process a single task
+            async function processTask(task) {
+                try {
+                    const prompt = buildPrompt(task.models, task.shotType, task.lookId);
+
+                    // Upload all model reference images
+                    const modelUrls = [];
+                    for (const model of task.models) {
+                        const upload = await uploadModelImage(model);
+                        modelUrls.push(upload.url);
+                    }
+
+                    const imageUrls = [...modelUrls, ...productUrls];
+
+                    // Generate with Nano Banana Pro
+                    const params = {
+                        prompt,
+                        image_urls: imageUrls,
+                        num_images: 1,
+                        aspect_ratio: state.aspectRatio,
+                        output_format: 'png'
+                    };
+
+                    const data = await api.remixImage('nano-pro', params);
+
+                    if (data.images && data.images.length > 0) {
+                        const modelNames = task.models.map(m => m.name).join(', ');
+                        state.results.push({
+                            url: data.images[0].url,
+                            prompt,
+                            model: modelNames,
+                            type: task.shotType,
+                            groupSize: task.models.length
+                        });
+                        renderResults();
+                    }
+                } catch (error) {
+                    console.error('Generation error for task:', error);
+                }
+
+                completed++;
+                generateBtn.textContent = `Generating ${completed}/${total}...`;
+            }
+
+            // Process tasks in parallel batches of BATCH_SIZE
+            for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+                const batch = tasks.slice(i, i + BATCH_SIZE);
+                await Promise.all(batch.map(task => processTask(task)));
+            }
+
+            // Done - reset button
+            isGenerating = false;
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generate Campaign';
+            updateUI();
+        }
+
+        function buildPrompt(models, shotType, lookId) {
+            // Get look data from editorial moods (use first model's gender for mood lookup)
+            const lookData = ALL_LOOKS.find(l => l.id === lookId);
+            const primaryModel = models[0];
+            const moodData = primaryModel.gender === 'female'
+                ? (typeof EDITORIAL_MOODS_FEMALE !== 'undefined' ? EDITORIAL_MOODS_FEMALE.find(m => m.id === lookId) : null)
+                : (typeof EDITORIAL_MOODS_MALE !== 'undefined' ? EDITORIAL_MOODS_MALE.find(m => m.id === lookId) : null);
+
+            const moodPrompt = moodData?.prompt || '';
+            const energyText = state.energy === 'masculine' ? 'strong, bold, powerful energy'
+                : state.energy === 'feminine' ? 'soft, elegant, graceful energy'
+                : 'balanced, natural energy';
+
+            const noSplitting = 'Generate ONE SINGLE unified image only. Do NOT create a collage, grid, or multiple panels.';
+            const hasProducts = state.productImages.some(p => p);
+            const productText = hasProducts ? 'Feature the products from the reference images prominently.' : '';
+
+            // Determine subject description based on number of models
+            const numModels = models.length;
+            let subjectText;
+            if (numModels === 1) {
+                subjectText = 'this exact person';
+            } else if (numModels === 2) {
+                subjectText = 'these exact two people together';
+            } else {
+                subjectText = `these exact ${numModels} people together as a group`;
+            }
+
+            // Group interaction text
+            let interactionText = '';
+            if (numModels >= 2) {
+                const interactions = [
+                    'natural interaction between them',
+                    'standing close together',
+                    'dynamic group pose',
+                    'looking towards each other',
+                    'fashion editorial group composition'
+                ];
+                interactionText = interactions[Math.floor(Math.random() * interactions.length)] + '. ';
+            }
+
+            let prompt = '';
+
+            if (shotType === 'studio') {
+                prompt = `${noSplitting} Fashion e-commerce photo of ${subjectText} in a white studio. ${interactionText}${energyText}. ${moodPrompt} ${productText} Professional studio lighting, full body shot, clean white background.`;
+            } else if (shotType === 'campaign') {
+                prompt = `${noSplitting} Editorial fashion campaign photo of ${subjectText}. ${interactionText}${energyText}. ${moodPrompt} ${productText} High-end fashion campaign aesthetic, creative composition.`;
+            } else if (shotType === 'closeup') {
+                if (numModels === 1) {
+                    prompt = `${noSplitting} Close-up portrait of ${subjectText}. ${energyText}. ${moodPrompt} Editorial beauty shot, soft lighting, focus on face, chest-up framing.`;
+                } else {
+                    prompt = `${noSplitting} Close-up portrait of ${subjectText}. ${interactionText}${energyText}. ${moodPrompt} Editorial beauty shot, soft lighting, faces close together, chest-up framing.`;
+                }
+            }
+
+            return prompt;
+        }
+
+        function renderResults() {
+            const grid = document.getElementById('results-grid');
+            grid.innerHTML = state.results.map((result, i) => `
+                <div class="result-card" onclick="window.open('${result.url}', '_blank')">
+                    <img src="${result.url}" alt="Result ${i + 1}">
+                </div>
+            `).join('');
+        }
+
+        function clearResults() {
+            state.results = [];
+            document.getElementById('results-grid').innerHTML = '';
+            document.getElementById('results-grid').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'flex';
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

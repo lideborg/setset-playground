@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Onboarding Generator</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        header {
+            margin-bottom: var(--space-lg);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        /* Top controls */
+        .top-controls {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .controls-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .controls-header h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--space-md);
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* Selection buttons */
+        .selection-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-sm);
+        }
+
+        .selection-buttons .btn {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            height: auto;
+        }
+
+        /* Category tabs */
+        .category-tabs {
+            display: flex;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.15s;
+        }
+
+        .category-tab:hover {
+            border-color: var(--text-tertiary);
+        }
+
+        .category-tab.active {
+            background: rgba(0, 100, 255, 0.15);
+            border-color: rgba(0, 100, 255, 0.4);
+        }
+
+        .category-tab .count {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            margin-left: 4px;
+        }
+
+        /* Option grid (horizontal chips) */
+        .option-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .option-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.75rem;
+        }
+
+        .option-chip:hover {
+            border-color: var(--text-tertiary);
+        }
+
+        .option-chip input[type="checkbox"] {
+            display: none;
+        }
+
+        .option-chip.selected {
+            background: rgba(0, 100, 255, 0.15);
+            border-color: rgba(0, 100, 255, 0.4);
+        }
+
+        .option-chip .option-code {
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+        }
+
+        .option-chip .option-label {
+            color: var(--text-primary);
+        }
+
+        .option-chip .option-category {
+            font-size: 0.6rem;
+            padding: 1px 4px;
+            background: var(--bg-secondary);
+            border-radius: 2px;
+            color: var(--text-tertiary);
+        }
+
+        /* Settings section */
+        .settings-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            min-width: fit-content;
+        }
+
+        .settings-section label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .settings-section input {
+            width: 50px;
+            padding: 4px 8px;
+            font-size: 0.875rem;
+            text-align: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+        }
+
+        .settings-section .hint {
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+        }
+
+        .stats-inline {
+            display: flex;
+            gap: var(--space-md);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-inline span {
+            white-space: nowrap;
+        }
+
+        .stats-inline strong {
+            color: var(--text-primary);
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        /* Progress */
+        .progress-section {
+            display: none;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-xs);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar-bg {
+            height: 4px;
+            background: var(--border-primary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border-primary);
+        }
+
+        .result-card.generating {
+            opacity: 0.7;
+        }
+
+        .result-card.generating .result-placeholder {
+            background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .result-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .result-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .result-info {
+            padding: var(--space-sm);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            margin-bottom: 4px;
+        }
+
+        .result-code {
+            font-family: monospace;
+            font-size: 0.625rem;
+            color: var(--text-tertiary);
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .result-type {
+            font-size: 0.625rem;
+            color: var(--text-tertiary);
+        }
+
+        .result-name {
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: var(--space-xs);
+            margin-top: var(--space-xs);
+        }
+
+        .result-actions .btn {
+            flex: 1;
+            font-size: 0.65rem;
+            padding: 4px;
+            height: auto;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-xl);
+            color: var(--text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Campaign Onboarding Generator</h1>
+            <p>Generate images for campaign onboarding spectrum options (Era, Energy, Geographic, Environment, Colors, Lighting)</p>
+        </header>
+
+        <div class="layout">
+            <!-- Top Controls -->
+            <div class="top-controls">
+                <div class="controls-header">
+                    <h3>Select Options to Generate</h3>
+                    <div class="selection-buttons">
+                        <button class="btn btn--secondary" id="select-all-btn">All</button>
+                        <button class="btn btn--secondary" id="deselect-all-btn">None</button>
+                        <button class="btn btn--secondary" id="select-random-btn">Random 10</button>
+                        <button class="btn btn--primary" id="select-feedback-btn">Feedback</button>
+                    </div>
+                </div>
+                <div class="category-tabs" id="category-tabs"></div>
+                <div class="option-grid" id="option-checklist"></div>
+            </div>
+
+            <!-- Settings Bar -->
+            <div class="top-controls">
+                <div class="controls-row">
+                    <div class="settings-section">
+                        <label>Images per option:</label>
+                        <input type="number" id="images-per-option" value="1" min="1" max="4">
+                        <span class="hint">(×2 genders)</span>
+                    </div>
+
+                    <div class="stats-inline">
+                        <span>Selected: <strong id="selected-count">0</strong></span>
+                        <span>Total images: <strong id="total-images-count">0</strong></span>
+                        <span>Generated: <strong id="generated-count">0</strong></span>
+                    </div>
+
+                    <div class="progress-section" id="progress-section">
+                        <div class="progress-header">
+                            <span id="progress-status">Generating...</span>
+                            <span id="progress-count">0 / 0</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn--primary" id="generate-btn">Generate</button>
+                        <button class="btn btn--secondary" id="download-all-btn" disabled>Download All</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Grid -->
+            <div class="main-content">
+                <div class="results-grid" id="results-grid">
+                    <div class="empty-state">
+                        <p>Select options above and click Generate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script>
+        // Campaign onboarding options organized by category
+        // Each category focuses on ONE distinct aspect to make options clearly different
+        // Uses prompt pools for variation - composition positions vary (left/center/right)
+        const CAMPAIGN_OPTIONS = {
+            // ERA = Photographic treatment (grain, color science, lens characteristics)
+            // Sometimes include props for interaction
+            era: [
+                {
+                    id: 'era-1990s',
+                    name: '1990s',
+                    category: 'era',
+                    promptPool: [
+                        'shot on vintage 35mm film camera, soft diffused lens quality, warm amber tint with slight fade, film grain texture, nostalgic analog warmth, dreamy soft focus edges',
+                        'vintage film photograph, subtle warm color cast, soft diffused bokeh, gentle film grain, sitting casually on simple wooden chair, relaxed nostalgic mood',
+                        '90s film aesthetic, soft creamy highlights, warm undertones, gentle defocused background, leaning against wall, analog camera quality',
+                        'shot on Contax T2, characteristic soft rendering, warm muted tones, relaxed pose interacting with environment, authentic 90s fashion photography feel'
+                    ]
+                },
+                {
+                    id: 'era-2000s',
+                    name: '2000s',
+                    category: 'era',
+                    promptPool: [
+                        'early 2000s digital camera, direct flash, sharp focus, bright highlights, glossy Y2K commercial aesthetic',
+                        'Y2K fashion photography, flat flash lighting, everything in sharp focus, bright overexposed feel, clean commercial look',
+                        '2000s magazine editorial, direct flash photography, crisp sharp detail, slightly overlit, sitting on chrome stool',
+                        'early digital camera quality, flash-lit commercial style, sharp and bright, leaning on minimal furniture piece'
+                    ]
+                },
+                {
+                    id: 'era-classic',
+                    name: 'Classic',
+                    category: 'era',
+                    promptPool: [
+                        'Richard Avedon style, high contrast black and white converted, single person only, dramatic studio lighting, clean white backdrop, iconic classic fashion photography',
+                        'Peter Lindbergh aesthetic, raw authentic beauty, slightly grainy, emotional depth, single subject, minimal styling, honest classic portraiture',
+                        'Helmut Newton inspired, bold dramatic lighting, strong shadows, powerful singular presence, sophisticated black and white potential',
+                        'classic 1980s Vogue aesthetic, single model, theatrical studio lighting, timeless elegance, strong graphic composition'
+                    ]
+                },
+                {
+                    id: 'era-modern',
+                    name: 'Modern',
+                    category: 'era',
+                    promptPool: [
+                        'hyper-sharp contemporary digital, extreme skin detail visible, clinical color accuracy, current 2024 editorial standard, ultra clean aesthetic',
+                        'Phase One 150MP quality, every pore visible, razor sharp focus, minimal retouching natural skin texture, modern technical perfection',
+                        'current fashion photography standard, pristine digital clarity, contemporary minimal styling, ultra high resolution capture',
+                        'state of the art digital capture, surgical sharpness, authentic unretouched skin texture, modern clinical beauty'
+                    ]
+                },
+                {
+                    id: 'era-timeless',
+                    name: 'Timeless',
+                    category: 'era',
+                    promptPool: [
+                        'Irving Penn style simplicity, single spotlight creating focused illumination, gentle soft focus, creamy midtones, classic portraiture transcending trends',
+                        'timeless elegant lighting, focused spotlight effect, simple backdrop, classic portrait that could be any era, sitting on timeless design chair',
+                        'pure classic portraiture, spotlight illumination, no trendy effects, simple elegant and eternal, minimal timeless styling',
+                        'spotlight portrait, Irving Penn inspired, soft creamy tones, timeless fashion photography, interacting with classic design furniture'
+                    ]
+                }
+            ],
+            // ENERGY = Specific distinct poses (different for male/female) - uses pools for variety
+            energy: [
+                {
+                    id: 'energy-still',
+                    name: 'Still',
+                    category: 'energy',
+                    studio: true,
+                    promptPoolFemale: [
+                        'standing perfectly still, arms relaxed at sides, face turned slightly left, serene statue-like presence',
+                        'completely motionless, head tilted gently right, hands soft at thighs, zen stillness',
+                        'frozen elegant pose, chin slightly lifted, shoulders relaxed, absolute calm stillness',
+                        'statuesque and still, gaze directed slightly upward, composed and tranquil'
+                    ],
+                    promptPoolMale: [
+                        'standing perfectly still, arms at sides, head turned slightly to one side, stoic presence',
+                        'motionless stance, chin level, hands relaxed, composed statue-like calm',
+                        'frozen in place, slight head tilt, shoulders squared but relaxed, absolute stillness',
+                        'still as sculpture, gaze steady and focused, zen-like composure'
+                    ]
+                },
+                {
+                    id: 'energy-controlled',
+                    name: 'Controlled',
+                    category: 'energy',
+                    studio: true,
+                    promptPoolFemale: [
+                        'one hand touching collarbone, chin lifted, composed elegant gaze',
+                        'fingers grazing shoulder, slight head tilt, poised graceful stance',
+                        'hand resting lightly on hip, refined sophisticated posture',
+                        'arms crossed loosely at waist, knowing half-smile, polished poise'
+                    ],
+                    promptPoolMale: [
+                        'one hand in trouser pocket, weight shifted, composed confident expression',
+                        'adjusting cuff subtly, casual refinement, easy confidence',
+                        'hand at chin thoughtfully, contemplative intellectual presence',
+                        'thumbs in pockets, relaxed shoulders, understated cool confidence'
+                    ]
+                },
+                {
+                    id: 'energy-relaxed',
+                    name: 'Relaxed',
+                    category: 'energy',
+                    studio: true,
+                    promptPoolFemale: [
+                        'sitting casually on floor, one leg bent, leaning back on hands, genuine easy smile',
+                        'perched on edge of simple stool, legs crossed, completely at ease, natural warmth',
+                        'sitting cross-legged on ground, hands in lap, relaxed authentic expression',
+                        'leaning against wall, one foot up, arms loose, genuinely comfortable and present'
+                    ],
+                    promptPoolMale: [
+                        'sitting casually on floor, one knee up, arm resting on knee, relaxed genuine expression',
+                        'perched on simple stool, leaning forward with elbows on knees, approachable and real',
+                        'sitting cross-legged, hands relaxed, warm authentic smile, completely at ease',
+                        'leaning casually against wall, hands in pockets, easy natural comfort'
+                    ]
+                },
+                {
+                    id: 'energy-dynamic',
+                    name: 'Dynamic',
+                    category: 'energy',
+                    studio: true,
+                    promptPoolFemale: [
+                        'captured mid-spin, hair flying outward, dress catching air, joyful movement frozen',
+                        'jumping with arms raised, fabric floating, legs bent, pure dynamic energy captured',
+                        'sharp turn looking over shoulder, body rotating, hair in motion, dramatic twist',
+                        'dancing with one leg lifted, expressive arm movement, full body captured in motion',
+                        'leaning dramatically to side, reaching upward, strong diagonal body line, prop chair nearby'
+                    ],
+                    promptPoolMale: [
+                        'mid-stride with real momentum, arms in natural swing, jacket catching motion',
+                        'turning sharply, looking back over shoulder, body rotation captured, dynamic twist',
+                        'jumping with athletic energy, arms extended, powerful dynamic pose',
+                        'pushing off from simple prop, explosive movement captured, full energy',
+                        'running motion captured, powerful stride, athletic dynamic presence'
+                    ]
+                },
+                {
+                    id: 'energy-bold',
+                    name: 'Bold',
+                    category: 'energy',
+                    studio: true,
+                    promptPoolFemale: [
+                        'striking editorial pose, one hand on waist, elongated neck, fierce confident gaze, high fashion attitude',
+                        'powerful stance leaning slightly forward, intense eye contact, commanding the frame, editorial strength',
+                        'dramatic pose with chin lifted, looking down at camera, regal powerful presence, fashion editorial',
+                        'strong angular pose, shoulders back, piercing direct gaze, taking ownership of the space'
+                    ],
+                    promptPoolMale: [
+                        'wearing well-tailored dark suit, strong confident stance, chin slightly lifted, quiet powerful presence, editorial sophistication',
+                        'dressed in sleek minimal black, leaning toward camera with intensity, commanding gaze, refined power',
+                        'in tailored charcoal jacket, standing with effortless authority, direct confident eye contact, understated strength',
+                        'wearing crisp dark shirt, powerful but relaxed stance, piercing calm gaze, editorial masculine confidence'
+                    ]
+                }
+            ],
+            // GEO = Location feel with varied backgrounds - uses pools for different environments
+            geo: [
+                {
+                    id: 'geo-mediterranean',
+                    name: 'Mediterranean',
+                    category: 'geo',
+                    promptPoolFemale: [
+                        'against smooth white rendered wall, soft warm afternoon light, minimal Mediterranean architecture, editorial simplicity',
+                        'sitting on clean pale stone ledge, warm cream tones, bright soft daylight, refined Mediterranean minimal',
+                        'leaning on simple white plastered wall, golden hour warmth, elegant understated Mediterranean feel',
+                        'standing against textured off-white stucco, warm natural light, minimal sophisticated Mediterranean aesthetic'
+                    ],
+                    promptPoolMale: [
+                        'against warm beige rendered wall, clean minimal Mediterranean architecture, soft afternoon light, editorial restraint',
+                        'leaning on smooth limestone surface, cream and sand tones, bright diffused daylight, sophisticated simplicity',
+                        'standing by pale stone wall with subtle texture, warm golden light, minimal Mediterranean elegance',
+                        'against clean white stucco wall, geometric shadow from afternoon sun, refined Mediterranean aesthetic'
+                    ]
+                },
+                {
+                    id: 'geo-tropical',
+                    name: 'Tropical',
+                    category: 'geo',
+                    promptPoolFemale: [
+                        'sitting among lush palm fronds, dappled green light filtering through, intimate jungle feeling',
+                        'standing where large monstera leaves frame the composition, soft tropical light, integrated with foliage',
+                        'reclining on natural rock with ferns around, tropical forest atmosphere, green and peaceful',
+                        'walking through tall tropical grasses, banana leaves nearby, golden tropical light'
+                    ],
+                    promptPoolMale: [
+                        'leaning against thick palm trunk, large fronds creating shade, relaxed tropical atmosphere',
+                        'standing among bamboo stalks, vertical lines and green tones, tropical minimal',
+                        'sitting on fallen tree trunk, jungle foliage behind, natural tropical setting',
+                        'against large tropical leaf backdrop, monstera or banana, lush green minimal'
+                    ]
+                },
+                {
+                    id: 'geo-global',
+                    name: 'Global',
+                    category: 'geo',
+                    promptPoolFemale: [
+                        'standing against bright white modernist building, clean architectural lines, could be anywhere',
+                        'sitting on minimal concrete bench, white walls behind, universal modern aesthetic',
+                        'leaning on simple white railing, bright minimal architecture, location-neutral',
+                        'against smooth white stucco wall, soft shadow, bright clean global minimalism'
+                    ],
+                    promptPoolMale: [
+                        'standing by white modernist column, clean bright architecture, universal aesthetic',
+                        'sitting on white concrete steps, minimal bright surroundings, could be any city',
+                        'leaning against bright white wall, simple modern architecture, globally neutral',
+                        'against smooth pale render wall, bright daylight, clean minimal international feel'
+                    ]
+                },
+                {
+                    id: 'geo-desert',
+                    name: 'Desert',
+                    category: 'geo',
+                    promptPoolFemale: [
+                        'sitting on black volcanic sand, dramatic dark ground texture, Lanzarote volcanic landscape',
+                        'leaning against rust-red rock face, warm desert earth tones, canyon wall texture',
+                        'standing among pale desert sand dunes, soft golden tones, minimal arid landscape',
+                        'resting on weathered desert boulder, ochre and sienna tones, earthy austere beauty'
+                    ],
+                    promptPoolMale: [
+                        'standing against striated red rock wall, warm canyon colors, desert texture backdrop',
+                        'sitting on dark volcanic rock formation, dramatic black and rust tones, stark landscape',
+                        'leaning on sandstone formation, golden desert light, warm earth palette',
+                        'against weathered desert cliff face, layers of ochre and red, abstract desert minimal'
+                    ]
+                },
+                {
+                    id: 'geo-nordic',
+                    name: 'Nordic',
+                    category: 'geo',
+                    promptPoolFemale: [
+                        'standing in clean Scandinavian pine forest, bright clear nordic daylight, crisp cool tones, fresh clean outdoor atmosphere',
+                        'sitting on smooth gray rocks by nordic coastline, clear bright overcast sky, clean cool Scandinavian light, minimal natural setting',
+                        'standing among silver birch trees, clean bright nordic daylight, white bark and green leaves, fresh Scandinavian forest',
+                        'leaning against weathered wooden fence in nordic meadow, clear cool daylight, clean simple Scandinavian countryside'
+                    ],
+                    promptPoolMale: [
+                        'standing in clean Scandinavian forest clearing, bright clear nordic light, pine trees around, fresh crisp outdoor atmosphere',
+                        'leaning on smooth coastal rocks, clear bright sky, clean cool Scandinavian coastline, minimal natural backdrop',
+                        'standing among birch trees, clean bright daylight, cool tones, fresh nordic forest feeling',
+                        'against weathered wooden structure in nordic landscape, clear cool light, clean simple Scandinavian aesthetic'
+                    ]
+                }
+            ],
+            // ENVIRONMENT = Setting type with interaction
+            environment: [
+                {
+                    id: 'env-studio',
+                    name: 'Studio',
+                    category: 'environment',
+                    promptPool: [
+                        'pure infinite white cyclorama backdrop, standing naturally, seamless white studio floor curving into wall, clean empty space',
+                        'white studio backdrop, standing with relaxed pose, professional clean aesthetic, infinite white',
+                        'white cyclorama, walking casually, seamless white floor, pure minimal studio space',
+                        'seamless white studio, natural standing pose, clean empty backdrop, professional fashion studio'
+                    ]
+                },
+                {
+                    id: 'env-interior',
+                    name: 'Interior',
+                    category: 'environment',
+                    promptPool: [
+                        'cozy apartment living room, soft natural light from window, sitting on comfortable sofa, warm homey feel',
+                        'stylish home interior, sunlight streaming in, relaxed on modern armchair, lived-in warmth',
+                        'beautiful apartment with plants, soft daylight, leaning against bookshelf, personal and real',
+                        'warm home setting, wooden floors, sitting on bed edge or window seat, intimate domestic atmosphere'
+                    ]
+                },
+                {
+                    id: 'env-architectural',
+                    name: 'Architectural',
+                    category: 'environment',
+                    promptPool: [
+                        'minimal white gallery space, large windows, natural light flooding in, clean contemporary art gallery',
+                        'modern office interior with floor to ceiling windows, sitting on designer chair, sophisticated workspace',
+                        'bright open gallery with white walls, high ceilings, standing in empty exhibition space, refined minimal',
+                        'contemporary creative office, natural light, leaning against clean desk, stylish professional environment'
+                    ]
+                },
+                {
+                    id: 'env-pool',
+                    name: 'Pool',
+                    category: 'environment',
+                    promptPool: [
+                        'standing by simple concrete pool edge, plain blue water, overcast day, minimal understated poolside',
+                        'sitting on basic pool deck, still water behind, simple no-frills setting, natural daylight',
+                        'leaning on plain pool wall, calm water, muted tones, simple suburban pool atmosphere',
+                        'standing on concrete pool surround, basic blue pool, everyday casual setting, soft natural light'
+                    ]
+                },
+                {
+                    id: 'env-nature',
+                    name: 'Nature',
+                    category: 'environment',
+                    promptPool: [
+                        'wild meadow with tall grass, standing under ancient oak tree, completely natural landscape',
+                        'open field, sitting among wildflowers, rolling hills in distance, pure natural beauty',
+                        'forest clearing, dappled sunlight, leaning against old tree, peaceful wilderness',
+                        'by a calm lake edge, natural shoreline, serene untouched landscape'
+                    ]
+                }
+            ],
+            // COLORS = Color grading with varied clothing descriptions
+            colors: [
+                {
+                    id: 'colors-mono',
+                    name: 'Monochrome',
+                    category: 'colors',
+                    promptPool: [
+                        'pure black and white photography, deep rich blacks, bright clean whites, full tonal range, classic monochrome',
+                        'black and white film aesthetic, dramatic contrast, beautiful grayscale, timeless monochrome look',
+                        'monochrome portrait, rich shadows, luminous highlights, classic black and white beauty',
+                        'pure grayscale photography, no color, elegant black and white, sophisticated monochrome'
+                    ]
+                },
+                {
+                    id: 'colors-muted',
+                    name: 'Muted',
+                    category: 'colors',
+                    promptPoolFemale: [
+                        'heavily desaturated tones, wearing soft dusty pink blouse, muted faded color palette',
+                        'washed out pastel aesthetic, dressed in sage green knit, soft muted colors throughout',
+                        'faded color photography, wearing lavender silk top, gentle desaturated palette',
+                        'muted color grade, dressed in powder blue, dusty rose tones in environment'
+                    ],
+                    promptPoolMale: [
+                        'heavily desaturated tones, wearing faded olive shirt, muted earthy color palette',
+                        'washed out muted aesthetic, dressed in dusty blue chambray, soft faded colors',
+                        'faded color photography, wearing muted terracotta sweater, gentle desaturated tones',
+                        'muted color grade, dressed in sage gray, dusty neutral palette throughout'
+                    ]
+                },
+                {
+                    id: 'colors-neutral',
+                    name: 'Neutral',
+                    category: 'colors',
+                    promptPoolFemale: [
+                        'warm earth tone palette, wearing camel cashmere sweater, sophisticated neutral tones',
+                        'natural organic hues, dressed in cream linen, beige and brown color story',
+                        'neutral color grade, wearing chocolate brown knit, warm earth palette',
+                        'sophisticated neutrals, dressed in oatmeal wool, terracotta accents in scene'
+                    ],
+                    promptPoolMale: [
+                        'warm earth tone palette, wearing tan cotton shirt, sophisticated neutral tones',
+                        'natural organic hues, dressed in ecru linen, beige and brown color story',
+                        'neutral color grade, wearing dark brown sweater, warm earth palette',
+                        'sophisticated neutrals, dressed in sand-colored jacket, warm neutral scene'
+                    ]
+                },
+                {
+                    id: 'colors-warm',
+                    name: 'Warm',
+                    category: 'colors',
+                    promptPool: [
+                        'rich golden amber color grade, burnt orange and deep red tones, warm sunset palette, honey and rust colors',
+                        'intense warm temperature, golden hour color grade, rich amber tones throughout',
+                        'warm color photography, deep reds and oranges, sunset warmth, golden atmosphere',
+                        'warm color palette, rich caramel and burgundy tones, cozy warm feeling'
+                    ]
+                },
+                {
+                    id: 'colors-cool',
+                    name: 'Cool',
+                    category: 'colors',
+                    promptPoolFemale: [
+                        'cool blue color temperature, wearing icy blue sweater, cold tones throughout, winter color palette',
+                        'cold color grade with blue shadows, dressed in pale gray-blue top, cool crisp color aesthetic',
+                        'cool toned photography, wearing soft steel blue knit, cold clean color temperature',
+                        'icy cool palette, dressed in powder blue, blue-gray color cast, fresh cold tones'
+                    ],
+                    promptPoolMale: [
+                        'cool blue color temperature, wearing slate blue sweater, cold tones throughout, winter color palette',
+                        'cold color grade with blue shadows, dressed in cool gray shirt, crisp cold aesthetic',
+                        'cool toned photography, wearing steel blue casual top, cold clean color temperature',
+                        'icy cool palette, dressed in pale blue-gray, cool color cast, fresh cold tones'
+                    ]
+                }
+            ],
+            // LIGHTING = Specific lighting technique - uses pools for variation
+            lighting: [
+                {
+                    id: 'light-soft',
+                    name: 'Soft',
+                    category: 'lighting',
+                    bothSettings: true,
+                    promptPoolFemale: [
+                        'large softbox diffused lighting, no harsh shadows, even flat illumination, beauty light soft wrap',
+                        'soft diffused studio lighting, gentle even illumination, no hard shadows, flattering soft light',
+                        'overcast sky quality lighting, soft and even, gentle shadowless illumination',
+                        'beauty dish soft light, diffused and gentle, even flattering illumination'
+                    ],
+                    promptPoolMale: [
+                        'soft diffused lighting, gentle even illumination, no harsh shadows, clean soft light',
+                        'large soft light source, even illumination, subtle soft shadows, professional soft lighting',
+                        'diffused overcast quality light, soft and even, gentle natural softness',
+                        'soft wrap lighting, even tone, minimal shadows, clean professional illumination'
+                    ]
+                },
+                {
+                    id: 'light-natural',
+                    name: 'Natural',
+                    category: 'lighting',
+                    bothSettings: true,
+                    promptPool: [
+                        'natural window light from one side, soft directional daylight, gentle shadow gradients',
+                        'standing in natural daylight from large window, soft realistic illumination, authentic natural light',
+                        'open shade quality natural light, soft and directional, gentle natural shadows',
+                        'beautiful natural daylight, window light creating soft direction, real natural illumination'
+                    ]
+                },
+                {
+                    id: 'light-golden',
+                    name: 'Golden',
+                    category: 'lighting',
+                    bothSettings: true,
+                    promptPool: [
+                        'golden hour sunlight, warm low sun casting long shadows, face turned toward setting sun, warm glow',
+                        'sunset lighting, warm golden rim light from behind, looking toward low sun, textured wall background',
+                        'magic hour golden light, warm sun about to set, face illuminated by golden rays, simple backdrop',
+                        'low sun golden warmth, backlit with warm rim, face catching golden hour light, minimal textured background'
+                    ]
+                },
+                {
+                    id: 'light-dramatic',
+                    name: 'Dramatic',
+                    category: 'lighting',
+                    bothSettings: true,
+                    promptPool: [
+                        'single hard key light from side, deep dramatic shadows on face, Rembrandt triangle lighting, noir shadows',
+                        'dramatic side lighting, half face in shadow, cinematic contrast, powerful chiaroscuro',
+                        'hard directional light, strong shadows, dramatic contrast, moody powerful lighting',
+                        'single source dramatic light, deep shadows, high contrast, theatrical powerful illumination'
+                    ]
+                },
+                {
+                    id: 'light-flash',
+                    name: 'Flash',
+                    category: 'lighting',
+                    bothSettings: true,
+                    promptPool: [
+                        'direct on-camera flash, harsh shadow behind subject, flat frontal flash exposure, paparazzi aesthetic',
+                        'raw flash photography, hard shadows on backdrop, bright flash-lit, snapshot energy',
+                        'direct flash, harsh and immediate, flat lighting with hard shadow, flash burn highlights',
+                        'on-camera flash aesthetic, direct and raw, hard shadow behind, immediate flash feel'
+                    ]
+                }
+            ]
+        };
+
+        // Flatten all options with indices
+        function buildOptionList() {
+            const allOptions = [];
+            const categoryIndices = {};
+
+            Object.entries(CAMPAIGN_OPTIONS).forEach(([category, options]) => {
+                categoryIndices[category] = 0;
+                options.forEach((opt) => {
+                    categoryIndices[category]++;
+                    const prefix = category.toUpperCase().substring(0, 3);
+                    allOptions.push({
+                        ...opt,
+                        index: categoryIndices[category],
+                        code: `${prefix}${String(categoryIndices[category]).padStart(2, '0')}`
+                    });
+                });
+            });
+
+            return allOptions;
+        }
+
+        // Global state
+        const state = {
+            options: [],
+            selected: new Set(),
+            results: {},
+            generating: false,
+            categoryFilter: 'all'
+        };
+
+        let api, elements;
+
+        // Get images per option setting
+        function getImagesPerOption() {
+            return parseInt(elements.imagesPerOption.value) || 1;
+        }
+
+        // Get filtered options based on category
+        function getFilteredOptions() {
+            if (state.categoryFilter === 'all') return state.options;
+            return state.options.filter(opt => opt.category === state.categoryFilter);
+        }
+
+        // Render option chips
+        function renderChecklist() {
+            const options = getFilteredOptions();
+            elements.optionChecklist.innerHTML = options.map(opt => `
+                <label class="option-chip ${state.selected.has(opt.id) ? 'selected' : ''}" data-id="${opt.id}">
+                    <input type="checkbox" ${state.selected.has(opt.id) ? 'checked' : ''}>
+                    <span class="option-code">${opt.code}</span>
+                    <span class="option-label">${opt.name}</span>
+                    <span class="option-category">${opt.category}</span>
+                </label>
+            `).join('');
+
+            // Add event listeners
+            document.querySelectorAll('.option-chip').forEach(chip => {
+                chip.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.dataset.id;
+                    if (state.selected.has(id)) {
+                        state.selected.delete(id);
+                        this.classList.remove('selected');
+                    } else {
+                        state.selected.add(id);
+                        this.classList.add('selected');
+                    }
+                    updateStats();
+                });
+            });
+
+            updateStats();
+        }
+
+        // Update stats
+        function updateStats() {
+            const imagesPerOption = getImagesPerOption();
+            const totalImages = state.selected.size * 2 * imagesPerOption; // ×2 for both genders
+            elements.selectedCount.textContent = state.selected.size;
+            elements.totalImagesCount.textContent = totalImages;
+            elements.generatedCount.textContent = Object.keys(state.results).length;
+            elements.generateBtn.disabled = state.selected.size === 0 || state.generating;
+            elements.downloadAllBtn.disabled = Object.keys(state.results).length === 0;
+        }
+
+        // Render results grid
+        function renderResults() {
+            const results = Object.entries(state.results);
+
+            if (results.length === 0) {
+                elements.resultsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <p>Select options and click Generate</p>
+                    </div>
+                `;
+                return;
+            }
+
+            elements.resultsGrid.innerHTML = results.map(([filename, result]) => `
+                <div class="result-card" data-filename="${filename}">
+                    <img class="result-image" src="${result.url}" alt="${result.name}">
+                    <div class="result-info">
+                        <div class="result-header">
+                            <span class="result-code">${result.code}</span>
+                            <span class="result-type">${result.category}</span>
+                        </div>
+                        <div class="result-name">${result.name}</div>
+                        <div class="result-actions">
+                            <button class="btn btn--secondary" onclick="regenerateSingle('${filename}')">Redo</button>
+                            <button class="btn btn--secondary" onclick="downloadSingle('${filename}')">Download</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
+        }
+
+        // Add generating placeholder
+        function addGeneratingPlaceholder(genTask) {
+            const emptyState = elements.resultsGrid.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            let card = elements.resultsGrid.querySelector(`[data-filename="${genTask.filename}"]`);
+            if (!card) {
+                const html = `
+                    <div class="result-card generating" data-filename="${genTask.filename}">
+                        <div class="result-placeholder">${genTask.code}</div>
+                        <div class="result-info">
+                            <div class="result-header">
+                                <span class="result-code">${genTask.code}</span>
+                                <span class="result-type">${genTask.category}</span>
+                            </div>
+                            <div class="result-name">${genTask.name}</div>
+                        </div>
+                    </div>
+                `;
+                elements.resultsGrid.insertAdjacentHTML('beforeend', html);
+            }
+        }
+
+        // Update card with result
+        function updateCardWithResult(filename, result) {
+            const card = elements.resultsGrid.querySelector(`[data-filename="${filename}"]`);
+            if (card) {
+                card.classList.remove('generating');
+                card.innerHTML = `
+                    <img class="result-image" src="${result.url}" alt="${result.name}">
+                    <div class="result-info">
+                        <div class="result-header">
+                            <span class="result-code">${result.code}</span>
+                            <span class="result-type">${result.category}</span>
+                        </div>
+                        <div class="result-name">${result.name}</div>
+                        <div class="result-actions">
+                            <button class="btn btn--secondary" onclick="regenerateSingle('${filename}')">Redo</button>
+                            <button class="btn btn--secondary" onclick="downloadSingle('${filename}')">Download</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Build prompt for option with a model
+        function buildPrompt(option, gender, isOutdoor = false) {
+            const subject = gender === 'female'
+                ? 'Photorealistic portrait of a female model'
+                : 'Photorealistic portrait of a male model';
+
+            const framing = ['full-body shot', 'three-quarter shot', 'waist-up shot'][Math.floor(Math.random() * 3)];
+
+            // Composition variation - vary where subject is positioned
+            const compositions = [
+                'subject positioned in center of frame',
+                'subject positioned slightly to the left of frame',
+                'subject positioned slightly to the right of frame',
+                'off-center composition with subject on left third',
+                'off-center composition with subject on right third'
+            ];
+            const composition = compositions[Math.floor(Math.random() * compositions.length)];
+
+            // Category-specific prompt building
+            let setting = '';
+
+            // Use prompt pools, gender-specific prompts, or default prompt
+            // Priority: promptPoolFemale/Male > promptPool > promptFemale/Male > prompt
+            let basePrompt = option.prompt || '';
+            if (gender === 'female') {
+                if (option.promptPoolFemale && option.promptPoolFemale.length > 0) {
+                    basePrompt = option.promptPoolFemale[Math.floor(Math.random() * option.promptPoolFemale.length)];
+                } else if (option.promptPool && option.promptPool.length > 0) {
+                    basePrompt = option.promptPool[Math.floor(Math.random() * option.promptPool.length)];
+                } else if (option.promptFemale) {
+                    basePrompt = option.promptFemale;
+                }
+            } else if (gender === 'male') {
+                if (option.promptPoolMale && option.promptPoolMale.length > 0) {
+                    basePrompt = option.promptPoolMale[Math.floor(Math.random() * option.promptPoolMale.length)];
+                } else if (option.promptPool && option.promptPool.length > 0) {
+                    basePrompt = option.promptPool[Math.floor(Math.random() * option.promptPool.length)];
+                } else if (option.promptMale) {
+                    basePrompt = option.promptMale;
+                }
+            }
+
+            if (option.category === 'energy') {
+                // Energy shots are always in studio
+                setting = 'clean white studio backdrop, professional lighting';
+            } else if (option.category === 'lighting' && option.bothSettings) {
+                // Lighting shots: female outdoor, male studio for variety
+                if (isOutdoor) {
+                    setting = 'outdoor natural environment';
+                } else {
+                    setting = 'clean white studio backdrop';
+                }
+            } else if (option.category === 'geo') {
+                // Geographic is always location-based
+                setting = '';
+            } else if (option.category === 'environment') {
+                // Environment uses the environment prompt itself
+                setting = '';
+            } else {
+                // Era, Colors - use studio for clarity
+                setting = 'clean white studio backdrop, professional lighting';
+            }
+
+            const settingText = setting ? `, ${setting}` : '';
+
+            return `${subject}, ${framing}, ${composition}, wearing simple contemporary fashion, ${basePrompt}${settingText}, professional fashion photography, editorial style, high-end campaign`;
+        }
+
+        // Generate single task
+        async function generateSingle(genTask) {
+            addGeneratingPlaceholder(genTask);
+
+            try {
+                const isOutdoor = genTask.gender === 'female' && genTask.option.bothSettings;
+                const prompt = buildPrompt(genTask.option, genTask.gender, isOutdoor);
+                console.log(`🎨 Generating: ${genTask.code} ${genTask.name}`);
+
+                const data = await api.generateImage('reve', {
+                    prompt: prompt,
+                    aspect_ratio: '3:4',
+                    num_images: 1,
+                    output_format: 'png'
+                });
+
+                if (data.images && data.images.length > 0) {
+                    const result = {
+                        url: data.images[0].url,
+                        code: genTask.code,
+                        name: genTask.name,
+                        category: genTask.category,
+                        gender: genTask.gender,
+                        option: genTask.option,
+                        prompt: prompt
+                    };
+                    state.results[genTask.filename] = result;
+                    updateCardWithResult(genTask.filename, result);
+                    console.log(`   ✅ Done: ${genTask.code}`);
+                    return result;
+                }
+            } catch (error) {
+                console.error(`   ❌ Failed: ${genTask.code}`, error);
+            }
+            return null;
+        }
+
+        // Regenerate single
+        async function regenerateSingle(filename) {
+            const result = state.results[filename];
+            if (!result) return;
+
+            const genTask = {
+                option: result.option,
+                gender: result.gender,
+                code: result.code,
+                name: result.name,
+                category: result.category,
+                filename: filename
+            };
+
+            delete state.results[filename];
+            await generateSingle(genTask);
+            updateStats();
+        }
+
+        // Build generation tasks from selected options
+        function buildGenerationTasks() {
+            const tasks = [];
+            const imagesPerOption = getImagesPerOption();
+            const selectedOptions = state.options.filter(o => state.selected.has(o.id));
+
+            for (const option of selectedOptions) {
+                // Generate both genders for each option
+                for (const gender of ['female', 'male']) {
+                    for (let i = 1; i <= imagesPerOption; i++) {
+                        const genderCode = gender === 'female' ? 'F' : 'M';
+                        const code = `${option.code}${genderCode}${i}`;
+                        tasks.push({
+                            option: option,
+                            gender: gender,
+                            category: option.category,
+                            variationIndex: i,
+                            code: code,
+                            name: `${option.name} (${gender === 'female' ? '♀' : '♂'})`,
+                            filename: `campaign_${code}_${option.id}.png`
+                        });
+                    }
+                }
+            }
+            return tasks;
+        }
+
+        // Generate all selected
+        async function generateSelected() {
+            if (state.generating || state.selected.size === 0) return;
+            state.generating = true;
+
+            elements.generateBtn.disabled = true;
+            elements.progressSection.classList.add('visible');
+
+            const tasks = buildGenerationTasks();
+            const total = tasks.length;
+            let completed = 0;
+
+            console.log(`\n🎬 Starting generation of ${total} images...`);
+
+            elements.progressCount.textContent = `0 / ${total}`;
+            elements.progressBar.style.width = '0%';
+
+            const MAX_CONCURRENT = 5;
+            const executing = new Set();
+
+            for (const task of tasks) {
+                const promise = (async () => {
+                    await generateSingle(task);
+                    completed++;
+                    elements.progressCount.textContent = `${completed} / ${total}`;
+                    elements.progressBar.style.width = `${(completed / total) * 100}%`;
+                    updateStats();
+                })();
+
+                const wrapped = promise.then(() => executing.delete(wrapped));
+                executing.add(wrapped);
+
+                if (executing.size >= MAX_CONCURRENT) {
+                    await Promise.race(executing);
+                }
+            }
+
+            await Promise.all(executing);
+
+            console.log(`\n✅ Generation complete!`);
+            elements.progressStatus.textContent = 'Complete!';
+            state.generating = false;
+            elements.generateBtn.disabled = false;
+        }
+
+        // Download single
+        async function downloadSingle(filename) {
+            const result = state.results[filename];
+            if (!result) return;
+
+            try {
+                const response = await fetch(result.url);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Download failed:', error);
+            }
+        }
+
+        // Download all
+        async function downloadAll() {
+            const results = Object.entries(state.results);
+            console.log(`📥 Downloading ${results.length} images...`);
+
+            for (const [filename, result] of results) {
+                await downloadSingle(filename);
+                await new Promise(r => setTimeout(r, 300));
+            }
+
+            console.log('✅ All downloads complete!');
+        }
+
+        // Selection helpers
+        function selectAll() {
+            const filtered = getFilteredOptions();
+            filtered.forEach(o => state.selected.add(o.id));
+            renderChecklist();
+        }
+
+        function deselectAll() {
+            state.selected.clear();
+            renderChecklist();
+        }
+
+        function selectRandom() {
+            state.selected.clear();
+            const shuffled = [...state.options].sort(() => Math.random() - 0.5);
+            shuffled.slice(0, 10).forEach(o => state.selected.add(o.id));
+            renderChecklist();
+        }
+
+        // Items that still need work/feedback (missing or need regeneration)
+        const FEEDBACK_ITEMS = [
+            // All complete!
+        ];
+
+        function selectFeedback() {
+            state.selected.clear();
+            state.categoryFilter = 'all';
+            // Update category tabs UI
+            document.querySelectorAll('.category-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.category === 'all');
+            });
+            // Select only feedback items
+            FEEDBACK_ITEMS.forEach(id => state.selected.add(id));
+            renderChecklist();
+            console.log(`📝 Selected ${FEEDBACK_ITEMS.length} items needing feedback`);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            api = new API();
+            elements = {
+                optionChecklist: document.getElementById('option-checklist'),
+                imagesPerOption: document.getElementById('images-per-option'),
+                selectedCount: document.getElementById('selected-count'),
+                totalImagesCount: document.getElementById('total-images-count'),
+                generatedCount: document.getElementById('generated-count'),
+                generateBtn: document.getElementById('generate-btn'),
+                downloadAllBtn: document.getElementById('download-all-btn'),
+                resultsGrid: document.getElementById('results-grid'),
+                progressSection: document.getElementById('progress-section'),
+                progressStatus: document.getElementById('progress-status'),
+                progressCount: document.getElementById('progress-count'),
+                progressBar: document.getElementById('progress-bar')
+            };
+
+            // Build option list
+            state.options = buildOptionList();
+
+            // Render category tabs with dynamic counts
+            const categories = Object.keys(CAMPAIGN_OPTIONS);
+            const totalCount = state.options.length;
+            let tabsHTML = `<div class="category-tab active" data-category="all">All <span class="count">(${totalCount})</span></div>`;
+            categories.forEach(cat => {
+                const count = CAMPAIGN_OPTIONS[cat].length;
+                const label = cat.charAt(0).toUpperCase() + cat.slice(1);
+                tabsHTML += `<div class="category-tab" data-category="${cat}">${label} <span class="count">(${count})</span></div>`;
+            });
+            document.getElementById('category-tabs').innerHTML = tabsHTML;
+
+            renderChecklist();
+
+            // Category tabs
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    state.categoryFilter = this.dataset.category;
+                    renderChecklist();
+                });
+            });
+
+            // Selection buttons
+            document.getElementById('select-all-btn').addEventListener('click', selectAll);
+            document.getElementById('deselect-all-btn').addEventListener('click', deselectAll);
+            document.getElementById('select-random-btn').addEventListener('click', selectRandom);
+            document.getElementById('select-feedback-btn').addEventListener('click', selectFeedback);
+
+            // Images per option change handler
+            elements.imagesPerOption.addEventListener('change', updateStats);
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', generateSelected);
+
+            // Download all button
+            elements.downloadAllBtn.addEventListener('click', downloadAll);
+
+            console.log('🎨 Campaign Onboarding Generator initialized');
+            console.log(`   ${state.options.length} options across ${categories.length} categories`);
+        });
+    </script>
+</body>
+</html>
