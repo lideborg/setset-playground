@@ -627,6 +627,27 @@
                 });
             });
 
+            // Clipboard paste - global listener
+            document.addEventListener('paste', (e) => {
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            // Paste to first frame if empty, otherwise to last frame
+                            const targetType = !state.firstFrame ? 'first' :
+                                              (state.model === 'v1.6' && !state.lastFrame ? 'last' : 'first');
+                            handleFileUpload(file, targetType);
+                            console.log(`📋 Pasted image to ${targetType} frame`);
+                        }
+                        break;
+                    }
+                }
+            });
+
             // Generate button
             elements.generateBtn.addEventListener('click', handleGenerate);
         }

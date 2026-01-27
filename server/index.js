@@ -12,6 +12,8 @@ import { dirname, join } from 'path';
 import { readdirSync, statSync, existsSync } from 'fs';
 import dotenv from 'dotenv';
 import { fal } from '@fal-ai/client';
+import sharp from 'sharp';
+import heicConvert from 'heic-convert';
 
 // Load environment variables (check both project root and server directory)
 dotenv.config(); // Project root
@@ -44,6 +46,7 @@ const FAL_API_KEYS = {
 };
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Helper to get image dimensions from buffer (PNG/JPEG)
 function getImageDimensions(buffer) {
@@ -184,6 +187,193 @@ app.post('/api/remix', async (req, res) => {
         res.json(data);
     } catch (error) {
         console.error('❌ [Remix] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/remix-gemini
+ * Remix/transform images using Google Gemini API directly
+ * Supports gemini-2.5-flash-image and gemini-3-pro-image-preview models
+ */
+app.post('/api/remix-gemini', async (req, res) => {
+    try {
+        const { model, prompt, image_urls, aspect_ratio, resolution, num_images = 1 } = req.body;
+
+        if (!prompt) {
+            return res.status(400).json({ error: 'Prompt is required' });
+        }
+
+        const modelId = model === 'gemini-3-pro' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
+
+        console.log(`🎨 [Gemini Remix] Model: ${modelId}`);
+        console.log(`🎨 [Gemini Remix] Prompt: ${prompt.substring(0, 100)}...`);
+        console.log(`🎨 [Gemini Remix] Images: ${image_urls?.length || 0}`);
+
+        // Build the content parts array
+        const parts = [{ text: prompt }];
+
+        // Add images if provided (for image-to-image)
+        if (image_urls && image_urls.length > 0) {
+            for (const imageUrl of image_urls) {
+                // Fetch the image and convert to base64
+                const imageResponse = await fetch(imageUrl);
+                const imageBuffer = await imageResponse.buffer();
+                const base64Data = imageBuffer.toString('base64');
+
+                // Determine mime type from URL or default to jpeg
+                let mimeType = 'image/jpeg';
+                if (imageUrl.includes('.png')) mimeType = 'image/png';
+                else if (imageUrl.includes('.webp')) mimeType = 'image/webp';
+
+                parts.push({
+                    inline_data: {
+                        mime_type: mimeType,
+                        data: base64Data
+                    }
+                });
+            }
+        }
+
+        // Build request body for Gemini
+        const requestBody = {
+            contents: [{
+                parts: parts
+            }],
+            generationConfig: {
+                responseModalities: ['Text', 'Image']
+            }
+        };
+
+        // Add imageConfig for aspect ratio and resolution (nested inside generationConfig)
+        if (aspect_ratio || resolution) {
+            requestBody.generationConfig.imageConfig = {};
+            if (aspect_ratio) {
+                requestBody.generationConfig.imageConfig.aspectRatio = aspect_ratio;
+            }
+            if (resolution) {
+                // Gemini uses imageSize: "1K", "2K", "4K"
+                requestBody.generationConfig.imageConfig.imageSize = resolution;
+            }
+        }
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Gemini Remix] API Error:', data);
+            return res.status(response.status).json({
+                error: data.error?.message || 'Gemini remix failed',
+                details: data
+            });
+        }
+
+        // Debug: Log full response structure
+        console.log(`📦 [Gemini Remix] Response structure:`, JSON.stringify(data, null, 2).substring(0, 1000));
+
+        // Extract images from response
+        const images = [];
+        if (data.candidates && data.candidates[0]?.content?.parts) {
+            for (const part of data.candidates[0].content.parts) {
+                // Gemini returns inlineData (camelCase), not inline_data
+                const inlineData = part.inlineData || part.inline_data;
+                console.log(`📄 [Gemini Remix] Part type:`, part.text ? 'text' : inlineData ? 'inlineData' : 'unknown');
+                if (inlineData) {
+                    const mimeType = inlineData.mimeType || inlineData.mime_type || 'image/jpeg';
+                    const dataUrl = `data:${mimeType};base64,${inlineData.data}`;
+                    images.push({ url: dataUrl });
+                }
+            }
+        }
+
+        console.log(`✅ [Gemini Remix] Generated ${images.length} image(s)`);
+
+        // Return in same format as FAL API for compatibility
+        res.json({ images });
+
+    } catch (error) {
+        console.error('❌ [Gemini Remix] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/analyze-gemini
+ * Analyze images using Google Gemini (text-only output)
+ * More permissive than GPT-4 Vision for product photography tasks
+ */
+app.post('/api/analyze-gemini', async (req, res) => {
+    try {
+        const { image_url, prompt } = req.body;
+
+        if (!image_url || !prompt) {
+            return res.status(400).json({ error: 'Image URL and prompt are required' });
+        }
+
+        // Use gemini-2.0-flash for fast text analysis
+        const modelId = 'gemini-2.0-flash';
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
+
+        console.log(`🔍 [Gemini Analyze] Analyzing image...`);
+
+        // Fetch the image and convert to base64
+        const imageResponse = await fetch(image_url);
+        const imageBuffer = await imageResponse.buffer();
+        const base64Data = imageBuffer.toString('base64');
+
+        // Determine mime type
+        let mimeType = 'image/jpeg';
+        if (image_url.includes('.png')) mimeType = 'image/png';
+        else if (image_url.includes('.webp')) mimeType = 'image/webp';
+
+        const requestBody = {
+            contents: [{
+                parts: [
+                    { text: prompt },
+                    {
+                        inline_data: {
+                            mime_type: mimeType,
+                            data: base64Data
+                        }
+                    }
+                ]
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 500
+            }
+        };
+
+        const response = await fetch(`${endpoint}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Gemini Analyze] API Error:', data);
+            return res.status(response.status).json({ error: data.error?.message || 'Gemini analysis failed' });
+        }
+
+        // Extract text content from response
+        const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        console.log(`✅ [Gemini Analyze] Success: "${textContent.substring(0, 60)}..."`);
+
+        res.json({ content: textContent });
+
+    } catch (error) {
+        console.error('❌ [Gemini Analyze] Server error:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1672,8 +1862,12 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 /**
  * POST /api/upload-base64
  * Upload base64 image to fal.ai storage using fal client
+ * Includes retry logic for timeout errors
  */
 app.post('/api/upload-base64', async (req, res) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000;
+
     try {
         const { dataUrl } = req.body;
 
@@ -1696,14 +1890,66 @@ app.post('/api/upload-base64', async (req, res) => {
         // Configure fal with the appropriate key for this request
         fal.config({ credentials: getFalKey(req) });
 
-        // Create a Blob from the buffer and upload using fal client
+        // Create a Blob from the buffer
         const blob = new Blob([buffer], { type: mimeType });
-        const url = await fal.storage.upload(blob);
 
-        console.log(`📥 [Upload] URL:`, url);
-        res.json({ url });
+        // Upload with retry logic for timeout errors
+        let lastError;
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const url = await fal.storage.upload(blob);
+                console.log(`📥 [Upload] URL:`, url);
+                return res.json({ url });
+            } catch (uploadError) {
+                lastError = uploadError;
+                const isTimeout = uploadError.status === 408 ||
+                                  uploadError.message?.includes('Timeout') ||
+                                  uploadError.body?.error === 'Timeout';
+
+                if (isTimeout && attempt < MAX_RETRIES) {
+                    console.log(`⚠️ [Upload] Timeout on attempt ${attempt}, retrying in ${RETRY_DELAY}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
+                } else {
+                    throw uploadError;
+                }
+            }
+        }
+
+        throw lastError;
     } catch (error) {
         console.error('Upload error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/convert-heic
+ * Convert HEIC/HEIF image to JPEG using heic-convert
+ */
+app.post('/api/convert-heic', upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image provided' });
+        }
+
+        console.log(`🔄 [HEIC Convert] Converting ${req.file.originalname} (${(req.file.size / 1024 / 1024).toFixed(1)}MB)`);
+
+        // Convert HEIC to JPEG using heic-convert
+        const jpegBuffer = await heicConvert({
+            buffer: req.file.buffer,
+            format: 'JPEG',
+            quality: 0.92
+        });
+
+        // Return as base64 data URL
+        const base64 = Buffer.from(jpegBuffer).toString('base64');
+        const dataUrl = `data:image/jpeg;base64,${base64}`;
+
+        console.log(`✅ [HEIC Convert] Success: ${(jpegBuffer.length / 1024 / 1024).toFixed(1)}MB JPEG`);
+
+        res.json({ dataUrl });
+    } catch (error) {
+        console.error('❌ [HEIC Convert] Error:', error);
         res.status(500).json({ error: error.message });
     }
 });

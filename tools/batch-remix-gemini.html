@@ -1,0 +1,3859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Remix (Gemini)</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 900px;
+        }
+
+        /* Compact header */
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .header-row h1 {
+            font-size: var(--text-lg);
+            margin: 0;
+        }
+
+        .sets-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .sets-control label {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .sets-slider {
+            width: 80px;
+        }
+
+        .sets-value {
+            font-weight: 600;
+            min-width: 20px;
+        }
+
+        /* Remix Set */
+        .remix-set {
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Mode toggle - button group style */
+        .mode-toggle-mini {
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        .mode-toggle-mini button {
+            padding: 6px 12px;
+            font-size: var(--text-xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .mode-toggle-mini button:first-child {
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+            border-right: none;
+        }
+
+        .mode-toggle-mini button:not(:first-child):not(:last-child) {
+            border-radius: 0;
+            border-right: none;
+        }
+
+        .mode-toggle-mini button:last-child {
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .mode-toggle-mini button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .mode-toggle-mini button:hover:not(.active) {
+            border-color: var(--jet);
+        }
+
+        /* Images row - side by side */
+        .images-row {
+            display: flex;
+            justify-content: space-between;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xs);
+        }
+
+        .images-column {
+            flex: 0 0 auto;
+        }
+
+        .images-column:first-child {
+            text-align: left;
+        }
+
+        .images-column:last-child {
+            text-align: right;
+        }
+
+        .images-column:last-child .upload-grid {
+            margin-left: auto;
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .column-label {
+            font-size: var(--text-2xs);
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* Compact upload grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            padding: 6px;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            width: 340px;
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 8px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Compact prompt row */
+        .prompt-row {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .template-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .template-row .label {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+        }
+
+        .prompt-input {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: var(--text-sm);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        /* Settings row - compact */
+        .settings-compact {
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2xs);
+        }
+
+        .setting-item label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .btn-group-compact {
+            display: flex;
+            gap: 2px;
+        }
+
+        .btn-group-compact button {
+            padding: 4px 8px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-group-compact button:first-child {
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+        }
+
+        .btn-group-compact button:last-child {
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+
+        .btn-group-compact button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        /* Generate section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Inline loader styles are in /shared/css/components.css */
+
+        /* Results */
+        .result-image {
+            aspect-ratio: 3/4;
+        }
+
+        .lightbox-source-images {
+            display: flex;
+            gap: var(--space-xs);
+            flex-wrap: wrap;
+        }
+
+        .lightbox-source-images img {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .result-card .model-tag {
+            position: absolute;
+            bottom: var(--space-2xs);
+            left: var(--space-2xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .result-card .set-tag {
+            position: absolute;
+            top: var(--space-2xs);
+            left: var(--space-2xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .result-card.loading {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+        }
+
+        .batch-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) 0;
+        }
+
+        .batch-divider::before,
+        .batch-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
+        .result-card.cancelled {
+            background: var(--seasalt);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Lightbox nav - inside the image area */
+        .lightbox-left {
+            position: relative;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--white);
+            padding: 8px 12px;
+            z-index: 10;
+            border-radius: var(--radius-sm);
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .lightbox-nav.prev { left: var(--space-sm); }
+        .lightbox-nav.next { right: var(--space-sm); }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .loading-overlay.visible {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Edit Mode Styles */
+        .edit-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            pointer-events: none;
+        }
+
+        .edit-canvas-container.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        .edit-canvas {
+            position: absolute;
+            cursor: crosshair;
+        }
+
+        /* Edit Section in Sidebar */
+        .edit-section {
+            border-top: 1px solid var(--gainsboro);
+            padding-top: var(--space-sm);
+            margin-top: var(--space-sm);
+        }
+
+        .edit-toggle-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--jet);
+            transition: all var(--transition-fast);
+        }
+
+        .edit-toggle-btn:hover {
+            border-color: var(--jet);
+        }
+
+        .edit-toggle-btn.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .edit-panel {
+            display: none;
+            margin-top: var(--space-sm);
+        }
+
+        .edit-panel.active {
+            display: block;
+        }
+
+        .edit-prompt-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 50px;
+            margin-bottom: 8px;
+        }
+
+        .edit-prompt-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        /* Drawing Tools Row */
+        .edit-tools-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .edit-tools-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            white-space: nowrap;
+        }
+
+        .edit-toolbar {
+            display: flex;
+            gap: 2px;
+            background: var(--off-white);
+            padding: 2px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .edit-tool-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            color: var(--slate);
+            cursor: pointer;
+            border-radius: var(--radius-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-tool-btn:hover {
+            background: var(--gainsboro);
+            color: var(--jet);
+        }
+
+        .edit-tool-btn.active {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .edit-tool-btn.clear-btn {
+            color: var(--slate);
+        }
+
+        .edit-tool-btn.clear-btn:hover {
+            background: #fee;
+            color: #c00;
+        }
+
+        /* Reference Upload */
+        .edit-reference-upload {
+            border: 1px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all var(--transition-fast);
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .edit-reference-upload:hover {
+            border-color: var(--slate);
+            background: var(--off-white);
+        }
+
+        .edit-reference-upload.has-image {
+            border-style: solid;
+            padding: 4px;
+        }
+
+        .edit-reference-upload img {
+            max-width: 100%;
+            max-height: 80px;
+            border-radius: var(--radius-xs);
+        }
+
+        .edit-reference-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .edit-regenerate-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--red);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: var(--text-sm);
+        }
+
+        .edit-regenerate-btn:hover {
+            opacity: 0.9;
+        }
+
+        .edit-regenerate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Collapsible Settings */
+        .edit-settings {
+            margin-bottom: 8px;
+        }
+
+        .edit-settings-summary {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            cursor: pointer;
+            padding: 6px 0;
+            user-select: none;
+        }
+
+        .edit-settings-summary:hover {
+            color: var(--jet);
+        }
+
+        .edit-settings-content {
+            padding: 8px;
+            background: var(--off-white);
+            border-radius: var(--radius-sm);
+            margin-top: 4px;
+        }
+
+        .edit-setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .edit-setting-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .edit-setting-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .edit-setting-buttons {
+            display: flex;
+            gap: 2px;
+        }
+
+        .edit-setting-buttons button {
+            padding: 4px 8px;
+            font-size: 10px;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            border-radius: var(--radius-xs);
+            transition: all var(--transition-fast);
+        }
+
+        .edit-setting-buttons button:hover {
+            border-color: var(--jet);
+        }
+
+        .edit-setting-buttons button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .edit-seeds-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .edit-seeds-slider {
+            width: 60px;
+            height: 4px;
+        }
+
+        .edit-seeds-value {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            min-width: 12px;
+            text-align: center;
+        }
+
+        /* Mode Tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: var(--space-sm);
+        }
+
+        .mode-tab {
+            padding: 8px 20px;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .mode-tab:first-child {
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+        }
+
+        .mode-tab:last-child {
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .mode-tab.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .mode-tab:hover:not(.active) {
+            border-color: var(--jet);
+        }
+
+        /* Mode Panels */
+        .mode-panel {
+            display: none;
+        }
+
+        .mode-panel.active {
+            display: block;
+        }
+
+        /* Standalone Edit Mode Panel - Centered Layout */
+        .standalone-edit-container {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-sm);
+        }
+
+        .standalone-edit-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-md);
+            width: 100%;
+        }
+
+        /* Edit Canvas Area */
+        .standalone-canvas-wrapper {
+            position: relative;
+            width: 100%;
+            background: var(--seasalt);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            aspect-ratio: 3/4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .standalone-canvas-wrapper:hover:not(.has-image) {
+            border-color: var(--slate);
+            background: var(--off-white);
+        }
+
+        .standalone-canvas-wrapper.has-image {
+            border-style: solid;
+            border-color: var(--gainsboro);
+            background: var(--jet);
+        }
+
+        .standalone-canvas-wrapper.drag-over {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .standalone-canvas-wrapper.paste-ready {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Remove button for main image */
+        .standalone-remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background var(--transition-fast);
+        }
+
+        .standalone-remove-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .standalone-canvas-wrapper.has-image .standalone-remove-btn {
+            display: flex;
+        }
+
+        .standalone-edit-placeholder {
+            text-align: center;
+            color: var(--slate);
+            padding: var(--space-lg);
+        }
+
+        .standalone-edit-placeholder svg {
+            width: 40px;
+            height: 40px;
+            color: var(--french-gray);
+            margin-bottom: var(--space-xs);
+        }
+
+        .standalone-edit-placeholder p {
+            font-size: var(--text-sm);
+            margin: 0 0 4px 0;
+            color: var(--slate);
+        }
+
+        .standalone-edit-placeholder span {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+        }
+
+        .standalone-edit-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .standalone-canvas-wrapper.has-image .standalone-edit-image {
+            display: block;
+        }
+
+        .standalone-canvas-wrapper.has-image .standalone-edit-placeholder {
+            display: none;
+        }
+
+        .standalone-edit-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            cursor: crosshair;
+        }
+
+        .standalone-canvas-wrapper.has-image .standalone-edit-canvas {
+            pointer-events: auto;
+        }
+
+        /* Drawing Tools Bar */
+        .standalone-toolbar {
+            display: flex;
+            gap: 2px;
+        }
+
+        .standalone-tool-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            color: var(--slate);
+            cursor: pointer;
+            border-radius: var(--radius-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .standalone-tool-btn:hover {
+            background: var(--gainsboro);
+            color: var(--jet);
+        }
+
+        .standalone-tool-btn.active {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .standalone-tool-btn.clear-btn:hover {
+            background: #fee;
+            color: #c00;
+        }
+
+        /* Color picker buttons */
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+            padding-left: 8px;
+            border-left: 1px solid var(--gainsboro);
+        }
+
+        .color-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .color-btn.red {
+            background: rgba(255, 0, 0, 0.7);
+        }
+
+        .color-btn.green {
+            background: rgba(0, 255, 0, 0.7);
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active {
+            border-color: var(--jet);
+            box-shadow: 0 0 0 2px var(--white);
+        }
+
+        /* Edit mode sections - centered layout */
+        .standalone-edit-section {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .standalone-edit-section-title {
+            font-size: var(--text-2xs);
+            color: var(--french-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-xs);
+            font-weight: 500;
+        }
+
+        .standalone-prompt-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            background: var(--white);
+            transition: border-color var(--transition-fast);
+        }
+
+        .standalone-prompt-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        /* Reference Images Grid */
+        .standalone-ref-grid {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .standalone-ref-slot {
+            flex: 1;
+            aspect-ratio: 3/4;
+            border: 1px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--seasalt);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--french-gray);
+            font-size: 16px;
+            transition: all var(--transition-fast);
+        }
+
+        .standalone-ref-slot:hover {
+            border-color: var(--slate);
+            background: var(--off-white);
+        }
+
+        .standalone-ref-slot.filled {
+            border-style: solid;
+            border-color: var(--gainsboro);
+        }
+
+        .standalone-ref-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .standalone-ref-slot.drag-over {
+            border-color: var(--jet);
+            border-style: solid;
+            background: var(--off-white);
+        }
+
+        .standalone-ref-slot.loading {
+            pointer-events: none;
+        }
+
+        .standalone-ref-slot .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .standalone-ref-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .standalone-ref-slot .remove-ref {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .standalone-ref-slot.filled:hover .remove-ref {
+            display: flex;
+        }
+
+        .standalone-ref-hint {
+            font-size: 10px;
+            color: var(--french-gray);
+            margin-top: 6px;
+        }
+
+        .standalone-generate-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--text-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .standalone-generate-btn:hover:not(:disabled) {
+            background: var(--slate);
+        }
+
+        .standalone-generate-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Tools bar for centered layout */
+        .standalone-tools-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            width: 100%;
+        }
+
+        .standalone-tools-bar .standalone-tools-label {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Compact Header -->
+        <div class="header-row">
+            <h1>Batch Remix (Gemini)</h1>
+            <div class="sets-control">
+                <label>Sets:</label>
+                <input type="range" class="slider sets-slider" id="sets-slider" min="1" max="5" value="1">
+                <span class="sets-value" id="sets-value">1</span>
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="settings-compact">
+            <div class="setting-item">
+                <label>Model:</label>
+                <div class="btn-group-compact" id="model-buttons">
+                    <button class="active" data-model="gemini-3-pro">Gemini 3 Pro</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Ratio:</label>
+                <div class="btn-group-compact" id="aspect-buttons">
+                    <button data-value="9:16">9:16</button>
+                    <button data-value="2:3">2:3</button>
+                    <button class="active" data-value="3:4">3:4</button>
+                    <button data-value="4:5">4:5</button>
+                    <button data-value="1:1">1:1</button>
+                    <button data-value="5:4">5:4</button>
+                    <button data-value="4:3">4:3</button>
+                    <button data-value="3:2">3:2</button>
+                    <button data-value="16:9">16:9</button>
+                    <button data-value="21:9">21:9</button>
+                </div>
+            </div>
+            <div class="setting-item" id="resolution-item">
+                <label>Res:</label>
+                <div class="btn-group-compact" id="resolution-buttons">
+                    <button data-value="1K">1K</button>
+                    <button class="active" data-value="2K">2K</button>
+                    <button data-value="4K">4K</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Seeds:</label>
+                <div class="btn-group-compact" id="seeds-buttons">
+                    <button class="active" data-value="1">1</button>
+                    <button data-value="2">2</button>
+                    <button data-value="3">3</button>
+                    <button data-value="4">4</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Inputs:</label>
+                <div class="btn-group-compact" id="inputs-buttons">
+                    <button class="active" data-value="6">6</button>
+                    <button data-value="24">24</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Prompts:</label>
+                <div class="btn-group-compact" id="prompt-mode-buttons">
+                    <button class="active" data-value="all">All × All</button>
+                    <button data-value="sequential">Sequential</button>
+                </div>
+            </div>
+            <div class="setting-item" style="margin-left: auto;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="keep-filenames" style="width: 14px; height: 14px;">
+                    Keep filenames
+                </label>
+            </div>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="remix">Remix</button>
+            <button class="mode-tab" data-mode="edit">Edit</button>
+        </div>
+
+        <!-- Remix Mode Panel -->
+        <div class="mode-panel active" id="remix-panel">
+            <!-- Sets Container -->
+            <div id="sets-container"></div>
+        </div>
+
+        <!-- Edit Mode Panel -->
+        <div class="mode-panel" id="edit-panel-standalone">
+            <div class="standalone-edit-container">
+                <div class="standalone-edit-layout">
+                    <!-- Canvas Wrapper -->
+                    <div class="standalone-canvas-wrapper" id="standalone-canvas-wrapper">
+                        <button class="standalone-remove-btn" id="standalone-remove-btn" title="Remove image">&times;</button>
+                        <div class="standalone-edit-placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path d="M21 15l-5-5L5 21"/>
+                            </svg>
+                            <p>Click or paste image</p>
+                            <span>Cmd+V to paste</span>
+                        </div>
+                        <img src="" alt="" class="standalone-edit-image" id="standalone-edit-image">
+                        <canvas id="standalone-edit-canvas" class="standalone-edit-canvas"></canvas>
+                    </div>
+                    <input type="file" id="standalone-file-input" accept="image/*" style="display: none;">
+
+                    <!-- Tools Bar -->
+                    <div class="standalone-tools-bar">
+                        <div class="standalone-toolbar" id="standalone-toolbar">
+                            <button class="standalone-tool-btn active" data-tool="rect" title="Rectangle">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                            </button>
+                            <button class="standalone-tool-btn" data-tool="pen" title="Pencil">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                                </svg>
+                            </button>
+                            <button class="standalone-tool-btn clear-btn" id="standalone-clear-btn" title="Clear">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 6h18"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </button>
+                            <div class="color-picker" id="standalone-color-picker">
+                                <button class="color-btn red active" data-color="red" title="Red"></button>
+                                <button class="color-btn green" data-color="green" title="Green"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prompt -->
+                    <div class="standalone-edit-section">
+                        <textarea class="standalone-prompt-input" id="standalone-prompt" placeholder="Describe the edit, e.g. Change the background to white studio"></textarea>
+                    </div>
+
+                    <!-- Reference Images -->
+                    <div class="standalone-edit-section">
+                        <div class="standalone-edit-section-title">Reference Images (optional)</div>
+                        <div class="standalone-ref-grid" id="standalone-ref-grid">
+                            <div class="standalone-ref-slot" data-index="0">+</div>
+                            <div class="standalone-ref-slot" data-index="1">+</div>
+                            <div class="standalone-ref-slot" data-index="2">+</div>
+                            <div class="standalone-ref-slot" data-index="3">+</div>
+                            <div class="standalone-ref-slot" data-index="4">+</div>
+                            <div class="standalone-ref-slot" data-index="5">+</div>
+                        </div>
+                        <input type="file" id="standalone-ref-input" accept="image/*,.heic,.heif" style="display: none;">
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button class="standalone-generate-btn" id="standalone-generate-btn" disabled>Generate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Section -->
+        <div class="generate-section">
+            <div class="calc-display" id="calc-display">0 images</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn" id="cancel-btn" style="display: none; background: var(--white); border: 1px solid var(--gainsboro); color: var(--slate);">
+                    Cancel
+                </button>
+                <button class="btn btn--primary" id="generate-btn" disabled>
+                    Generate <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title" id="progress-title">Generating</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <div class="lightbox-left">
+                <button class="lightbox-nav prev" id="lightbox-prev">&larr;</button>
+                <button class="lightbox-nav next" id="lightbox-next">&rarr;</button>
+                <img src="" alt="" class="lightbox-image" id="lightbox-image">
+                <!-- Canvas overlay for drawing -->
+                <div class="edit-canvas-container" id="edit-canvas-container">
+                    <canvas id="edit-canvas" class="edit-canvas"></canvas>
+                </div>
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Set / Model</h3>
+                    <p class="lightbox-model-text" id="lightbox-model"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Prompt</h3>
+                    <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Source Images</h3>
+                    <div class="lightbox-source-images" id="lightbox-source-images"></div>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">Download Image</button>
+
+                <!-- Edit Section -->
+                <div class="edit-section">
+                    <button class="edit-toggle-btn" id="edit-toggle-btn">Edit</button>
+
+                    <div class="edit-panel" id="edit-panel">
+                        <!-- Edit Prompt -->
+                        <textarea class="edit-prompt-input" id="edit-prompt" placeholder="Describe what to change..."></textarea>
+
+                        <!-- Drawing Tools -->
+                        <div class="edit-tools-row">
+                            <span class="edit-tools-label">Mark area:</span>
+                            <div class="edit-toolbar" id="edit-toolbar">
+                                <button class="edit-tool-btn active" data-tool="rect" title="Rectangle">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    </svg>
+                                </button>
+                                <button class="edit-tool-btn" data-tool="pen" title="Pencil">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                                    </svg>
+                                </button>
+                                <button class="edit-tool-btn clear-btn" id="edit-clear-btn" title="Clear">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 6h18"/>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    </svg>
+                                </button>
+                                <div class="color-picker" id="edit-color-picker">
+                                    <button class="color-btn red active" data-color="red" title="Red"></button>
+                                    <button class="color-btn green" data-color="green" title="Green"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reference Image Upload -->
+                        <div class="edit-reference-upload" id="edit-reference-upload">
+                            <span class="edit-reference-label">+ Reference image (optional)</span>
+                        </div>
+                        <input type="file" id="edit-reference-input" accept="image/*" style="display: none;">
+
+                        <!-- Collapsible Settings -->
+                        <details class="edit-settings">
+                            <summary class="edit-settings-summary">Settings</summary>
+                            <div class="edit-settings-content">
+                                <div class="edit-setting-row">
+                                    <span class="edit-setting-label">Aspect</span>
+                                    <div class="edit-setting-buttons" id="edit-aspect-buttons">
+                                        <button data-value="1:1">1:1</button>
+                                        <button data-value="3:4" class="active">3:4</button>
+                                        <button data-value="16:9">16:9</button>
+                                    </div>
+                                </div>
+                                <div class="edit-setting-row">
+                                    <span class="edit-setting-label">Resolution</span>
+                                    <div class="edit-setting-buttons" id="edit-resolution-buttons">
+                                        <button data-value="2K" class="active">2K</button>
+                                        <button data-value="4K">4K</button>
+                                    </div>
+                                </div>
+                                <div class="edit-setting-row">
+                                    <span class="edit-setting-label">Seeds</span>
+                                    <div class="edit-seeds-control">
+                                        <input type="range" id="edit-seeds-slider" min="1" max="4" value="1" class="edit-seeds-slider">
+                                        <span id="edit-seeds-value" class="edit-seeds-value">1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Regenerate Button -->
+                        <button class="edit-regenerate-btn" id="edit-regenerate-btn">Regenerate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loading-text">Loading...</p>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/models.js"></script>
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+
+    <script>
+        // Gemini-specific models (not using shared REMIX_MODELS)
+        const GEMINI_MODELS = {
+            'gemini-3-pro': {
+                name: 'Gemini 3 Pro',
+                endpoint: 'gemini-3-pro-image-preview',
+                costPerImage: 0.14,
+                hasResolution: true
+            }
+        };
+
+        // State
+        let sets = []; // Array of set data
+        let pasteTarget = null;  // { setIndex: number, type: 'primary'|'secondary', slotIndex: number }
+        let isCancelled = false; // Flag to cancel generation
+        let batchCounter = 0; // Track batch numbers
+        let state = {
+            numSets: 1,
+            selectedModel: 'gemini-3-pro',
+            aspectRatio: '3:4',
+            resolution: '2K',
+            seeds: 1,
+            inputs: 6,
+            promptMode: 'all',  // 'all' = all×all, 'sequential' = 1:1 mapping
+            keepFilenames: false,
+            template: 'none',  // 'none' or 'flatlay'
+            mode: 'remix',  // 'remix' or 'edit'
+            results: [],
+            lightboxIndex: 0
+        };
+
+        // Standalone Edit Mode State
+        let standaloneEdit = {
+            imageUrl: null,         // Original uploaded image URL (data URL)
+            imageWidth: 0,
+            imageHeight: 0,
+            referenceImages: [null, null, null, null, null, null],  // Up to 6 reference images
+            currentRefIndex: 0,     // Which ref slot is being filled
+            pasteToRef: null,       // Index of ref slot ready for paste
+            pasteToMain: false,     // Main image area ready for paste
+            tool: 'rect',           // 'rect' or 'pen'
+            color: 'red',           // 'red' or 'green'
+            paths: [],              // Drawing paths
+            isDrawing: false,
+            currentPath: null,
+            startX: 0,
+            startY: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            setsContainer: document.getElementById('sets-container'),
+            setsSlider: document.getElementById('sets-slider'),
+            setsValue: document.getElementById('sets-value'),
+            seedsButtons: document.getElementById('seeds-buttons'),
+            modelButtons: document.getElementById('model-buttons'),
+            aspectButtons: document.getElementById('aspect-buttons'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            resolutionItem: document.getElementById('resolution-item'),
+            inputsButtons: document.getElementById('inputs-buttons'),
+            generateBtn: document.getElementById('generate-btn'),
+            cancelBtn: document.getElementById('cancel-btn'),
+            keepFilenamesCheckbox: document.getElementById('keep-filenames'),
+            costValue: document.getElementById('cost-value'),
+            calcDisplay: document.getElementById('calc-display'),
+            progressSection: document.getElementById('progress-section'),
+            progressTitle: document.getElementById('progress-title'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            inlineLoader: document.getElementById('inline-loader'),
+            loaderMessage: document.getElementById('loader-message'),
+            loaderProgress: document.getElementById('loader-progress'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxModel: document.getElementById('lightbox-model'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxSourceImages: document.getElementById('lightbox-source-images'),
+            // Mode tabs
+            modeTabs: document.querySelectorAll('.mode-tab'),
+            remixPanel: document.getElementById('remix-panel'),
+            editPanelStandalone: document.getElementById('edit-panel-standalone'),
+            generateSection: document.querySelector('.generate-section'),
+            // Standalone edit elements
+            standaloneCanvasWrapper: document.getElementById('standalone-canvas-wrapper'),
+            standaloneEditImage: document.getElementById('standalone-edit-image'),
+            standaloneEditCanvas: document.getElementById('standalone-edit-canvas'),
+            standaloneFileInput: document.getElementById('standalone-file-input'),
+            standaloneToolbar: document.getElementById('standalone-toolbar'),
+            standaloneClearBtn: document.getElementById('standalone-clear-btn'),
+            standalonePrompt: document.getElementById('standalone-prompt'),
+            standaloneRefGrid: document.getElementById('standalone-ref-grid'),
+            standaloneRefInput: document.getElementById('standalone-ref-input'),
+            standaloneGenerateBtn: document.getElementById('standalone-generate-btn'),
+            standaloneRemoveBtn: document.getElementById('standalone-remove-btn')
+        };
+
+        // Loading animation functions are now in /shared/js/loader.js
+
+        // Initialize a set
+        function createSetData() {
+            return {
+                primaryImages: new Array(state.inputs).fill(null),
+                secondaryImages: new Array(state.inputs).fill(null),
+                primaryMode: '1x1',    // '1x1' or 'group'
+                secondaryMode: '1x1',  // '1x1' or 'group'
+                prompt: ''
+            };
+        }
+
+        // Render all sets
+        function renderSets() {
+            // Adjust sets array length
+            while (sets.length < state.numSets) {
+                sets.push(createSetData());
+            }
+
+            elements.setsContainer.innerHTML = '';
+            for (let i = 0; i < state.numSets; i++) {
+                elements.setsContainer.appendChild(createSetElement(i));
+            }
+            updateCalculator();
+        }
+
+        // Create set DOM element
+        function createSetElement(setIndex) {
+            const set = sets[setIndex];
+            const div = document.createElement('div');
+            div.className = 'remix-set';
+            div.dataset.setIndex = setIndex;
+
+            div.innerHTML = `
+                <div class="images-row">
+                    <div class="images-column">
+                        <div class="column-header">
+                            <div class="column-label">Primary</div>
+                            <div class="mode-toggle-mini" data-set="${setIndex}" data-type="primary">
+                                <button class="${set.primaryMode === '1x1' ? 'active' : ''}" data-mode="1x1">1x1</button>
+                                <button class="${set.primaryMode === 'group' ? 'active' : ''}" data-mode="group">Group</button>
+                            </div>
+                        </div>
+                        <div class="upload-grid" data-set="${setIndex}" data-type="primary"></div>
+                        <input type="file" class="file-input" data-set="${setIndex}" data-type="primary" accept="image/*,.heic,.heif" multiple>
+                    </div>
+                    <div class="images-column">
+                        <div class="column-header">
+                            <div class="column-label">Secondary</div>
+                            <div class="mode-toggle-mini" data-set="${setIndex}" data-type="secondary">
+                                <button class="${set.secondaryMode === '1x1' ? 'active' : ''}" data-mode="1x1">1x1</button>
+                                <button class="${set.secondaryMode === 'group' ? 'active' : ''}" data-mode="group">Group</button>
+                            </div>
+                        </div>
+                        <div class="upload-grid" data-set="${setIndex}" data-type="secondary"></div>
+                        <input type="file" class="file-input" data-set="${setIndex}" data-type="secondary" accept="image/*,.heic,.heif" multiple>
+                    </div>
+                </div>
+                <div class="prompt-row">
+                    <textarea class="prompt-input" data-set="${setIndex}" placeholder="Describe the transformation...&#10;&#10;TIP: Multiple lines = multiple prompts (one per line)">${set.prompt}</textarea>
+                    <div class="template-row">
+                        <span class="label">Template:</span>
+                        <div class="btn-group-compact template-buttons" data-set="${setIndex}">
+                            <button class="${state.template === 'none' ? 'active' : ''}" data-template="none">None</button>
+                            <button class="${state.template === 'flatlay' ? 'active' : ''}" data-template="flatlay">Flat Lay</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Initialize grids
+            const primaryGrid = div.querySelector('.upload-grid[data-type="primary"]');
+            const secondaryGrid = div.querySelector('.upload-grid[data-type="secondary"]');
+
+            for (let i = 0; i < state.inputs; i++) {
+                primaryGrid.appendChild(createUploadSlot(setIndex, i, 'primary'));
+                secondaryGrid.appendChild(createUploadSlot(setIndex, i, 'secondary'));
+            }
+
+            // Render existing images
+            renderSetImages(setIndex, div);
+
+            // Setup event listeners
+            setupSetListeners(div, setIndex);
+
+            return div;
+        }
+
+        function createUploadSlot(setIndex, slotIndex, type) {
+            const slot = document.createElement('div');
+            slot.className = 'upload-slot';
+            slot.innerHTML = '+';
+            slot.dataset.setIndex = setIndex;
+            slot.dataset.slotIndex = slotIndex;
+            slot.dataset.type = type;
+
+            slot.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const set = sets[setIndex];
+                const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+                if (images[slotIndex]) {
+                    // Toggle selection
+                    toggleImage(setIndex, slotIndex, type);
+                } else {
+                    // Single click: set as paste target (for Cmd+V)
+                    setPasteTarget(setIndex, type, slotIndex);
+                }
+            });
+
+            // Double-click opens file picker
+            slot.addEventListener('dblclick', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                const set = sets[setIndex];
+                const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+                if (!images[slotIndex]) {
+                    const input = document.querySelector(`.file-input[data-set="${setIndex}"][data-type="${type}"]`);
+                    input.dataset.targetSlot = slotIndex;
+                    input.click();
+                }
+            });
+
+            return slot;
+        }
+
+        function setPasteTarget(setIndex, type, slotIndex) {
+            // Clear previous paste target
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+
+            // Set new paste target
+            pasteTarget = { setIndex, type, slotIndex };
+            const setContainer = document.querySelector(`.set-container[data-set="${setIndex}"]`);
+            if (setContainer) {
+                const grid = setContainer.querySelector(`.upload-grid[data-type="${type}"]`);
+                if (grid && grid.children[slotIndex]) {
+                    grid.children[slotIndex].classList.add('paste-ready');
+                }
+            }
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTarget = null;
+        }
+
+        function renderSetImages(setIndex, container) {
+            const set = sets[setIndex];
+            const primaryGrid = container.querySelector('.upload-grid[data-type="primary"]');
+            const secondaryGrid = container.querySelector('.upload-grid[data-type="secondary"]');
+
+            renderGridImages(set.primaryImages, primaryGrid, setIndex, 'primary');
+            renderGridImages(set.secondaryImages, secondaryGrid, setIndex, 'secondary');
+        }
+
+        function renderGridImages(images, grid, setIndex, type) {
+            const slots = grid.querySelectorAll('.upload-slot');
+            slots.forEach((slot, i) => {
+                if (images[i]) {
+                    const isSelected = images[i].selected !== false;
+                    slot.className = 'upload-slot filled' + (isSelected ? '' : ' deselected');
+                    slot.innerHTML = `
+                        <img src="${images[i].url}" alt="Image">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${setIndex}, ${i}, '${type}')">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            });
+        }
+
+        function setupSetListeners(container, setIndex) {
+            // Mode toggles (primary and secondary)
+            container.querySelectorAll('.mode-toggle-mini').forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        const mode = e.target.dataset.mode;
+                        const type = toggle.dataset.type;
+                        if (type === 'primary') {
+                            sets[setIndex].primaryMode = mode;
+                        } else {
+                            sets[setIndex].secondaryMode = mode;
+                        }
+                        toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        updateCalculator();
+                    }
+                });
+            });
+
+            // Template buttons
+            const templateBtns = container.querySelector('.template-buttons');
+            templateBtns.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                templateBtns.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.template = btn.dataset.template;
+                // Update all other template button groups to match (global setting)
+                document.querySelectorAll('.template-buttons').forEach(group => {
+                    group.querySelectorAll('button').forEach(b => {
+                        b.classList.toggle('active', b.dataset.template === state.template);
+                    });
+                });
+                updateCalculator();
+            });
+
+            // File inputs
+            container.querySelectorAll('.file-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const type = e.target.dataset.type;
+                    const targetSlot = e.target.dataset.targetSlot ? parseInt(e.target.dataset.targetSlot) : null;
+                    handleFileUpload(setIndex, Array.from(e.target.files), type, targetSlot);
+                    e.target.value = '';
+                });
+            });
+
+            // Prompt input
+            container.querySelector('.prompt-input').addEventListener('input', (e) => {
+                sets[setIndex].prompt = e.target.value;
+                updateCalculator();
+            });
+
+            // Drag and drop
+            container.querySelectorAll('.upload-grid').forEach(grid => {
+                const type = grid.dataset.type;
+                grid.addEventListener('dragover', (e) => { e.preventDefault(); grid.classList.add('drag-over'); });
+                grid.addEventListener('dragleave', () => grid.classList.remove('drag-over'));
+                grid.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    grid.classList.remove('drag-over');
+                    const files = Array.from(e.dataTransfer.files).filter(f =>
+                        f.type.startsWith('image/') ||
+                        f.name.toLowerCase().endsWith('.heic') ||
+                        f.name.toLowerCase().endsWith('.heif')
+                    );
+                    if (files.length > 0) handleFileUpload(setIndex, files, type, null);
+                });
+            });
+        }
+
+        // Check if file is HEIC/HEIF format
+        function isHeicFile(file) {
+            return file.type === 'image/heic' ||
+                   file.type === 'image/heif' ||
+                   file.name.toLowerCase().endsWith('.heic') ||
+                   file.name.toLowerCase().endsWith('.heif');
+        }
+
+        // Convert HEIC to JPEG via server (uses sharp which has better HEIC support)
+        async function convertHeicToJpeg(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch('/api/convert-heic', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'HEIC conversion failed');
+            }
+
+            const { dataUrl } = await response.json();
+            // Convert data URL back to blob
+            const res = await fetch(dataUrl);
+            return await res.blob();
+        }
+
+        function handleFileUpload(setIndex, files, type, startIndex) {
+            const set = sets[setIndex];
+            const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+
+            // Reserve slots synchronously first to avoid race conditions
+            const reservations = [];
+            files.forEach((file, i) => {
+                let index;
+                if (startIndex !== null) {
+                    index = startIndex + i;
+                } else {
+                    // Find next empty slot that hasn't been reserved
+                    index = images.findIndex((img, idx) =>
+                        !img && !reservations.some(r => r.index === idx)
+                    );
+                }
+                if (index === -1 || index >= state.inputs) return;
+                reservations.push({ file, index });
+            });
+
+            // Now process files asynchronously (with HEIC conversion if needed)
+            reservations.forEach(async ({ file, index }) => {
+                const originalName = file.name.replace(/\.[^/.]+$/, '');
+                const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
+                const slot = grid?.children[index];
+
+                try {
+                    let fileToRead = file;
+
+                    // Convert HEIC to JPEG if needed
+                    if (isHeicFile(file)) {
+                        console.log(`Converting HEIC: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+                        // Show spinner in slot
+                        if (slot) {
+                            slot.innerHTML = '<div style="width:16px;height:16px;border:2px solid var(--gainsboro);border-top-color:var(--slate);border-radius:50%;animation:spin 0.8s linear infinite"></div>';
+                            slot.classList.add('filled');
+                        }
+                        fileToRead = await convertHeicToJpeg(file);
+                        console.log(`Converted ${file.name} successfully`);
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        images[index] = { file: fileToRead, url: e.target.result, originalName };
+                        renderGridImages(images, grid, setIndex, type);
+                        updateCalculator();
+                    };
+                    reader.readAsDataURL(fileToRead);
+                } catch (err) {
+                    console.error(`Failed to process ${file.name}:`, err);
+                    // Reset slot on error
+                    if (slot) {
+                        slot.innerHTML = '+';
+                        slot.classList.remove('filled');
+                    }
+                    alert(`Failed to convert ${file.name}: ${err.message || 'Unknown error'}`);
+                }
+            });
+        }
+
+        window.removeImage = function(setIndex, slotIndex, type) {
+            const set = sets[setIndex];
+            const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+            images.splice(slotIndex, 1);
+            images.push(null);
+            const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
+            renderGridImages(images, grid, setIndex, type);
+            updateCalculator();
+        };
+
+        function toggleImage(setIndex, slotIndex, type) {
+            const set = sets[setIndex];
+            const images = type === 'primary' ? set.primaryImages : set.secondaryImages;
+            if (images[slotIndex]) {
+                // Toggle selected state (default is true/undefined = selected)
+                images[slotIndex].selected = images[slotIndex].selected === false ? true : false;
+                const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
+                renderGridImages(images, grid, setIndex, type);
+                updateCalculator();
+            }
+        }
+
+        // Generate flat lay prompt for an image using GPT-4 Vision
+        async function generateFlatLayPrompt(imageUrl) {
+            const analysisPrompt = `Analyze this product image for e-commerce flat lay photography.
+
+Identify:
+- Product type (jacket, shirt, pants, bag, shoes, etc.)
+- Material/fabric (cotton, denim, leather, terry cloth, etc.)
+- Color(s) - be specific (e.g. "dark navy", "cream white", "heather grey")
+- Notable details (logos, patterns, textures, hardware)
+
+Write a flat lay photography prompt in this exact format:
+"Photograph this exact [color] [material] [product type] as a flat lay on a white studio floor. Bird's eye view, soft diffused lighting, garment laying completely flat with no wrinkles."
+
+Return ONLY the prompt, nothing else.`;
+
+            // Use Gemini for analysis (more reliable than GPT-4 for product images)
+            const response = await fetch('/api/analyze-gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    image_url: imageUrl,
+                    prompt: analysisPrompt
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error('Gemini analysis failed:', result.error);
+                throw new Error(result.error || 'Analysis failed');
+            }
+
+            if (result.content) {
+                let prompt = result.content.trim();
+                // Clean up quotes if present
+                if ((prompt.startsWith('"') && prompt.endsWith('"')) ||
+                    (prompt.startsWith("'") && prompt.endsWith("'"))) {
+                    prompt = prompt.slice(1, -1);
+                }
+                return prompt;
+            }
+            throw new Error('Failed to generate flat lay prompt');
+        }
+
+        // Sets slider
+        elements.setsSlider.addEventListener('input', (e) => {
+            state.numSets = parseInt(e.target.value);
+            elements.setsValue.textContent = state.numSets;
+            renderSets();
+        });
+
+        // Seeds buttons
+        elements.seedsButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.seedsButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.seeds = parseInt(e.target.dataset.value);
+                updateCalculator();
+            }
+        });
+
+        // Model buttons
+        elements.modelButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.modelButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.selectedModel = e.target.dataset.model;
+                elements.resolutionItem.style.display = GEMINI_MODELS[state.selectedModel].hasResolution ? 'flex' : 'none';
+                updateCalculator();
+            }
+        });
+
+        // Aspect ratio buttons
+        elements.aspectButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.aspectButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.aspectRatio = e.target.dataset.value;
+            }
+        });
+
+        // Resolution buttons
+        elements.resolutionButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.resolutionButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.resolution = e.target.dataset.value;
+                updateCalculator();
+            }
+        });
+
+        // Inputs buttons
+        elements.inputsButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.inputsButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const newInputs = parseInt(e.target.dataset.value);
+                state.inputs = newInputs;
+                // Resize existing sets' image arrays
+                sets.forEach(set => {
+                    // Expand or shrink arrays while preserving existing images
+                    while (set.primaryImages.length < newInputs) set.primaryImages.push(null);
+                    while (set.secondaryImages.length < newInputs) set.secondaryImages.push(null);
+                    set.primaryImages.length = newInputs;
+                    set.secondaryImages.length = newInputs;
+                });
+                renderSets();
+            }
+        });
+
+        // Prompt mode buttons (All×All vs Sequential)
+        document.getElementById('prompt-mode-buttons').addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                document.querySelectorAll('#prompt-mode-buttons button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.promptMode = e.target.dataset.value;
+                updateCalculator();
+            }
+        });
+
+        // Update calculator
+        function updateCalculator() {
+            let totalImages = 0;
+            let hasValidSet = false;
+            const hasTemplate = state.template !== 'none';
+
+            for (let i = 0; i < state.numSets; i++) {
+                const set = sets[i];
+                if (!set) continue;
+
+                const numPrimary = set.primaryImages.filter(img => img && img.selected !== false).length;
+                const numSecondary = set.secondaryImages.filter(img => img && img.selected !== false).length;
+                const promptText = set.prompt.trim();
+                const numPrompts = promptText.split('\n').map(p => p.trim()).filter(p => p.length > 0).length;
+
+                // Valid if: has primary images AND (has prompts OR has template)
+                if (numPrimary > 0 && (numPrompts > 0 || hasTemplate)) {
+                    hasValidSet = true;
+                    const pMode = set.primaryMode || '1x1';
+                    const sMode = set.secondaryMode || '1x1';
+
+                    // Calculate based on primary and secondary mode combinations
+                    const primaryCount = pMode === 'group' ? 1 : numPrimary;
+                    const secondaryCount = sMode === 'group' ? 1 : (numSecondary || 1);
+
+                    // For templates, treat as 1 prompt per image if no manual prompts
+                    const effectivePrompts = numPrompts > 0 ? numPrompts : 1;
+
+                    if (state.promptMode === 'sequential') {
+                        // Sequential: each image combo gets one prompt (prompts loop if fewer)
+                        totalImages += primaryCount * secondaryCount;
+                    } else {
+                        // All×All: every prompt applies to every image combo
+                        totalImages += primaryCount * secondaryCount * effectivePrompts;
+                    }
+                }
+            }
+
+            // Multiply by seeds
+            totalImages *= state.seeds;
+
+            const model = GEMINI_MODELS[state.selectedModel];
+            // 4K resolution doubles the cost
+            const costPerImage = state.resolution === '4K' ? model.costPerImage * 2 : model.costPerImage;
+            const cost = totalImages * costPerImage;
+
+            const seedsText = state.seeds > 1 ? ` × ${state.seeds} seeds` : '';
+            const modeText = state.promptMode === 'sequential' ? ' (sequential)' : '';
+            const templateText = hasTemplate ? ` [${state.template}]` : '';
+            elements.calcDisplay.textContent = `${totalImages} images from ${state.numSets} set${state.numSets > 1 ? 's' : ''}${seedsText}${modeText}${templateText}`;
+            elements.costValue.textContent = formatCost(cost);
+            elements.generateBtn.disabled = !hasValidSet;
+        }
+
+        // Generate
+        elements.generateBtn.addEventListener('click', handleGenerate);
+
+        // Cancel button
+        elements.cancelBtn.addEventListener('click', () => {
+            isCancelled = true;
+            elements.cancelBtn.textContent = 'Cancelling...';
+            elements.cancelBtn.disabled = true;
+        });
+
+        // Keep filenames checkbox
+        elements.keepFilenamesCheckbox.addEventListener('change', (e) => {
+            state.keepFilenames = e.target.checked;
+        });
+
+        async function handleGenerate() {
+            // Reset cancellation flag
+            isCancelled = false;
+
+            // Build all tasks from all sets
+            const allTasks = [];
+
+            for (let setIndex = 0; setIndex < state.numSets; setIndex++) {
+                const set = sets[setIndex];
+                if (!set) continue;
+
+                const primaryImgs = set.primaryImages.filter(img => img && img.selected !== false);
+                const secondaryImgs = set.secondaryImages.filter(img => img && img.selected !== false);
+                const fullPrompt = set.prompt.trim();
+
+                // Skip if no primary images
+                if (primaryImgs.length === 0) continue;
+
+                // Skip if no prompt AND no template selected (templates generate their own prompts)
+                const hasTemplate = state.template !== 'none';
+                if (!fullPrompt && !hasTemplate) continue;
+
+                // Split prompt by line breaks - each line is a separate request
+                // For templates without manual prompt, use a single placeholder that will be replaced
+                const prompts = fullPrompt
+                    ? fullPrompt.split('\n').map(p => p.trim()).filter(p => p.length > 0)
+                    : ['[template]'];  // Placeholder for template-generated prompt
+
+                const pMode = set.primaryMode || '1x1';
+                const sMode = set.secondaryMode || '1x1';
+
+                // Build primary groups based on mode
+                const primaryGroups = pMode === 'group'
+                    ? [primaryImgs]  // All primaries as one group
+                    : primaryImgs.map(p => [p]);  // Each primary separate
+
+                // Build secondary groups based on mode
+                const secondaryGroups = sMode === 'group'
+                    ? [secondaryImgs]  // All secondaries as one group
+                    : (secondaryImgs.length > 0 ? secondaryImgs.map(s => [s]) : [[]]);  // Each secondary separate, or empty if none
+
+                if (state.promptMode === 'sequential') {
+                    // Sequential mode: assign prompts 1:1 with image combinations, looping if needed
+                    let promptIndex = 0;
+                    for (const primaryGroup of primaryGroups) {
+                        for (const secondaryGroup of secondaryGroups) {
+                            const prompt = prompts[promptIndex % prompts.length];
+                            // Collect all original names (primary + secondaries)
+                            const allNames = [primaryGroup[0]?.originalName, ...secondaryGroup.map(s => s?.originalName)].filter(Boolean);
+                            allTasks.push({
+                                setIndex,
+                                primary: primaryGroup[0],
+                                additionalPrimaries: primaryGroup.slice(1),
+                                secondaries: secondaryGroup,
+                                prompt,
+                                isGroup: primaryGroup.length > 1,
+                                originalName: allNames.length > 0 ? allNames.join('_') : null
+                            });
+                            promptIndex++;
+                        }
+                    }
+                } else {
+                    // All×All mode: every prompt applies to every image combination
+                    for (const prompt of prompts) {
+                        for (const primaryGroup of primaryGroups) {
+                            for (const secondaryGroup of secondaryGroups) {
+                                // Collect all original names (primary + secondaries)
+                                const allNames = [primaryGroup[0]?.originalName, ...secondaryGroup.map(s => s?.originalName)].filter(Boolean);
+                                allTasks.push({
+                                    setIndex,
+                                    primary: primaryGroup[0],
+                                    additionalPrimaries: primaryGroup.slice(1),
+                                    secondaries: secondaryGroup,
+                                    prompt,
+                                    isGroup: primaryGroup.length > 1,
+                                    originalName: allNames.length > 0 ? allNames.join('_') : null
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (allTasks.length === 0) return;
+
+            // Duplicate tasks for each seed
+            const tasksWithSeeds = [];
+            for (let seed = 0; seed < state.seeds; seed++) {
+                for (const task of allTasks) {
+                    tasksWithSeeds.push({ ...task, seedIndex: seed });
+                }
+            }
+
+            const total = tasksWithSeeds.length;
+
+            // Create placeholder loaders for all tasks
+            // Calculate aspect ratio for placeholders
+            const aspectRatioMap = {
+                '1:1': 1,
+                '4:3': 4/3,
+                '3:4': 3/4,
+                '16:9': 16/9,
+                '9:16': 9/16,
+                '21:9': 21/9,
+                '9:21': 9/21
+            };
+            const aspectRatio = aspectRatioMap[state.aspectRatio] || 1;
+
+            elements.resultsSection.classList.add('visible');
+
+            // Increment batch counter and create divider - use this as unique batch ID
+            batchCounter++;
+            const currentBatchId = batchCounter;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const divider = document.createElement('div');
+            divider.className = 'batch-divider';
+            divider.id = `batch-divider-${currentBatchId}`;
+            divider.textContent = `Batch ${currentBatchId} • ${timeStr}`;
+            elements.resultsGrid.insertBefore(divider, elements.resultsGrid.firstChild);
+
+            // Insert placeholders at the top (prepend in reverse order so they appear in correct order)
+            // Use batch ID + task index for unique placeholder IDs
+            for (let i = total - 1; i >= 0; i--) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'result-card loading';
+                placeholder.id = `loader-batch${currentBatchId}-${i}`;
+                placeholder.textContent = 'Generating';
+                // Set aspect ratio
+                placeholder.style.aspectRatio = aspectRatio;
+                placeholder.style.minHeight = 'unset';
+                elements.resultsGrid.insertBefore(placeholder, elements.resultsGrid.firstChild);
+            }
+
+            // Show progress section
+            elements.progressSection.classList.add('visible');
+            elements.generateBtn.disabled = true;
+            elements.cancelBtn.style.display = 'block';
+            elements.cancelBtn.disabled = false;
+            elements.cancelBtn.textContent = 'Cancel';
+
+            // Start the studio loading animation
+            startLoadingAnimation(`Batch ${currentBatchId}: Starting...`);
+
+            let completed = 0;
+            let uploading = 0;
+            let generating = 0;
+
+            function updateStatus() {
+                const parts = [];
+                if (uploading > 0) parts.push(`uploading ${uploading}`);
+                if (generating > 0) parts.push(`generating ${generating}`);
+                updateLoadingProgress(`Batch ${currentBatchId}: ${completed}/${total}` + (parts.length ? ` · ${parts.join(', ')}` : ''));
+                elements.progressCount.textContent = `${completed} / ${total}`;
+                elements.progressBar.style.width = `${(completed / total) * 100}%`;
+            }
+
+            console.log(`🚀 [Batch ${currentBatchId}] Starting ${total} tasks in parallel`);
+
+            // Process all tasks in parallel (don't await - let it run in background)
+            const batchPromise = (async () => {
+                const promises = tasksWithSeeds.map(async (task, taskIndex) => {
+                    const taskId = taskIndex + 1;
+                    const startTime = performance.now();
+                    const placeholderId = `loader-batch${currentBatchId}-${taskIndex}`;
+
+                    // Check if cancelled before starting
+                    if (isCancelled) {
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Skipped (cancelled)`);
+                        const placeholder = document.getElementById(placeholderId);
+                        if (placeholder) {
+                            placeholder.className = 'result-card cancelled';
+                            placeholder.innerHTML = 'Cancelled';
+                        }
+                        completed++;
+                        updateStatus();
+                        return;
+                    }
+
+                    try {
+                        // Collect all images to upload
+                        const imagesToUpload = [task.primary];
+                        if (task.isGroup && task.additionalPrimaries) {
+                            imagesToUpload.push(...task.additionalPrimaries);
+                        }
+                        imagesToUpload.push(...task.secondaries);
+
+                        uploading++;
+                        updateStatus();
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Uploading ${imagesToUpload.length} images...`);
+                        const uploadStart = performance.now();
+
+                        // Upload all images in parallel
+                        const uploadResults = await Promise.all(
+                            imagesToUpload.map(img => api.uploadBase64(img.url))
+                        );
+                        const imageUrls = uploadResults.map(r => r.url);
+
+                        // Check if cancelled after upload
+                        if (isCancelled) {
+                            uploading--;
+                            console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Cancelled after upload`);
+                            const placeholder = document.getElementById(placeholderId);
+                            if (placeholder) {
+                                placeholder.className = 'result-card cancelled';
+                                placeholder.innerHTML = 'Cancelled';
+                            }
+                            completed++;
+                            updateStatus();
+                            return;
+                        }
+
+                        uploading--;
+                        updateStatus();
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Uploads done (${((performance.now() - uploadStart) / 1000).toFixed(1)}s)`);
+
+                        // Determine the prompt to use
+                        let actualPrompt = task.prompt;
+
+                        // If flat lay template is selected, generate a custom prompt for each image
+                        if (state.template === 'flatlay') {
+                            const placeholder = document.getElementById(placeholderId);
+                            if (placeholder) placeholder.textContent = 'Analyzing...';
+
+                            console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Analyzing image for flat lay prompt...`);
+                            try {
+                                // Use the primary image URL for analysis
+                                actualPrompt = await generateFlatLayPrompt(imageUrls[0]);
+                                console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Generated prompt: "${actualPrompt.substring(0, 60)}..."`);
+                            } catch (analyzeError) {
+                                console.error(`[Batch ${currentBatchId}][${taskId}/${total}] Analysis failed, using fallback prompt`);
+                                actualPrompt = 'Take this exact garment and photograph it as a flat lay on a pristine white studio floor. Shot from directly above with soft diffused lighting, the garment lays completely flat with no creases or wrinkles. Clean, professional e-commerce style.';
+                            }
+                        }
+
+                        generating++;
+                        updateStatus();
+                        const placeholder2 = document.getElementById(placeholderId);
+                        if (placeholder2) placeholder2.textContent = 'Generating';
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] → Generating...`);
+
+                        // Build params for Gemini API
+                        const params = {
+                            model: state.selectedModel,
+                            prompt: actualPrompt,
+                            image_urls: imageUrls,
+                            aspect_ratio: state.aspectRatio,
+                            num_images: 1
+                        };
+
+                        // Add resolution (both Gemini models support 1K, 2K, 4K)
+                        params.resolution = state.resolution;
+
+                        const model = GEMINI_MODELS[state.selectedModel];
+                        // Call Gemini remix endpoint
+                        const response = await fetch('/api/remix-gemini', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(params)
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Gemini remix failed');
+
+                        generating--;
+                        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
+                        if (data.images && data.images.length > 0) {
+                            console.log(`[Batch ${currentBatchId}][${taskId}/${total}] ✓ Done (${elapsed}s total)`);
+                            const resultIndex = state.results.length;
+                            state.results.push({
+                                url: data.images[0].url,
+                                prompt: actualPrompt,
+                                model: model.name,
+                                setIndex: task.setIndex,
+                                sourceImages: imageUrls,
+                                originalName: task.originalName
+                            });
+                            // Replace placeholder with actual result
+                            const placeholder = document.getElementById(placeholderId);
+                            if (placeholder) {
+                                placeholder.id = '';
+                                placeholder.className = 'result-card';
+                                placeholder.onclick = () => openLightbox(resultIndex);
+                                placeholder.innerHTML = `
+                                    <img src="${data.images[0].url}" alt="Result ${resultIndex + 1}" class="result-image">
+                                    <span class="set-tag">Set ${task.setIndex + 1}</span>
+                                    <span class="model-tag">${model.name}</span>
+                                `;
+                            }
+                        }
+                    } catch (error) {
+                        uploading = Math.max(0, uploading - 1);
+                        generating = Math.max(0, generating - 1);
+                        console.error(`[Batch ${currentBatchId}][${taskId}/${total}] ✗ Failed:`, error.message);
+                        // Mark placeholder as failed
+                        const placeholder = document.getElementById(placeholderId);
+                        if (placeholder) {
+                            placeholder.className = 'result-card cancelled';
+                            placeholder.innerHTML = 'Failed';
+                        }
+                    }
+
+                    completed++;
+                    updateStatus();
+                });
+
+                await Promise.all(promises);
+
+                // Batch done - remove cancelled/failed placeholders for this batch
+                console.log(`✅ [Batch ${currentBatchId}] Complete`);
+                document.querySelectorAll(`[id^="loader-batch${currentBatchId}-"].cancelled`).forEach(el => el.remove());
+
+                // Hide progress if no other batches are running
+                // (Simple approach: just hide it, next batch will show it again)
+                stopLoadingAnimation();
+                elements.progressSection.classList.remove('visible');
+                elements.generateBtn.disabled = false;
+                elements.cancelBtn.style.display = 'none';
+            })();
+
+            // Don't await - let the batch run in background so user can start another
+        }
+
+        // Render results
+        function renderResults() {
+            if (state.results.length === 0) {
+                elements.resultsSection.classList.remove('visible');
+                return;
+            }
+
+            elements.resultsSection.classList.add('visible');
+            elements.resultsGrid.innerHTML = state.results.map((result, index) => `
+                <div class="result-card" onclick="openLightbox(${index})">
+                    <img src="${result.url}" alt="Result ${index + 1}" class="result-image">
+                    <span class="set-tag">Set ${result.setIndex + 1}</span>
+                    <span class="model-tag">${result.model}</span>
+                </div>
+            `).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        function updateLightboxContent() {
+            const result = state.results[state.lightboxIndex];
+            elements.lightboxImage.src = result.url;
+            elements.lightboxModel.textContent = `Set ${result.setIndex + 1} / ${result.model}`;
+            elements.lightboxPrompt.textContent = result.prompt;
+            elements.lightboxSourceImages.innerHTML = result.sourceImages.map(url =>
+                `<img src="${url}" alt="Source">`
+            ).join('');
+        }
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => { if (e.target === elements.lightbox) closeLightbox(); });
+
+        document.getElementById('lightbox-prev').addEventListener('click', () => {
+            if (state.lightboxIndex > 0) {
+                state.lightboxIndex--;
+                updateLightboxContent();
+            }
+        });
+
+        document.getElementById('lightbox-next').addEventListener('click', () => {
+            if (state.lightboxIndex < state.results.length - 1) {
+                state.lightboxIndex++;
+                updateLightboxContent();
+            }
+        });
+
+        document.getElementById('lightbox-download').addEventListener('click', () => {
+            const result = state.results[state.lightboxIndex];
+            let filename;
+
+            if (state.keepFilenames && result.originalName) {
+                // Use original filename with _remix suffix
+                filename = `${result.originalName}_remix.png`;
+            } else {
+                // Use default timestamped filename
+                const now = new Date();
+                const yy = String(now.getFullYear()).slice(-2);
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const num = String(state.lightboxIndex + 1).padStart(2, '0');
+                filename = `Setset_Remix_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
+            }
+            downloadFile(result.url, filename);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!elements.lightbox.classList.contains('visible')) return;
+            if (e.key === 'Escape') {
+                if (editMode.active) {
+                    toggleEditMode(false);
+                } else {
+                    closeLightbox();
+                }
+            }
+            if (e.key === 'ArrowLeft' && state.lightboxIndex > 0 && !editMode.active) {
+                state.lightboxIndex--;
+                updateLightboxContent();
+            }
+            if (e.key === 'ArrowRight' && state.lightboxIndex < state.results.length - 1 && !editMode.active) {
+                state.lightboxIndex++;
+                updateLightboxContent();
+            }
+        });
+
+        // ========== EDIT MODE ==========
+        const editMode = {
+            active: false,
+            tool: 'rect', // 'rect' or 'pen'
+            color: 'red', // 'red' or 'green'
+            drawing: false,
+            startX: 0,
+            startY: 0,
+            paths: [], // Array of drawing paths
+            currentPath: null,
+            referenceImage: null,
+            // Edit-specific settings (separate from main settings)
+            aspectRatio: '3:4',
+            resolution: '2K',
+            seeds: 1,
+            // Store canvas dimensions for proper scaling
+            canvasWidth: 0,
+            canvasHeight: 0
+        };
+
+        const editElements = {
+            toggleBtn: document.getElementById('edit-toggle-btn'),
+            toolbar: document.getElementById('edit-toolbar'),
+            canvasContainer: document.getElementById('edit-canvas-container'),
+            canvas: document.getElementById('edit-canvas'),
+            panel: document.getElementById('edit-panel'),
+            prompt: document.getElementById('edit-prompt'),
+            referenceUpload: document.getElementById('edit-reference-upload'),
+            referenceInput: document.getElementById('edit-reference-input'),
+            regenerateBtn: document.getElementById('edit-regenerate-btn'),
+            clearBtn: document.getElementById('edit-clear-btn'),
+            // Settings elements
+            aspectButtons: document.getElementById('edit-aspect-buttons'),
+            resolutionButtons: document.getElementById('edit-resolution-buttons'),
+            seedsSlider: document.getElementById('edit-seeds-slider'),
+            seedsValue: document.getElementById('edit-seeds-value')
+        };
+
+        const ctx = editElements.canvas.getContext('2d');
+
+        function toggleEditMode(forceState) {
+            editMode.active = forceState !== undefined ? forceState : !editMode.active;
+
+            editElements.toggleBtn.classList.toggle('active', editMode.active);
+            editElements.toolbar.classList.toggle('active', editMode.active);
+            editElements.canvasContainer.classList.toggle('active', editMode.active);
+            editElements.panel.classList.toggle('active', editMode.active);
+
+            if (editMode.active) {
+                setupCanvas();
+                updateRegenerateButton(); // Update toggle button text when opening
+            } else {
+                clearCanvas();
+                editMode.referenceImage = null;
+                editElements.prompt.value = '';
+                editElements.referenceUpload.innerHTML = '<span class="edit-reference-label">+ Drop reference image (optional)</span>';
+                editElements.referenceUpload.classList.remove('has-image');
+                editElements.toggleBtn.textContent = 'Edit'; // Reset toggle button text
+                updateRegenerateButton();
+            }
+        }
+
+        function setupCanvas() {
+            const img = elements.lightboxImage;
+            const rect = img.getBoundingClientRect();
+            const container = editElements.canvasContainer;
+
+            // Store dimensions for later use in compositing
+            editMode.canvasWidth = rect.width;
+            editMode.canvasHeight = rect.height;
+
+            // Position canvas over the image
+            editElements.canvas.width = rect.width;
+            editElements.canvas.height = rect.height;
+            editElements.canvas.style.width = rect.width + 'px';
+            editElements.canvas.style.height = rect.height + 'px';
+
+            // Calculate offset from container
+            const containerRect = container.parentElement.getBoundingClientRect();
+            const offsetX = rect.left - containerRect.left;
+            const offsetY = rect.top - containerRect.top;
+
+            editElements.canvas.style.left = offsetX + 'px';
+            editElements.canvas.style.top = offsetY + 'px';
+
+            clearCanvas();
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, editElements.canvas.width, editElements.canvas.height);
+            editMode.paths = [];
+            updateRegenerateButton();
+        }
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, editElements.canvas.width, editElements.canvas.height);
+
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            for (const path of editMode.paths) {
+                ctx.strokeStyle = getStrokeColor(path.color || 'red');
+                if (path.type === 'rect') {
+                    ctx.strokeRect(path.x, path.y, path.width, path.height);
+                } else if (path.type === 'pen') {
+                    ctx.beginPath();
+                    for (let i = 0; i < path.points.length; i++) {
+                        const point = path.points[i];
+                        if (i === 0) {
+                            ctx.moveTo(point.x, point.y);
+                        } else {
+                            ctx.lineTo(point.x, point.y);
+                        }
+                    }
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function getCanvasCoords(e) {
+            const rect = editElements.canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        // Canvas mouse events
+        editElements.canvas.addEventListener('mousedown', (e) => {
+            if (!editMode.active) return;
+            const coords = getCanvasCoords(e);
+            editMode.drawing = true;
+            editMode.startX = coords.x;
+            editMode.startY = coords.y;
+
+            if (editMode.tool === 'pen') {
+                editMode.currentPath = { type: 'pen', color: editMode.color, points: [{ x: coords.x, y: coords.y }] };
+            }
+        });
+
+        editElements.canvas.addEventListener('mousemove', (e) => {
+            if (!editMode.active || !editMode.drawing) return;
+            const coords = getCanvasCoords(e);
+
+            if (editMode.tool === 'rect') {
+                // Redraw all paths plus preview rectangle
+                redrawCanvas();
+                ctx.strokeStyle = getStrokeColor(editMode.color);
+                ctx.lineWidth = 2;
+                ctx.strokeRect(
+                    editMode.startX,
+                    editMode.startY,
+                    coords.x - editMode.startX,
+                    coords.y - editMode.startY
+                );
+            } else if (editMode.tool === 'pen') {
+                editMode.currentPath.points.push({ x: coords.x, y: coords.y });
+                redrawCanvas();
+                // Draw current path
+                ctx.strokeStyle = getStrokeColor(editMode.color);
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let i = 0; i < editMode.currentPath.points.length; i++) {
+                    const point = editMode.currentPath.points[i];
+                    if (i === 0) {
+                        ctx.moveTo(point.x, point.y);
+                    } else {
+                        ctx.lineTo(point.x, point.y);
+                    }
+                }
+                ctx.stroke();
+            }
+        });
+
+        editElements.canvas.addEventListener('mouseup', (e) => {
+            if (!editMode.active || !editMode.drawing) return;
+            const coords = getCanvasCoords(e);
+            editMode.drawing = false;
+
+            if (editMode.tool === 'rect') {
+                const width = coords.x - editMode.startX;
+                const height = coords.y - editMode.startY;
+                if (Math.abs(width) > 5 && Math.abs(height) > 5) {
+                    editMode.paths.push({
+                        type: 'rect',
+                        color: editMode.color,
+                        x: width > 0 ? editMode.startX : coords.x,
+                        y: height > 0 ? editMode.startY : coords.y,
+                        width: Math.abs(width),
+                        height: Math.abs(height)
+                    });
+                }
+            } else if (editMode.tool === 'pen' && editMode.currentPath) {
+                if (editMode.currentPath.points.length > 2) {
+                    editMode.paths.push(editMode.currentPath);
+                }
+                editMode.currentPath = null;
+            }
+
+            redrawCanvas();
+            updateRegenerateButton();
+        });
+
+        editElements.canvas.addEventListener('mouseleave', () => {
+            if (editMode.drawing) {
+                editMode.drawing = false;
+                if (editMode.tool === 'pen' && editMode.currentPath && editMode.currentPath.points.length > 2) {
+                    editMode.paths.push(editMode.currentPath);
+                }
+                editMode.currentPath = null;
+                redrawCanvas();
+                updateRegenerateButton();
+            }
+        });
+
+        // Tool selection
+        editElements.toolbar.addEventListener('click', (e) => {
+            const btn = e.target.closest('.edit-tool-btn');
+            if (!btn || btn.classList.contains('clear-btn')) return;
+
+            editElements.toolbar.querySelectorAll('.edit-tool-btn:not(.clear-btn)').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            editMode.tool = btn.dataset.tool;
+        });
+
+        // Clear button
+        editElements.clearBtn.addEventListener('click', clearCanvas);
+
+        // Color picker
+        document.getElementById('edit-color-picker').addEventListener('click', (e) => {
+            const btn = e.target.closest('.color-btn');
+            if (!btn) return;
+
+            document.querySelectorAll('#edit-color-picker .color-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            editMode.color = btn.dataset.color;
+        });
+
+        // Toggle edit mode - or regenerate if panel is open with a prompt
+        editElements.toggleBtn.addEventListener('click', () => {
+            const hasPrompt = editElements.prompt.value.trim().length > 0;
+            if (editMode.active && hasPrompt) {
+                // Panel is open and has prompt - trigger regeneration
+                handleEditRegenerate();
+            } else {
+                // Toggle the panel open/closed
+                toggleEditMode();
+            }
+        });
+
+        // Reference image upload
+        editElements.referenceUpload.addEventListener('click', () => editElements.referenceInput.click());
+        editElements.referenceUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            editElements.referenceUpload.style.borderColor = 'var(--jet)';
+        });
+        editElements.referenceUpload.addEventListener('dragleave', () => {
+            editElements.referenceUpload.style.borderColor = '';
+        });
+        editElements.referenceUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            editElements.referenceUpload.style.borderColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleReferenceImage(file);
+            }
+        });
+
+        editElements.referenceInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleReferenceImage(file);
+        });
+
+        // Clipboard paste support for reference image
+        document.addEventListener('paste', (e) => {
+            // Only handle paste when edit panel is visible and lightbox is open
+            if (!editMode.active || !elements.lightbox.classList.contains('visible')) return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        handleReferenceImage(file);
+                        console.log('📋 Pasted reference image from clipboard');
+                    }
+                    break;
+                }
+            }
+        });
+
+        function handleReferenceImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                editMode.referenceImage = e.target.result;
+                editElements.referenceUpload.innerHTML = `<img src="${e.target.result}" alt="Reference">`;
+                editElements.referenceUpload.classList.add('has-image');
+                updateRegenerateButton();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Update regenerate button state based on prompt
+        function updateRegenerateButton() {
+            const hasPrompt = editElements.prompt.value.trim().length > 0;
+            editElements.regenerateBtn.disabled = !hasPrompt;
+            editElements.regenerateBtn.textContent = 'Regenerate';
+
+            // Also update the toggle button text when panel is open
+            if (editMode.active) {
+                editElements.toggleBtn.textContent = hasPrompt ? 'Regenerate' : 'Edit';
+            }
+        }
+
+        // Prompt input
+        editElements.prompt.addEventListener('input', updateRegenerateButton);
+
+        // Settings controls
+        editElements.aspectButtons.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            editElements.aspectButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            editMode.aspectRatio = btn.dataset.value;
+        });
+
+        editElements.resolutionButtons.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            editElements.resolutionButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            editMode.resolution = btn.dataset.value;
+        });
+
+        editElements.seedsSlider.addEventListener('input', () => {
+            editMode.seeds = parseInt(editElements.seedsSlider.value);
+            editElements.seedsValue.textContent = editMode.seeds;
+        });
+
+        // Regenerate button
+        editElements.regenerateBtn.addEventListener('click', handleEditRegenerate);
+
+        async function handleEditRegenerate() {
+            const result = state.results[state.lightboxIndex];
+            const prompt = editElements.prompt.value.trim();
+
+            if (!prompt) return;
+
+            // Save everything we need BEFORE closing lightbox
+            const seedCount = editMode.seeds;
+            const aspectRatio = editMode.aspectRatio;
+            const resolution = editMode.resolution;
+            const sourceUrl = result.url;
+            const sourceSetIndex = result.setIndex;
+            const refImage = editMode.referenceImage;
+            const hasMarkup = editMode.paths.length > 0;
+            const savedCanvasWidth = editMode.canvasWidth;
+            const savedCanvasHeight = editMode.canvasHeight;
+            const savedPaths = editMode.paths.map(p => ({...p})); // Deep copy paths
+
+            // Close lightbox IMMEDIATELY - no waiting
+            closeLightbox();
+
+            // Calculate edit batch number
+            const existingEditBatches = new Set(
+                state.results.filter(r => r.model && r.model.startsWith('Edit ')).map(r => {
+                    const match = r.model.match(/Edit (\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                })
+            );
+            const editBatchNum = existingEditBatches.size > 0 ? Math.max(...existingEditBatches) + 1 : 1;
+
+            // Make sure results section is visible
+            elements.resultsSection.classList.add('visible');
+
+            // Create batch divider
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const divider = document.createElement('div');
+            divider.className = 'batch-divider';
+            divider.id = `edit-divider-${editBatchNum}`;
+            divider.textContent = `Edit ${editBatchNum} • ${timeStr}`;
+            elements.resultsGrid.insertBefore(divider, elements.resultsGrid.firstChild);
+
+            // Create placeholders for each seed
+            for (let i = seedCount - 1; i >= 0; i--) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'result-card loading';
+                placeholder.id = `edit-loader-${editBatchNum}-${i}`;
+                placeholder.textContent = 'Preparing...';
+                placeholder.style.aspectRatio = aspectRatio.replace(':', '/');
+                placeholder.style.minHeight = 'unset';
+                elements.resultsGrid.insertBefore(placeholder, elements.resultsGrid.firstChild);
+            }
+
+            // Start loading animation
+            startLoadingAnimation(`Edit ${editBatchNum}: Preparing image...`);
+
+            try {
+                // Build image URLs for the API (do this AFTER showing placeholders)
+                let imageUrls = [];
+
+                if (hasMarkup) {
+                    // Create composite with markup overlay
+                    const compositeDataUrl = await createCompositeImageFromSaved(sourceUrl, savedPaths, savedCanvasWidth, savedCanvasHeight);
+                    // Upload composite using base64 endpoint
+                    updateLoadingProgress(`Edit ${editBatchNum}: Uploading...`);
+                    const uploadResponse = await fetch('/api/upload-base64', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ dataUrl: compositeDataUrl })
+                    });
+                    const uploadData = await uploadResponse.json();
+                    if (!uploadResponse.ok) throw new Error(uploadData.error || 'Upload failed');
+                    imageUrls.push(uploadData.url);
+                } else {
+                    // No markup - use original image
+                    imageUrls.push(sourceUrl);
+                }
+
+                // Add reference image if present
+                if (refImage) {
+                    imageUrls.push(refImage);
+                }
+
+                // Generate all seeds in parallel
+                console.log(`🚀 [Lightbox Edit ${editBatchNum}] Starting ${seedCount} seeds in parallel`);
+                updateLoadingProgress(`Edit ${editBatchNum}: Generating ${seedCount} seeds...`);
+
+                const seedPromises = Array.from({ length: seedCount }, async (_, i) => {
+                    const seedNum = i + 1;
+                    const startTime = performance.now();
+
+                    // Update placeholder text
+                    const placeholder = document.getElementById(`edit-loader-${editBatchNum}-${i}`);
+                    if (placeholder) placeholder.textContent = 'Generating';
+
+                    console.log(`[Lightbox Edit ${editBatchNum}][${seedNum}/${seedCount}] → Generating...`);
+
+                    // Call Gemini API
+                    const response = await fetch('/api/remix-gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: 'gemini-3-pro',
+                            prompt: prompt,
+                            image_urls: imageUrls,
+                            aspect_ratio: aspectRatio,
+                            resolution: resolution
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Edit failed');
+
+                    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
+                    if (data.images && data.images.length > 0) {
+                        const seedLabel = seedCount > 1 ? ` (${seedNum}/${seedCount})` : '';
+                        const newResult = {
+                            url: data.images[0].url,
+                            prompt: prompt,
+                            model: `Edit ${editBatchNum}${seedLabel}`,
+                            setIndex: sourceSetIndex,
+                            sourceImages: imageUrls
+                        };
+                        state.results.push(newResult);
+
+                        // Replace placeholder with actual result
+                        const ph = document.getElementById(`edit-loader-${editBatchNum}-${i}`);
+                        if (ph) {
+                            const resultIndex = state.results.length - 1;
+                            ph.className = 'result-card';
+                            ph.id = '';
+                            ph.textContent = '';
+                            ph.onclick = () => openLightbox(resultIndex);
+                            ph.innerHTML = `
+                                <img src="${newResult.url}" alt="Edit Result" class="result-image">
+                                <span class="set-tag">Set ${newResult.setIndex + 1}</span>
+                                <span class="model-tag">${newResult.model}</span>
+                            `;
+                        }
+
+                        console.log(`[Lightbox Edit ${editBatchNum}][${seedNum}/${seedCount}] ✓ Done (${elapsed}s)`);
+                    }
+                });
+
+                await Promise.all(seedPromises);
+                console.log(`✅ [Lightbox Edit ${editBatchNum}] Complete`);
+                updateLoadingProgress(`Edit ${editBatchNum}: Complete!`);
+            } catch (error) {
+                console.error('Edit regenerate failed:', error);
+                alert('Edit failed: ' + error.message);
+            } finally {
+                stopLoadingAnimation();
+            }
+        }
+
+        // Helper function to create composite image from saved data (doesn't depend on editMode state)
+        async function createCompositeImageFromSaved(originalUrl, paths, canvasWidth, canvasHeight) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+
+                    // Draw original image
+                    ctx.drawImage(img, 0, 0);
+
+                    // Calculate scale
+                    const scaleX = img.naturalWidth / canvasWidth;
+                    const scaleY = img.naturalHeight / canvasHeight;
+
+                    // Draw markup
+                    ctx.lineWidth = 3 * Math.max(scaleX, scaleY);
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+
+                    for (const path of paths) {
+                        ctx.strokeStyle = getStrokeColor(path.color || 'red');
+                        if (path.type === 'rect') {
+                            ctx.strokeRect(
+                                path.x * scaleX,
+                                path.y * scaleY,
+                                path.width * scaleX,
+                                path.height * scaleY
+                            );
+                        } else if (path.type === 'pen') {
+                            ctx.beginPath();
+                            for (let i = 0; i < path.points.length; i++) {
+                                const point = path.points[i];
+                                if (i === 0) {
+                                    ctx.moveTo(point.x * scaleX, point.y * scaleY);
+                                } else {
+                                    ctx.lineTo(point.x * scaleX, point.y * scaleY);
+                                }
+                            }
+                            ctx.stroke();
+                        }
+                    }
+
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = () => reject(new Error('Failed to load image'));
+                img.src = originalUrl;
+            });
+        }
+
+        // Reset edit mode when changing images or closing lightbox
+        const originalUpdateLightboxContent = updateLightboxContent;
+        updateLightboxContent = function() {
+            if (editMode.active) {
+                toggleEditMode(false);
+            }
+            originalUpdateLightboxContent();
+            // Re-setup canvas if edit mode gets re-enabled
+            setTimeout(() => {
+                if (editMode.active) setupCanvas();
+            }, 100);
+        };
+
+        const originalCloseLightbox = closeLightbox;
+        closeLightbox = function() {
+            if (editMode.active) {
+                toggleEditMode(false);
+            }
+            originalCloseLightbox();
+        };
+        // ========== END EDIT MODE ==========
+
+        // Helper to clear main image paste highlight
+        function clearStandaloneMainPasteHighlight() {
+            elements.standaloneCanvasWrapper.classList.remove('paste-ready');
+            standaloneEdit.pasteToMain = false;
+        }
+
+        // Clipboard paste handler
+        document.addEventListener('paste', async (e) => {
+            // Handle paste for standalone edit mode
+            if (state.mode === 'edit') {
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            // Check if a reference slot is selected for paste
+                            if (standaloneEdit.pasteToRef !== null) {
+                                handleStandaloneRefPaste(file, standaloneEdit.pasteToRef);
+                                standaloneEdit.pasteToRef = null;
+                                clearStandalonePasteHighlight();
+                            } else {
+                                // Paste to main image
+                                handleStandaloneImageUpload(file);
+                                clearStandaloneMainPasteHighlight();
+                            }
+                            console.log('📋 Pasted image into Edit mode');
+                        }
+                        break;
+                    }
+                }
+                return;
+            }
+
+            // Only handle if we have a paste target (Remix mode)
+            if (!pasteTarget) return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        handleFileUpload(pasteTarget.setIndex, [file], pasteTarget.type, pasteTarget.slotIndex);
+                        clearPasteTarget();
+                    }
+                    break;
+                }
+            }
+        });
+
+        // ========== MODE TAB SWITCHING ==========
+        function switchMode(mode) {
+            state.mode = mode;
+
+            // Update tab buttons
+            elements.modeTabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.mode === mode);
+            });
+
+            // Update panels
+            elements.remixPanel.classList.toggle('active', mode === 'remix');
+            elements.editPanelStandalone.classList.toggle('active', mode === 'edit');
+
+            // Update generate section visibility (hide in edit mode since it has its own button)
+            elements.generateSection.style.display = mode === 'remix' ? 'flex' : 'none';
+
+            // Update calculator for current mode
+            updateCalculator();
+        }
+
+        elements.modeTabs.forEach(tab => {
+            tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+        });
+
+        // ========== STANDALONE EDIT MODE ==========
+
+        // Handle image upload for standalone edit
+        function handleStandaloneImageUpload(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    standaloneEdit.imageUrl = e.target.result;
+                    standaloneEdit.imageWidth = img.naturalWidth;
+                    standaloneEdit.imageHeight = img.naturalHeight;
+
+                    // Display the image
+                    elements.standaloneEditImage.src = e.target.result;
+                    elements.standaloneCanvasWrapper.classList.add('has-image');
+
+                    // Setup canvas
+                    setupStandaloneCanvas();
+
+                    // Update generate button
+                    updateStandaloneGenerateBtn();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Setup canvas for drawing
+        function setupStandaloneCanvas() {
+            const wrapper = elements.standaloneCanvasWrapper;
+            const canvas = elements.standaloneEditCanvas;
+            const img = elements.standaloneEditImage;
+
+            // Wait for image to be rendered
+            requestAnimationFrame(() => {
+                const rect = img.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+
+                // Clear any previous drawings
+                standaloneEdit.paths = [];
+                redrawStandaloneCanvas();
+            });
+        }
+
+        // Helper to get stroke color from color name
+        function getStrokeColor(colorName) {
+            return colorName === 'green' ? 'rgba(0, 255, 0, 0.7)' : 'rgba(255, 0, 0, 0.7)';
+        }
+
+        // Redraw canvas with all paths
+        function redrawStandaloneCanvas() {
+            const canvas = elements.standaloneEditCanvas;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            standaloneEdit.paths.forEach(path => {
+                ctx.strokeStyle = getStrokeColor(path.color || 'red');
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                if (path.type === 'rect') {
+                    ctx.strokeRect(path.x, path.y, path.width, path.height);
+                } else if (path.type === 'pen') {
+                    ctx.beginPath();
+                    path.points.forEach((point, i) => {
+                        if (i === 0) ctx.moveTo(point.x, point.y);
+                        else ctx.lineTo(point.x, point.y);
+                    });
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Canvas drawing handlers
+        elements.standaloneEditCanvas.addEventListener('mousedown', (e) => {
+            if (!standaloneEdit.imageUrl) return;
+
+            const rect = elements.standaloneEditCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            standaloneEdit.isDrawing = true;
+            standaloneEdit.startX = x;
+            standaloneEdit.startY = y;
+
+            if (standaloneEdit.tool === 'pen') {
+                standaloneEdit.currentPath = { type: 'pen', color: standaloneEdit.color, points: [{ x, y }] };
+            }
+        });
+
+        elements.standaloneEditCanvas.addEventListener('mousemove', (e) => {
+            if (!standaloneEdit.isDrawing) return;
+
+            const rect = elements.standaloneEditCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (standaloneEdit.tool === 'rect') {
+                // Preview rectangle (stroke only)
+                redrawStandaloneCanvas();
+                const ctx = elements.standaloneEditCanvas.getContext('2d');
+                ctx.strokeStyle = getStrokeColor(standaloneEdit.color);
+                ctx.lineWidth = 3;
+                const w = x - standaloneEdit.startX;
+                const h = y - standaloneEdit.startY;
+                ctx.strokeRect(standaloneEdit.startX, standaloneEdit.startY, w, h);
+            } else if (standaloneEdit.tool === 'pen' && standaloneEdit.currentPath) {
+                standaloneEdit.currentPath.points.push({ x, y });
+                redrawStandaloneCanvas();
+                // Draw current path
+                const ctx = elements.standaloneEditCanvas.getContext('2d');
+                ctx.strokeStyle = getStrokeColor(standaloneEdit.color);
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                standaloneEdit.currentPath.points.forEach((point, i) => {
+                    if (i === 0) ctx.moveTo(point.x, point.y);
+                    else ctx.lineTo(point.x, point.y);
+                });
+                ctx.stroke();
+            }
+        });
+
+        elements.standaloneEditCanvas.addEventListener('mouseup', (e) => {
+            if (!standaloneEdit.isDrawing) return;
+
+            const rect = elements.standaloneEditCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (standaloneEdit.tool === 'rect') {
+                const w = x - standaloneEdit.startX;
+                const h = y - standaloneEdit.startY;
+                if (Math.abs(w) > 5 && Math.abs(h) > 5) {
+                    standaloneEdit.paths.push({
+                        type: 'rect',
+                        color: standaloneEdit.color,
+                        x: Math.min(standaloneEdit.startX, x),
+                        y: Math.min(standaloneEdit.startY, y),
+                        width: Math.abs(w),
+                        height: Math.abs(h)
+                    });
+                }
+            } else if (standaloneEdit.tool === 'pen' && standaloneEdit.currentPath) {
+                if (standaloneEdit.currentPath.points.length > 1) {
+                    standaloneEdit.paths.push(standaloneEdit.currentPath);
+                }
+                standaloneEdit.currentPath = null;
+            }
+
+            standaloneEdit.isDrawing = false;
+            redrawStandaloneCanvas();
+        });
+
+        elements.standaloneEditCanvas.addEventListener('mouseleave', () => {
+            if (standaloneEdit.isDrawing) {
+                standaloneEdit.isDrawing = false;
+                standaloneEdit.currentPath = null;
+                redrawStandaloneCanvas();
+            }
+        });
+
+        // Tool selection
+        elements.standaloneToolbar.addEventListener('click', (e) => {
+            const btn = e.target.closest('.standalone-tool-btn');
+            if (!btn || btn.classList.contains('clear-btn')) return;
+
+            elements.standaloneToolbar.querySelectorAll('.standalone-tool-btn:not(.clear-btn)').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            standaloneEdit.tool = btn.dataset.tool;
+        });
+
+        // Clear button
+        elements.standaloneClearBtn.addEventListener('click', () => {
+            standaloneEdit.paths = [];
+            redrawStandaloneCanvas();
+        });
+
+        // Color picker
+        document.getElementById('standalone-color-picker').addEventListener('click', (e) => {
+            const btn = e.target.closest('.color-btn');
+            if (!btn) return;
+
+            document.querySelectorAll('#standalone-color-picker .color-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            standaloneEdit.color = btn.dataset.color;
+        });
+
+        // Canvas wrapper click/drag handlers - click to select for paste or open file picker
+        elements.standaloneCanvasWrapper.addEventListener('click', (e) => {
+            // Don't handle if clicking on remove button or canvas (for drawing)
+            if (e.target === elements.standaloneRemoveBtn || e.target === elements.standaloneEditCanvas) {
+                return;
+            }
+
+            if (!standaloneEdit.imageUrl) {
+                // No image yet - toggle paste-ready state
+                if (elements.standaloneCanvasWrapper.classList.contains('paste-ready')) {
+                    // Second click - open file picker
+                    elements.standaloneCanvasWrapper.classList.remove('paste-ready');
+                    standaloneEdit.pasteToMain = false;
+                    elements.standaloneFileInput.click();
+                } else {
+                    // First click - select for paste
+                    clearStandalonePasteHighlight();
+                    standaloneEdit.pasteToRef = null;
+                    standaloneEdit.pasteToMain = true;
+                    elements.standaloneCanvasWrapper.classList.add('paste-ready');
+                }
+            }
+        });
+
+        // Remove button handler
+        elements.standaloneRemoveBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            standaloneEdit.imageUrl = null;
+            standaloneEdit.imageWidth = 0;
+            standaloneEdit.imageHeight = 0;
+            standaloneEdit.paths = [];
+            elements.standaloneEditImage.src = '';
+            elements.standaloneCanvasWrapper.classList.remove('has-image');
+            redrawStandaloneCanvas();
+            updateStandaloneGenerateBtn();
+        });
+
+        elements.standaloneCanvasWrapper.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.standaloneCanvasWrapper.classList.add('drag-over');
+        });
+
+        elements.standaloneCanvasWrapper.addEventListener('dragleave', () => {
+            elements.standaloneCanvasWrapper.classList.remove('drag-over');
+        });
+
+        elements.standaloneCanvasWrapper.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.standaloneCanvasWrapper.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                handleStandaloneImageUpload(files[0]);
+            }
+        });
+
+        elements.standaloneFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleStandaloneImageUpload(e.target.files[0]);
+                e.target.value = '';
+            }
+        });
+
+        // Reference image handling
+        let currentRefSlotIndex = 0;
+
+        // Helper to clear paste highlight on ref slots
+        function clearStandalonePasteHighlight() {
+            elements.standaloneRefGrid.querySelectorAll('.standalone-ref-slot').forEach(s => {
+                s.classList.remove('paste-ready');
+            });
+        }
+
+        // Helper to handle pasting a file into a ref slot (with HEIC support)
+        async function handleStandaloneRefPaste(file, slotIndex) {
+            const slot = elements.standaloneRefGrid.querySelector(`[data-index="${slotIndex}"]`);
+
+            // Show loading state
+            slot.innerHTML = '<span class="loading-spinner"></span>';
+            slot.classList.add('loading');
+
+            try {
+                let fileToRead = file;
+
+                // Convert HEIC if needed
+                if (isHeicFile(file)) {
+                    console.log('Converting HEIC reference image...');
+                    fileToRead = await convertHeicToJpeg(file);
+                }
+
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    standaloneEdit.referenceImages[slotIndex] = ev.target.result;
+                    slot.innerHTML = `<img src="${ev.target.result}" alt="Ref"><button class="remove-ref">&times;</button>`;
+                    slot.classList.add('filled');
+                    slot.classList.remove('paste-ready', 'loading');
+                };
+                reader.readAsDataURL(fileToRead);
+            } catch (err) {
+                console.error('Failed to process reference image:', err);
+                slot.innerHTML = '+';
+                slot.classList.remove('loading', 'paste-ready');
+            }
+        }
+
+        elements.standaloneRefGrid.addEventListener('click', (e) => {
+            const slot = e.target.closest('.standalone-ref-slot');
+            if (!slot) return;
+
+            const removeBtn = e.target.closest('.remove-ref');
+            if (removeBtn) {
+                const idx = parseInt(slot.dataset.index);
+                standaloneEdit.referenceImages[idx] = null;
+                slot.innerHTML = '+';
+                slot.classList.remove('filled');
+                slot.classList.remove('paste-ready');
+                standaloneEdit.pasteToRef = null;
+                return;
+            }
+
+            const idx = parseInt(slot.dataset.index);
+
+            // If already filled, open file picker to replace
+            if (slot.classList.contains('filled')) {
+                currentRefSlotIndex = idx;
+                elements.standaloneRefInput.click();
+                return;
+            }
+
+            // Toggle paste-ready state for empty slots
+            clearStandalonePasteHighlight();
+            if (standaloneEdit.pasteToRef === idx) {
+                // Double-click: open file picker
+                currentRefSlotIndex = idx;
+                elements.standaloneRefInput.click();
+                standaloneEdit.pasteToRef = null;
+            } else {
+                // First click: select for paste (show highlight)
+                standaloneEdit.pasteToRef = idx;
+                slot.classList.add('paste-ready');
+            }
+        });
+
+        elements.standaloneRefInput.addEventListener('change', async (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const slotIndex = currentRefSlotIndex;
+                const slot = elements.standaloneRefGrid.querySelector(`[data-index="${slotIndex}"]`);
+
+                // Show loading state
+                slot.innerHTML = '<span class="loading-spinner"></span>';
+                slot.classList.add('loading');
+
+                try {
+                    let fileToRead = file;
+
+                    // Convert HEIC if needed
+                    if (isHeicFile(file)) {
+                        console.log('Converting HEIC reference image...');
+                        fileToRead = await convertHeicToJpeg(file);
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        standaloneEdit.referenceImages[slotIndex] = ev.target.result;
+                        slot.innerHTML = `<img src="${ev.target.result}" alt="Ref"><button class="remove-ref">&times;</button>`;
+                        slot.classList.add('filled');
+                        slot.classList.remove('paste-ready', 'loading');
+                        standaloneEdit.pasteToRef = null;
+                    };
+                    reader.readAsDataURL(fileToRead);
+                } catch (err) {
+                    console.error('Failed to process reference image:', err);
+                    slot.innerHTML = '+';
+                    slot.classList.remove('loading', 'paste-ready');
+                }
+                e.target.value = '';
+            }
+        });
+
+        // Drag and drop for reference slots
+        elements.standaloneRefGrid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const slot = e.target.closest('.standalone-ref-slot');
+            if (slot) {
+                slot.classList.add('drag-over');
+            }
+        });
+
+        elements.standaloneRefGrid.addEventListener('dragleave', (e) => {
+            const slot = e.target.closest('.standalone-ref-slot');
+            if (slot) {
+                slot.classList.remove('drag-over');
+            }
+        });
+
+        elements.standaloneRefGrid.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            const slot = e.target.closest('.standalone-ref-slot');
+            if (!slot) return;
+
+            slot.classList.remove('drag-over');
+            const idx = parseInt(slot.dataset.index);
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                // Check if it's an image (including HEIC)
+                if (!file.type.startsWith('image/') && !isHeicFile(file)) return;
+
+                // Show loading state
+                slot.innerHTML = '<span class="loading-spinner"></span>';
+                slot.classList.add('loading');
+
+                try {
+                    let fileToRead = file;
+
+                    // Convert HEIC if needed
+                    if (isHeicFile(file)) {
+                        console.log('Converting HEIC reference image...');
+                        fileToRead = await convertHeicToJpeg(file);
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        standaloneEdit.referenceImages[idx] = ev.target.result;
+                        slot.innerHTML = `<img src="${ev.target.result}" alt="Ref"><button class="remove-ref">&times;</button>`;
+                        slot.classList.add('filled');
+                        slot.classList.remove('paste-ready', 'loading');
+                        standaloneEdit.pasteToRef = null;
+                    };
+                    reader.readAsDataURL(fileToRead);
+                } catch (err) {
+                    console.error('Failed to process reference image:', err);
+                    slot.innerHTML = '+';
+                    slot.classList.remove('loading', 'paste-ready');
+                }
+            }
+        });
+
+        // Prompt input
+        elements.standalonePrompt.addEventListener('input', updateStandaloneGenerateBtn);
+
+        function updateStandaloneGenerateBtn() {
+            const hasImage = !!standaloneEdit.imageUrl;
+            const hasPrompt = elements.standalonePrompt.value.trim().length > 0;
+            elements.standaloneGenerateBtn.disabled = !(hasImage && hasPrompt);
+        }
+
+        // Generate button
+        elements.standaloneGenerateBtn.addEventListener('click', handleStandaloneGenerate);
+
+        async function handleStandaloneGenerate() {
+            const prompt = elements.standalonePrompt.value.trim();
+            if (!standaloneEdit.imageUrl || !prompt) return;
+
+            const seedCount = state.seeds;
+            const aspectRatio = state.aspectRatio;
+            const resolution = state.resolution;
+
+            // Calculate batch number
+            batchCounter++;
+            const editBatchNum = batchCounter;
+
+            // Make sure results section is visible
+            elements.resultsSection.classList.add('visible');
+
+            // Create time label
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            // Add batch divider
+            const divider = document.createElement('div');
+            divider.className = 'batch-divider';
+            divider.textContent = `Batch ${editBatchNum} • ${timeStr}`;
+            elements.resultsGrid.insertBefore(divider, elements.resultsGrid.firstChild);
+
+            // Create placeholders
+            for (let i = seedCount - 1; i >= 0; i--) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'result-card loading';
+                placeholder.id = `standalone-loader-${editBatchNum}-${i}`;
+                placeholder.textContent = 'Preparing...';
+                placeholder.style.aspectRatio = aspectRatio.replace(':', '/');
+                placeholder.style.minHeight = 'unset';
+                elements.resultsGrid.insertBefore(placeholder, elements.resultsGrid.firstChild);
+            }
+
+            // Start loading animation
+            startLoadingAnimation(`Batch ${editBatchNum}: Preparing image...`);
+
+            try {
+                // Build image URLs
+                let imageUrls = [];
+
+                if (standaloneEdit.paths.length > 0) {
+                    // Create composite with markup
+                    const compositeDataUrl = await createStandaloneComposite();
+                    updateLoadingProgress(`Batch ${editBatchNum}: Uploading...`);
+                    const uploadResponse = await fetch('/api/upload-base64', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ dataUrl: compositeDataUrl })
+                    });
+                    const uploadData = await uploadResponse.json();
+                    if (!uploadResponse.ok) throw new Error(uploadData.error || 'Upload failed');
+                    imageUrls.push(uploadData.url);
+                } else {
+                    // No markup - upload original
+                    updateLoadingProgress(`Batch ${editBatchNum}: Uploading...`);
+                    const uploadResponse = await fetch('/api/upload-base64', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ dataUrl: standaloneEdit.imageUrl })
+                    });
+                    const uploadData = await uploadResponse.json();
+                    if (!uploadResponse.ok) throw new Error(uploadData.error || 'Upload failed');
+                    imageUrls.push(uploadData.url);
+                }
+
+                // Add reference images
+                for (const refImg of standaloneEdit.referenceImages) {
+                    if (refImg) {
+                        imageUrls.push(refImg);  // Can use data URLs directly for Gemini
+                    }
+                }
+
+                // Generate all seeds in parallel
+                console.log(`🚀 [Edit Batch ${editBatchNum}] Starting ${seedCount} seeds in parallel`);
+                updateLoadingProgress(`Batch ${editBatchNum}: Generating ${seedCount} seeds...`);
+
+                const seedPromises = Array.from({ length: seedCount }, async (_, i) => {
+                    const seedNum = i + 1;
+                    const startTime = performance.now();
+                    const placeholderId = `standalone-loader-${editBatchNum}-${i}`;
+
+                    try {
+                        const placeholder = document.getElementById(placeholderId);
+                        if (placeholder) placeholder.textContent = 'Generating...';
+
+                        console.log(`[Edit Batch ${editBatchNum}][${seedNum}/${seedCount}] → Generating...`);
+
+                        const response = await fetch('/api/remix-gemini', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'gemini-3-pro',
+                                prompt: prompt,
+                                image_urls: imageUrls,
+                                aspect_ratio: aspectRatio,
+                                resolution: resolution
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Edit failed');
+
+                        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
+                        if (data.images && data.images.length > 0) {
+                            console.log(`[Edit Batch ${editBatchNum}][${seedNum}/${seedCount}] ✓ Done (${elapsed}s)`);
+
+                            const seedLabel = seedCount > 1 ? ` (${seedNum}/${seedCount})` : '';
+                            const newResult = {
+                                url: data.images[0].url,
+                                prompt: prompt,
+                                model: `Batch ${editBatchNum}${seedLabel}`,
+                                setIndex: 0,
+                                sourceImages: imageUrls
+                            };
+                            const resultIndex = state.results.length;
+                            state.results.push(newResult);
+
+                            const ph = document.getElementById(placeholderId);
+                            if (ph) {
+                                ph.className = 'result-card';
+                                ph.id = '';
+                                ph.textContent = '';
+                                ph.onclick = () => openLightbox(resultIndex);
+                                ph.innerHTML = `
+                                    <img src="${newResult.url}" alt="Result" class="result-image">
+                                    <span class="model-tag">${newResult.model}</span>
+                                `;
+                            }
+                            return { success: true };
+                        }
+                        return { success: false };
+                    } catch (error) {
+                        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                        console.error(`[Edit Batch ${editBatchNum}][${seedNum}/${seedCount}] ✗ Failed (${elapsed}s):`, error.message);
+
+                        const placeholder = document.getElementById(placeholderId);
+                        if (placeholder) {
+                            placeholder.className = 'result-card error';
+                            placeholder.textContent = 'Failed';
+                        }
+                        return { success: false, error };
+                    }
+                });
+
+                await Promise.all(seedPromises);
+                console.log(`✅ [Edit Batch ${editBatchNum}] Complete`);
+                updateLoadingProgress(`Batch ${editBatchNum}: Complete!`);
+            } catch (error) {
+                console.error('Standalone edit failed:', error);
+                alert('Generation failed: ' + error.message);
+            } finally {
+                stopLoadingAnimation();
+            }
+        }
+
+        // Create composite image with markup
+        async function createStandaloneComposite() {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+
+                    // Draw original image
+                    ctx.drawImage(img, 0, 0);
+
+                    // Calculate scale from display size to actual size
+                    const displayCanvas = elements.standaloneEditCanvas;
+                    const scaleX = img.naturalWidth / displayCanvas.width;
+                    const scaleY = img.naturalHeight / displayCanvas.height;
+
+                    // Draw paths scaled to original resolution
+                    ctx.lineWidth = 4 * Math.max(scaleX, scaleY);
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+
+                    standaloneEdit.paths.forEach(path => {
+                        // Use path color (with higher opacity for composite)
+                        ctx.strokeStyle = path.color === 'green' ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
+
+                        if (path.type === 'rect') {
+                            ctx.strokeRect(
+                                path.x * scaleX,
+                                path.y * scaleY,
+                                path.width * scaleX,
+                                path.height * scaleY
+                            );
+                        } else if (path.type === 'pen') {
+                            ctx.beginPath();
+                            path.points.forEach((point, i) => {
+                                const x = point.x * scaleX;
+                                const y = point.y * scaleY;
+                                if (i === 0) ctx.moveTo(x, y);
+                                else ctx.lineTo(x, y);
+                            });
+                            ctx.stroke();
+                        }
+                    });
+
+                    resolve(canvas.toDataURL('image/jpeg', 0.95));
+                };
+                img.src = standaloneEdit.imageUrl;
+            });
+        }
+
+        // Initialize
+        sets.push(createSetData());
+        renderSets();
+    </script>
+</body>
+</html>

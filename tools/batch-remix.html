@@ -388,6 +388,45 @@
             border-radius: var(--radius-sm);
         }
 
+        .result-card.loading {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+        }
+
+        .batch-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) 0;
+        }
+
+        .batch-divider::before,
+        .batch-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
+        .result-card.cancelled {
+            background: var(--seasalt);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+        }
+
         input[type="file"] {
             display: none;
         }
@@ -408,6 +447,10 @@
 
         .lightbox-nav.prev { left: var(--space-md); }
         .lightbox-nav.next { right: 320px; }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -477,6 +520,12 @@
                     <button data-value="sequential">Sequential</button>
                 </div>
             </div>
+            <div class="setting-item" style="margin-left: auto;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="keep-filenames" style="width: 14px; height: 14px;">
+                    Keep filenames
+                </label>
+            </div>
         </div>
 
         <!-- Sets Container -->
@@ -485,9 +534,14 @@
         <!-- Generate Section -->
         <div class="generate-section">
             <div class="calc-display" id="calc-display">0 images</div>
-            <button class="btn btn--primary" id="generate-btn" disabled>
-                Generate <span class="btn-cost" id="cost-value">$0.00</span>
-            </button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn" id="cancel-btn" style="display: none; background: var(--white); border: 1px solid var(--gainsboro); color: var(--slate);">
+                    Cancel
+                </button>
+                <button class="btn btn--primary" id="generate-btn" disabled>
+                    Generate <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
         </div>
 
         <!-- Inline Loader -->
@@ -561,6 +615,8 @@
         // State
         let sets = []; // Array of set data
         let pasteTarget = null;  // { setIndex: number, type: 'primary'|'secondary', slotIndex: number }
+        let isCancelled = false; // Flag to cancel generation
+        let batchCounter = 0; // Track batch numbers
         let state = {
             numSets: 1,
             selectedModel: 'nanopro',
@@ -569,6 +625,7 @@
             seeds: 1,
             inputs: 6,
             promptMode: 'all',  // 'all' = all×all, 'sequential' = 1:1 mapping
+            keepFilenames: false,
             results: [],
             lightboxIndex: 0
         };
@@ -585,6 +642,8 @@
             resolutionItem: document.getElementById('resolution-item'),
             inputsButtons: document.getElementById('inputs-buttons'),
             generateBtn: document.getElementById('generate-btn'),
+            cancelBtn: document.getElementById('cancel-btn'),
+            keepFilenamesCheckbox: document.getElementById('keep-filenames'),
             costValue: document.getElementById('cost-value'),
             calcDisplay: document.getElementById('calc-display'),
             progressSection: document.getElementById('progress-section'),
@@ -648,7 +707,7 @@
                             </div>
                         </div>
                         <div class="upload-grid" data-set="${setIndex}" data-type="primary"></div>
-                        <input type="file" class="file-input" data-set="${setIndex}" data-type="primary" accept="image/*" multiple>
+                        <input type="file" class="file-input" data-set="${setIndex}" data-type="primary" accept="image/*,.heic,.heif" multiple>
                     </div>
                     <div class="images-column">
                         <div class="column-header">
@@ -659,7 +718,7 @@
                             </div>
                         </div>
                         <div class="upload-grid" data-set="${setIndex}" data-type="secondary"></div>
-                        <input type="file" class="file-input" data-set="${setIndex}" data-type="secondary" accept="image/*" multiple>
+                        <input type="file" class="file-input" data-set="${setIndex}" data-type="secondary" accept="image/*,.heic,.heif" multiple>
                     </div>
                 </div>
                 <div class="prompt-row">
@@ -815,10 +874,43 @@
                 grid.addEventListener('drop', (e) => {
                     e.preventDefault();
                     grid.classList.remove('drag-over');
-                    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    const files = Array.from(e.dataTransfer.files).filter(f =>
+                        f.type.startsWith('image/') ||
+                        f.name.toLowerCase().endsWith('.heic') ||
+                        f.name.toLowerCase().endsWith('.heif')
+                    );
                     if (files.length > 0) handleFileUpload(setIndex, files, type, null);
                 });
             });
+        }
+
+        // Check if file is HEIC/HEIF format
+        function isHeicFile(file) {
+            return file.type === 'image/heic' ||
+                   file.type === 'image/heif' ||
+                   file.name.toLowerCase().endsWith('.heic') ||
+                   file.name.toLowerCase().endsWith('.heif');
+        }
+
+        // Convert HEIC to JPEG via server (uses sharp which has better HEIC support)
+        async function convertHeicToJpeg(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch('/api/convert-heic', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'HEIC conversion failed');
+            }
+
+            const { dataUrl } = await response.json();
+            // Convert data URL back to blob
+            const res = await fetch(dataUrl);
+            return await res.blob();
         }
 
         function handleFileUpload(setIndex, files, type, startIndex) {
@@ -841,17 +933,43 @@
                 reservations.push({ file, index });
             });
 
-            // Now read files asynchronously
-            reservations.forEach(({ file, index }) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    images[index] = { file, url: e.target.result };
-                    // Re-render this set's grid
-                    const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
-                    renderGridImages(images, grid, setIndex, type);
-                    updateCalculator();
-                };
-                reader.readAsDataURL(file);
+            // Now process files asynchronously (with HEIC conversion if needed)
+            reservations.forEach(async ({ file, index }) => {
+                const originalName = file.name.replace(/\.[^/.]+$/, '');
+                const grid = document.querySelector(`.upload-grid[data-set="${setIndex}"][data-type="${type}"]`);
+                const slot = grid?.children[index];
+
+                try {
+                    let fileToRead = file;
+
+                    // Convert HEIC to JPEG if needed
+                    if (isHeicFile(file)) {
+                        console.log(`Converting HEIC: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+                        // Show loading state in slot
+                        if (slot) {
+                            slot.innerHTML = '<div style="width:16px;height:16px;border:2px solid var(--gainsboro);border-top-color:var(--slate);border-radius:50%;animation:spin 0.8s linear infinite"></div>';
+                            slot.classList.add('filled');
+                        }
+                        fileToRead = await convertHeicToJpeg(file);
+                        console.log(`Converted ${file.name} successfully`);
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        images[index] = { file: fileToRead, url: e.target.result, originalName };
+                        renderGridImages(images, grid, setIndex, type);
+                        updateCalculator();
+                    };
+                    reader.readAsDataURL(fileToRead);
+                } catch (err) {
+                    console.error(`Failed to process ${file.name}:`, err);
+                    // Reset slot on error
+                    if (slot) {
+                        slot.innerHTML = '+';
+                        slot.classList.remove('filled');
+                    }
+                    alert(`Failed to convert ${file.name}: ${err.message || 'Unknown error'}`);
+                }
             });
         }
 
@@ -1093,7 +1211,22 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
         // Generate
         elements.generateBtn.addEventListener('click', handleGenerate);
 
+        // Cancel button
+        elements.cancelBtn.addEventListener('click', () => {
+            isCancelled = true;
+            elements.cancelBtn.textContent = 'Cancelling...';
+            elements.cancelBtn.disabled = true;
+        });
+
+        // Keep filenames checkbox
+        elements.keepFilenamesCheckbox.addEventListener('change', (e) => {
+            state.keepFilenames = e.target.checked;
+        });
+
         async function handleGenerate() {
+            // Reset cancellation flag
+            isCancelled = false;
+
             // Build all tasks from all sets
             const allTasks = [];
 
@@ -1129,13 +1262,16 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                     for (const primaryGroup of primaryGroups) {
                         for (const secondaryGroup of secondaryGroups) {
                             const prompt = prompts[promptIndex % prompts.length];
+                            // Collect all original names (primary + secondaries)
+                            const allNames = [primaryGroup[0]?.originalName, ...secondaryGroup.map(s => s?.originalName)].filter(Boolean);
                             allTasks.push({
                                 setIndex,
                                 primary: primaryGroup[0],
                                 additionalPrimaries: primaryGroup.slice(1),
                                 secondaries: secondaryGroup,
                                 prompt,
-                                isGroup: primaryGroup.length > 1
+                                isGroup: primaryGroup.length > 1,
+                                originalName: allNames.length > 0 ? allNames.join('_') : null
                             });
                             promptIndex++;
                         }
@@ -1145,13 +1281,16 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                     for (const prompt of prompts) {
                         for (const primaryGroup of primaryGroups) {
                             for (const secondaryGroup of secondaryGroups) {
+                                // Collect all original names (primary + secondaries)
+                                const allNames = [primaryGroup[0]?.originalName, ...secondaryGroup.map(s => s?.originalName)].filter(Boolean);
                                 allTasks.push({
                                     setIndex,
                                     primary: primaryGroup[0],
                                     additionalPrimaries: primaryGroup.slice(1),
                                     secondaries: secondaryGroup,
                                     prompt,
-                                    isGroup: primaryGroup.length > 1
+                                    isGroup: primaryGroup.length > 1,
+                                    originalName: allNames.length > 0 ? allNames.join('_') : null
                                 });
                             }
                         }
@@ -1169,109 +1308,205 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
                 }
             }
 
-            // Show progress
+            const total = tasksWithSeeds.length;
+
+            // Create placeholder loaders for all tasks
+            // Calculate aspect ratio for placeholders
+            const aspectRatioMap = {
+                '1:1': 1,
+                '4:3': 4/3,
+                '3:4': 3/4,
+                '16:9': 16/9,
+                '9:16': 9/16,
+                '21:9': 21/9,
+                '9:21': 9/21
+            };
+            const aspectRatio = aspectRatioMap[state.aspectRatio] || 1;
+
+            elements.resultsSection.classList.add('visible');
+
+            // Increment batch counter and create divider - use this as unique batch ID
+            batchCounter++;
+            const currentBatchId = batchCounter;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const divider = document.createElement('div');
+            divider.className = 'batch-divider';
+            divider.id = `batch-divider-${currentBatchId}`;
+            divider.textContent = `Batch ${currentBatchId} • ${timeStr}`;
+            elements.resultsGrid.insertBefore(divider, elements.resultsGrid.firstChild);
+
+            // Insert placeholders at the top (prepend in reverse order so they appear in correct order)
+            // Use batch ID + task index for unique placeholder IDs
+            for (let i = total - 1; i >= 0; i--) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'result-card loading';
+                placeholder.id = `loader-batch${currentBatchId}-${i}`;
+                placeholder.textContent = 'Generating';
+                // Set aspect ratio
+                placeholder.style.aspectRatio = aspectRatio;
+                placeholder.style.minHeight = 'unset';
+                elements.resultsGrid.insertBefore(placeholder, elements.resultsGrid.firstChild);
+            }
+
+            // Show progress section
             elements.progressSection.classList.add('visible');
             elements.generateBtn.disabled = true;
-            state.results = [];
+            elements.cancelBtn.style.display = 'block';
+            elements.cancelBtn.disabled = false;
+            elements.cancelBtn.textContent = 'Cancel';
+
+            // Start the studio loading animation
+            startLoadingAnimation(`Batch ${currentBatchId}: Starting...`);
 
             let completed = 0;
             let uploading = 0;
             let generating = 0;
-            const total = tasksWithSeeds.length;
-            elements.progressTitle.textContent = 'Processing';
-            elements.progressCount.textContent = `0 / ${total}`;
-            elements.progressBar.style.width = '0%';
-
-            // Start the studio loading animation
-            startLoadingAnimation('Starting batch processing...');
 
             function updateStatus() {
                 const parts = [];
                 if (uploading > 0) parts.push(`uploading ${uploading}`);
                 if (generating > 0) parts.push(`generating ${generating}`);
-                updateLoadingProgress(`${completed}/${total} complete` + (parts.length ? ` · ${parts.join(', ')}` : ''));
-            }
-
-            console.log(`🚀 Starting ${total} tasks in parallel`);
-
-            // Process all tasks in parallel
-            const promises = tasksWithSeeds.map(async (task, taskIndex) => {
-                const taskId = taskIndex + 1;
-                const startTime = performance.now();
-
-                try {
-                    // Collect all images to upload
-                    const imagesToUpload = [task.primary];
-                    if (task.isGroup && task.additionalPrimaries) {
-                        imagesToUpload.push(...task.additionalPrimaries);
-                    }
-                    imagesToUpload.push(...task.secondaries);
-
-                    uploading++;
-                    updateStatus();
-                    console.log(`[${taskId}/${total}] Uploading ${imagesToUpload.length} images...`);
-                    const uploadStart = performance.now();
-
-                    // Upload all images in parallel
-                    const uploadResults = await Promise.all(
-                        imagesToUpload.map(img => api.uploadBase64(img.url))
-                    );
-                    const imageUrls = uploadResults.map(r => r.url);
-
-                    uploading--;
-                    generating++;
-                    updateStatus();
-                    console.log(`[${taskId}/${total}] Uploads done (${((performance.now() - uploadStart) / 1000).toFixed(1)}s) → Generating (${state.aspectRatio}, ${state.resolution})...`);
-
-                    // Build params
-                    const params = {
-                        prompt: task.prompt,
-                        image_urls: imageUrls,
-                        num_images: 1,
-                        aspect_ratio: state.aspectRatio,
-                        output_format: 'png'
-                    };
-
-                    // Add resolution for nano-pro (supports 1K, 2K, 4K)
-                    if (state.selectedModel === 'nanopro') {
-                        params.resolution = state.resolution;
-                    }
-
-                    const model = REMIX_MODELS[state.selectedModel];
-                    const data = await api.remixImage(model.endpoint, params);
-
-                    generating--;
-                    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
-
-                    if (data.images && data.images.length > 0) {
-                        console.log(`[${taskId}/${total}] ✓ Done (${elapsed}s total)`);
-                        state.results.push({
-                            url: data.images[0].url,
-                            prompt: task.prompt,
-                            model: model.name,
-                            setIndex: task.setIndex,
-                            sourceImages: imageUrls
-                        });
-                        renderResults();
-                    }
-                } catch (error) {
-                    uploading = Math.max(0, uploading - 1);
-                    generating = Math.max(0, generating - 1);
-                    console.error(`[${taskId}/${total}] ✗ Failed:`, error.message);
-                }
-
-                completed++;
+                updateLoadingProgress(`Batch ${currentBatchId}: ${completed}/${total}` + (parts.length ? ` · ${parts.join(', ')}` : ''));
                 elements.progressCount.textContent = `${completed} / ${total}`;
                 elements.progressBar.style.width = `${(completed / total) * 100}%`;
-                updateStatus();
-            });
+            }
 
-            await Promise.all(promises);
+            console.log(`🚀 [Batch ${currentBatchId}] Starting ${total} tasks in parallel`);
 
-            // Done
-            stopLoadingAnimation();
-            elements.progressSection.classList.remove('visible');
-            elements.generateBtn.disabled = false;
+            // Process all tasks in parallel (don't await - let it run in background)
+            const batchPromise = (async () => {
+                const promises = tasksWithSeeds.map(async (task, taskIndex) => {
+                    const taskId = taskIndex + 1;
+                    const startTime = performance.now();
+                    const placeholderId = `loader-batch${currentBatchId}-${taskIndex}`;
+
+                    // Check if cancelled before starting
+                    if (isCancelled) {
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Skipped (cancelled)`);
+                        const placeholder = document.getElementById(placeholderId);
+                        if (placeholder) {
+                            placeholder.className = 'result-card cancelled';
+                            placeholder.innerHTML = 'Cancelled';
+                        }
+                        completed++;
+                        updateStatus();
+                        return;
+                    }
+
+                    try {
+                        // Collect all images to upload
+                        const imagesToUpload = [task.primary];
+                        if (task.isGroup && task.additionalPrimaries) {
+                            imagesToUpload.push(...task.additionalPrimaries);
+                        }
+                        imagesToUpload.push(...task.secondaries);
+
+                        uploading++;
+                        updateStatus();
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Uploading ${imagesToUpload.length} images...`);
+                        const uploadStart = performance.now();
+
+                        // Upload all images in parallel
+                        const uploadResults = await Promise.all(
+                            imagesToUpload.map(img => api.uploadBase64(img.url))
+                        );
+                        const imageUrls = uploadResults.map(r => r.url);
+
+                        // Check if cancelled after upload
+                        if (isCancelled) {
+                            uploading--;
+                            console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Cancelled after upload`);
+                            const placeholder = document.getElementById(placeholderId);
+                            if (placeholder) {
+                                placeholder.className = 'result-card cancelled';
+                                placeholder.innerHTML = 'Cancelled';
+                            }
+                            completed++;
+                            updateStatus();
+                            return;
+                        }
+
+                        uploading--;
+                        generating++;
+                        updateStatus();
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Uploads done (${((performance.now() - uploadStart) / 1000).toFixed(1)}s) → Generating...`);
+
+                        // Build params
+                        const params = {
+                            prompt: task.prompt,
+                            image_urls: imageUrls,
+                            num_images: 1,
+                            aspect_ratio: state.aspectRatio,
+                            output_format: 'png'
+                        };
+
+                        // Add resolution for nano-pro (supports 1K, 2K, 4K)
+                        if (state.selectedModel === 'nanopro') {
+                            params.resolution = state.resolution;
+                        }
+
+                        const model = REMIX_MODELS[state.selectedModel];
+                        const data = await api.remixImage(model.endpoint, params);
+
+                        generating--;
+                        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+
+                        if (data.images && data.images.length > 0) {
+                            console.log(`[Batch ${currentBatchId}][${taskId}/${total}] ✓ Done (${elapsed}s total)`);
+                            const resultIndex = state.results.length;
+                            state.results.push({
+                                url: data.images[0].url,
+                                prompt: task.prompt,
+                                model: model.name,
+                                setIndex: task.setIndex,
+                                sourceImages: imageUrls,
+                                originalName: task.originalName
+                            });
+                            // Replace placeholder with actual result
+                            const placeholder = document.getElementById(placeholderId);
+                            if (placeholder) {
+                                placeholder.id = '';
+                                placeholder.className = 'result-card';
+                                placeholder.onclick = () => openLightbox(resultIndex);
+                                placeholder.innerHTML = `
+                                    <img src="${data.images[0].url}" alt="Result ${resultIndex + 1}" class="result-image">
+                                    <span class="set-tag">Set ${task.setIndex + 1}</span>
+                                    <span class="model-tag">${model.name}</span>
+                                `;
+                            }
+                        }
+                    } catch (error) {
+                        uploading = Math.max(0, uploading - 1);
+                        generating = Math.max(0, generating - 1);
+                        console.error(`[Batch ${currentBatchId}][${taskId}/${total}] ✗ Failed:`, error.message);
+                        // Mark placeholder as failed
+                        const placeholder = document.getElementById(placeholderId);
+                        if (placeholder) {
+                            placeholder.className = 'result-card cancelled';
+                            placeholder.innerHTML = 'Failed';
+                        }
+                    }
+
+                    completed++;
+                    updateStatus();
+                });
+
+                await Promise.all(promises);
+
+                // Batch done - remove cancelled/failed placeholders for this batch
+                console.log(`✅ [Batch ${currentBatchId}] Complete`);
+                document.querySelectorAll(`[id^="loader-batch${currentBatchId}-"].cancelled`).forEach(el => el.remove());
+
+                // Hide progress if no other batches are running
+                // (Simple approach: just hide it, next batch will show it again)
+                stopLoadingAnimation();
+                elements.progressSection.classList.remove('visible');
+                elements.generateBtn.disabled = false;
+                elements.cancelBtn.style.display = 'none';
+            })();
+
+            // Don't await - let the batch run in background so user can start another
         }
 
         // Render results
@@ -1333,14 +1568,22 @@ Return ONLY the prompt text, nothing else. Be concise and specific.`;
 
         document.getElementById('lightbox-download').addEventListener('click', () => {
             const result = state.results[state.lightboxIndex];
-            const now = new Date();
-            const yy = String(now.getFullYear()).slice(-2);
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const num = String(state.lightboxIndex + 1).padStart(2, '0');
-            const filename = `Setset_Remix_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
+            let filename;
+
+            if (state.keepFilenames && result.originalName) {
+                // Use original filename with _remix suffix
+                filename = `${result.originalName}_remix.png`;
+            } else {
+                // Use default timestamped filename
+                const now = new Date();
+                const yy = String(now.getFullYear()).slice(-2);
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const num = String(state.lightboxIndex + 1).padStart(2, '0');
+                filename = `Setset_Remix_${yy}${mm}${dd}_${hh}${min}_${num}.png`;
+            }
             downloadFile(result.url, filename);
         });
 

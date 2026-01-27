@@ -441,6 +441,13 @@
     object-fit: contain;
 }
 
+.lightbox-video {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    background: var(--carbon);
+}
+
 .lightbox-right {
     background: var(--white);
     padding: var(--space-xl);

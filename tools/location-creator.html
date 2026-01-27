@@ -530,14 +530,17 @@
                 </div>
             </div>
 
-            <!-- Lighting (multi-select) -->
+            <!-- Time of Day (multi-select) -->
             <div class="generator-section full-width">
-                <div class="section-title">Lighting (select multiple)</div>
-                <div class="button-group" id="lighting-group">
-                    <button class="btn btn--toggle active" data-value="hard">Hard Daylight</button>
-                    <button class="btn btn--toggle active" data-value="soft">Soft Afternoon</button>
-                    <button class="btn btn--toggle" data-value="overcast">Overcast</button>
+                <div class="section-title">Time of Day (select multiple)</div>
+                <div class="button-group-wrap" id="lighting-group">
+                    <button class="btn btn--toggle" data-value="sunrise">Sunrise</button>
+                    <button class="btn btn--toggle" data-value="morning">Morning</button>
+                    <button class="btn btn--toggle active" data-value="midday">Midday</button>
+                    <button class="btn btn--toggle active" data-value="afternoon">Afternoon</button>
                     <button class="btn btn--toggle" data-value="golden">Golden Hour</button>
+                    <button class="btn btn--toggle" data-value="sunset">Sunset</button>
+                    <button class="btn btn--toggle" data-value="overcast">Overcast</button>
                 </div>
             </div>
 
@@ -638,7 +641,7 @@
             genders: ['female', 'male'],  // multi-select genders
             framings: ['full-body'],  // multi-select framings
             clothingStyle: 'auto',  // auto, editorial, casual, swimwear, streetwear, formal
-            lighting: ['hard', 'soft'],  // multi-select lighting types
+            lighting: ['midday', 'afternoon'],  // multi-select time of day
             models: ['reve'],
             aspectRatio: '4:3',
             resultCount: 12,
@@ -686,31 +689,49 @@
             { type: 'foreground', label: 'Foreground', desc: 'blurry foreground element, full-body in focus behind' }
         ];
 
-        // Lighting variations by type
+        // Lighting variations by time of day
         const LIGHTING_BY_TYPE = {
-            hard: [
+            sunrise: [
+                'early sunrise light, fresh yellow-beige tones, soft warm glow just after dawn',
+                'sunrise golden light, long gentle shadows, crisp morning air feeling',
+                'dawn light with fresh peachy-yellow warmth, sky transitioning from pink to blue',
+                'early morning sun low on horizon, soft directional light, ethereal quality'
+            ],
+            morning: [
+                'bright morning light, clean and fresh, slightly warm',
+                'mid-morning sunlight, clear and crisp, light shadows',
+                'fresh morning daylight, bright but not harsh, optimistic quality',
+                'morning sun with slight warmth, clear visibility, energetic atmosphere'
+            ],
+            midday: [
                 'hard direct sunlight, strong shadows, high contrast',
                 'harsh midday sun, crisp shadows on ground',
                 'bright direct daylight, sun high in sky',
                 'strong sunlight creating sharp defined shadows'
             ],
-            soft: [
+            afternoon: [
                 'soft late afternoon light, warm but not golden',
                 'diffused natural light with gentle directionality',
                 'soft directional light, fashion campaign quality',
                 'gentle side light creating subtle dimension'
+            ],
+            golden: [
+                'golden hour warm light, long dramatic shadows',
+                'late day golden sunlight, rich warm tones',
+                'magic hour lighting, everything bathed in gold',
+                'pre-sunset golden glow, flattering warm light on skin'
+            ],
+            sunset: [
+                'sunset light, warm orange and golden glow, dramatic long shadows',
+                'rich sunset tones, deep orange and amber light, romantic atmosphere',
+                'end of day sunset, sky painted orange and pink, warm golden light on subject',
+                'dramatic sunset lighting, sun low on horizon, intense warm colors'
             ],
             overcast: [
                 'soft overcast light, even and flattering',
                 'cloudy diffused light, no harsh shadows',
                 'flat overcast sky, even illumination',
                 'grey sky ambient light, soft and moody'
-            ],
-            golden: [
-                'golden hour warm light, long shadows',
-                'late day golden sunlight, warm tones',
-                'sunset light, warm orange glow',
-                'magic hour lighting, golden and soft'
             ]
         };
 
@@ -1236,12 +1257,15 @@ BACKDROP REQUIREMENTS:
 
 STYLE: Campaign/editorial - confident, quiet, not overly dramatic or adventure-tourism feeling`;
 
-            // Build lighting instruction
+            // Build lighting instruction based on time of day
             const lightingTypes = [];
-            if (state.lighting.includes('hard')) lightingTypes.push('hard direct sunlight with crisp shadows');
-            if (state.lighting.includes('soft')) lightingTypes.push('soft diffused afternoon light');
-            if (state.lighting.includes('overcast')) lightingTypes.push('overcast even lighting');
+            if (state.lighting.includes('sunrise')) lightingTypes.push('sunrise light with fresh yellow-beige warmth');
+            if (state.lighting.includes('morning')) lightingTypes.push('bright clean morning light');
+            if (state.lighting.includes('midday')) lightingTypes.push('hard direct midday sunlight');
+            if (state.lighting.includes('afternoon')) lightingTypes.push('soft afternoon light');
             if (state.lighting.includes('golden')) lightingTypes.push('golden hour warm light');
+            if (state.lighting.includes('sunset')) lightingTypes.push('sunset light with warm orange-golden glow');
+            if (state.lighting.includes('overcast')) lightingTypes.push('overcast even lighting');
             const lightingInstruction = lightingTypes.length > 0 ? lightingTypes.join(', ') : 'natural light';
 
             const userPrompt = `Write ${count} DETAILED backdrop prompts for this location. Each must be HIGHLY DESCRIPTIVE and DISTINCTLY DIFFERENT.

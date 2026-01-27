@@ -21,6 +21,7 @@ class Lightbox {
         this.elements = {
             container: document.getElementById('lightbox'),
             image: document.getElementById('lightbox-image'),
+            video: document.getElementById('lightbox-video'),
             model: document.getElementById('lightbox-model'),
             prompt: document.getElementById('lightbox-prompt'),
             close: document.getElementById('lightbox-close'),
@@ -41,6 +42,7 @@ class Lightbox {
                     <button class="lightbox-nav lightbox-next" id="lightbox-next">&rarr;</button>
                     <div class="lightbox-left">
                         <img src="" alt="" class="lightbox-image" id="lightbox-image">
+                        <video src="" class="lightbox-video" id="lightbox-video" controls loop style="display: none;"></video>
                     </div>
                     <div class="lightbox-right">
                         <div class="lightbox-section">
@@ -52,7 +54,7 @@ class Lightbox {
                             <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
                         </div>
                         <button class="lightbox-download" id="lightbox-download">
-                            Download Image
+                            Download
                         </button>
                     </div>
                 </div>
@@ -127,6 +129,11 @@ class Lightbox {
     close() {
         this.elements.container.classList.remove('visible');
         document.body.style.overflow = '';
+        // Stop video playback when closing
+        if (this.elements.video) {
+            this.elements.video.pause();
+            this.elements.video.src = '';
+        }
     }
 
     navigate(direction) {
@@ -141,7 +148,27 @@ class Lightbox {
         const result = this.results[this.currentIndex];
         if (!result) return;
 
-        this.elements.image.src = result.url;
+        // Determine if this is a video based on URL or type flag
+        const isVideo = result.type === 'video' ||
+                        result.url?.includes('.mp4') ||
+                        result.url?.includes('.webm') ||
+                        result.url?.includes('.mov');
+
+        if (isVideo) {
+            // Show video, hide image
+            this.elements.image.style.display = 'none';
+            this.elements.video.style.display = 'block';
+            this.elements.video.src = result.url;
+            this.elements.video.play().catch(() => {}); // Auto-play if allowed
+        } else {
+            // Show image, hide video
+            this.elements.image.style.display = 'block';
+            this.elements.video.style.display = 'none';
+            this.elements.video.pause();
+            this.elements.video.src = '';
+            this.elements.image.src = result.url;
+        }
+
         this.elements.model.textContent = result.modelName || 'Unknown';
         this.elements.prompt.textContent = result.prompt || '';
 
@@ -156,7 +183,14 @@ class Lightbox {
 
     async defaultDownload(url, filename) {
         try {
-            const response = await fetch(url);
+            // Use proxy to bypass CORS issues (especially for videos from CDNs)
+            const proxyUrl = `/api/proxy-download?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+
+            if (!response.ok) {
+                throw new Error('Proxy download failed');
+            }
+
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -167,7 +201,23 @@ class Lightbox {
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
         } catch (error) {
-            window.open(url, '_blank');
+            console.error('Proxy download failed, trying direct:', error);
+            // Fallback: try direct fetch
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+            } catch (e) {
+                console.error('Direct download also failed:', e);
+                window.open(url, '_blank');
+            }
         }
     }
 }
