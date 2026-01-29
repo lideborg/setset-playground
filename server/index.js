@@ -1932,20 +1932,29 @@ app.post('/api/convert-heic', upload.single('image'), async (req, res) => {
             return res.status(400).json({ error: 'No image provided' });
         }
 
+        const startTime = Date.now();
         console.log(`🔄 [HEIC Convert] Converting ${req.file.originalname} (${(req.file.size / 1024 / 1024).toFixed(1)}MB)`);
 
-        // Convert HEIC to JPEG using heic-convert
-        const jpegBuffer = await heicConvert({
+        // Step 1: Decode HEIC to raw JPEG using heic-convert
+        const rawJpeg = await heicConvert({
             buffer: req.file.buffer,
             format: 'JPEG',
             quality: 0.92
         });
 
+        // Step 2: Resize with sharp if the image is large (iPhone photos are often 4032x3024)
+        // Cap to 2048px longest side - plenty for AI generation and much smaller base64
+        const jpegBuffer = await sharp(Buffer.from(rawJpeg))
+            .resize(2048, 2048, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 90 })
+            .toBuffer();
+
         // Return as base64 data URL
-        const base64 = Buffer.from(jpegBuffer).toString('base64');
+        const base64 = jpegBuffer.toString('base64');
         const dataUrl = `data:image/jpeg;base64,${base64}`;
 
-        console.log(`✅ [HEIC Convert] Success: ${(jpegBuffer.length / 1024 / 1024).toFixed(1)}MB JPEG`);
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`✅ [HEIC Convert] ${elapsed}s - ${(rawJpeg.length / 1024 / 1024).toFixed(1)}MB raw → ${(jpegBuffer.length / 1024 / 1024).toFixed(1)}MB resized`);
 
         res.json({ dataUrl });
     } catch (error) {

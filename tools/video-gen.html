@@ -760,13 +760,18 @@
                         resolutionSelect.value = '720p';
                     }
                 }
+                updateStats();
             });
+
+            // Resolution change handler
+            document.getElementById('resolution').addEventListener('change', () => updateStats());
 
             // Duration slider handler
             const durationSlider = document.getElementById('duration');
             const durationValue = document.getElementById('duration-value');
             durationSlider.addEventListener('input', () => {
                 durationValue.textContent = durationSlider.value + 's';
+                updateStats();
             });
 
             // Generate button
@@ -995,6 +1000,30 @@
             updateStats();
         }
 
+        // Calculate cost per video based on current settings
+        function calculateVideoCost() {
+            const model = document.getElementById('model-version').value;
+            const resolution = document.getElementById('resolution').value;
+            const duration = parseInt(document.getElementById('duration').value);
+
+            // Resolution pixels
+            const resMap = {
+                '480p': { w: 854, h: 480 },
+                '720p': { w: 1280, h: 720 },
+                '1080p': { w: 1920, h: 1080 }
+            };
+            const res = resMap[resolution] || resMap['720p'];
+            const fps = 24;
+
+            // tokens = (height × width × FPS × duration) / 1024
+            const tokens = (res.h * res.w * fps * duration) / 1024;
+
+            // Cost per million tokens
+            // Seedance 1.5: $1.2/M (no audio), Seedance 1.0: $2.5/M
+            const costPerMillion = model === '1.5' ? 1.2 : 2.5;
+            return (tokens / 1_000_000) * costPerMillion;
+        }
+
         // Update stats and button state
         function updateStats() {
             const allImages = state.images.filter(img => img !== null);
@@ -1019,7 +1048,10 @@
                 document.getElementById('stats-line').textContent = `${numSelected} selected - choose movement(s)`;
             } else {
                 const totalVideos = numSelected * numMovements;
-                document.getElementById('stats-line').textContent = `${totalVideos} video${totalVideos > 1 ? 's' : ''} (${numSelected} image${numSelected > 1 ? 's' : ''} × ${numMovements} movement${numMovements > 1 ? 's' : ''})`;
+                const costPerVideo = calculateVideoCost();
+                const totalCost = (totalVideos * costPerVideo).toFixed(2);
+                const perVideoCost = costPerVideo.toFixed(2);
+                document.getElementById('stats-line').textContent = `${totalVideos} video${totalVideos > 1 ? 's' : ''} (${numSelected} image${numSelected > 1 ? 's' : ''} × ${numMovements} movement${numMovements > 1 ? 's' : ''}) — $${perVideoCost}/video — $${totalCost} total`;
             }
 
             document.getElementById('download-all-btn').disabled = state.results.filter(r => r.videoUrl).length === 0;
@@ -1028,12 +1060,12 @@
         // Analyze image and build prompt
         async function analyzeAndBuildPrompt(imageUrl, movement, settings) {
             try {
-                // Analyze the image with movement context to build a coherent prompt
-                const analysisResponse = await fetch('/api/analyze', {
+                // Analyze the image with movement context using Gemini (more permissive with fashion images)
+                const analysisResponse = await fetch('/api/analyze-gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        image: imageUrl,
+                        image_url: imageUrl,
                         prompt: `You are creating a video prompt for a VERY SUBTLE fashion video. The movement must be extremely minimal and controlled.
 
 Analyze this fashion image briefly (pose, clothing, setting), then incorporate this movement: "${movement.description}"
@@ -1054,7 +1086,16 @@ Write ONLY the prompt.`
                 });
 
                 const analysisData = await analysisResponse.json();
-                let enhancedPrompt = analysisData.content || movement.fallbackPrompt;
+                let enhancedPrompt = analysisData.content || '';
+
+                // Detect content moderation refusals
+                const refusalPhrases = ['i can\'t help', 'i cannot help', 'i\'m sorry', 'i am sorry', 'i\'m unable', 'i cannot assist', 'not able to', 'i can\'t assist'];
+                const isRefusal = !enhancedPrompt || refusalPhrases.some(phrase => enhancedPrompt.toLowerCase().includes(phrase));
+
+                if (isRefusal) {
+                    console.warn(`⚠️ Analysis refused or empty, using fallback for: ${movement.name}`);
+                    enhancedPrompt = movement.fallbackPrompt;
+                }
 
                 // Add fixed camera instructions to prompt if enabled
                 if (settings.camera_fixed) {

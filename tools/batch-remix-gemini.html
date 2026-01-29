@@ -1163,6 +1163,263 @@
         .standalone-tools-bar .standalone-tools-label {
             display: none;
         }
+
+        /* ========== TOMBOLO MODE STYLES ========== */
+        .tombolo-container {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+        }
+
+        .tombolo-categories {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .tombolo-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        .tombolo-row-label {
+            grid-column: 1 / -1;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding-bottom: var(--space-2xs);
+            border-bottom: 1px solid var(--gainsboro);
+            margin-bottom: var(--space-xs);
+        }
+
+        .tombolo-category {
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm);
+        }
+
+        .tombolo-category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xs);
+        }
+
+        .tombolo-category-label {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .tombolo-category-status {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+        }
+
+        .tombolo-category-status.analyzed {
+            color: #22c55e;
+        }
+
+        .tombolo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .tombolo-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .tombolo-slot:hover {
+            border-color: var(--slate);
+        }
+
+        .tombolo-slot.filled {
+            border-style: solid;
+            border-color: var(--jet);
+        }
+
+        .tombolo-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .tombolo-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        .tombolo-slot.analyzing {
+            border-color: #3b82f6;
+        }
+
+        .tombolo-slot.analyzing::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(59, 130, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tombolo-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tombolo-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tombolo-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .tombolo-slot .slot-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .tombolo-analysis-preview {
+            display: none;  /* Hidden - analysis happens in background */
+        }
+
+        .tombolo-generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-top: var(--space-sm);
+        }
+
+        .tombolo-status {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .tombolo-generate-btn {
+            padding: 10px 24px;
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--text-sm);
+        }
+
+        .tombolo-generate-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .tombolo-generate-btn:hover:not(:disabled) {
+            background: var(--slate);
+        }
+
+        .drag-over {
+            border-color: var(--jet) !important;
+            background: var(--off-white) !important;
+        }
+
+        /* Canny Guide Selector */
+        .canny-guide-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: var(--space-xs);
+        }
+
+        .canny-guide-label {
+            font-size: 10px;
+            color: var(--french-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .canny-guide-options {
+            display: flex;
+            gap: 4px;
+        }
+
+        .canny-guide-option {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--white);
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canny-guide-option:hover {
+            border-color: var(--slate);
+        }
+
+        .canny-guide-option.active {
+            border-color: var(--jet);
+            box-shadow: 0 0 0 1px var(--jet);
+        }
+
+        .canny-guide-option.none-option {
+            font-size: 10px;
+            color: var(--slate);
+            font-weight: 500;
+        }
+
+        .canny-guide-option.preset-option {
+            padding: 2px;
+        }
+
+        .canny-guide-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
@@ -1243,6 +1500,7 @@
         <div class="mode-tabs">
             <button class="mode-tab active" data-mode="remix">Remix</button>
             <button class="mode-tab" data-mode="edit">Edit</button>
+            <button class="mode-tab" data-mode="tombolo">Tombolo</button>
         </div>
 
         <!-- Remix Mode Panel -->
@@ -1321,6 +1579,105 @@
                     <button class="standalone-generate-btn" id="standalone-generate-btn" disabled>Generate</button>
                 </div>
             </div>
+        </div>
+
+        <!-- Tombolo Mode Panel -->
+        <div class="mode-panel" id="tombolo-panel">
+            <div class="tombolo-container">
+                <div class="tombolo-categories" id="tombolo-categories">
+                    <!-- Row 1: Flat Lays -->
+                    <div class="tombolo-row">
+                        <div class="tombolo-row-label">Flat Lays</div>
+                        <div class="tombolo-category" data-category="front">
+                            <div class="tombolo-category-header">
+                                <span class="tombolo-category-label">Front</span>
+                                <span class="tombolo-category-status" id="status-front"></span>
+                            </div>
+                            <div class="canny-guide-selector" data-canny-category="front">
+                                <span class="canny-guide-label">Guide</span>
+                                <div class="canny-guide-options">
+                                    <div class="canny-guide-option none-option active" data-canny-value="none">Off</div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Shirt_Front.png"><img src="/assets/guides/Shirt_Front.png" alt="Shirt"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Tshirt_Front.png"><img src="/assets/guides/Tshirt_Front.png" alt="T-shirt"></div>
+                                </div>
+                            </div>
+                            <div class="tombolo-grid" data-category="front"></div>
+                            <div class="tombolo-analysis-preview" id="analysis-front"></div>
+                        </div>
+                        <div class="tombolo-category" data-category="back">
+                            <div class="tombolo-category-header">
+                                <span class="tombolo-category-label">Back</span>
+                                <span class="tombolo-category-status" id="status-back"></span>
+                            </div>
+                            <div class="canny-guide-selector" data-canny-category="back">
+                                <span class="canny-guide-label">Guide</span>
+                                <div class="canny-guide-options">
+                                    <div class="canny-guide-option none-option active" data-canny-value="none">Off</div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Shirt_Back.png"><img src="/assets/guides/Shirt_Back.png" alt="Shirt"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Tshirt_Back.png"><img src="/assets/guides/Tshirt_Back.png" alt="T-shirt"></div>
+                                </div>
+                            </div>
+                            <div class="tombolo-grid" data-category="back"></div>
+                            <div class="tombolo-analysis-preview" id="analysis-back"></div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Collar Details -->
+                    <div class="tombolo-row">
+                        <div class="tombolo-row-label">Detail - Collar</div>
+                        <div class="tombolo-category" data-category="collar1">
+                            <div class="tombolo-category-header">
+                                <span class="tombolo-category-label">Collar 1</span>
+                                <span class="tombolo-category-status" id="status-collar1"></span>
+                            </div>
+                            <div class="tombolo-grid" data-category="collar1"></div>
+                            <div class="tombolo-analysis-preview" id="analysis-collar1"></div>
+                        </div>
+                        <div class="tombolo-category" data-category="collar2">
+                            <div class="tombolo-category-header">
+                                <span class="tombolo-category-label">Collar 2</span>
+                                <span class="tombolo-category-status" id="status-collar2"></span>
+                            </div>
+                            <div class="tombolo-grid" data-category="collar2"></div>
+                            <div class="tombolo-analysis-preview" id="analysis-collar2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Detail (Logo/Print) -->
+                    <div class="tombolo-row">
+                        <div class="tombolo-row-label">Detail - Logo / Print</div>
+                        <div class="tombolo-category" data-category="detail1">
+                            <div class="tombolo-category-header">
+                                <span class="tombolo-category-label">Detail 1</span>
+                                <span class="tombolo-category-status" id="status-detail1"></span>
+                            </div>
+                            <div class="tombolo-grid" data-category="detail1"></div>
+                            <div class="tombolo-analysis-preview" id="analysis-detail1"></div>
+                        </div>
+                        <div class="tombolo-category" data-category="detail2">
+                            <div class="tombolo-category-header">
+                                <span class="tombolo-category-label">Detail 2</span>
+                                <span class="tombolo-category-status" id="status-detail2"></span>
+                            </div>
+                            <div class="tombolo-grid" data-category="detail2"></div>
+                            <div class="tombolo-analysis-preview" id="analysis-detail2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombolo Loader -->
+                <div class="inline-loader" id="tombolo-loader">
+                    <div class="loader-message" id="tombolo-loader-message">Setting up the Studio...</div>
+                    <div class="loader-progress" id="tombolo-loader-progress">Preparing...</div>
+                </div>
+
+                <!-- Tombolo Generate Section -->
+                <div class="tombolo-generate-section">
+                    <div class="tombolo-status" id="tombolo-status">Upload images to analyze</div>
+                    <button class="tombolo-generate-btn" id="tombolo-generate-btn" disabled>Generate All</button>
+                </div>
+            </div>
+            <input type="file" id="tombolo-file-input" accept="image/*,.heic,.heif" multiple style="display: none;">
         </div>
 
         <!-- Generate Section -->
@@ -1575,8 +1932,32 @@
             standaloneRefGrid: document.getElementById('standalone-ref-grid'),
             standaloneRefInput: document.getElementById('standalone-ref-input'),
             standaloneGenerateBtn: document.getElementById('standalone-generate-btn'),
-            standaloneRemoveBtn: document.getElementById('standalone-remove-btn')
+            standaloneRemoveBtn: document.getElementById('standalone-remove-btn'),
+            // Tombolo elements
+            tomboloPanel: document.getElementById('tombolo-panel'),
+            tomboloCategories: document.getElementById('tombolo-categories'),
+            tomboloGenerateBtn: document.getElementById('tombolo-generate-btn'),
+            tomboloStatus: document.getElementById('tombolo-status'),
+            tomboloFileInput: document.getElementById('tombolo-file-input')
         };
+
+        // ========== TOMBOLO STATE ==========
+        const TOMBOLO_CATEGORIES = ['front', 'back', 'collar1', 'collar2', 'detail1', 'detail2'];
+        const TOMBOLO_SLOTS_PER_CATEGORY = 4;
+
+        let tomboloState = {
+            // Each category has array of 4 slots, each slot: { url, file, analysis, selected }
+            categories: {},
+            currentUploadCategory: null,
+            currentUploadSlot: null,
+            // Canny guide images for front/back: { url, falUrl }
+            cannyGuides: { front: null, back: null }
+        };
+
+        // Initialize tombolo state
+        TOMBOLO_CATEGORIES.forEach(cat => {
+            tomboloState.categories[cat] = new Array(TOMBOLO_SLOTS_PER_CATEGORY).fill(null);
+        });
 
         // Loading animation functions are now in /shared/js/loader.js
 
@@ -2215,17 +2596,8 @@ Return ONLY the prompt, nothing else.`;
             const total = tasksWithSeeds.length;
 
             // Create placeholder loaders for all tasks
-            // Calculate aspect ratio for placeholders
-            const aspectRatioMap = {
-                '1:1': 1,
-                '4:3': 4/3,
-                '3:4': 3/4,
-                '16:9': 16/9,
-                '9:16': 9/16,
-                '21:9': 21/9,
-                '9:21': 9/21
-            };
-            const aspectRatio = aspectRatioMap[state.aspectRatio] || 1;
+            // Convert aspect ratio string to CSS value
+            const aspectRatio = state.aspectRatio.replace(':', ' / ');
 
             elements.resultsSection.classList.add('visible');
 
@@ -2499,11 +2871,40 @@ Return ONLY the prompt, nothing else.`;
             }
         });
 
+        // Build Tombolo filename from category
+        function getTomboloFilename(result) {
+            // Map category to clean name
+            const categoryNames = {
+                'front': 'Front',
+                'back': 'Back',
+                'collar1': 'Collar',
+                'collar2': 'Collar',
+                'detail1': 'Detail',
+                'detail2': 'Detail'
+            };
+            const catName = categoryNames[result.category] || result.category || 'Image';
+
+            // Count how many Tombolo results of this same category exist before this one
+            const thisIndex = state.results.indexOf(result);
+            let catCount = 0;
+            for (let i = 0; i <= thisIndex; i++) {
+                const r = state.results[i];
+                if (r.category && categoryNames[r.category] === catName) {
+                    catCount++;
+                }
+            }
+            const num = String(catCount).padStart(2, '0');
+            return `Setset_Tombolo_${catName}_${num}.png`;
+        }
+
         document.getElementById('lightbox-download').addEventListener('click', () => {
             const result = state.results[state.lightboxIndex];
             let filename;
 
-            if (state.keepFilenames && result.originalName) {
+            if (result.category) {
+                // Tombolo naming: Setset_Tombolo_Front_01.png
+                filename = getTomboloFilename(result);
+            } else if (state.keepFilenames && result.originalName) {
                 // Use original filename with _remix suffix
                 filename = `${result.originalName}_remix.png`;
             } else {
@@ -3184,9 +3585,18 @@ Return ONLY the prompt, nothing else.`;
             // Update panels
             elements.remixPanel.classList.toggle('active', mode === 'remix');
             elements.editPanelStandalone.classList.toggle('active', mode === 'edit');
+            elements.tomboloPanel.classList.toggle('active', mode === 'tombolo');
 
-            // Update generate section visibility (hide in edit mode since it has its own button)
+            // Update generate section visibility (hide in edit/tombolo mode since they have their own buttons)
             elements.generateSection.style.display = mode === 'remix' ? 'flex' : 'none';
+
+            // Set aspect ratio to 1:1 when switching to Tombolo
+            if (mode === 'tombolo') {
+                state.aspectRatio = '1:1';
+                elements.aspectButtons.querySelectorAll('button').forEach(b => {
+                    b.classList.toggle('active', b.dataset.value === '1:1');
+                });
+            }
 
             // Update calculator for current mode
             updateCalculator();
@@ -3851,9 +4261,604 @@ Return ONLY the prompt, nothing else.`;
             });
         }
 
+        // ========== TOMBOLO MODE ==========
+
+        // Initialize Tombolo grids
+        function initTomboloGrids() {
+            TOMBOLO_CATEGORIES.forEach(category => {
+                const grid = document.querySelector(`.tombolo-grid[data-category="${category}"]`);
+                if (!grid) return;
+
+                grid.innerHTML = '';
+                for (let i = 0; i < TOMBOLO_SLOTS_PER_CATEGORY; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'tombolo-slot';
+                    slot.innerHTML = '+';
+                    slot.dataset.category = category;
+                    slot.dataset.slotIndex = i;
+
+                    // Click to toggle selection or open file picker
+                    slot.addEventListener('click', (e) => {
+                        if (e.target.closest('.remove-btn')) return;
+                        const data = tomboloState.categories[category][i];
+                        if (data) {
+                            // Toggle selection
+                            data.selected = !data.selected;
+                            renderTomboloSlot(category, i);
+                            updateTomboloStatus();
+                        } else {
+                            // Open file picker
+                            tomboloState.currentUploadCategory = category;
+                            tomboloState.currentUploadSlot = i;
+                            elements.tomboloFileInput.click();
+                        }
+                    });
+
+                    // Drag and drop
+                    slot.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        slot.classList.add('drag-over');
+                    });
+                    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+                    slot.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        slot.classList.remove('drag-over');
+                        const files = Array.from(e.dataTransfer.files).filter(f =>
+                            f.type.startsWith('image/') ||
+                            f.name.toLowerCase().endsWith('.heic') ||
+                            f.name.toLowerCase().endsWith('.heif')
+                        );
+                        if (files.length > 0) {
+                            handleTomboloUpload(category, i, files[0]);
+                        }
+                    });
+
+                    grid.appendChild(slot);
+                }
+
+                // Drag and drop on entire grid
+                grid.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    grid.classList.add('drag-over');
+                });
+                grid.addEventListener('dragleave', (e) => {
+                    if (!grid.contains(e.relatedTarget)) {
+                        grid.classList.remove('drag-over');
+                    }
+                });
+                grid.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    grid.classList.remove('drag-over');
+                    const files = Array.from(e.dataTransfer.files).filter(f =>
+                        f.type.startsWith('image/') ||
+                        f.name.toLowerCase().endsWith('.heic') ||
+                        f.name.toLowerCase().endsWith('.heif')
+                    );
+                    if (files.length > 0) {
+                        // Find first empty slot
+                        const emptyIndex = tomboloState.categories[category].findIndex(s => !s);
+                        if (emptyIndex !== -1) {
+                            // Upload multiple files to consecutive slots
+                            files.forEach((file, idx) => {
+                                const slotIdx = emptyIndex + idx;
+                                if (slotIdx < TOMBOLO_SLOTS_PER_CATEGORY && !tomboloState.categories[category][slotIdx]) {
+                                    handleTomboloUpload(category, slotIdx, file);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        }
+
+        // Handle file input for Tombolo
+        elements.tomboloFileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0 && tomboloState.currentUploadCategory !== null) {
+                // Upload multiple files starting from current slot
+                files.forEach((file, idx) => {
+                    const slotIdx = tomboloState.currentUploadSlot + idx;
+                    if (slotIdx < TOMBOLO_SLOTS_PER_CATEGORY) {
+                        handleTomboloUpload(tomboloState.currentUploadCategory, slotIdx, file);
+                    }
+                });
+            }
+            e.target.value = '';
+            tomboloState.currentUploadCategory = null;
+            tomboloState.currentUploadSlot = null;
+        });
+
+        // Handle Tombolo image upload (no analysis - that happens at generate time)
+        async function handleTomboloUpload(category, slotIndex, file) {
+            const grid = document.querySelector(`.tombolo-grid[data-category="${category}"]`);
+            const slot = grid?.children[slotIndex];
+
+            // Show loading spinner
+            if (slot) {
+                slot.innerHTML = '<div class="slot-spinner"></div>';
+                slot.classList.add('filled');
+            }
+
+            try {
+                let fileToRead = file;
+
+                // Convert HEIC if needed
+                if (isHeicFile(file)) {
+                    console.log(`Converting HEIC: ${file.name}`);
+                    fileToRead = await convertHeicToJpeg(file);
+                }
+
+                // Read file as data URL
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(fileToRead);
+                });
+
+                // Store in state (analysis happens at generate time)
+                tomboloState.categories[category][slotIndex] = {
+                    url: dataUrl,
+                    file: fileToRead,
+                    originalName: file.name.replace(/\.[^/.]+$/, ''),
+                    selected: true,
+                    analysis: null
+                };
+
+                // Render the slot
+                renderTomboloSlot(category, slotIndex);
+                updateTomboloStatus();
+
+            } catch (err) {
+                console.error('Upload error:', err);
+                if (slot) {
+                    slot.innerHTML = '!';
+                    slot.classList.remove('filled');
+                }
+            }
+        }
+
+        // Render a single Tombolo slot
+        function renderTomboloSlot(category, slotIndex) {
+            const grid = document.querySelector(`.tombolo-grid[data-category="${category}"]`);
+            const slot = grid?.children[slotIndex];
+            const data = tomboloState.categories[category][slotIndex];
+
+            if (!slot) return;
+
+            if (data) {
+                slot.className = 'tombolo-slot filled' + (data.selected ? '' : ' deselected');
+                slot.innerHTML = `
+                    <img src="${data.url}" alt="Image">
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeTomboloImage('${category}', ${slotIndex})">&times;</button>
+                `;
+            } else {
+                slot.className = 'tombolo-slot';
+                slot.innerHTML = '+';
+            }
+        }
+
+        // Remove Tombolo image
+        window.removeTomboloImage = function(category, slotIndex) {
+            tomboloState.categories[category][slotIndex] = null;
+            renderTomboloSlot(category, slotIndex);
+            updateTomboloStatus();
+            updateCategoryAnalysisPreview(category);
+        };
+
+        // Analyze a single image using Gemini (called at generate time)
+        async function analyzeImageWithGemini(imageUrl, category) {
+            // Build analysis prompt based on category
+            let analysisPrompt = '';
+            switch (category) {
+                case 'front':
+                    analysisPrompt = `Describe this garment naturally in 2-3 sentences. Include: garment type, fabric/material, colors, patterns (like stripes), collar style, and whether zippers or buttons are open or closed. Do NOT describe specific logos, text, flags, or graphic content - just say "printed graphics" or "embroidered patches". Keep it simple. Example: "A dark blue terry cloth polo shirt with yellow trim on the collar, sleeves, and hem. Half-zip front is partially unzipped. Features printed graphics on the chest."`;
+                    break;
+                case 'back':
+                    analysisPrompt = `Describe the back of this garment naturally in 1-2 sentences. Mention patterns, colors, and construction details. Do NOT describe specific logos, text, or graphic content - just say "printed graphic" or "embroidered detail". Keep it simple. Example: "The back features red and white vertical stripes with a printed graphic across the shoulders."`;
+                    break;
+                case 'collar1':
+                case 'collar2':
+                    analysisPrompt = `Describe the collar area in 1-2 sentences. Mention the collar style, fabric texture, any trim or piping colors, and visible labels. Keep it natural. Example: "A ribbed polo collar in off-white terry cloth with red trim piping. A size label and brand tag are visible inside."`;
+                    break;
+                case 'detail1':
+                case 'detail2':
+                    analysisPrompt = `Describe this detail shot in 1 sentence. Mention what type of embellishment it is (embroidered patches, printed graphic, woven labels, etc.) and the fabric/pattern it sits on. Do NOT describe what specific images or text are on the patches - just say "embroidered patches" or "printed graphic". Example: "Embroidered patches on red and white striped terry cloth fabric."`;
+                    break;
+            }
+
+            // Call Gemini analyze endpoint
+            const response = await fetch('/api/analyze-gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    image_url: imageUrl,
+                    prompt: analysisPrompt
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Gemini analysis failed');
+            }
+
+            const result = await response.json();
+            return result.content || 'garment';
+        }
+
+        // Analyze all images in a category - each image gets its own individual analysis
+        async function analyzeCategoryImages(category) {
+            const images = tomboloState.categories[category].filter(d => d && d.selected);
+            if (images.length === 0) return null;
+
+            const statusEl = document.getElementById(`status-${category}`);
+            if (statusEl) statusEl.textContent = 'Analyzing...';
+
+            try {
+                // Upload and analyze each image in parallel
+                await Promise.all(images.map(async (data) => {
+                    // Upload to fal storage if not already uploaded
+                    if (!data.falUrl) {
+                        const formData = new FormData();
+                        formData.append('image', data.file);  // Server expects 'image' field
+
+                        const uploadResponse = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (!uploadResponse.ok) throw new Error('Upload failed');
+                        const uploadResult = await uploadResponse.json();
+                        data.falUrl = uploadResult.url;
+                    }
+
+                    // Analyze THIS specific image - each image gets its own unique analysis
+                    data.analysis = await analyzeImageWithGemini(data.falUrl, category);
+                }));
+
+                // Update category preview
+                updateCategoryAnalysisPreview(category);
+
+                if (statusEl) {
+                    statusEl.textContent = '✓ Analyzed';
+                    statusEl.classList.add('analyzed');
+                }
+
+            } catch (err) {
+                console.error('Category analysis error:', err);
+                if (statusEl) statusEl.textContent = '! Error';
+                return 'garment'; // Fallback
+            }
+        }
+
+        // Update category analysis preview
+        function updateCategoryAnalysisPreview(category) {
+            const previewEl = document.getElementById(`analysis-${category}`);
+            const categoryEl = document.querySelector(`.tombolo-category[data-category="${category}"]`);
+            if (!previewEl || !categoryEl) return;
+
+            // Get first analysis from this category
+            const firstAnalysis = tomboloState.categories[category].find(d => d?.analysis)?.analysis;
+
+            if (firstAnalysis) {
+                previewEl.textContent = firstAnalysis;
+                categoryEl.classList.add('has-analysis');
+            } else {
+                previewEl.textContent = '';
+                categoryEl.classList.remove('has-analysis');
+            }
+        }
+
+        // Update Tombolo status and button
+        function updateTomboloStatus() {
+            let totalImages = 0;
+            let selectedImages = 0;
+
+            TOMBOLO_CATEGORIES.forEach(cat => {
+                tomboloState.categories[cat].forEach(data => {
+                    if (data) {
+                        totalImages++;
+                        if (data.selected) selectedImages++;
+                    }
+                });
+            });
+
+            if (totalImages === 0) {
+                elements.tomboloStatus.textContent = 'Upload images to get started';
+                elements.tomboloGenerateBtn.disabled = true;
+            } else {
+                elements.tomboloStatus.textContent = `${selectedImages} images selected (${totalImages} total)`;
+                elements.tomboloGenerateBtn.disabled = selectedImages === 0;
+            }
+        }
+
+        // Generate Tombolo images
+        // Tombolo loader - create a dedicated StudioLoader instance
+        const tomboloLoader = new StudioLoader({
+            loaderElement: document.getElementById('tombolo-loader'),
+            messageElement: document.getElementById('tombolo-loader-message'),
+            progressElement: document.getElementById('tombolo-loader-progress')
+        });
+
+        elements.tomboloGenerateBtn.addEventListener('click', async () => {
+            // First check if we have any images
+            let hasImages = false;
+            TOMBOLO_CATEGORIES.forEach(category => {
+                if (tomboloState.categories[category].some(d => d && d.selected)) {
+                    hasImages = true;
+                }
+            });
+
+            if (!hasImages) return;
+
+            // Show loader
+            tomboloLoader.start('Analyzing images with Gemini...');
+
+            // STEP 1: Analyze all categories in parallel using Gemini
+            tomboloLoader.updateProgress('Analyzing images with Gemini...');
+            console.log('[Tombolo] Step 1: Analyzing all categories...');
+
+            const categoriesToAnalyze = TOMBOLO_CATEGORIES.filter(cat =>
+                tomboloState.categories[cat].some(d => d && d.selected)
+            );
+
+            await Promise.all(categoriesToAnalyze.map(cat => analyzeCategoryImages(cat)));
+
+            console.log('[Tombolo] Analysis complete, building prompts...');
+
+            // STEP 2: Build tasks with prompts (now that we have analyses)
+            const tasks = [];
+            TOMBOLO_CATEGORIES.forEach(category => {
+                tomboloState.categories[category].forEach((data, idx) => {
+                    if (data && data.selected) {
+                        tasks.push({
+                            category,
+                            slotIndex: idx,
+                            data,
+                            prompt: buildTomboloPrompt(category, data)
+                        });
+                    }
+                });
+            });
+
+            if (tasks.length === 0) {
+                tomboloLoader.stop();
+                return;
+            }
+
+            // Duplicate tasks for each seed
+            const tasksWithSeeds = [];
+            for (let seed = 0; seed < state.seeds; seed++) {
+                tasks.forEach(task => {
+                    tasksWithSeeds.push({ ...task, seedIndex: seed });
+                });
+            }
+
+            const totalTasks = tasksWithSeeds.length;
+            console.log(`[Tombolo] Starting generation of ${totalTasks} images (${tasks.length} images × ${state.seeds} seeds)`);
+
+            // Show progress
+            elements.progressSection.style.display = 'block';
+            elements.progressTitle.textContent = 'Generating Tombolo';
+            elements.progressCount.textContent = `0 / ${totalTasks}`;
+            elements.progressBar.style.width = '0%';
+            elements.resultsSection.style.display = 'block';
+            elements.tomboloGenerateBtn.disabled = true;
+
+            let completed = 0;
+
+            // Process in parallel batches
+            const BATCH_SIZE = 4;
+            for (let i = 0; i < tasksWithSeeds.length; i += BATCH_SIZE) {
+                const batch = tasksWithSeeds.slice(i, i + BATCH_SIZE);
+
+                await Promise.all(batch.map(async (task) => {
+                    try {
+                        // Update loader
+                        tomboloLoader.updateProgress(`Uploading ${task.category}...`);
+
+                        // Upload image first (use falUrl if already uploaded during analysis)
+                        let imageUrl = task.data.falUrl;
+                        if (!imageUrl) {
+                            const uploadResult = await api.uploadBase64(task.data.url);
+                            imageUrl = uploadResult.url;
+                            task.data.falUrl = imageUrl;
+                        }
+
+                        // Build image_urls array - garment photo first, then canny guide if active
+                        const imageUrls = [imageUrl];
+                        const cannyGuide = (task.category === 'front' || task.category === 'back')
+                            ? tomboloState.cannyGuides[task.category] : null;
+                        if (cannyGuide) {
+                            // Upload canny guide if not already uploaded to fal
+                            if (!cannyGuide.falUrl) {
+                                tomboloLoader.updateProgress(`Uploading guide for ${task.category}...`);
+                                // Fetch static asset and convert to base64 for fal upload
+                                const guideResp = await fetch(cannyGuide.url);
+                                const guideBlob = await guideResp.blob();
+                                const guideDataUrl = await new Promise(resolve => {
+                                    const reader = new FileReader();
+                                    reader.onload = () => resolve(reader.result);
+                                    reader.readAsDataURL(guideBlob);
+                                });
+                                const cannyUpload = await api.uploadBase64(guideDataUrl);
+                                cannyGuide.falUrl = cannyUpload.url;
+                            }
+                            imageUrls.push(cannyGuide.falUrl);
+                        }
+
+                        tomboloLoader.updateProgress(`Generating ${task.category}...`);
+
+                        // Generate using Gemini remix endpoint
+                        const result = await fetch('/api/remix-gemini', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'gemini-3-pro',
+                                prompt: task.prompt,
+                                image_urls: imageUrls,
+                                aspect_ratio: state.aspectRatio,
+                                resolution: state.resolution
+                            })
+                        });
+
+                        if (!result.ok) throw new Error('Generation failed');
+
+                        const data = await result.json();
+
+                        // Add to results
+                        if (data.images && data.images.length > 0) {
+                            data.images.forEach(img => {
+                                const card = createResultCard({
+                                    url: img.url,
+                                    prompt: task.prompt,
+                                    model: 'Gemini 3 Pro',
+                                    sourceImages: [task.data.url],
+                                    category: task.category
+                                });
+                                elements.resultsGrid.prepend(card);
+                            });
+                        }
+
+                    } catch (err) {
+                        console.error(`[Tombolo] Error generating ${task.category}:`, err);
+                    }
+
+                    completed++;
+                    elements.progressCount.textContent = `${completed} / ${totalTasks}`;
+                    elements.progressBar.style.width = `${(completed / totalTasks) * 100}%`;
+                }));
+            }
+
+            // Hide loader
+            tomboloLoader.stop();
+
+            elements.tomboloGenerateBtn.disabled = false;
+            elements.progressTitle.textContent = 'Complete!';
+        });
+
+        // Build prompt for Tombolo image
+        // IMPORTANT: These prompts are generic - the specific garment details come from the analysis
+        function buildTomboloPrompt(category, data) {
+            const analysis = data.analysis || 'garment';
+            const hasCannyGuide = (category === 'front' || category === 'back') && tomboloState.cannyGuides[category];
+
+            let prompt = '';
+
+            switch (category) {
+                case 'front':
+                    // Full front - hanging shape, gravity pulling straight down, pure white bg
+                    prompt = `Professional e-commerce product photography. Recreate this exact garment front view on PURE WHITE background. The garment: ${analysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture and weave clearly visible. Sharp focus throughout.`;
+                    break;
+                case 'back':
+                    // Full back - hanging shape, gravity pulling straight down, pure white bg
+                    prompt = `Professional e-commerce product photography. Recreate this exact garment back view on PURE WHITE background. The garment: ${analysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture visible. Sharp focus throughout.`;
+                    break;
+                case 'collar1':
+                    // Detail shot of collar area - straight from above
+                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Camera straight down from above. The detail: ${analysis}. Sharp focus on fabric texture, labels, and trim details. Show material quality.`;
+                    break;
+                case 'collar2':
+                    // Detail shot of collar area - angled from the side
+                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Shot at an angle from the side to show depth and dimension. The detail: ${analysis}. Sharp focus on fabric texture, labels, and trim details. Show material quality.`;
+                    break;
+                case 'detail1':
+                case 'detail2':
+                    // Detail of embroidery/print/logo - PRESERVE the garment fabric, studio lighting
+                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up shot showing the embroidery, patches, or graphic details on the garment. IMPORTANT: Preserve the garment's fabric pattern and texture visible in the reference - do not replace with plain white. The detail: ${analysis}. Studio lighting with neutral white balance. Even focus throughout - no shallow depth of field. Sharp and clean, not like a phone photo.`;
+                    break;
+            }
+
+            // Add canny guide instruction when a structural guide is active
+            if (hasCannyGuide) {
+                prompt += ` IMPORTANT: A second reference image is provided as a structural guide. Follow this guide image for the overall composition, shape, silhouette, and proportions of the garment. The garment's appearance, colors, fabric, and all visual details should come from the first photo reference - but the position, size, and shape should match the structural guide.`;
+            }
+
+            return prompt;
+        }
+
+        // Create result card for Tombolo
+        function createResultCard(result) {
+            // Add to state.results for lightbox compatibility
+            const resultData = {
+                url: result.url,
+                prompt: result.prompt,
+                model: result.model,
+                sourceImages: result.sourceImages || [],
+                setIndex: 0,  // Tombolo uses setIndex 0
+                category: result.category
+            };
+            state.results.push(resultData);
+            const resultIndex = state.results.length - 1;
+
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <img src="${result.url}" alt="Generated" class="result-image" loading="lazy">
+                <span class="set-tag">${result.category || 'Tombolo'}</span>
+                <span class="model-tag">${result.model}</span>
+            `;
+
+            card.addEventListener('click', () => {
+                openLightbox(resultIndex);
+            });
+
+            return card;
+        }
+
+        // ========== CANNY GUIDE LOGIC ==========
+        function initCannyGuides() {
+            document.querySelectorAll('.canny-guide-selector').forEach(selector => {
+                const category = selector.dataset.cannyCategory;
+
+                // Click on "Off" option
+                selector.querySelector('.none-option').addEventListener('click', () => {
+                    tomboloState.cannyGuides[category] = null;
+                    updateCannyGuideUI(category);
+                });
+
+                // Click on preset guide thumbnails
+                selector.querySelectorAll('.preset-option').forEach(presetOption => {
+                    presetOption.addEventListener('click', () => {
+                        const src = presetOption.dataset.guideSrc;
+                        tomboloState.cannyGuides[category] = {
+                            url: src,       // static asset path
+                            falUrl: null    // will upload to fal during generation
+                        };
+                        updateCannyGuideUI(category);
+                    });
+                });
+            });
+        }
+
+        function updateCannyGuideUI(category) {
+            const selector = document.querySelector(`.canny-guide-selector[data-canny-category="${category}"]`);
+            if (!selector) return;
+
+            const noneOption = selector.querySelector('.none-option');
+            const presetOptions = selector.querySelectorAll('.preset-option');
+            const guide = tomboloState.cannyGuides[category];
+
+            // Reset all
+            noneOption.classList.remove('active');
+            presetOptions.forEach(p => p.classList.remove('active'));
+
+            if (guide) {
+                // Find and activate the matching preset
+                presetOptions.forEach(p => {
+                    if (p.dataset.guideSrc === guide.url) {
+                        p.classList.add('active');
+                    }
+                });
+            } else {
+                noneOption.classList.add('active');
+            }
+        }
+
         // Initialize
         sets.push(createSetData());
         renderSets();
+        initTomboloGrids();
+        initCannyGuides();
     </script>
 </body>
 </html>
