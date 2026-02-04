@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Generator - Setset</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .flow-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-md);
+        }
+
+        .flow-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-lg);
+        }
+
+        .flow-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .section-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-subtitle {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--slate);
+            background: var(--white);
+        }
+
+        .upload-slot.filled {
+            border-style: solid;
+            border-color: var(--jet);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .plus {
+            font-size: 24px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        /* Templates Section */
+        .templates-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .template-row {
+            margin-bottom: var(--space-md);
+        }
+
+        .template-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .template-row-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xs);
+            padding-bottom: var(--space-xs);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .template-row-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .template-row-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .row-action-btn {
+            padding: 4px 8px;
+            font-size: var(--text-xs);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            color: var(--slate);
+        }
+
+        .row-action-btn:hover {
+            background: var(--gainsboro);
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .template-card {
+            aspect-ratio: 3/4;
+            border: 2px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-fast);
+            background: var(--off-white);
+        }
+
+        .template-card:hover {
+            border-color: var(--slate);
+        }
+
+        .template-card.selected {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .template-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .template-icon {
+            height: 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--slate);
+        }
+
+        .template-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-xs);
+            background: rgba(255,255,255,0.95);
+            font-size: var(--text-xs);
+            text-align: center;
+            color: var(--jet);
+            font-weight: 500;
+        }
+
+        /* Talent Grid */
+        .talent-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .talent-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 6px;
+        }
+
+        .talent-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-xs);
+            overflow: hidden;
+            border: 2px solid var(--gainsboro);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .talent-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .talent-card:hover {
+            border-color: var(--slate);
+        }
+
+        .talent-card.selected {
+            border-color: var(--jet);
+        }
+
+        .talent-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: var(--jet);
+            color: var(--white);
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .talent-card .talent-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2px 4px;
+            background: rgba(0,0,0,0.6);
+            color: var(--white);
+            font-size: 8px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Loader */
+        .inline-loader {
+            display: none;
+            padding: var(--space-md);
+            text-align: center;
+            background: var(--off-white);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .inline-loader.active {
+            display: block;
+        }
+
+        .loader-message {
+            font-size: var(--text-sm);
+            color: var(--jet);
+            margin-bottom: var(--space-xs);
+        }
+
+        .loader-progress {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        /* Progress Section */
+        .progress-section {
+            display: none;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-xs);
+        }
+
+        .progress-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .progress-count {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .progress-bar-bg {
+            height: 4px;
+            background: var(--gainsboro);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .results-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            aspect-ratio: 1;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-card .result-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-xs);
+            text-align: center;
+        }
+
+        /* Settings bar - matching batch-remix-gemini */
+        .settings-bar {
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2xs);
+        }
+
+        .setting-item label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .btn-group-compact {
+            display: flex;
+            gap: 2px;
+        }
+
+        .btn-group-compact button {
+            padding: 4px 8px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-group-compact button:first-child {
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+        }
+
+        .btn-group-compact button:last-child {
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+
+        .btn-group-compact button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .settings-spacer {
+            flex: 1;
+        }
+
+        .selection-info {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .global-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            font-size: var(--text-xs);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            color: var(--slate);
+        }
+
+        .action-btn:hover {
+            background: var(--gainsboro);
+        }
+
+        .generate-btn {
+            padding: 8px 20px;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            background: var(--jet);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            color: var(--white);
+        }
+
+        .generate-btn:hover {
+            background: var(--slate);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .upload-grid,
+            .template-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .settings-bar {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flow-container">
+        <div class="flow-header">
+            <h1 class="flow-title">Flow Generator</h1>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="section-header">
+                <span class="section-title">Input Images</span>
+                <span class="section-subtitle">Upload flatlays or design files (up to 6)</span>
+            </div>
+            <div class="upload-grid" id="upload-grid">
+                <!-- 6 upload slots generated by JS -->
+            </div>
+            <input type="file" id="file-input" accept="image/*,.heic,.heif" multiple style="display: none;">
+        </div>
+
+        <!-- Talent Section -->
+        <div class="talent-section">
+            <div class="section-header">
+                <span class="section-title">Models (Optional)</span>
+                <span class="section-subtitle">Select models for on-person shots, or leave empty for random diverse models</span>
+            </div>
+            <div class="talent-grid" id="talent-grid">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+
+        <!-- Templates Section -->
+        <div class="templates-section">
+            <div class="section-header">
+                <span class="section-title">Output Templates</span>
+                <span class="section-subtitle">Select which outputs to generate</span>
+            </div>
+
+            <!-- Row 1: Flatlays -->
+            <div class="template-row" data-row="flatlay">
+                <div class="template-row-header">
+                    <span class="template-row-title">Flatlays</span>
+                    <div class="template-row-actions">
+                        <button class="row-action-btn" onclick="selectRow('flatlay', true)">Select All</button>
+                        <button class="row-action-btn" onclick="selectRow('flatlay', false)">Deselect</button>
+                    </div>
+                </div>
+                <div class="template-grid" id="flatlay-grid"></div>
+            </div>
+
+            <!-- Row 2: On Person Studio -->
+            <div class="template-row" data-row="studio">
+                <div class="template-row-header">
+                    <span class="template-row-title">On Person — Studio</span>
+                    <div class="template-row-actions">
+                        <button class="row-action-btn" onclick="selectRow('studio', true)">Select All</button>
+                        <button class="row-action-btn" onclick="selectRow('studio', false)">Deselect</button>
+                    </div>
+                </div>
+                <div class="template-grid" id="studio-grid"></div>
+            </div>
+
+            <!-- Row 3: On Person Environment -->
+            <div class="template-row" data-row="environment">
+                <div class="template-row-header">
+                    <span class="template-row-title">On Person — Environment</span>
+                    <div class="template-row-actions">
+                        <button class="row-action-btn" onclick="selectRow('environment', true)">Select All</button>
+                        <button class="row-action-btn" onclick="selectRow('environment', false)">Deselect</button>
+                    </div>
+                </div>
+                <div class="template-grid" id="environment-grid"></div>
+            </div>
+        </div>
+
+        <!-- Settings Bar -->
+        <div class="settings-bar">
+            <div class="setting-item">
+                <label>Aspect:</label>
+                <div class="btn-group-compact" id="aspect-buttons">
+                    <button data-value="1:1">1:1</button>
+                    <button class="active" data-value="3:4">3:4</button>
+                    <button data-value="4:3">4:3</button>
+                    <button data-value="16:9">16:9</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Res:</label>
+                <div class="btn-group-compact" id="resolution-buttons">
+                    <button data-value="1K">1K</button>
+                    <button class="active" data-value="2K">2K</button>
+                    <button data-value="4K">4K</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Seeds:</label>
+                <div class="btn-group-compact" id="seeds-buttons">
+                    <button class="active" data-value="1">1</button>
+                    <button data-value="2">2</button>
+                    <button data-value="3">3</button>
+                    <button data-value="4">4</button>
+                </div>
+            </div>
+
+            <div class="settings-spacer"></div>
+
+            <div class="selection-info" id="selection-info">0 templates selected</div>
+
+            <div class="global-actions">
+                <button class="action-btn" onclick="selectAll(true)">Select All</button>
+                <button class="action-btn" onclick="selectAll(false)">Deselect All</button>
+            </div>
+
+            <button class="generate-btn" id="generate-btn" disabled>Generate</button>
+        </div>
+
+        <!-- Loader -->
+        <div class="inline-loader" id="loader">
+            <div class="loader-message" id="loader-message">Analyzing images...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title" id="progress-title">Generating...</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <span class="results-title">Results</span>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox injected by shared component -->
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script src="/shared/js/lightbox.js"></script>
+    <script>
+        // ========== TALENT DATA ==========
+        const TALENT = [
+            { id: 'james', name: 'James Wilson', gender: 'male', image: '/shared/images/talent/talent-01_JamesWilson.png', thumb: '/shared/images/talent/thumbs/talent-01_JamesWilson.png' },
+            { id: 'maya', name: 'Maya Johnson', gender: 'female', image: '/shared/images/talent/talent-02_MayaJohnson.png', thumb: '/shared/images/talent/thumbs/talent-02_MayaJohnson.png' },
+            { id: 'river', name: 'River Blake', gender: 'male', image: '/shared/images/talent/talent-03_RiverBlake.png', thumb: '/shared/images/talent/thumbs/talent-03_RiverBlake.png' },
+            { id: 'emma', name: 'Emma Sullivan', gender: 'female', image: '/shared/images/talent/talent-04_EmmaSullivan.png', thumb: '/shared/images/talent/thumbs/talent-04_EmmaSullivan.png' },
+            { id: 'marcus', name: 'Marcus Brown', gender: 'male', image: '/shared/images/talent/talent-05_MarcusBrown.png', thumb: '/shared/images/talent/thumbs/talent-05_MarcusBrown.png' },
+            { id: 'zara', name: 'Zara Mitchell', gender: 'female', image: '/shared/images/talent/talent-06_ZaraMitchell.png', thumb: '/shared/images/talent/thumbs/talent-06_ZaraMitchell.png' },
+            { id: 'sophia', name: 'Sophia Anderson', gender: 'female', image: '/shared/images/talent/talent-07_SophiaAnderson.png', thumb: '/shared/images/talent/thumbs/talent-07_SophiaAnderson.png' },
+            { id: 'liam', name: 'Liam Garcia', gender: 'male', image: '/shared/images/talent/talent-08_LiamGarcia.png', thumb: '/shared/images/talent/thumbs/talent-08_LiamGarcia.png' },
+            { id: 'nina', name: 'Nina Davis', gender: 'female', image: '/shared/images/talent/talent-09_NinaDavis.png', thumb: '/shared/images/talent/thumbs/talent-09_NinaDavis.png' },
+            { id: 'mateo', name: 'Mateo Martinez', gender: 'male', image: '/shared/images/talent/talent-10_AvaMartinez.png', thumb: '/shared/images/talent/thumbs/talent-10_AvaMartinez.png' },
+            { id: 'luna', name: 'Luna Park', gender: 'female', image: '/shared/images/talent/talent-11_LunaPark.png', thumb: '/shared/images/talent/thumbs/talent-11_LunaPark.png' },
+            { id: 'noah', name: 'Noah Chen', gender: 'male', image: '/shared/images/talent/talent-12_NoahChen.png', thumb: '/shared/images/talent/thumbs/talent-12_NoahChen.png' },
+            { id: 'mia', name: 'Mia Parker', gender: 'female', image: '/shared/images/talent/talent-13_MiaParker.png', thumb: '/shared/images/talent/thumbs/talent-13_MiaParker.png' },
+            { id: 'riley', name: 'Riley Morgan', gender: 'male', image: '/shared/images/talent/talent-14_RileyMorgan.png', thumb: '/shared/images/talent/thumbs/talent-14_RileyMorgan.png' },
+            { id: 'jordan', name: 'Jordan Lee', gender: 'male', image: '/shared/images/talent/talent-15_JordanLee.png', thumb: '/shared/images/talent/thumbs/talent-15_JordanLee.png' },
+            { id: 'isabella', name: 'Isabella Rodriguez', gender: 'female', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png', thumb: '/shared/images/talent/thumbs/talent-16_IsabellaRodriguez.png' },
+            { id: 'quinn', name: 'Quinn Santos', gender: 'male', image: '/shared/images/talent/talent-17_QuinnSantos.png', thumb: '/shared/images/talent/thumbs/talent-17_QuinnSantos.png' },
+            { id: 'casey', name: 'Casey White', gender: 'female', image: '/shared/images/talent/talent-18_CaseyWhite.png', thumb: '/shared/images/talent/thumbs/talent-18_CaseyWhite.png' },
+            { id: 'sam', name: 'Sam Wilson', gender: 'female', image: '/shared/images/talent/talent-19_SamWilson.png', thumb: '/shared/images/talent/thumbs/talent-19_SamWilson.png' },
+            { id: 'drew', name: 'Drew Martinez', gender: 'male', image: '/shared/images/talent/talent-20_DrewMartinez.png', thumb: '/shared/images/talent/thumbs/talent-20_DrewMartinez.png' },
+            { id: 'avery', name: 'Avery Taylor', gender: 'female', image: '/shared/images/talent/talent-21_AveryTaylor.png', thumb: '/shared/images/talent/thumbs/talent-21_AveryTaylor.png' },
+            { id: 'parker', name: 'Parker Miller', gender: 'male', image: '/shared/images/talent/talent-22_ParkerMiller.png', thumb: '/shared/images/talent/thumbs/talent-22_ParkerMiller.png' },
+            { id: 'morgan', name: 'Morgan Kim', gender: 'male', image: '/shared/images/talent/talent-23_MorganKim.png', thumb: '/shared/images/talent/thumbs/talent-23_MorganKim.png' },
+            { id: 'andre', name: 'Andre Jackson', gender: 'male', image: '/shared/images/talent/talent-24_AndreJackson.png', thumb: '/shared/images/talent/thumbs/talent-24_AndreJackson.png' }
+        ];
+
+        // ========== TEMPLATE DATA ==========
+        const FLATLAY_TEMPLATES = [
+            { id: 'top-down', name: 'Top Down', icon: '⬇️', promptBase: 'Professional flat lay product photography shot on medium format camera. Camera directly overhead at 90 degrees, bird\'s eye view looking straight down. {GARMENT} laid completely flat face up on pure white seamless background. Arms and sleeves extended outward symmetrically. Full garment visible from collar to hem, no cropping, smoothed with no wrinkles. Bright even studio lighting, minimal soft shadows. Clean e-commerce catalog style.' },
+            { id: 'detail-zoom', name: 'Detail Zoom', icon: '🔍', promptBase: 'Professional detail photography shot on medium format camera. Single extreme close-up focusing on one area of the garment - the fabric texture, stitching, or a construction detail of {GARMENT}. Macro lens perspective, slightly shallow depth of field. Studio lighting revealing fabric quality and craftsmanship. Pure white background. ONE SINGLE IMAGE, not a collage or grid.' },
+            { id: 'ghost-mannequin', name: 'Ghost Mannequin', icon: '👻', promptBase: 'Professional ghost mannequin photography shot on medium format camera. {GARMENT} displayed on invisible mannequin showing three-dimensional form and fit. Clean product shot with garment appearing to float in space, showing shape and silhouette. Pure white seamless studio background, professional soft lighting with gentle shadows for depth. E-commerce style.' },
+            { id: 'studio-mannequin', name: 'Studio Mannequin', icon: '🧍', promptBase: 'Professional fashion photography shot on medium format camera. {GARMENT} displayed on a minimal white or light gray mannequin torso in a clean white photo studio. Slightly wider shot showing the mannequin and studio context. Soft professional lighting, seamless white backdrop. Editorial product photography style.' },
+            { id: 'draped-chair', name: 'Draped on Chair', icon: '🪑', promptBase: 'Editorial still life photography shot on medium format camera. {GARMENT} artfully draped over a minimal modern designer chair in a clean white photo studio. Effortless casual arrangement, fabric falling naturally with elegant folds. Soft diffused studio lighting, pure white backdrop. Contemporary minimal aesthetic.' },
+            { id: 'hanging', name: 'Hanging Hook', icon: '🪝', promptBase: 'Professional product photography shot on medium format camera. {GARMENT} hanging naturally from a minimal black or brass wall hook against a clean pure white wall. Natural drape showing garment silhouette and length. Straight-on angle, soft diffused studio lighting. Simple elegant minimal presentation.' },
+            { id: 'folded-stack', name: 'Folded Stack', icon: '📚', promptBase: 'Professional product photography shot on medium format camera. {GARMENT} neatly folded and stacked on pure white surface, showing neat presentation and fabric quality. Clean retail-style folding, crisp edges. Bird\'s eye or slight angle view. Soft even studio lighting. Minimal clean aesthetic.' },
+            { id: 'hanger-front', name: 'On Hanger', icon: '🧥', promptBase: 'Professional product photography shot on medium format camera. {GARMENT} displayed on a thin black velvet hanger against pure white seamless background. Full front view, garment hanging naturally showing silhouette and drape. Clean retail presentation style. Soft even studio lighting.' },
+            { id: 'crumpled-art', name: 'Artful Crumple', icon: '🌀', promptBase: 'Editorial still life photography shot on medium format camera. {GARMENT} artfully crumpled and arranged on pure white surface, creating organic sculptural shapes and interesting shadows. Intentional creative arrangement showing fabric texture and movement. Soft directional studio lighting. Contemporary art direction.' }
+        ];
+
+        const STUDIO_TEMPLATES = [
+            { id: 'studio-standing', name: 'Standing', icon: '🧍', poseType: 'standing' },
+            { id: 'studio-hand-hip', name: 'Hand on Hip', icon: '💃', poseType: 'hand-hip' },
+            { id: 'studio-seated', name: 'Seated', icon: '🪑', poseType: 'seated' },
+            { id: 'studio-walking', name: 'Walking', icon: '🚶', poseType: 'walking' },
+            { id: 'studio-portrait', name: 'Portrait', icon: '👤', poseType: 'portrait' },
+            { id: 'studio-colored', name: 'Color Studio', icon: '🎨', poseType: 'colored' },
+            { id: 'studio-back', name: 'From Behind', icon: '🔙', poseType: 'back' },
+            { id: 'studio-leaning', name: 'Leaning', icon: '↗️', poseType: 'leaning' },
+            { id: 'studio-movement', name: 'Movement', icon: '💫', poseType: 'movement' }
+        ];
+
+        const ENVIRONMENT_TEMPLATES = [
+            { id: 'env-minimal', name: 'Minimal Space', icon: '⬜', envType: 'minimal' },
+            { id: 'env-architectural', name: 'Architectural', icon: '🏛️', envType: 'architectural' },
+            { id: 'env-parisian', name: 'Parisian', icon: '🗼', envType: 'parisian' },
+            { id: 'env-urban', name: 'Urban Street', icon: '🏙️', envType: 'urban' },
+            { id: 'env-natural', name: 'Natural', icon: '🌿', envType: 'natural' },
+            { id: 'env-rooftop', name: 'Rooftop', icon: '🌆', envType: 'rooftop' },
+            { id: 'env-warm', name: 'Warm Tones', icon: '🟠', envType: 'warm' },
+            { id: 'env-cool', name: 'Cool Tones', icon: '🔵', envType: 'cool' },
+            { id: 'env-textured', name: 'Textured', icon: '🧱', envType: 'textured' }
+        ];
+
+        // Pose prompts for studio shots
+        const STUDIO_POSES = {
+            'standing': [
+                'Full-body shot of a model in relaxed contrapposto stance, weight shifted naturally, arms relaxed at sides. Confident direct gaze with slightly intense eyes, strong editorial presence.',
+                'Full-body portrait of a model standing tall with elegant posture, shoulders back, chin slightly lifted. Contemplative expression, looking slightly past camera, mysterious and captivating.',
+                'Full-body shot of a model in natural standing pose, body slightly angled to camera. Piercing gaze with subtle confidence, angular features catching the light.'
+            ],
+            'hand-hip': [
+                'Full-body portrait of a model standing with one hand placed on hip, weight on back leg creating S-curve silhouette. Fierce commanding gaze, strong cheekbones, powerful editorial energy.',
+                'Full-body shot of a model with hand resting casually on hip, relaxed but confident stance. Direct intense eyes, slightly parted lips, raw authentic expression.',
+                'Full-body portrait of a model in power pose, both hands on hips, feet shoulder-width apart. Bold confrontational gaze, striking features, high-fashion attitude.'
+            ],
+            'seated': [
+                'Full-body portrait of a model seated on minimalist white stool, one leg crossed over other, leaning back casually. Thoughtful gaze looking slightly away, relaxed but captivating presence.',
+                'Full-body shot of a model sitting on designer chair, elbows on knees leaning forward. Intense direct eye contact, intimate confrontational energy, striking facial features.',
+                'Full-body portrait of a model seated elegantly on white cube, legs extended, one knee bent. Serene expression with knowing eyes, sophisticated timeless beauty.'
+            ],
+            'walking': [
+                'Full-body shot of a model mid-stride, runway walk energy, one foot crossing in front, arms swinging naturally. Fierce focused gaze, dynamic movement captured, high-fashion attitude.',
+                'Full-body portrait capturing a model in motion, walking toward camera, confident powerful stride. Intense eyes locked on lens, striking angular features, editorial energy.',
+                'Full-body shot of a model caught mid-step, natural walking movement, casual but purposeful stride. Cool detached expression, effortless confidence.'
+            ],
+            'portrait': [
+                'Chest-up portrait of a model, shoulders angled, chin slightly lifted. Piercing direct eye contact, intense editorial presence, beautiful bone structure, captivating gaze.',
+                'Close-up portrait of a model, face turned three-quarter to camera, eyes gazing into distance. Contemplative mysterious mood, striking features, editorial beauty.',
+                'Tight portrait of a model, eyes meeting camera directly. Serene but confident expression, natural freckles or interesting skin texture, authentic timeless beauty.'
+            ],
+            'colored': [
+                'Full-body portrait of a model standing in studio with soft muted pastel backdrop. Warm gentle lighting, thoughtful expression, contemporary fashion editorial mood.',
+                'Full-body shot of a model in studio with subtle earth-tone gradient background. Modern editorial lighting, direct confident gaze, sophisticated presence.',
+                'Full-body portrait of a model against soft sage or terracotta studio backdrop. Warm natural lighting, serene knowing expression, refined editorial aesthetic.'
+            ],
+            'back': [
+                'Half-body shot from behind of a model, shoulders and upper back visible, head turned slightly looking back at camera over shoulder. Clean white studio background. Shows back detail of garment beautifully. Soft studio lighting, subtle confident glance.',
+                'Three-quarter back view of a model, torso twisted slightly, face in profile or looking back toward camera. Pure white seamless backdrop. Back of garment clearly visible. Editorial elegance, striking angular pose.',
+                'Full-body shot from behind of a model, standing tall, head turned to show profile. Clean white studio. Back detail of garment on display. Graceful posture, mysterious sophisticated mood.'
+            ],
+            'leaning': [
+                'Full-body portrait of a model leaning casually against invisible wall, weight shifted, relaxed cool attitude. Pure white studio background. Effortless confident pose, direct gaze.',
+                'Full-body shot of a model leaning back slightly, one shoulder dropped, casual editorial stance. Clean white seamless backdrop. Relaxed but striking presence.',
+                'Full-body portrait of a model in relaxed lean, arms crossed or hands in pockets, easy confidence. White studio environment. Cool detached expression, contemporary mood.'
+            ],
+            'movement': [
+                'Full-body shot capturing a model mid-motion, fabric flowing, dynamic energy frozen in time. Pure white studio background. Hair and garment showing movement blur. Powerful editorial moment.',
+                'Full-body portrait of a model spinning or turning, garment catching air, graceful movement. Clean white seamless backdrop. Dynamic but elegant, captured mid-flow.',
+                'Full-body shot of a model in expressive pose, arms extended, body in motion. White studio environment. Energetic but controlled, fashion editorial dynamism.'
+            ]
+        };
+
+        // Environment prompts - textured studio backdrops, NOT real locations
+        const ENVIRONMENT_POSES = {
+            'minimal': [
+                'Full-body portrait of a model against a subtle off-white textured canvas backdrop. Soft even studio lighting. Clean minimal aesthetic, model is the complete focus. Confident direct gaze, striking features.',
+                'Full-body shot of a model against warm cream painted backdrop with very subtle brushstroke texture. Professional studio lighting, soft shadows. Serene expression, editorial presence.',
+                'Full-body portrait against pale gray seamless paper backdrop. Simple, clean, timeless. Soft studio light from side. Model sharp and present, backdrop understated.'
+            ],
+            'architectural': [
+                'Full-body portrait of a model against light concrete-textured backdrop. Clean geometric studio setting. Even professional lighting. Intense confident gaze, modern minimal aesthetic.',
+                'Full-body shot against smooth plaster backdrop with subtle warm undertone. Studio environment, soft directional light creating gentle shadow. Editorial sophistication.',
+                'Full-body portrait against pale stone-effect painted backdrop. Clean lines, minimal visual interest in background. Focus entirely on model and garment.'
+            ],
+            'parisian': [
+                'Full-body portrait of a model against soft blush-tinted canvas backdrop. Warm romantic studio lighting. Timeless beauty, captivating expression, classic fashion photography.',
+                'Full-body shot against cream muslin backdrop with gentle texture. Soft golden studio light, dreamy but simple. Sophisticated gaze, natural elegance.',
+                'Full-body portrait against pale rose-gray painted backdrop. Warm soft lighting, feminine but minimal. Focus on striking features and garment.'
+            ],
+            'urban': [
+                'Full-body portrait of a model against cool gray textured backdrop. Modern studio setting, clean and minimal. Editorial cool, confident detached expression.',
+                'Full-body shot against charcoal painted canvas backdrop. Moody but simple, professional studio lighting. Contemporary edge, striking features.',
+                'Full-body portrait against slate gray seamless paper. Urban-inspired but clean studio environment. Model commands frame, modern understated presence.'
+            ],
+            'natural': [
+                'Full-body portrait of a model against sage green painted canvas backdrop. Soft warm studio lighting. Fresh organic mood, serene expression, clean and simple.',
+                'Full-body shot against soft olive-toned muslin backdrop with gentle texture. Natural feeling but studio setting. Contemporary organic aesthetic.',
+                'Full-body portrait against warm terracotta-tinted backdrop. Earthy but minimal, soft studio light. Clean and fresh, model present and captivating.'
+            ],
+            'rooftop': [
+                'Full-body portrait of a model against warm golden-hour tinted backdrop. Soft amber studio lighting creating sunset mood. Aspirational, confident knowing gaze.',
+                'Full-body shot against peach and coral gradient painted backdrop. Warm glowing studio light, simple but atmospheric. Editorial elegance.',
+                'Full-body portrait against soft sunset-orange canvas backdrop. Warm golden lighting, dreamy but clean studio setting. Model sharp and striking.'
+            ],
+            'warm': [
+                'Full-body portrait of a model against rich terracotta painted canvas backdrop. Warm amber studio lighting, cozy inviting mood. Confident relaxed expression, editorial warmth.',
+                'Full-body shot against burnt sienna textured backdrop. Golden warm studio light from side. Earthy sophisticated palette. Serene knowing gaze.',
+                'Full-body portrait against deep rust and clay colored backdrop. Warm directional lighting creating soft shadows. Rich autumnal mood, striking presence.'
+            ],
+            'cool': [
+                'Full-body portrait of a model against pale blue-gray canvas backdrop. Cool soft studio lighting, modern clean aesthetic. Calm confident expression, contemporary elegance.',
+                'Full-body shot against soft steel blue painted backdrop. Cool even lighting, minimal and refined. Serene editorial mood, striking features.',
+                'Full-body portrait against icy lavender-gray textured backdrop. Cool diffused light, sophisticated understated palette. Mysterious calm presence.'
+            ],
+            'textured': [
+                'Full-body portrait of a model against raw linen canvas backdrop with visible weave texture. Soft warm studio lighting. Organic tactile feeling, natural editorial mood.',
+                'Full-body shot against hand-painted plaster backdrop with subtle imperfections. Professional studio lighting revealing texture. Artistic refined aesthetic.',
+                'Full-body portrait against weathered paper or fabric backdrop with gentle creases. Soft directional light creating depth. Lived-in authentic feel, editorial sophistication.'
+            ]
+        };
+
+        // Model description suffix for all on-person shots - when NO talent is selected
+        const DIVERSE_MODEL_DESCRIPTIONS = [
+            'The model is a striking Black woman with beautiful dark skin, angular cheekbones, and captivating intense eyes.',
+            'The model is an East Asian man with sharp features, strong jawline, and cool confident presence.',
+            'The model is a South Asian woman with warm bronze skin, expressive dark eyes, and elegant bone structure.',
+            'The model is a white man with interesting angular features, light eyes, and distinctive masculine look.',
+            'The model is a Latina woman with warm olive skin, dark flowing hair, and vibrant editorial presence.',
+            'The model is a Middle Eastern man with olive skin, strong brows, and mysterious compelling gaze.',
+            'The model is a mixed-race woman with unique beautiful features, interesting skin tone, and striking eyes.',
+            'The model is an East Asian woman with delicate features, porcelain skin, and serene elegant beauty.',
+            'The model is a Black man with rich dark skin, powerful presence, and striking confident gaze.',
+            'The model is a white woman with freckles, red or auburn hair, and interesting unconventional beauty.'
+        ];
+
+        // Base suffix for all on-person shots
+        const MODEL_SUFFIX_BASE = 'Timeless modern editorial beauty, not generic or bland. Natural matte skin with authentic texture, no plastic shine or heavy retouching. Shot on medium format camera, professional fashion photography lighting, photorealistic, vivid full color, professional color grading.';
+
+        // Get random diverse model description
+        function getRandomModelDescription() {
+            return DIVERSE_MODEL_DESCRIPTIONS[Math.floor(Math.random() * DIVERSE_MODEL_DESCRIPTIONS.length)];
+        }
+
+        // ========== STATE ==========
+        const state = {
+            uploadedImages: [], // Array of { url, file, analysis }
+            selectedTemplates: new Set(),
+            selectedTalent: [], // Array of selected talent objects
+            seeds: 1,
+            aspectRatio: '3:4',
+            resolution: '2K',
+            results: [],
+            talentFalUrls: {} // Cache for uploaded talent images { talentId: falUrl }
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const elements = {
+            uploadGrid: document.getElementById('upload-grid'),
+            fileInput: document.getElementById('file-input'),
+            talentGrid: document.getElementById('talent-grid'),
+            flatlayGrid: document.getElementById('flatlay-grid'),
+            studioGrid: document.getElementById('studio-grid'),
+            environmentGrid: document.getElementById('environment-grid'),
+            seedsButtons: document.getElementById('seeds-buttons'),
+            aspectButtons: document.getElementById('aspect-buttons'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            selectionInfo: document.getElementById('selection-info'),
+            generateBtn: document.getElementById('generate-btn'),
+            loader: document.getElementById('loader'),
+            loaderMessage: document.getElementById('loader-message'),
+            loaderProgress: document.getElementById('loader-progress'),
+            progressSection: document.getElementById('progress-section'),
+            progressTitle: document.getElementById('progress-title'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid')
+        };
+
+        // Initialize shared lightbox
+        const lightbox = new Lightbox({
+            onDownload: (url, filename) => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+            }
+        });
+
+        // ========== INITIALIZATION ==========
+        function init() {
+            renderUploadGrid();
+            renderTalentGrid();
+            renderTemplateGrids();
+            setupEventListeners();
+        }
+
+        // Render talent grid
+        function renderTalentGrid() {
+            elements.talentGrid.innerHTML = '';
+            TALENT.forEach(talent => {
+                const card = document.createElement('div');
+                card.className = 'talent-card';
+                card.dataset.id = talent.id;
+                card.innerHTML = `
+                    <img src="${talent.thumb || talent.image}" alt="${talent.name}" loading="lazy">
+                    <span class="talent-name">${talent.name.split(' ')[0]}</span>
+                `;
+                card.addEventListener('click', () => toggleTalent(talent));
+                elements.talentGrid.appendChild(card);
+            });
+        }
+
+        // Toggle talent selection
+        function toggleTalent(talent) {
+            const index = state.selectedTalent.findIndex(t => t.id === talent.id);
+            if (index >= 0) {
+                state.selectedTalent.splice(index, 1);
+            } else {
+                state.selectedTalent.push(talent);
+            }
+            updateTalentUI();
+        }
+
+        // Update talent card UI
+        function updateTalentUI() {
+            document.querySelectorAll('.talent-card').forEach(card => {
+                const isSelected = state.selectedTalent.some(t => t.id === card.dataset.id);
+                card.classList.toggle('selected', isSelected);
+            });
+        }
+
+        function renderUploadGrid() {
+            elements.uploadGrid.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'upload-slot';
+                slot.dataset.index = i;
+
+                if (state.uploadedImages[i]) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = `
+                        <img src="${state.uploadedImages[i].url}" alt="Uploaded">
+                        <button class="remove-btn" onclick="removeImage(${i})">&times;</button>
+                    `;
+                } else {
+                    slot.innerHTML = '<span class="plus">+</span>';
+                    slot.addEventListener('click', () => triggerUpload(i));
+                }
+
+                // Drag and drop
+                slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.style.borderColor = 'var(--jet)'; });
+                slot.addEventListener('dragleave', () => { slot.style.borderColor = ''; });
+                slot.addEventListener('drop', (e) => handleDrop(e, i));
+
+                elements.uploadGrid.appendChild(slot);
+            }
+        }
+
+        function renderTemplateGrids() {
+            // Flatlays
+            elements.flatlayGrid.innerHTML = '';
+            FLATLAY_TEMPLATES.forEach(t => {
+                elements.flatlayGrid.appendChild(createTemplateCard(t, 'flatlay'));
+            });
+
+            // Studio
+            elements.studioGrid.innerHTML = '';
+            STUDIO_TEMPLATES.forEach(t => {
+                elements.studioGrid.appendChild(createTemplateCard(t, 'studio'));
+            });
+
+            // Environment
+            elements.environmentGrid.innerHTML = '';
+            ENVIRONMENT_TEMPLATES.forEach(t => {
+                elements.environmentGrid.appendChild(createTemplateCard(t, 'environment'));
+            });
+        }
+
+        function createTemplateCard(template, row) {
+            const card = document.createElement('div');
+            card.className = 'template-card';
+            card.dataset.id = template.id;
+            card.dataset.row = row;
+
+            card.innerHTML = `
+                <div class="template-icon">${template.icon}</div>
+                <div class="template-label">${template.name}</div>
+            `;
+
+            card.addEventListener('click', () => toggleTemplate(template.id));
+            return card;
+        }
+
+        function setupEventListeners() {
+            // File input
+            elements.fileInput.addEventListener('change', handleFileSelect);
+
+            // Aspect buttons
+            elements.aspectButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.aspectButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.aspectRatio = e.target.dataset.value;
+                }
+            });
+
+            // Resolution buttons
+            elements.resolutionButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.resolutionButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.resolution = e.target.dataset.value;
+                }
+            });
+
+            // Seeds buttons
+            elements.seedsButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.seedsButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.seeds = parseInt(e.target.dataset.value);
+                    updateUI();
+                }
+            });
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', generate);
+        }
+
+        // ========== UPLOAD HANDLING ==========
+        let currentUploadSlot = 0;
+
+        function triggerUpload(index) {
+            currentUploadSlot = index;
+            elements.fileInput.click();
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            files.forEach((file, idx) => {
+                const slotIndex = currentUploadSlot + idx;
+                if (slotIndex < 6) {
+                    processFile(file, slotIndex);
+                }
+            });
+            e.target.value = '';
+        }
+
+        function handleDrop(e, index) {
+            e.preventDefault();
+            e.target.closest('.upload-slot').style.borderColor = '';
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) {
+                processFile(files[0], index);
+            }
+        }
+
+        async function processFile(file, index) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                state.uploadedImages[index] = {
+                    url: e.target.result,
+                    file: file,
+                    analysis: null
+                };
+                renderUploadGrid();
+                updateUI();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(index) {
+            state.uploadedImages[index] = null;
+            // Compact array
+            state.uploadedImages = state.uploadedImages.filter(img => img !== null);
+            while (state.uploadedImages.length < 6) {
+                state.uploadedImages.push(null);
+            }
+            renderUploadGrid();
+            updateUI();
+            event.stopPropagation();
+        }
+
+        // ========== TEMPLATE SELECTION ==========
+        function toggleTemplate(id) {
+            if (state.selectedTemplates.has(id)) {
+                state.selectedTemplates.delete(id);
+            } else {
+                state.selectedTemplates.add(id);
+            }
+            updateTemplateUI();
+            updateUI();
+        }
+
+        window.selectRow = function(row, select) {
+            const templates = row === 'flatlay' ? FLATLAY_TEMPLATES :
+                             row === 'studio' ? STUDIO_TEMPLATES : ENVIRONMENT_TEMPLATES;
+            templates.forEach(t => {
+                if (select) {
+                    state.selectedTemplates.add(t.id);
+                } else {
+                    state.selectedTemplates.delete(t.id);
+                }
+            });
+            updateTemplateUI();
+            updateUI();
+        };
+
+        window.selectAll = function(select) {
+            [...FLATLAY_TEMPLATES, ...STUDIO_TEMPLATES, ...ENVIRONMENT_TEMPLATES].forEach(t => {
+                if (select) {
+                    state.selectedTemplates.add(t.id);
+                } else {
+                    state.selectedTemplates.delete(t.id);
+                }
+            });
+            updateTemplateUI();
+            updateUI();
+        };
+
+        function updateTemplateUI() {
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.toggle('selected', state.selectedTemplates.has(card.dataset.id));
+            });
+        }
+
+        function updateUI() {
+            const imageCount = state.uploadedImages.filter(img => img).length;
+            const templateCount = state.selectedTemplates.size;
+            const totalImages = imageCount * templateCount * state.seeds;
+
+            elements.selectionInfo.textContent = `${templateCount} templates × ${imageCount} images × ${state.seeds} seeds = ${totalImages} outputs`;
+            elements.generateBtn.disabled = imageCount === 0 || templateCount === 0;
+        }
+
+        // ========== GENERATION ==========
+
+        // Check if template is on-person (studio or environment)
+        function isOnPersonTemplate(templateId) {
+            return STUDIO_TEMPLATES.some(t => t.id === templateId) ||
+                   ENVIRONMENT_TEMPLATES.some(t => t.id === templateId);
+        }
+
+        // Get a random talent from selected, or null if none selected
+        function getRandomSelectedTalent() {
+            if (state.selectedTalent.length === 0) return null;
+            return state.selectedTalent[Math.floor(Math.random() * state.selectedTalent.length)];
+        }
+
+        // Upload talent image to fal if not cached
+        async function ensureTalentUploaded(talent) {
+            if (state.talentFalUrls[talent.id]) {
+                return state.talentFalUrls[talent.id];
+            }
+
+            // Fetch the talent image and upload
+            const response = await fetch(talent.image);
+            const blob = await response.blob();
+            const file = new File([blob], `talent-${talent.id}.png`, { type: 'image/png' });
+
+            const formData = new FormData();
+            formData.append('image', file);
+            const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+            const uploadData = await uploadRes.json();
+
+            state.talentFalUrls[talent.id] = uploadData.url;
+            return uploadData.url;
+        }
+
+        async function generate() {
+            const images = state.uploadedImages.filter(img => img);
+            if (images.length === 0 || state.selectedTemplates.size === 0) return;
+
+            // Show loader
+            elements.loader.classList.add('active');
+            elements.loaderMessage.textContent = 'Analyzing garments with AI...';
+            elements.loaderProgress.textContent = 'Please wait...';
+
+            // Step 1: Analyze all images
+            for (let i = 0; i < images.length; i++) {
+                const img = images[i];
+                if (!img.analysis) {
+                    elements.loaderProgress.textContent = `Analyzing image ${i + 1} of ${images.length}...`;
+
+                    // Upload to get URL
+                    if (!img.falUrl) {
+                        const formData = new FormData();
+                        formData.append('image', img.file);
+                        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+                        const uploadData = await uploadRes.json();
+                        img.falUrl = uploadData.url;
+                    }
+
+                    // Analyze with Gemini
+                    img.analysis = await analyzeGarment(img.falUrl);
+                }
+            }
+
+            // Step 2: Upload selected talent images if any
+            if (state.selectedTalent.length > 0) {
+                elements.loaderProgress.textContent = 'Preparing talent references...';
+                for (const talent of state.selectedTalent) {
+                    await ensureTalentUploaded(talent);
+                }
+            }
+
+            // Step 3: Build tasks
+            const tasks = [];
+            images.forEach((img, imgIdx) => {
+                state.selectedTemplates.forEach(templateId => {
+                    for (let seed = 0; seed < state.seeds; seed++) {
+                        // For on-person shots, assign a random talent from selection (if any)
+                        const assignedTalent = isOnPersonTemplate(templateId) ? getRandomSelectedTalent() : null;
+                        tasks.push({
+                            image: img,
+                            imageIndex: imgIdx,
+                            templateId,
+                            seed,
+                            talent: assignedTalent
+                        });
+                    }
+                });
+            });
+
+            // Show progress
+            elements.loader.classList.remove('active');
+            elements.progressSection.style.display = 'block';
+            elements.resultsSection.style.display = 'block';
+            elements.progressTitle.textContent = 'Generating...';
+            elements.progressCount.textContent = `0 / ${tasks.length}`;
+            elements.progressBar.style.width = '0%';
+            elements.generateBtn.disabled = true;
+
+            let completed = 0;
+
+            // Process in batches
+            const BATCH_SIZE = 4;
+            for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+                const batch = tasks.slice(i, i + BATCH_SIZE);
+
+                await Promise.all(batch.map(async (task) => {
+                    try {
+                        const hasTalentRef = task.talent !== null;
+                        const prompt = buildPrompt(task.templateId, task.image.analysis, hasTalentRef);
+
+                        // Build image_urls array - garment first, then talent reference if any
+                        const imageUrls = [task.image.falUrl];
+                        if (hasTalentRef) {
+                            const talentUrl = state.talentFalUrls[task.talent.id];
+                            if (talentUrl) {
+                                imageUrls.push(talentUrl);
+                            }
+                        }
+
+                        const response = await fetch('/api/remix-gemini', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'gemini-3-pro',
+                                prompt: prompt,
+                                image_urls: imageUrls,
+                                aspect_ratio: state.aspectRatio,
+                                resolution: state.resolution
+                            })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.images && data.images.length > 0) {
+                                data.images.forEach(img => {
+                                    addResult({
+                                        url: img.url,
+                                        prompt: prompt,
+                                        templateId: task.templateId,
+                                        imageIndex: task.imageIndex,
+                                        talentName: task.talent ? task.talent.name : null
+                                    });
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Generation error:', err);
+                    }
+
+                    completed++;
+                    elements.progressCount.textContent = `${completed} / ${tasks.length}`;
+                    elements.progressBar.style.width = `${(completed / tasks.length) * 100}%`;
+                }));
+            }
+
+            elements.progressTitle.textContent = 'Complete!';
+            elements.generateBtn.disabled = false;
+        }
+
+        async function analyzeGarment(imageUrl) {
+            const prompt = `Analyze this garment image for fashion photography. Describe in one sentence:
+- What type of garment it is (shirt, jacket, dress, pants, etc.)
+- The material/fabric (cotton, denim, silk, wool, etc.)
+- The color(s) - be specific (e.g., "navy blue", "cream white")
+- Any notable details (patterns, buttons, zippers, collar style)
+
+Do NOT mention brand names, logos, or text. Keep it simple and factual.
+Example: "A navy blue cotton Oxford shirt with white buttons and a classic collar."`;
+
+            try {
+                const response = await fetch('/api/analyze-gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_url: imageUrl, prompt })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.content || 'a garment';
+                }
+            } catch (err) {
+                console.error('Analysis error:', err);
+            }
+            return 'a garment';
+        }
+
+        function buildPrompt(templateId, garmentAnalysis, hasTalentRef) {
+            // Find template
+            let template = FLATLAY_TEMPLATES.find(t => t.id === templateId);
+            if (template) {
+                // Flatlay - no model needed
+                return template.promptBase.replace('{GARMENT}', garmentAnalysis);
+            }
+
+            // For on-person shots, build model description
+            let modelDesc;
+            if (hasTalentRef) {
+                // When talent is selected, reference the second image
+                modelDesc = 'Use the EXACT appearance, face, features, skin tone, and hair of the person shown in the second reference image. This must be the same person.';
+            } else {
+                // Random diverse model
+                modelDesc = getRandomModelDescription();
+            }
+
+            template = STUDIO_TEMPLATES.find(t => t.id === templateId);
+            if (template) {
+                const poses = STUDIO_POSES[template.poseType];
+                const pose = poses[Math.floor(Math.random() * poses.length)];
+                return `${pose} ${modelDesc} The model is wearing ${garmentAnalysis}. ${MODEL_SUFFIX_BASE}`;
+            }
+
+            template = ENVIRONMENT_TEMPLATES.find(t => t.id === templateId);
+            if (template) {
+                const envs = ENVIRONMENT_POSES[template.envType];
+                const env = envs[Math.floor(Math.random() * envs.length)];
+                return `${env} ${modelDesc} The model is wearing ${garmentAnalysis}. ${MODEL_SUFFIX_BASE}`;
+            }
+
+            return `Fashion photography of ${garmentAnalysis}. ${modelDesc} ${MODEL_SUFFIX_BASE}`;
+        }
+
+        function addResult(result) {
+            state.results.push(result);
+            const resultIndex = state.results.length - 1; // Capture index at creation time
+
+            const template = [...FLATLAY_TEMPLATES, ...STUDIO_TEMPLATES, ...ENVIRONMENT_TEMPLATES]
+                .find(t => t.id === result.templateId);
+
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <img src="${result.url}" alt="Result">
+                <div class="result-label">${template ? template.name : 'Output'}</div>
+            `;
+            card.addEventListener('click', () => {
+                // Update lightbox results and open at correct index
+                const lightboxResults = state.results.map((r, idx) => {
+                    const t = [...FLATLAY_TEMPLATES, ...STUDIO_TEMPLATES, ...ENVIRONMENT_TEMPLATES].find(t => t.id === r.templateId);
+                    return {
+                        url: r.url,
+                        prompt: r.prompt,
+                        modelName: t ? t.name : 'Flow Output',
+                        filename: `Setset_Flow_${t ? t.name.replace(/\s+/g, '') : 'Output'}_${String(idx + 1).padStart(2, '0')}.png`
+                    };
+                });
+                lightbox.setResults(lightboxResults);
+                lightbox.open(resultIndex);
+            });
+            elements.resultsGrid.prepend(card);
+        }
+
+        // ========== INIT ==========
+        init();
+    </script>
+</body>
+</html>

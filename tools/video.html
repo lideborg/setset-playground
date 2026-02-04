@@ -352,6 +352,12 @@
             white-space: nowrap;
         }
 
+        .video-card-cost {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+            margin-left: var(--space-xs);
+        }
+
         .video-card.generating {
             position: relative;
         }
@@ -522,6 +528,18 @@
             results: [] // Array of { url, prompt }
         };
 
+        // Kling pricing (approximate from fal.ai)
+        // v1.6 Pro: ~$0.50 for 5s, ~$1.00 for 10s
+        // v2.6 Pro: ~$0.65 for 5s, ~$1.30 for 10s (higher quality + audio)
+        function calculateVideoCost() {
+            const duration = parseInt(state.duration);
+            if (state.model === 'v2.6') {
+                return duration === 5 ? 0.65 : 1.30;
+            } else {
+                return duration === 5 ? 0.50 : 1.00;
+            }
+        }
+
         // DOM Elements
         const elements = {
             modelTabs: document.querySelectorAll('.model-tab'),
@@ -652,15 +670,61 @@
             elements.generateBtn.addEventListener('click', handleGenerate);
         }
 
-        function handleFileUpload(file, type) {
+        // Compress image to fit within size limit (10MB for Kling)
+        async function compressImage(dataUrl, maxSizeBytes = 9 * 1024 * 1024) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Scale down if very large
+                    const maxDimension = 2048;
+                    if (width > maxDimension || height > maxDimension) {
+                        const scale = maxDimension / Math.max(width, height);
+                        width = Math.round(width * scale);
+                        height = Math.round(height * scale);
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Try different quality levels until under size limit
+                    let quality = 0.92;
+                    let result = canvas.toDataURL('image/jpeg', quality);
+
+                    while (result.length > maxSizeBytes * 1.37 && quality > 0.3) { // base64 is ~37% larger
+                        quality -= 0.1;
+                        result = canvas.toDataURL('image/jpeg', quality);
+                    }
+
+                    console.log(`📦 Compressed image: ${(result.length / 1024 / 1024).toFixed(2)}MB at quality ${quality.toFixed(1)}`);
+                    resolve(result);
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        async function handleFileUpload(file, type) {
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
+                let dataUrl = e.target.result;
+
+                // Compress if over 8MB
+                if (dataUrl.length > 8 * 1024 * 1024) {
+                    console.log(`🔄 Image too large (${(dataUrl.length / 1024 / 1024).toFixed(2)}MB), compressing...`);
+                    dataUrl = await compressImage(dataUrl);
+                }
+
                 if (type === 'first') {
-                    state.firstFrame = { file, url: e.target.result };
+                    state.firstFrame = { file, url: dataUrl };
                 } else {
-                    state.lastFrame = { file, url: e.target.result };
+                    state.lastFrame = { file, url: dataUrl };
                 }
                 renderFrameSlot(type);
                 updateUI();
@@ -726,7 +790,9 @@
                 const modelInfo = isV16 ? 'Kling v1.6 Pro' : 'Kling v2.6 Pro';
                 const frameInfo = state.lastFrame ? ' (first + last frame)' : '';
                 const videoCount = promptCount > 0 ? promptCount : 1;
-                elements.generateInfo.textContent = `${modelInfo} • ${state.duration}s${frameInfo} • ${videoCount} video${videoCount > 1 ? 's' : ''}`;
+                const costPerVideo = calculateVideoCost();
+                const totalCost = (costPerVideo * videoCount).toFixed(2);
+                elements.generateInfo.textContent = `${modelInfo} • ${state.duration}s${frameInfo} • ${videoCount} video${videoCount > 1 ? 's' : ''} • $${costPerVideo.toFixed(2)}/video • $${totalCost} total`;
             }
         }
 
@@ -741,6 +807,9 @@
             state.results = [];
             elements.generateBtn.disabled = true;
 
+            // Calculate cost for display
+            const costPerVideo = calculateVideoCost();
+
             // Show results section with placeholders
             elements.resultsSection.classList.add('visible');
             elements.videosGrid.innerHTML = prompts.map((prompt, i) => `
@@ -752,6 +821,7 @@
                     <video style="aspect-ratio: 16/9;"></video>
                     <div class="video-card-footer">
                         <span class="video-card-prompt" title="${prompt}">${prompt}</span>
+                        <span class="video-card-cost">$${costPerVideo.toFixed(2)}</span>
                         <button class="btn btn--sm" disabled>Download</button>
                     </div>
                 </div>

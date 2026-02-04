@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Remove</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        /* Upload Grid - 6x2 grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            padding: 6px;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            margin-bottom: var(--space-md);
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--gainsboro);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 8px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        .upload-slot.loading {
+            background: var(--off-white);
+        }
+
+        .upload-slot.loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Grid - 4 per row */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            background: /* Checkerboard pattern for transparency */
+                linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+                linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+            background-color: white;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .result-card img {
+            width: 100%;
+            display: block;
+        }
+
+        .result-card .result-info {
+            padding: var(--space-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+        .result-card .result-meta {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .result-card .download-btn {
+            padding: var(--space-2xs) var(--space-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            cursor: pointer;
+        }
+
+        .result-card .download-btn:hover {
+            background: var(--gainsboro);
+        }
+
+        /* Settings row */
+        .settings-row {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Generate section */
+        .generate-section {
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+            margin-top: var(--space-sm);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+            text-align: center;
+        }
+
+        /* Result group headers */
+        .result-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .result-group-header {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-xs);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        /* Lightbox with checkerboard */
+        .lightbox-image-container {
+            background:
+                linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+                linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: white;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .lightbox-image-container img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <a href="/" style="text-decoration: none; color: inherit;"><h1>BG Remove</h1></a>
+            <p class="hero-subtitle">Remove backgrounds using Pixelcut AI (preserves up to 6000x6000)</p>
+        </div>
+
+        <!-- Upload Grid -->
+        <div class="section-label">Images</div>
+        <div class="upload-grid" id="upload-grid"></div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <div class="settings-row">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="keep-filenames" style="width: 16px; height: 16px;">
+                    <span style="font-size: var(--text-sm);">Keep filenames</span>
+                    <span style="font-size: var(--text-xs); color: var(--slate);">(saves as originalname_nobg.png)</span>
+                </label>
+            </div>
+
+            <div class="generate-section">
+                <div class="calc-display" id="calc-display">0 images selected</div>
+                <button class="btn btn--primary btn--lg btn--block" id="remove-btn" disabled>
+                    Remove Backgrounds
+                </button>
+            </div>
+        </div>
+
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Processing...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Processing</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <p class="results-subtitle">Click to view full size</p>
+            </div>
+            <div id="results-container"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <div class="lightbox-left">
+                <div class="lightbox-image-container">
+                    <img src="" alt="Result" id="lightbox-image">
+                </div>
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Original</h3>
+                    <img src="" alt="" id="lightbox-original" style="max-width: 200px; border-radius: 8px;">
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Dimensions</h3>
+                    <p id="lightbox-dimensions" style="font-size: 14px; color: #666;"></p>
+                </div>
+                <button class="lightbox-download" id="lightbox-download">
+                    Download PNG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/loader.js"></script>
+
+    <script>
+        // Custom messages for BG removal
+        const BG_MESSAGES = [
+            "Detecting edges...",
+            "Analyzing subjects...",
+            "Separating layers...",
+            "Removing background...",
+            "Refining masks...",
+            "Processing transparency...",
+            "Almost done..."
+        ];
+
+        const bgLoader = new StudioLoader({ messages: BG_MESSAGES });
+
+        // State
+        let pasteTargetIndex = null;
+        let batchCounter = 0;
+
+        const state = {
+            images: [],
+            keepFilenames: false,
+            results: [],
+            lightboxIndex: 0
+        };
+
+        const NUM_SLOTS = 12;
+
+        // DOM Elements
+        const elements = {
+            uploadGrid: document.getElementById('upload-grid'),
+            keepFilenamesCheckbox: document.getElementById('keep-filenames'),
+            calcDisplay: document.getElementById('calc-display'),
+            removeBtn: document.getElementById('remove-btn'),
+            inlineLoader: document.getElementById('inline-loader'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsContainer: document.getElementById('results-container'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxOriginal: document.getElementById('lightbox-original'),
+            lightboxDimensions: document.getElementById('lightbox-dimensions'),
+            lightboxClose: document.getElementById('lightbox-close'),
+            lightboxDownload: document.getElementById('lightbox-download')
+        };
+
+        function startLoadingAnimation(text) {
+            bgLoader.start(text);
+        }
+
+        function updateLoadingProgress(text) {
+            bgLoader.updateProgress(text);
+        }
+
+        function stopLoadingAnimation() {
+            bgLoader.stop();
+        }
+
+        // Initialize upload grid
+        function initUploadGrid() {
+            elements.uploadGrid.innerHTML = '';
+            for (let i = 0; i < NUM_SLOTS; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'upload-slot';
+                slot.dataset.index = i;
+                slot.innerHTML = `+`;
+                slot.addEventListener('click', (e) => handleSlotClick(i, e));
+                elements.uploadGrid.appendChild(slot);
+            }
+        }
+
+        function handleSlotClick(index, event) {
+            if (state.images[index] && event?.detail === 2) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => handleFileSelect(e, index);
+                input.click();
+                return;
+            }
+
+            if (!state.images[index]) {
+                if (pasteTargetIndex === index) {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => handleFileSelect(e, index);
+                    input.click();
+                    return;
+                }
+
+                clearPasteTarget();
+                pasteTargetIndex = index;
+                const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+                slots[index].classList.add('paste-ready');
+            }
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTargetIndex = null;
+        }
+
+        function handleFileSelect(e, index) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show loading state immediately
+            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+            slots[index].className = 'upload-slot loading';
+            slots[index].innerHTML = '';
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const originalName = file.name.replace(/\.[^/.]+$/, '');
+                state.images[index] = {
+                    dataUrl: event.target.result,
+                    file: file,
+                    originalName: originalName
+                };
+                clearPasteTarget();
+                renderUploadGrid();
+                updateCalc();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(index) {
+            state.images.splice(index, 1);
+            renderUploadGrid();
+            updateCalc();
+        }
+
+        function renderUploadGrid() {
+            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+            slots.forEach((slot, i) => {
+                const img = state.images[i];
+                if (img) {
+                    slot.className = 'upload-slot filled';
+                    slot.innerHTML = `
+                        <img src="${img.dataUrl}" alt="Image ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i})">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = `+`;
+                }
+            });
+        }
+
+        function updateCalc() {
+            const imageCount = state.images.filter(img => img).length;
+            elements.calcDisplay.textContent = `${imageCount} image${imageCount !== 1 ? 's' : ''} selected`;
+            elements.removeBtn.disabled = imageCount === 0;
+        }
+
+        // Event listeners
+        elements.keepFilenamesCheckbox.addEventListener('change', (e) => {
+            state.keepFilenames = e.target.checked;
+        });
+
+        elements.removeBtn.addEventListener('click', handleProcess);
+
+        async function handleProcess() {
+            const imagesToProcess = state.images.filter(img => img);
+            if (imagesToProcess.length === 0) return;
+
+            batchCounter++;
+            const currentBatchId = batchCounter;
+            const total = imagesToProcess.length;
+            let completed = 0;
+
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${total}`;
+            elements.progressBar.style.width = '0%';
+            elements.removeBtn.disabled = true;
+
+            startLoadingAnimation(`Starting batch ${currentBatchId}...`);
+
+            const MAX_CONCURRENT = 6;
+
+            const processTask = async (img, imgIndex) => {
+                try {
+                    updateLoadingProgress(`Processing ${completed + 1}/${total}...`);
+
+                    const response = await fetch('/api/remove-bg', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image: img.dataUrl
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to remove background');
+                    }
+
+                    state.results.push({
+                        url: data.result_url,
+                        originalUrl: img.dataUrl,
+                        originalName: img.originalName,
+                        width: data.width,
+                        height: data.height,
+                        batchId: currentBatchId
+                    });
+
+                    renderResults();
+
+                } catch (error) {
+                    console.error(`Error processing image ${imgIndex + 1}:`, error.message);
+                }
+
+                completed++;
+                elements.progressCount.textContent = `${completed} / ${total}`;
+                elements.progressBar.style.width = `${(completed / total) * 100}%`;
+                updateLoadingProgress(`${completed}/${total} complete`);
+            };
+
+            // Process with concurrency limit
+            const runWithConcurrency = async (items, maxConcurrent) => {
+                const executing = new Set();
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const promise = processTask(item, i).then(() => {
+                        executing.delete(promise);
+                    });
+                    executing.add(promise);
+
+                    if (executing.size >= maxConcurrent) {
+                        await Promise.race(executing);
+                    }
+                }
+
+                return Promise.all(executing);
+            };
+
+            await runWithConcurrency(imagesToProcess, MAX_CONCURRENT);
+
+            stopLoadingAnimation();
+            elements.progressSection.classList.remove('visible');
+            elements.removeBtn.disabled = false;
+        }
+
+        function renderResults() {
+            if (state.results.length === 0) {
+                elements.resultsSection.classList.remove('visible');
+                return;
+            }
+
+            elements.resultsSection.classList.add('visible');
+
+            // Group by batch
+            const batches = {};
+            state.results.forEach((result, idx) => {
+                const batchKey = result.batchId || 1;
+                if (!batches[batchKey]) {
+                    batches[batchKey] = [];
+                }
+                batches[batchKey].push({ ...result, globalIndex: idx });
+            });
+
+            // Sort batches newest first
+            const sortedBatchIds = Object.keys(batches).map(Number).sort((a, b) => b - a);
+
+            elements.resultsContainer.innerHTML = sortedBatchIds.map(batchId => {
+                const batchResults = batches[batchId];
+
+                const cardsHtml = batchResults.map(result => `
+                    <div class="result-card" onclick="openLightbox(${result.globalIndex})">
+                        <img src="${result.url}" alt="Result">
+                        <div class="result-info">
+                            <span class="result-meta">${result.width || '?'}x${result.height || '?'}</span>
+                            <button class="download-btn" onclick="event.stopPropagation(); downloadResult(${result.globalIndex})">Download</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="result-group">
+                        <div class="result-group-header">Batch ${batchId}</div>
+                        <div class="results-grid">${cardsHtml}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            const result = state.results[index];
+
+            elements.lightboxImage.src = result.url;
+            elements.lightboxOriginal.src = result.originalUrl;
+            elements.lightboxDimensions.textContent = `${result.width || '?'} x ${result.height || '?'} px`;
+
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        elements.lightboxClose.addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => {
+            if (e.target === elements.lightbox) closeLightbox();
+        });
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        elements.lightboxDownload.addEventListener('click', () => {
+            downloadResult(state.lightboxIndex);
+        });
+
+        window.downloadResult = async function(index) {
+            const result = state.results[index];
+            let filename;
+
+            if (state.keepFilenames && result.originalName) {
+                filename = `${result.originalName}_nobg.png`;
+            } else {
+                const now = new Date();
+                const date = now.toISOString().slice(2, 10).replace(/-/g, '');
+                const time = now.toTimeString().slice(0, 5).replace(':', '');
+                const num = String(index + 1).padStart(2, '0');
+                filename = `Setset_BgRemove_${date}_${time}_${num}.png`;
+            }
+
+            downloadFile(result.url, filename);
+        };
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Paste handler
+        document.addEventListener('paste', async (e) => {
+            if (pasteTargetIndex === null) return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    const reader = new FileReader();
+                    const targetIndex = pasteTargetIndex;
+                    reader.onload = (event) => {
+                        state.images[targetIndex] = {
+                            dataUrl: event.target.result,
+                            file: file,
+                            originalName: `pasted_${Date.now()}`
+                        };
+                        clearPasteTarget();
+                        renderUploadGrid();
+                        updateCalc();
+
+                        const nextEmpty = state.images.findIndex((img, i) => i > targetIndex && !img);
+                        if (nextEmpty !== -1) {
+                            pasteTargetIndex = nextEmpty;
+                            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+                            slots[nextEmpty].classList.add('paste-ready');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    break;
+                }
+            }
+        });
+
+        // Click outside clears paste target
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.upload-slot') && !e.target.closest('.upload-grid')) {
+                clearPasteTarget();
+            }
+        });
+
+        // Drag and drop
+        elements.uploadGrid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.uploadGrid.classList.add('drag-over');
+        });
+
+        elements.uploadGrid.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            elements.uploadGrid.classList.remove('drag-over');
+        });
+
+        elements.uploadGrid.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.uploadGrid.classList.remove('drag-over');
+
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+
+            const slotsToFill = [];
+            for (let i = 0; i < files.length; i++) {
+                let targetIndex = -1;
+                for (let j = 0; j < NUM_SLOTS; j++) {
+                    if (!state.images[j] && !slotsToFill.includes(j)) {
+                        targetIndex = j;
+                        break;
+                    }
+                }
+                if (targetIndex === -1) break;
+                slotsToFill.push(targetIndex);
+            }
+
+            // Show loading state for all slots being filled
+            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+            slotsToFill.forEach(idx => {
+                slots[idx].className = 'upload-slot loading';
+                slots[idx].innerHTML = '';
+            });
+
+            files.forEach((file, i) => {
+                if (i >= slotsToFill.length) return;
+                const targetIndex = slotsToFill[i];
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const originalName = file.name.replace(/\.[^/.]+$/, '');
+                    state.images[targetIndex] = {
+                        dataUrl: event.target.result,
+                        file: file,
+                        originalName: originalName
+                    };
+                    renderUploadGrid();
+                    updateCalc();
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Initialize
+        initUploadGrid();
+        updateCalc();
+    </script>
+</body>
+</html>

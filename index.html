@@ -253,6 +253,8 @@
                 <span class="chevron">▼</span>
             </div>
             <div class="nav-group collapsed" id="studio-group">
+                <a class="nav-item" data-tool="flow-generator">Flow Generator</a>
+                <a class="nav-item" data-tool="set-lab">Set Lab</a>
                 <a class="nav-item" data-tool="socialset">SocialSet</a>
                 <a class="nav-item" data-tool="lockgroup">LockGroup</a>
                 <a class="nav-item" data-tool="campaign">Campaign Gen</a>
@@ -273,8 +275,10 @@
                 <a class="nav-item" data-tool="batch-remix">Batch Remix</a>
                 <a class="nav-item" data-tool="batch-remix-gemini">Batch Remix (Gemini)</a>
                 <a class="nav-item" data-tool="bg-replace">BG Replace</a>
+                <a class="nav-item" data-tool="bg-remove">BG Remove</a>
                 <a class="nav-item" data-tool="upscaler">Upscaler</a>
                 <a class="nav-item" data-tool="yassify">Yassify</a>
+                <a class="nav-item" data-tool="enhancer">Enhancer</a>
             </div>
 
             <!-- CREATE -->
@@ -372,6 +376,8 @@
         const v = Date.now();
         const tools = {
             // Studio
+            'flow-generator': `/tools/flow-generator.html?v=${v}`,
+            'set-lab': `/tools/set-lab.html?v=${v}`,
             'socialset': `/tools/socialset/index.html?v=${v}`,
             'lockgroup': `/tools/lockgroup/index.html?v=${v}`,
             'campaign': `/tools/campaign-gen-v2.html?v=${v}`,
@@ -384,7 +390,9 @@
             'remix': `/tools/remix.html?v=${v}`,
             'batch-remix': `/tools/batch-remix.html?v=${v}`,
             'batch-remix-gemini': `/tools/batch-remix-gemini.html?v=${v}`,
+            'enhancer': `/tools/enhancer.html?v=${v}`,
             'bg-replace': `/tools/bg-replace.html?v=${v}`,
+            'bg-remove': `/tools/bg-remove.html?v=${v}`,
             'upscaler': `/tools/upscaler.html?v=${v}`,
             'yassify': `/tools/yassify.html?v=${v}`,
             // Create

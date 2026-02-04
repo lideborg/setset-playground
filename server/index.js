@@ -9,7 +9,9 @@ import fetch from 'node-fetch';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { readdirSync, statSync, existsSync } from 'fs';
+import { readdirSync, statSync, existsSync, unlinkSync, mkdtempSync, writeFileSync, readFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { execSync, spawn } from 'child_process';
 import dotenv from 'dotenv';
 import { fal } from '@fal-ai/client';
 import sharp from 'sharp';
@@ -47,6 +49,7 @@ const FAL_API_KEYS = {
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const FREEPIK_API_KEY = process.env.FREEPIK_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const PIXELCUT_API_KEY = process.env.PIXELCUT_API_KEY;
 
 // Helper to get image dimensions from buffer (PNG/JPEG)
 function getImageDimensions(buffer) {
@@ -120,11 +123,18 @@ app.post('/api/generate', async (req, res) => {
         const endpoint = MODEL_ENDPOINTS[model];
 
         console.log(`📤 [Generate] Model: ${model}`);
-        console.log(`📤 [Generate] Params:`, JSON.stringify(params, null, 2));
 
         if (!endpoint) {
             return res.status(400).json({ error: `Unknown model: ${model}` });
         }
+
+        // Disable safety checker to avoid false positives on fashion/editorial content
+        const requestParams = {
+            ...params,
+            enable_safety_checker: false
+        };
+
+        console.log(`📤 [Generate] Params:`, JSON.stringify(requestParams, null, 2));
 
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -132,7 +142,7 @@ app.post('/api/generate', async (req, res) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Key ${getFalKey(req)}`
             },
-            body: JSON.stringify(params)
+            body: JSON.stringify(requestParams)
         });
 
         const data = await response.json();
@@ -159,11 +169,18 @@ app.post('/api/remix', async (req, res) => {
 
         console.log('📤 [Remix] Model:', model);
         console.log('📤 [Remix] Endpoint:', endpoint);
-        console.log('📤 [Remix] Params:', JSON.stringify(params, null, 2));
 
         if (!endpoint) {
             return res.status(400).json({ error: `Unknown model: ${model}` });
         }
+
+        // Disable safety checker to avoid false positives on fashion/editorial content
+        const requestParams = {
+            ...params,
+            enable_safety_checker: false
+        };
+
+        console.log('📤 [Remix] Params:', JSON.stringify(requestParams, null, 2));
 
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -171,7 +188,7 @@ app.post('/api/remix', async (req, res) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Key ${getFalKey(req)}`
             },
-            body: JSON.stringify(params)
+            body: JSON.stringify(requestParams)
         });
 
         const data = await response.json();
@@ -310,13 +327,14 @@ app.post('/api/remix-gemini', async (req, res) => {
  * POST /api/analyze-gemini
  * Analyze images using Google Gemini (text-only output)
  * More permissive than GPT-4 Vision for product photography tasks
+ * Accepts either image_url OR image (base64 data URL)
  */
 app.post('/api/analyze-gemini', async (req, res) => {
     try {
-        const { image_url, prompt } = req.body;
+        const { image_url, image, prompt } = req.body;
 
-        if (!image_url || !prompt) {
-            return res.status(400).json({ error: 'Image URL and prompt are required' });
+        if ((!image_url && !image) || !prompt) {
+            return res.status(400).json({ error: 'Image (URL or base64) and prompt are required' });
         }
 
         // Use gemini-2.0-flash for fast text analysis
@@ -325,15 +343,30 @@ app.post('/api/analyze-gemini', async (req, res) => {
 
         console.log(`🔍 [Gemini Analyze] Analyzing image...`);
 
-        // Fetch the image and convert to base64
-        const imageResponse = await fetch(image_url);
-        const imageBuffer = await imageResponse.buffer();
-        const base64Data = imageBuffer.toString('base64');
+        let base64Data, mimeType;
 
-        // Determine mime type
-        let mimeType = 'image/jpeg';
-        if (image_url.includes('.png')) mimeType = 'image/png';
-        else if (image_url.includes('.webp')) mimeType = 'image/webp';
+        if (image) {
+            // Handle base64 data URL (e.g., "data:image/png;base64,...")
+            const matches = image.match(/^data:([^;]+);base64,(.+)$/);
+            if (matches) {
+                mimeType = matches[1];
+                base64Data = matches[2];
+            } else {
+                // Assume raw base64 JPEG if no prefix
+                mimeType = 'image/jpeg';
+                base64Data = image;
+            }
+        } else {
+            // Fetch from URL
+            const imageResponse = await fetch(image_url);
+            const imageBuffer = await imageResponse.buffer();
+            base64Data = imageBuffer.toString('base64');
+
+            // Determine mime type from URL
+            mimeType = 'image/jpeg';
+            if (image_url.includes('.png')) mimeType = 'image/png';
+            else if (image_url.includes('.webp')) mimeType = 'image/webp';
+        }
 
         const requestBody = {
             contents: [{
@@ -477,7 +510,12 @@ app.post('/api/video', async (req, res) => {
         res.json(result.data);
     } catch (error) {
         console.error('❌ [Video] Error:', error);
-        res.status(500).json({ error: error.message });
+        // Log detailed validation errors
+        if (error.body?.detail) {
+            console.error('❌ [Video] Detail:', JSON.stringify(error.body.detail, null, 2));
+        }
+        const errorMessage = error.body?.detail?.[0]?.msg || error.message;
+        res.status(500).json({ error: errorMessage });
     }
 });
 
@@ -1964,6 +2002,101 @@ app.post('/api/convert-heic', upload.single('image'), async (req, res) => {
 });
 
 /**
+ * POST /api/remove-bg
+ * Remove background using Pixelcut API
+ * Preserves original resolution up to 6000x6000
+ */
+app.post('/api/remove-bg', async (req, res) => {
+    try {
+        const { image, image_url } = req.body;
+
+        if (!image && !image_url) {
+            return res.status(400).json({ error: 'Image (base64) or image_url is required' });
+        }
+
+        console.log(`🎨 [RemoveBG] Starting background removal...`);
+
+        let imageUrl = image_url;
+
+        // Prepare the image buffer
+        let buffer;
+        let response;
+
+        if (image_url) {
+            // Use JSON format with image_url
+            console.log(`🔗 [RemoveBG] Using URL: ${image_url}`);
+            response = await fetch('https://api.developer.pixelcut.ai/v1/remove-background', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-API-Key': PIXELCUT_API_KEY
+                },
+                body: JSON.stringify({ image_url, format: 'png' })
+            });
+        } else if (image) {
+            // Handle data URL - extract base64
+            let base64Data = image;
+            if (image.startsWith('data:')) {
+                const matches = image.match(/^data:([^;]+);base64,(.+)$/);
+                if (matches) {
+                    base64Data = matches[2];
+                }
+            }
+
+            // Convert base64 to buffer
+            buffer = Buffer.from(base64Data, 'base64');
+
+            // Convert to JPEG for better compatibility
+            try {
+                buffer = await sharp(buffer)
+                    .jpeg({ quality: 95 })
+                    .toBuffer();
+                console.log(`🔄 [RemoveBG] Converted to JPEG (${Math.round(buffer.length / 1024)}KB)`);
+            } catch (e) {
+                console.log(`⚠️ [RemoveBG] Could not convert: ${e.message}`);
+            }
+
+            // Use multipart form-data with 'image' field for direct upload
+            const FormData = (await import('form-data')).default;
+            const form = new FormData();
+            form.append('image', buffer, { filename: 'image.jpg', contentType: 'image/jpeg' });
+            form.append('format', 'png');
+
+            console.log(`📤 [RemoveBG] Uploading via multipart form-data...`);
+
+            response = await fetch('https://api.developer.pixelcut.ai/v1/remove-background', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-API-Key': PIXELCUT_API_KEY,
+                    ...form.getHeaders()
+                },
+                body: form
+            });
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [RemoveBG] Pixelcut API Error:', data);
+            return res.status(response.status).json({ error: data.error || data.message || 'Background removal failed' });
+        }
+
+        console.log(`✅ [RemoveBG] Success! Result URL received`);
+        res.json({
+            success: true,
+            result_url: data.result_url,
+            width: data.width,
+            height: data.height
+        });
+    } catch (error) {
+        console.error('❌ [RemoveBG] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/upscale
  * Start an upscale task using Freepik Magnific API
  */
@@ -2245,6 +2378,256 @@ app.get('/api/proxy-download', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// VIDEO SPEED - Adjust video playback speed using FFmpeg
+// ═══════════════════════════════════════════════════════════════
+app.post('/api/video/speed', async (req, res) => {
+    const { url, speed } = req.body;
+
+    if (!url || !speed) {
+        return res.status(400).json({ error: 'url and speed are required' });
+    }
+
+    // Validate speed range
+    const speedNum = parseFloat(speed);
+    if (isNaN(speedNum) || speedNum < 0.1 || speedNum > 10) {
+        return res.status(400).json({ error: 'Speed must be between 0.1 and 10' });
+    }
+
+    let tempDir = null;
+    let inputPath = null;
+    let outputPath = null;
+
+    try {
+        console.log(`🎬 [Video Speed] Processing at ${speed}x: ${url.substring(0, 60)}...`);
+
+        // Create temp directory
+        tempDir = mkdtempSync(join(tmpdir(), 'video-speed-'));
+        inputPath = join(tempDir, 'input.mp4');
+        outputPath = join(tempDir, 'output.mp4');
+
+        // Download the video
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to download video: ${response.status}`);
+        }
+        const videoBuffer = await response.buffer();
+        writeFileSync(inputPath, videoBuffer);
+
+        console.log(`🎬 [Video Speed] Downloaded ${videoBuffer.length} bytes`);
+
+        // Use FFmpeg to adjust speed
+        // Speed > 1 = faster (setpts divides), Speed < 1 = slower (setpts multiplies)
+        // For video: setpts=PTS/speed (speed 2 = 2x faster = PTS/2)
+        // For audio: atempo filter (range 0.5-2, chain for more)
+        const pts = 1 / speedNum;
+
+        // Build audio filter - atempo only supports 0.5 to 2.0
+        let audioFilter = '';
+        let remainingSpeed = speedNum;
+        const atempoFilters = [];
+
+        if (speedNum !== 1) {
+            while (remainingSpeed > 2.0) {
+                atempoFilters.push('atempo=2.0');
+                remainingSpeed /= 2.0;
+            }
+            while (remainingSpeed < 0.5) {
+                atempoFilters.push('atempo=0.5');
+                remainingSpeed *= 2.0;
+            }
+            if (remainingSpeed !== 1) {
+                atempoFilters.push(`atempo=${remainingSpeed.toFixed(4)}`);
+            }
+            audioFilter = atempoFilters.length > 0 ? `-af "${atempoFilters.join(',')}"` : '';
+        }
+
+        // Detect source video bitrate using ffprobe
+        let bitrate = '6M'; // Default fallback
+        try {
+            const probeCmd = `ffprobe -v error -select_streams v:0 -show_entries stream=bit_rate -of json "${inputPath}"`;
+            const probeResult = execSync(probeCmd, { encoding: 'utf8' });
+            const probeData = JSON.parse(probeResult);
+            if (probeData.streams?.[0]?.bit_rate) {
+                const sourceBitrate = parseInt(probeData.streams[0].bit_rate);
+                bitrate = Math.round(sourceBitrate / 1000) + 'k'; // Convert to kbps
+                console.log(`🎬 [Video Speed] Source bitrate: ${bitrate}`);
+            }
+        } catch (e) {
+            console.log(`🎬 [Video Speed] Could not detect bitrate, using default ${bitrate}`);
+        }
+
+        // FFmpeg command
+        // -y: overwrite output
+        // -i: input file
+        // -filter:v setpts: adjust video speed
+        // -af atempo: adjust audio speed
+        // -preset fast: good balance of speed and quality (~12s for 5s video)
+        // -b:v: match source bitrate for quality preservation
+        const ffmpegCmd = `ffmpeg -y -i "${inputPath}" -filter:v "setpts=${pts.toFixed(4)}*PTS" ${audioFilter} -preset fast -b:v ${bitrate} "${outputPath}"`;
+
+        console.log(`🎬 [Video Speed] Running: ${ffmpegCmd}`);
+
+        // Execute FFmpeg with timing
+        const startTime = Date.now();
+        execSync(ffmpegCmd, { stdio: 'pipe' });
+        const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        // Read output and send
+        const outputBuffer = readFileSync(outputPath);
+        console.log(`✅ [Video Speed] Complete: ${outputBuffer.length} bytes in ${processingTime}s (${speed}x speed, ${bitrate} bitrate)`);
+
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Content-Disposition', 'attachment; filename="video.mp4"');
+        res.send(outputBuffer);
+
+    } catch (error) {
+        console.error('❌ [Video Speed] Error:', error.message);
+        res.status(500).json({ error: error.message });
+    } finally {
+        // Cleanup temp files
+        try {
+            if (inputPath && existsSync(inputPath)) unlinkSync(inputPath);
+            if (outputPath && existsSync(outputPath)) unlinkSync(outputPath);
+            if (tempDir && existsSync(tempDir)) {
+                // Remove temp directory using rm command
+                execSync(`rm -rf "${tempDir}"`);
+            }
+        } catch (e) {
+            console.warn('Cleanup warning:', e.message);
+        }
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// VIDEO STITCH - Combine multiple videos with trim points using FFmpeg
+// ═══════════════════════════════════════════════════════════════
+app.post('/api/video/stitch', upload.array('videos', 20), async (req, res) => {
+    const files = req.files;
+
+    if (!files || files.length < 2) {
+        return res.status(400).json({ error: 'At least 2 videos are required' });
+    }
+
+    let tempDir = null;
+
+    try {
+        console.log(`✂️ [Video Stitch] Processing ${files.length} videos`);
+
+        // Create temp directory
+        tempDir = mkdtempSync(join(tmpdir(), 'video-stitch-'));
+
+        // Parse trim points and save input files
+        const inputPaths = [];
+        const trimmedPaths = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const inPoint = parseFloat(req.body[`inPoint_${i}`] || '0');
+            const outPoint = parseFloat(req.body[`outPoint_${i}`] || '999999');
+            const duration = outPoint - inPoint;
+
+            const inputPath = join(tempDir, `input_${i}${getExtension(file.originalname)}`);
+            writeFileSync(inputPath, file.buffer);
+            inputPaths.push(inputPath);
+
+            // Trim the video if needed
+            const trimmedPath = join(tempDir, `trimmed_${i}.mp4`);
+
+            // FFmpeg trim: -ss (start), -t (duration)
+            const trimCmd = `ffmpeg -y -i "${inputPath}" -ss ${inPoint.toFixed(3)} -t ${duration.toFixed(3)} -c:v libx264 -c:a aac -preset fast "${trimmedPath}"`;
+
+            console.log(`✂️ [Video Stitch] Trimming video ${i + 1}: ${inPoint.toFixed(2)}s - ${outPoint.toFixed(2)}s`);
+            execSync(trimCmd, { stdio: 'pipe' });
+
+            trimmedPaths.push(trimmedPath);
+        }
+
+        // Create concat file list
+        const concatListPath = join(tempDir, 'concat_list.txt');
+        const concatContent = trimmedPaths.map(p => `file '${p}'`).join('\n');
+        writeFileSync(concatListPath, concatContent);
+
+        // Concatenate all videos
+        const concatOutputPath = join(tempDir, 'concat_output.mp4');
+        const concatCmd = `ffmpeg -y -f concat -safe 0 -i "${concatListPath}" -c:v libx264 -c:a aac -preset fast "${concatOutputPath}"`;
+
+        console.log(`✂️ [Video Stitch] Concatenating ${trimmedPaths.length} videos...`);
+        execSync(concatCmd, { stdio: 'pipe' });
+
+        // Check if aspect ratio crop is requested
+        const aspectRatio = req.body.aspectRatio;
+        let finalOutputPath = concatOutputPath;
+
+        if (aspectRatio === '4:5') {
+            console.log(`✂️ [Video Stitch] Cropping to 4:5 for Instagram...`);
+
+            // Get video dimensions with ffprobe
+            const probeCmd = `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of json "${concatOutputPath}"`;
+            const probeResult = execSync(probeCmd, { encoding: 'utf8' });
+            const probeData = JSON.parse(probeResult);
+            const srcWidth = probeData.streams[0].width;
+            const srcHeight = probeData.streams[0].height;
+
+            // Calculate 4:5 crop (height = width * 5/4)
+            let cropWidth, cropHeight;
+            const targetRatio = 4 / 5; // width/height
+            const srcRatio = srcWidth / srcHeight;
+
+            if (srcRatio > targetRatio) {
+                // Source is wider than 4:5, crop sides
+                cropHeight = srcHeight;
+                cropWidth = Math.floor(srcHeight * targetRatio);
+            } else {
+                // Source is taller than 4:5, crop top/bottom
+                cropWidth = srcWidth;
+                cropHeight = Math.floor(srcWidth / targetRatio);
+            }
+
+            // Center the crop
+            const cropX = Math.floor((srcWidth - cropWidth) / 2);
+            const cropY = Math.floor((srcHeight - cropHeight) / 2);
+
+            console.log(`✂️ [Video Stitch] Crop: ${srcWidth}x${srcHeight} -> ${cropWidth}x${cropHeight} (x:${cropX}, y:${cropY})`);
+
+            // Apply crop only - no scaling, preserve original pixels
+            finalOutputPath = join(tempDir, 'output_cropped.mp4');
+            const cropCmd = `ffmpeg -y -i "${concatOutputPath}" -vf "crop=${cropWidth}:${cropHeight}:${cropX}:${cropY}" -c:v libx264 -c:a aac -preset fast "${finalOutputPath}"`;
+            execSync(cropCmd, { stdio: 'pipe' });
+        }
+
+        // Read output and send
+        const outputBuffer = readFileSync(finalOutputPath);
+        console.log(`✅ [Video Stitch] Complete: ${outputBuffer.length} bytes${aspectRatio ? ` (cropped to ${aspectRatio})` : ''}`);
+
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Content-Disposition', 'attachment; filename="stitched.mp4"');
+        res.send(outputBuffer);
+
+    } catch (error) {
+        console.error('❌ [Video Stitch] Error:', error.message);
+        res.status(500).json({ error: error.message });
+    } finally {
+        // Cleanup temp directory
+        try {
+            if (tempDir && existsSync(tempDir)) {
+                execSync(`rm -rf "${tempDir}"`);
+            }
+        } catch (e) {
+            console.warn('Cleanup warning:', e.message);
+        }
+    }
+});
+
+// Helper to get file extension
+function getExtension(filename) {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (ext && ['mp4', 'mov', 'avi', 'webm', 'mkv'].includes(ext)) {
+        return '.' + ext;
+    }
+    return '.mp4';
+}
 
 // Fallback - serve index.html for client-side routing
 app.get('*', (req, res) => {

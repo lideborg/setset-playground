@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhancer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1200px;
+        }
+
+        /* Header */
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .header-row h1 {
+            font-size: var(--text-lg);
+            margin: 0;
+        }
+
+        /* Settings row */
+        .settings-compact {
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2xs);
+        }
+
+        .setting-item label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .btn-group-compact {
+            display: flex;
+            gap: 2px;
+        }
+
+        .btn-group-compact button {
+            padding: 4px 8px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-group-compact button:first-child {
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+        }
+
+        .btn-group-compact button:last-child {
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+
+        .btn-group-compact button:only-child {
+            border-radius: var(--radius-xs);
+        }
+
+        .btn-group-compact button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        /* Upload section */
+        .upload-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+        }
+
+        .upload-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .upload-section-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .upload-header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .upload-hint {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+        }
+
+        .selection-buttons {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .selection-buttons button {
+            padding: 4px 10px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            border-radius: var(--radius-xs);
+            transition: all var(--transition-fast);
+        }
+
+        .selection-buttons button:hover {
+            border-color: var(--jet);
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            transition: all var(--transition-fast);
+            user-select: none;
+            margin-left: 8px;
+        }
+
+        .mode-toggle:hover {
+            border-color: var(--slate);
+        }
+
+        .mode-toggle.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .mode-toggle .toggle-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gainsboro);
+            transition: background var(--transition-fast);
+        }
+
+        .mode-toggle.active .toggle-indicator {
+            background: #22c55e;
+        }
+
+        /* Upload grid - 6 columns */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .upload-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-style: solid;
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        .upload-slot.drag-over {
+            border-color: var(--jet);
+            border-style: solid;
+            background: var(--seasalt);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.deselected {
+            opacity: 0.4;
+        }
+
+        .upload-slot.deselected img {
+            filter: grayscale(100%);
+        }
+
+        .upload-slot .slot-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Detail toggle */
+        .detail-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            transition: all var(--transition-fast);
+            user-select: none;
+        }
+
+        .detail-toggle:hover {
+            border-color: var(--slate);
+        }
+
+        .detail-toggle.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        .detail-toggle .toggle-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gainsboro);
+            transition: background var(--transition-fast);
+        }
+
+        .detail-toggle.active .toggle-dot {
+            background: #22c55e;
+        }
+
+        /* Generate section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .generate-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .btn-cost {
+            opacity: 0.7;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+
+        /* Results section - like batch-remix */
+        .results-section {
+            display: none;
+            margin-top: var(--space-md);
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .results-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .result-card:hover {
+            border-color: var(--jet);
+        }
+
+        .result-card.loading {
+            aspect-ratio: 3/4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+        }
+
+        .result-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+
+        .result-card .variation-tag {
+            position: absolute;
+            top: var(--space-2xs);
+            left: var(--space-2xs);
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .result-card .detail-tag {
+            position: absolute;
+            top: var(--space-2xs);
+            right: var(--space-2xs);
+            background: rgba(34, 197, 94, 0.9);
+            color: var(--white);
+            font-size: var(--text-2xs);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .result-card .download-btn {
+            position: absolute;
+            bottom: var(--space-2xs);
+            right: var(--space-2xs);
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--transition-fast);
+        }
+
+        .result-card:hover .download-btn {
+            display: flex;
+        }
+
+        .result-card .download-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .batch-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) 0;
+        }
+
+        .batch-divider::before,
+        .batch-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
+        .result-card.cancelled {
+            background: var(--seasalt);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: var(--space-md);
+        }
+
+        .lightbox.visible {
+            display: flex;
+        }
+
+        .lightbox-content {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            gap: var(--space-md);
+        }
+
+        .lightbox-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: var(--radius-md);
+        }
+
+        .lightbox-right {
+            width: 320px;
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            overflow-y: auto;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: var(--space-sm);
+            right: var(--space-sm);
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--white);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .lightbox-label {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-2xs);
+        }
+
+        .lightbox-mood {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+        }
+
+        .lightbox-prompt {
+            font-size: var(--text-sm);
+            line-height: 1.5;
+            color: var(--slate);
+            margin-bottom: var(--space-md);
+            padding: var(--space-sm);
+            background: var(--off-white);
+            border-radius: var(--radius-sm);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .lightbox-source {
+            margin-bottom: var(--space-md);
+        }
+
+        .lightbox-source img {
+            width: 80px;
+            height: 107px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .lightbox-download {
+            width: 100%;
+            padding: 10px;
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .lightbox-download:hover {
+            background: var(--slate);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--white);
+            padding: 8px 12px;
+            z-index: 10;
+            border-radius: var(--radius-sm);
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .lightbox-nav.prev { left: var(--space-sm); }
+        .lightbox-nav.next { right: var(--space-sm); }
+
+        /* Hidden file input */
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-row">
+            <h1>Enhancer</h1>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-compact">
+            <div class="setting-item">
+                <label>Ratio:</label>
+                <div class="btn-group-compact" id="aspect-buttons">
+                    <button data-value="9:16">9:16</button>
+                    <button data-value="2:3">2:3</button>
+                    <button class="active" data-value="3:4">3:4</button>
+                    <button data-value="4:5">4:5</button>
+                    <button data-value="1:1">1:1</button>
+                    <button data-value="5:4">5:4</button>
+                    <button data-value="4:3">4:3</button>
+                    <button data-value="3:2">3:2</button>
+                    <button data-value="16:9">16:9</button>
+                    <button data-value="21:9">21:9</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Res:</label>
+                <div class="btn-group-compact" id="resolution-buttons">
+                    <button class="active" data-value="2K">2K</button>
+                    <button data-value="4K">4K</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Variations:</label>
+                <div class="btn-group-compact" id="variations-buttons">
+                    <button class="active" data-value="1">1</button>
+                    <button data-value="2">2</button>
+                    <button data-value="3">3</button>
+                    <button data-value="4">4</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-section-header">
+                <span class="upload-section-title">Upload Images</span>
+                <div class="upload-header-right">
+                    <span class="upload-hint">Click image to toggle selection, X to remove</span>
+                    <div class="selection-buttons">
+                        <button id="select-all-btn">Select All</button>
+                        <button id="deselect-all-btn">Deselect All</button>
+                        <div class="mode-toggle" id="randomize-toggle">
+                            <span class="toggle-indicator"></span>
+                            <span>Randomize</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="upload-grid" id="upload-grid">
+                <!-- 36 upload items (6x6) will be generated by JS -->
+            </div>
+        </div>
+
+        <!-- Generate Section -->
+        <div class="generate-section">
+            <div class="generate-info">
+                <span class="calc-display" id="calc-display">0 images × 1 variation = 0 outputs</span>
+            </div>
+            <div style="display: flex; gap: var(--space-xs);">
+                <button class="btn btn-secondary" id="cancel-btn" style="display: none;">Cancel</button>
+                <button class="btn btn-primary" id="generate-btn" disabled>
+                    Generate <span class="btn-cost" id="cost-value">$0.00</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Inline Loader (like batch-remix) -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <span class="results-title">Results</span>
+                <button class="btn btn-secondary btn-sm" id="download-all-btn">Download All</button>
+            </div>
+            <div class="results-grid" id="results-grid">
+                <!-- Results will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <div class="lightbox-content">
+            <div class="lightbox-left">
+                <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">&#8249;</button>
+                <img id="lightbox-image" class="lightbox-image" src="" alt="Result">
+                <button class="lightbox-nav next" onclick="navigateLightbox(1)">&#8250;</button>
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-label">Mood</div>
+                <div class="lightbox-mood" id="lightbox-mood">-</div>
+
+                <div class="lightbox-label">Prompt</div>
+                <div class="lightbox-prompt" id="lightbox-prompt">-</div>
+
+                <div class="lightbox-source">
+                    <div class="lightbox-label">Source</div>
+                    <img id="lightbox-source-image" src="" alt="Source">
+                </div>
+
+                <button class="lightbox-download" onclick="downloadCurrent()">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" accept="image/*,.heic,.heif" multiple>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script src="/shared/data/editorial-moods.js"></script>
+
+    <script>
+        // Constants
+        const TOTAL_SLOTS = 36;
+        const SLOTS_PER_ROW = 6;
+        const COST_PER_IMAGE = 0.15;
+        const CONCURRENT_GENERATIONS = 6;
+
+        // State
+        const state = {
+            aspectRatio: '3:4',
+            resolution: '2K',
+            variations: 1,
+            randomize: false,  // false = enhance only, true = add random moods
+            images: new Array(TOTAL_SLOTS).fill(null),
+            results: [],
+            lightboxIndex: 0,
+            isGenerating: false,
+            isCancelled: false
+        };
+
+        let pasteTargetIndex = null;
+        let batchCounter = 0;
+
+        // DOM Elements
+        const elements = {
+            uploadGrid: document.getElementById('upload-grid'),
+            fileInput: document.getElementById('file-input'),
+            aspectButtons: document.getElementById('aspect-buttons'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            variationsButtons: document.getElementById('variations-buttons'),
+            generateBtn: document.getElementById('generate-btn'),
+            cancelBtn: document.getElementById('cancel-btn'),
+            calcDisplay: document.getElementById('calc-display'),
+            costValue: document.getElementById('cost-value'),
+            inlineLoader: document.getElementById('inline-loader'),
+            loaderMessage: document.getElementById('loader-message'),
+            loaderProgress: document.getElementById('loader-progress'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxMood: document.getElementById('lightbox-mood'),
+            lightboxPrompt: document.getElementById('lightbox-prompt'),
+            lightboxSourceImage: document.getElementById('lightbox-source-image'),
+            downloadAllBtn: document.getElementById('download-all-btn'),
+            selectAllBtn: document.getElementById('select-all-btn'),
+            deselectAllBtn: document.getElementById('deselect-all-btn'),
+            randomizeToggle: document.getElementById('randomize-toggle')
+        };
+
+        // Initialize upload grid
+        function initUploadGrid() {
+            elements.uploadGrid.innerHTML = '';
+            for (let i = 0; i < TOTAL_SLOTS; i++) {
+                const item = document.createElement('div');
+                item.className = 'upload-item';
+                item.innerHTML = `
+                    <div class="upload-slot" data-index="${i}">+</div>
+                    <div class="detail-toggle" data-index="${i}">
+                        <span class="toggle-dot"></span>
+                        <span>Detail</span>
+                    </div>
+                `;
+                elements.uploadGrid.appendChild(item);
+            }
+            setupUploadListeners();
+        }
+
+        function setupUploadListeners() {
+            // Upload slots
+            document.querySelectorAll('.upload-slot').forEach(slot => {
+                const index = parseInt(slot.dataset.index);
+
+                slot.addEventListener('click', (e) => {
+                    if (e.target.closest('.remove-btn')) return;
+                    if (state.images[index]) {
+                        // Toggle selection
+                        state.images[index].selected = !state.images[index].selected;
+                        renderSlot(index);
+                        updateCalculator();
+                    } else {
+                        setPasteTarget(index);
+                    }
+                });
+
+                slot.addEventListener('dblclick', (e) => {
+                    if (e.target.closest('.remove-btn')) return;
+                    if (!state.images[index]) {
+                        elements.fileInput.dataset.targetSlot = index;
+                        elements.fileInput.click();
+                    }
+                });
+
+                // Drag and drop per slot
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    slot.classList.add('drag-over');
+                });
+
+                slot.addEventListener('dragleave', () => {
+                    slot.classList.remove('drag-over');
+                });
+
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent bubbling to grid handler
+                    slot.classList.remove('drag-over');
+                    const files = Array.from(e.dataTransfer.files).filter(f =>
+                        f.type.startsWith('image/') ||
+                        f.name.toLowerCase().endsWith('.heic') ||
+                        f.name.toLowerCase().endsWith('.heif')
+                    );
+                    if (files.length > 0) {
+                        // Always populate from first empty slot (top-left)
+                        const firstEmpty = state.images.findIndex(img => !img);
+                        handleFileUpload(files, firstEmpty >= 0 ? firstEmpty : 0);
+                    }
+                });
+            });
+
+            // Detail toggles
+            document.querySelectorAll('.detail-toggle').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const index = parseInt(toggle.dataset.index);
+                    if (state.images[index]) {
+                        state.images[index].detail = !state.images[index].detail;
+                        toggle.classList.toggle('active', state.images[index].detail);
+                    }
+                });
+            });
+
+            // Global drag and drop on grid
+            elements.uploadGrid.addEventListener('dragover', (e) => e.preventDefault());
+            elements.uploadGrid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const files = Array.from(e.dataTransfer.files).filter(f =>
+                    f.type.startsWith('image/') ||
+                    f.name.toLowerCase().endsWith('.heic') ||
+                    f.name.toLowerCase().endsWith('.heif')
+                );
+                if (files.length > 0) {
+                    const firstEmpty = state.images.findIndex(img => !img);
+                    handleFileUpload(files, firstEmpty >= 0 ? firstEmpty : 0);
+                }
+            });
+
+            // File input
+            elements.fileInput.addEventListener('change', (e) => {
+                const targetSlot = e.target.dataset.targetSlot !== undefined
+                    ? parseInt(e.target.dataset.targetSlot)
+                    : null;
+                handleFileUpload(Array.from(e.target.files), targetSlot);
+                e.target.value = '';
+                delete e.target.dataset.targetSlot;
+            });
+
+            // Paste handler
+            document.addEventListener('paste', async (e) => {
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            const targetIndex = pasteTargetIndex !== null
+                                ? pasteTargetIndex
+                                : state.images.findIndex(img => !img);
+                            if (targetIndex >= 0 && targetIndex < TOTAL_SLOTS) {
+                                handleFileUpload([file], targetIndex);
+                                // Auto-advance paste target
+                                const nextEmpty = state.images.findIndex((img, i) => !img && i > targetIndex);
+                                if (nextEmpty >= 0) {
+                                    setPasteTarget(nextEmpty);
+                                } else {
+                                    clearPasteTarget();
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+
+            // Select All / Deselect All
+            elements.selectAllBtn.addEventListener('click', () => {
+                state.images.forEach((img, i) => {
+                    if (img) img.selected = true;
+                    renderSlot(i);
+                });
+                updateCalculator();
+            });
+
+            elements.deselectAllBtn.addEventListener('click', () => {
+                state.images.forEach((img, i) => {
+                    if (img) img.selected = false;
+                    renderSlot(i);
+                });
+                updateCalculator();
+            });
+
+            // Randomize toggle
+            elements.randomizeToggle.addEventListener('click', () => {
+                state.randomize = !state.randomize;
+                elements.randomizeToggle.classList.toggle('active', state.randomize);
+            });
+        }
+
+        function setPasteTarget(index) {
+            clearPasteTarget();
+            pasteTargetIndex = index;
+            const slot = document.querySelector(`.upload-slot[data-index="${index}"]`);
+            if (slot) slot.classList.add('paste-ready');
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTargetIndex = null;
+        }
+
+        function isHeicFile(file) {
+            return file.type === 'image/heic' ||
+                   file.type === 'image/heif' ||
+                   file.name.toLowerCase().endsWith('.heic') ||
+                   file.name.toLowerCase().endsWith('.heif');
+        }
+
+        async function convertHeicToJpeg(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            const response = await fetch('/api/convert-heic', { method: 'POST', body: formData });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'HEIC conversion failed');
+            }
+            const { dataUrl } = await response.json();
+            const res = await fetch(dataUrl);
+            return await res.blob();
+        }
+
+        async function handleFileUpload(files, startIndex) {
+            // Sort files by name for consistent ordering
+            const sortedFiles = Array.from(files).sort((a, b) => a.name.localeCompare(b.name));
+
+            const reservations = [];
+            sortedFiles.forEach((file, i) => {
+                let index;
+                if (startIndex !== null && startIndex !== undefined) {
+                    index = startIndex + i;
+                } else {
+                    index = state.images.findIndex((img, idx) =>
+                        !img && !reservations.some(r => r.index === idx)
+                    );
+                }
+                if (index >= 0 && index < TOTAL_SLOTS) {
+                    reservations.push({ file, index });
+                }
+            });
+
+            // Process sequentially to maintain order
+            for (const { file, index } of reservations) {
+                const slot = document.querySelector(`.upload-slot[data-index="${index}"]`);
+
+                try {
+                    let fileToRead = file;
+
+                    if (isHeicFile(file)) {
+                        if (slot) {
+                            slot.innerHTML = '<div class="slot-spinner"></div>';
+                            slot.classList.add('filled');
+                        }
+                        fileToRead = await convertHeicToJpeg(file);
+                    }
+
+                    // Await file reading to maintain order
+                    await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            state.images[index] = {
+                                url: e.target.result,
+                                file: fileToRead,
+                                detail: false,
+                                selected: true,
+                                originalName: file.name.replace(/\.[^/.]+$/, '')
+                            };
+                            renderSlot(index);
+                            updateCalculator();
+                            resolve();
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(fileToRead);
+                    });
+                } catch (err) {
+                    console.error(`Failed to process ${file.name}:`, err);
+                    if (slot) {
+                        slot.innerHTML = '+';
+                        slot.classList.remove('filled');
+                    }
+                }
+            }
+        }
+
+        function renderSlot(index) {
+            const slot = document.querySelector(`.upload-slot[data-index="${index}"]`);
+            const toggle = document.querySelector(`.detail-toggle[data-index="${index}"]`);
+            const img = state.images[index];
+
+            if (img) {
+                const isSelected = img.selected !== false;
+                slot.className = 'upload-slot filled' + (isSelected ? '' : ' deselected');
+                slot.innerHTML = `
+                    <img src="${img.url}" alt="Image">
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${index})">&times;</button>
+                `;
+                toggle.classList.toggle('active', img.detail);
+            } else {
+                slot.className = 'upload-slot';
+                slot.innerHTML = '+';
+                toggle.classList.remove('active');
+            }
+        }
+
+        window.removeImage = function(index) {
+            // Remove and collapse down
+            state.images.splice(index, 1);
+            state.images.push(null);
+            // Re-render all slots
+            for (let i = 0; i < TOTAL_SLOTS; i++) {
+                renderSlot(i);
+            }
+            updateCalculator();
+        };
+
+        function updateCalculator() {
+            const imageCount = state.images.filter(img => img && img.selected !== false).length;
+            const totalOutputs = imageCount * state.variations;
+            const cost = totalOutputs * COST_PER_IMAGE;
+
+            elements.calcDisplay.textContent = `${imageCount} image${imageCount !== 1 ? 's' : ''} × ${state.variations} variation${state.variations !== 1 ? 's' : ''} = ${totalOutputs} output${totalOutputs !== 1 ? 's' : ''}`;
+            elements.costValue.textContent = `$${cost.toFixed(2)}`;
+            elements.generateBtn.disabled = imageCount === 0 || state.isGenerating;
+        }
+
+        // Settings listeners
+        elements.aspectButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.aspectButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.aspectRatio = e.target.dataset.value;
+            }
+        });
+
+        elements.resolutionButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.resolutionButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.resolution = e.target.dataset.value;
+            }
+        });
+
+        elements.variationsButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.variationsButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.variations = parseInt(e.target.dataset.value);
+                updateCalculator();
+            }
+        });
+
+        // ========== GENERATION LOGIC ==========
+
+        async function analyzeImage(imageUrl, imageIndex) {
+            console.log(`🔍 [Analyze ${imageIndex}] Starting analysis...`);
+            const prompt = `Analyze this fashion/editorial image. Describe:
+1. IMAGE TYPE: Is this a portrait/headshot, half-body, three-quarter, or full-body shot?
+2. SUBJECT: Gender, approximate age, pose, expression
+3. CLOTHING: What are they wearing? Describe materials, colors, style
+4. LIGHTING: Describe the lighting style (soft, hard, natural, studio, etc.)
+5. MOOD: What's the overall mood/atmosphere?
+6. BACKGROUND: What's in the background?
+7. DETAIL FOCUS: If we were to do a detail/close-up shot, what would be the most interesting element to zoom in on?
+
+Be concise but specific.`;
+
+            const response = await fetch('/api/analyze-gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_url: imageUrl, prompt })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                console.error(`❌ [Analyze ${imageIndex}] Failed:`, result.error);
+                throw new Error(result.error || 'Analysis failed');
+            }
+            console.log(`✅ [Analyze ${imageIndex}] Complete`);
+            return result.content;
+        }
+
+        function buildEnhancedPrompt(analysis, mood, isDetail, useRandomMood) {
+            if (isDetail) {
+                // Detail shot: cropped close-up, same lighting/mood as original
+                const detailMatch = analysis.match(/DETAIL FOCUS:([^]*?)(?=\n\d|\n[A-Z]|$)/i);
+                const detailFocus = detailMatch ? detailMatch[1].trim() : 'the clothing texture and fabric details';
+
+                return `Full color photography. Close-up detail shot focusing on ${detailFocus}.
+Cropped frame showing this specific element.
+IMPORTANT: Do NOT add a person if the original is a product/mannequin shot.
+Maintain the exact same lighting, color temperature, and mood as the original image.
+Sharp focus on textures and materials. High quality.
+MUST be in full color, NOT black and white.`;
+            }
+
+            // Enhance mode (no randomize): just improve quality
+            if (!useRandomMood) {
+                return `Full color photography. Generate ONE SINGLE unified image only. Do NOT create a collage, grid, or multiple panels.
+
+IMPORTANT: Recreate this EXACT image with enhanced quality. Do NOT change or add anything.
+- If it's a product on a mannequin, keep it on a mannequin - do NOT add a person
+- If it's clothing on a hanger, keep it on a hanger - do NOT add a person
+- If it's a flat lay, keep it as a flat lay
+- If it's a person, keep the same person in the same pose
+
+Enhance:
+- Sharper fabric and material textures
+- Better lighting and depth
+- Higher resolution quality
+- Same exact composition, framing, and subject
+
+Original image description: ${analysis}
+
+Keep EVERYTHING the same, just higher quality rendering. MUST be in full color, NOT black and white.`;
+            }
+
+            // Randomize mode: add creative mood (but preserve composition)
+            const moodPrompt = mood.prompt;
+            return `Full color photography. Generate ONE SINGLE unified image only. Do NOT create a collage, grid, or multiple panels.
+
+CRITICAL - PRESERVE THE ORIGINAL COMPOSITION:
+- Keep the EXACT same framing (if half-body, stay half-body; if full-body, stay full-body)
+- Keep the EXACT same crop (if face is cropped out, keep face cropped out)
+- Keep the same pose and subject placement
+- Do NOT change what's visible in the frame
+
+Original image: ${analysis}
+
+Apply ONLY the lighting and color mood from this style (ignore any framing/pose instructions):
+${moodPrompt}
+
+Keep the original composition, just enhance with better lighting/atmosphere. MUST be in full color, NOT black and white.`;
+        }
+
+        function getVariationMoods(count, isMale = false) {
+            const moods = isMale ? EDITORIAL_MOODS_MALE : EDITORIAL_MOODS_FEMALE;
+            const shuffled = [...moods].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count);
+        }
+
+        async function generateImage(imageUrl, prompt, taskId) {
+            console.log(`📤 [Task ${taskId}] Uploading image...`);
+            const uploadStart = performance.now();
+
+            const uploadResponse = await fetch('/api/upload-base64', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dataUrl: imageUrl })
+            });
+
+            if (!uploadResponse.ok) {
+                const err = await uploadResponse.json();
+                console.error(`❌ [Task ${taskId}] Upload failed:`, err.error);
+                throw new Error(err.error || 'Upload failed');
+            }
+
+            const { url: falUrl } = await uploadResponse.json();
+            console.log(`✅ [Task ${taskId}] Upload complete (${((performance.now() - uploadStart) / 1000).toFixed(1)}s)`);
+
+            console.log(`🎨 [Task ${taskId}] Generating with Nano Pro...`);
+            const genStart = performance.now();
+
+            const response = await fetch('/api/remix', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'nano-pro',
+                    prompt,
+                    image_urls: [falUrl],
+                    aspect_ratio: state.aspectRatio,
+                    resolution: state.resolution,
+                    num_images: 1,
+                    output_format: 'png'
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                console.error(`❌ [Task ${taskId}] Generation failed:`, result.error);
+                throw new Error(result.error || 'Generation failed');
+            }
+
+            const resultUrl = result.images?.[0]?.url || result.image?.url;
+            console.log(`✅ [Task ${taskId}] Generation complete (${((performance.now() - genStart) / 1000).toFixed(1)}s)`);
+            return resultUrl;
+        }
+
+        async function generate() {
+            const imagesToProcess = state.images
+                .map((img, index) => img && img.selected !== false ? { ...img, index } : null)
+                .filter(Boolean);
+
+            if (imagesToProcess.length === 0) return;
+
+            state.isGenerating = true;
+            state.isCancelled = false;
+            state.results = [];
+
+            elements.generateBtn.disabled = true;
+            elements.cancelBtn.style.display = 'block';
+            elements.cancelBtn.disabled = false;
+            elements.cancelBtn.textContent = 'Cancel';
+            elements.resultsSection.classList.add('visible');
+
+            // Create batch divider
+            batchCounter++;
+            const currentBatchId = batchCounter;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const divider = document.createElement('div');
+            divider.className = 'batch-divider';
+            divider.textContent = `Generation ${currentBatchId} • ${timeStr}`;
+            elements.resultsGrid.insertBefore(divider, elements.resultsGrid.firstChild);
+
+            // Build all tasks
+            const allTasks = [];
+            const aspectRatio = state.aspectRatio.replace(':', ' / ');
+
+            // Show loader
+            startLoadingAnimation(`Analyzing ${imagesToProcess.length} images...`);
+
+            // Analyze all images in parallel
+            console.log(`🚀 Starting analysis of ${imagesToProcess.length} images in parallel...`);
+            const analysisStart = performance.now();
+
+            const analysisPromises = imagesToProcess.map((img, i) =>
+                analyzeImage(img.url, i + 1)
+                    .catch(err => {
+                        console.error(`Analysis ${i + 1} failed:`, err);
+                        return 'Fashion editorial photograph';
+                    })
+            );
+
+            const analyses = await Promise.all(analysisPromises);
+            console.log(`✅ All analyses complete (${((performance.now() - analysisStart) / 1000).toFixed(1)}s)`);
+
+            // Build tasks from analyses
+            imagesToProcess.forEach((img, i) => {
+                if (state.isCancelled) return;
+
+                const analysis = analyses[i];
+                const isMale = analysis.toLowerCase().includes('male') ||
+                               analysis.toLowerCase().includes(' man') ||
+                               analysis.toLowerCase().includes(' he ');
+
+                // Get moods only if randomize is on
+                const moods = state.randomize
+                    ? getVariationMoods(state.variations, isMale)
+                    : Array(state.variations).fill({ name: 'Enhanced', prompt: '' });
+
+                moods.forEach((mood, varIndex) => {
+                    allTasks.push({
+                        sourceIndex: img.index,
+                        sourceUrl: img.url,
+                        variationIndex: varIndex,
+                        mood,
+                        prompt: buildEnhancedPrompt(analysis, mood, img.detail, state.randomize),
+                        isDetail: img.detail
+                    });
+                });
+            });
+
+            const total = allTasks.length;
+
+            // Create placeholders
+            for (let i = total - 1; i >= 0; i--) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'result-card loading';
+                placeholder.id = `loader-batch${currentBatchId}-${i}`;
+                placeholder.textContent = 'Generating';
+                placeholder.style.aspectRatio = aspectRatio;
+                placeholder.style.minHeight = 'unset';
+                elements.resultsGrid.insertBefore(placeholder, elements.resultsGrid.firstChild);
+            }
+
+            let completed = 0;
+
+            function updateStatus() {
+                updateLoadingProgress(`${completed}/${total} complete`);
+            }
+
+            console.log(`🚀 Starting ${total} generation tasks (max ${CONCURRENT_GENERATIONS} concurrent)...`);
+            const genStart = performance.now();
+
+            // Process tasks
+            async function processTask(task, taskIndex) {
+                const taskId = taskIndex + 1;
+                if (state.isCancelled) {
+                    console.log(`⏭️ [Task ${taskId}] Skipped (cancelled)`);
+                    const placeholder = document.getElementById(`loader-batch${currentBatchId}-${taskIndex}`);
+                    if (placeholder) {
+                        placeholder.className = 'result-card cancelled';
+                        placeholder.innerHTML = 'Cancelled';
+                    }
+                    completed++;
+                    updateStatus();
+                    return;
+                }
+
+                try {
+                    const resultUrl = await generateImage(task.sourceUrl, task.prompt, taskId);
+
+                    const result = {
+                        sourceIndex: task.sourceIndex,
+                        sourceUrl: task.sourceUrl,
+                        url: resultUrl,
+                        mood: task.mood.name,
+                        prompt: task.prompt,
+                        isDetail: task.isDetail
+                    };
+
+                    state.results.push(result);
+
+                    const cardEl = document.getElementById(`loader-batch${currentBatchId}-${taskIndex}`);
+                    if (cardEl) {
+                        const resultIndex = state.results.indexOf(result);
+                        const filename = `enhanced_${task.sourceIndex + 1}_${task.isDetail ? 'detail_' : ''}${task.mood.name.replace(/\s+/g, '_')}.png`;
+                        cardEl.className = 'result-card';
+                        cardEl.innerHTML = `
+                            <img src="${resultUrl}" class="result-image" alt="Result">
+                            <span class="variation-tag">${task.mood.name}</span>
+                            ${task.isDetail ? '<span class="detail-tag">Detail</span>' : ''}
+                            <button class="download-btn" onclick="event.stopPropagation(); downloadImage('${resultUrl}', '${filename}')" title="Download">↓</button>
+                        `;
+                        cardEl.onclick = () => openLightbox(resultIndex);
+                    }
+                } catch (err) {
+                    console.error(`❌ [Task ${taskId}] Failed:`, err.message);
+                    const cardEl = document.getElementById(`loader-batch${currentBatchId}-${taskIndex}`);
+                    if (cardEl) {
+                        cardEl.innerHTML = `<span style="color: var(--french-gray); font-size: var(--text-xs);">Failed: ${err.message}</span>`;
+                    }
+                }
+
+                completed++;
+                updateStatus();
+            }
+
+            // Process with concurrency
+            const executing = new Set();
+            for (let i = 0; i < allTasks.length; i++) {
+                if (state.isCancelled) break;
+
+                const promise = processTask(allTasks[i], i).then(() => executing.delete(promise));
+                executing.add(promise);
+
+                if (executing.size >= CONCURRENT_GENERATIONS) {
+                    await Promise.race(executing);
+                }
+            }
+
+            await Promise.all(executing);
+
+            console.log(`✅ All ${total} tasks complete (${((performance.now() - genStart) / 1000).toFixed(1)}s total)`);
+
+            // Done
+            state.isGenerating = false;
+            elements.generateBtn.disabled = false;
+            elements.cancelBtn.style.display = 'none';
+            stopLoadingAnimation();
+            updateCalculator();
+        }
+
+        elements.generateBtn.addEventListener('click', generate);
+
+        elements.cancelBtn.addEventListener('click', () => {
+            state.isCancelled = true;
+            elements.cancelBtn.disabled = true;
+            elements.cancelBtn.textContent = 'Cancelling...';
+        });
+
+        // ========== LIGHTBOX ==========
+
+        function openLightbox(index) {
+            if (index < 0 || index >= state.results.length) return;
+
+            state.lightboxIndex = index;
+            const result = state.results[index];
+
+            elements.lightboxImage.src = result.url;
+            elements.lightboxMood.textContent = result.mood + (result.isDetail ? ' (Detail)' : '');
+            elements.lightboxPrompt.textContent = result.prompt;
+            elements.lightboxSourceImage.src = result.sourceUrl;
+            elements.lightbox.classList.add('visible');
+        }
+
+        window.closeLightbox = function() {
+            elements.lightbox.classList.remove('visible');
+        };
+
+        window.navigateLightbox = function(direction) {
+            let newIndex = state.lightboxIndex + direction;
+            if (newIndex < 0) newIndex = state.results.length - 1;
+            if (newIndex >= state.results.length) newIndex = 0;
+            openLightbox(newIndex);
+        };
+
+        // Download image properly (fetch blob to avoid opening new tab)
+        window.downloadImage = async function(url, filename) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                console.error('Download failed:', err);
+                // Fallback: open in new tab
+                window.open(url, '_blank');
+            }
+        };
+
+        window.downloadCurrent = function() {
+            const result = state.results[state.lightboxIndex];
+            if (!result) return;
+            const filename = `enhanced_${result.sourceIndex + 1}_${result.isDetail ? 'detail_' : ''}${result.mood.replace(/\s+/g, '_')}.png`;
+            downloadImage(result.url, filename);
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (!elements.lightbox.classList.contains('visible')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        elements.downloadAllBtn.addEventListener('click', async () => {
+            for (let i = 0; i < state.results.length; i++) {
+                const result = state.results[i];
+                const filename = `enhanced_${result.sourceIndex + 1}_${result.isDetail ? 'detail_' : ''}${result.mood.replace(/\s+/g, '_')}.png`;
+                await downloadImage(result.url, filename);
+                await new Promise(r => setTimeout(r, 300));
+            }
+        });
+
+        // Initialize
+        initUploadGrid();
+        updateCalculator();
+    </script>
+</body>
+</html>

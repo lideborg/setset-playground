@@ -87,8 +87,8 @@
         /* Results Grid */
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--space-md);
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
         }
 
         .result-card {
@@ -439,8 +439,25 @@
             <div class="settings-row">
                 <div class="setting-group flex-1">
                     <label class="setting-label">Prompt (optional - guides upscaling)</label>
-                    <input type="text" class="input" id="prompt-input" placeholder="e.g., high fashion portrait, detailed skin texture...">
+                    <div style="display: flex; gap: var(--space-sm); align-items: center;">
+                        <input type="text" class="input" id="prompt-input" placeholder="e.g., high fashion portrait, detailed skin texture..." style="flex: 1;">
+                        <label class="analyze-toggle" style="display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap;">
+                            <input type="checkbox" id="auto-analyze-toggle" style="width: 16px; height: 16px;">
+                            <span style="font-size: var(--text-sm);">Auto-analyze</span>
+                        </label>
+                    </div>
+                    <p id="analyze-hint" style="font-size: var(--text-xs); color: var(--slate); margin-top: 4px; display: none;">
+                        Will analyze each image and use the description as the prompt
+                    </p>
                 </div>
+            </div>
+
+            <div class="settings-row">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="keep-filenames" style="width: 16px; height: 16px;">
+                    <span style="font-size: var(--text-sm);">Keep filenames</span>
+                    <span style="font-size: var(--text-xs); color: var(--slate);">(saves as x2_originalname.png)</span>
+                </label>
             </div>
         </div>
 
@@ -647,6 +664,7 @@
 
         // State
         let pasteTargetIndex = null; // Index of slot ready for paste
+        let batchCounter = 0; // Track batch numbers for history
 
         const state = {
             mode: 'upscale', // 'upscale' or 'skin-enhance'
@@ -659,6 +677,8 @@
             hdr: 0,
             resemblance: 0,
             prompt: '',
+            autoAnalyze: false,
+            keepFilenames: false,
             // Skin enhance settings
             skinModes: ['creative'], // Can be multiple: 'creative', 'faithful', 'flexible'
             sharpen: 0,
@@ -691,6 +711,9 @@
             resemblanceSlider: document.getElementById('resemblance-slider'),
             resemblanceValue: document.getElementById('resemblance-value'),
             promptInput: document.getElementById('prompt-input'),
+            autoAnalyzeToggle: document.getElementById('auto-analyze-toggle'),
+            analyzeHint: document.getElementById('analyze-hint'),
+            keepFilenamesCheckbox: document.getElementById('keep-filenames'),
             // Skin enhance settings
             skinModeCheckboxes: document.getElementById('skin-mode-checkboxes'),
             sharpenSlider: document.getElementById('sharpen-slider'),
@@ -805,11 +828,14 @@
             console.log(`[Upscaler] File selected for slot ${index}: ${file.name}, size: ${file.size}`);
             const reader = new FileReader();
             reader.onload = (event) => {
+                // Extract original filename without extension
+                const originalName = file.name.replace(/\.[^/.]+$/, '');
                 state.images[index] = {
                     dataUrl: event.target.result,
-                    file: file
+                    file: file,
+                    originalName: originalName
                 };
-                console.log(`[Upscaler] File loaded into slot ${index}`);
+                console.log(`[Upscaler] File loaded into slot ${index}, originalName: ${originalName}`);
                 clearPasteTarget();
                 renderUploadGrid();
                 updateCalc();
@@ -946,6 +972,22 @@
             state.prompt = e.target.value;
         });
 
+        elements.autoAnalyzeToggle.addEventListener('change', (e) => {
+            state.autoAnalyze = e.target.checked;
+            elements.analyzeHint.style.display = state.autoAnalyze ? 'block' : 'none';
+            // Disable manual prompt input when auto-analyze is on
+            elements.promptInput.disabled = state.autoAnalyze;
+            if (state.autoAnalyze) {
+                elements.promptInput.placeholder = 'Auto-analyze will generate prompt...';
+            } else {
+                elements.promptInput.placeholder = 'e.g., high fashion portrait, detailed skin texture...';
+            }
+        });
+
+        elements.keepFilenamesCheckbox.addEventListener('change', (e) => {
+            state.keepFilenames = e.target.checked;
+        });
+
         // Skin enhance sliders
         elements.sharpenSlider.addEventListener('input', (e) => {
             state.sharpen = parseInt(e.target.value);
@@ -979,8 +1021,9 @@
             const imagesToProcess = state.images.filter(img => img);
             if (imagesToProcess.length === 0) return;
 
-            state.results = [];
-            elements.resultsContainer.innerHTML = '';
+            // Increment batch counter for this run
+            batchCounter++;
+            const currentBatchId = batchCounter;
 
             // Build task list
             const tasks = [];
@@ -1031,7 +1074,7 @@
             startLoadingAnimation(`Starting ${actionName}...`);
 
             // Process tasks with concurrency limit to avoid rate limiting
-            const MAX_CONCURRENT = 3;
+            const MAX_CONCURRENT = 6; // Process up to 6 images in parallel
             const processTask = async (task, taskIndex) => {
                 try {
                     updateLoadingProgress(`${completed}/${total} complete`);
@@ -1072,6 +1115,31 @@
                         statusEndpoint = '/api/upscale';
                         modeName = 'upscale';
 
+                        // Determine prompt - either manual or auto-analyzed
+                        let promptToUse = state.prompt || undefined;
+
+                        if (state.autoAnalyze) {
+                            updateLoadingProgress(`Analyzing image ${task.imageIndex + 1}...`);
+                            try {
+                                const analyzeResponse = await fetch('/api/analyze-gemini', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        image: task.image.dataUrl,
+                                        prompt: 'Describe this image concisely for an AI upscaler. Focus on: subject matter, materials/textures, lighting quality, and key details that should be preserved and enhanced. Keep it under 100 words. Do not use markdown or formatting.'
+                                    })
+                                });
+                                const analyzeData = await analyzeResponse.json();
+                                if (analyzeResponse.ok && analyzeData.content) {
+                                    promptToUse = analyzeData.content;
+                                    console.log(`[Upscaler] Auto-analyzed prompt (Gemini): ${promptToUse.substring(0, 80)}...`);
+                                }
+                            } catch (analyzeError) {
+                                console.error('[Upscaler] Auto-analyze failed:', analyzeError);
+                                // Continue without prompt if analysis fails
+                            }
+                        }
+
                         requestBody = {
                             image: base64Data,
                             scale_factor: state.scaleFactor,
@@ -1080,7 +1148,7 @@
                             hdr: state.hdr,
                             resemblance: state.resemblance,
                             engine: state.engine,
-                            prompt: state.prompt || undefined
+                            prompt: promptToUse
                         };
                     }
 
@@ -1140,7 +1208,9 @@
                     const resultData = {
                         url: result,
                         originalUrl: task.image.dataUrl,
+                        originalName: task.image.originalName, // For keep filenames feature
                         imageIndex: task.imageIndex,
+                        batchId: currentBatchId, // For batch history
                         mode: state.mode === 'skin-enhance' ? task.skinMode : 'upscale',
                         modeName: modeName // Full mode name for filename (e.g., 'flexible_enhance_skin')
                     };
@@ -1210,18 +1280,23 @@
 
             elements.resultsSection.classList.add('visible');
 
-            // Group results by image index
-            const grouped = {};
+            // Group results by batchId
+            const batches = {};
             state.results.forEach((result, idx) => {
-                const key = result.imageIndex;
-                if (!grouped[key]) {
-                    grouped[key] = [];
+                const batchKey = result.batchId || 1;
+                if (!batches[batchKey]) {
+                    batches[batchKey] = [];
                 }
-                grouped[key].push({ ...result, globalIndex: idx });
+                batches[batchKey].push({ ...result, globalIndex: idx });
             });
 
-            elements.resultsContainer.innerHTML = Object.entries(grouped).map(([imageIndex, results]) => {
-                const resultsHtml = results.map(result => {
+            // Sort batches in reverse order (newest first)
+            const sortedBatchIds = Object.keys(batches).map(Number).sort((a, b) => b - a);
+
+            elements.resultsContainer.innerHTML = sortedBatchIds.map(batchId => {
+                const batchResults = batches[batchId];
+
+                const cardsHtml = batchResults.map(result => {
                     const modeName = result.mode.charAt(0).toUpperCase() + result.mode.slice(1);
                     let metaText = '';
 
@@ -1251,8 +1326,8 @@
 
                 return `
                     <div class="result-group">
-                        <div class="result-group-header">Image ${parseInt(imageIndex) + 1}</div>
-                        <div class="results-grid">${resultsHtml}</div>
+                        <div class="result-group-header">Upscale ${batchId}</div>
+                        <div class="results-grid">${cardsHtml}</div>
                     </div>
                 `;
             }).join('');
@@ -1367,23 +1442,32 @@
         // For flexible mode: Setset_Upscale_Flexible_EnhanceSkin_YYMMDD_HHMM_XX
         window.downloadResult = async function(index) {
             const result = state.results[index];
-            const now = new Date();
-            const date = now.toISOString().slice(2, 10).replace(/-/g, '');
-            const time = now.toTimeString().slice(0, 5).replace(':', '');
-            const num = String(index + 1).padStart(2, '0');
+            let filename;
 
-            // Format mode name for filename
-            let modeName;
-            if (result.modeName) {
-                // Use the full modeName (e.g., 'flexible_enhance_skin')
-                // Convert to PascalCase: flexible_enhance_skin -> Flexible_EnhanceSkin
-                modeName = result.modeName.split('_').map((part, i) => {
-                    return part.charAt(0).toUpperCase() + part.slice(1);
-                }).join('_');
+            if (state.keepFilenames && result.originalName) {
+                // Use original filename with scale prefix (e.g., x2_originalname.png)
+                const scalePrefix = result.scaleFactor || '2x';
+                filename = `${scalePrefix}_${result.originalName}.png`;
             } else {
-                modeName = result.mode.charAt(0).toUpperCase() + result.mode.slice(1);
+                // Default timestamped filename
+                const now = new Date();
+                const date = now.toISOString().slice(2, 10).replace(/-/g, '');
+                const time = now.toTimeString().slice(0, 5).replace(':', '');
+                const num = String(index + 1).padStart(2, '0');
+
+                // Format mode name for filename
+                let modeName;
+                if (result.modeName) {
+                    // Use the full modeName (e.g., 'flexible_enhance_skin')
+                    // Convert to PascalCase: flexible_enhance_skin -> Flexible_EnhanceSkin
+                    modeName = result.modeName.split('_').map((part, i) => {
+                        return part.charAt(0).toUpperCase() + part.slice(1);
+                    }).join('_');
+                } else {
+                    modeName = result.mode.charAt(0).toUpperCase() + result.mode.slice(1);
+                }
+                filename = `Setset_Upscale_${modeName}_${date}_${time}_${num}.png`;
             }
-            const filename = `Setset_Upscale_${modeName}_${date}_${time}_${num}.png`;
 
             downloadFile(result.url, filename);
         };
@@ -1497,11 +1581,13 @@
 
                 const reader = new FileReader();
                 reader.onload = (event) => {
+                    const originalName = file.name.replace(/\.[^/.]+$/, '');
                     state.images[targetIndex] = {
                         dataUrl: event.target.result,
-                        file: file
+                        file: file,
+                        originalName: originalName
                     };
-                    console.log(`[Upscaler] Loaded dropped file into slot ${targetIndex}`);
+                    console.log(`[Upscaler] Loaded dropped file into slot ${targetIndex}, originalName: ${originalName}`);
                     renderUploadGrid();
                     updateCalc();
                 };

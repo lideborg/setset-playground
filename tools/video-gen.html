@@ -233,6 +233,45 @@
             color: var(--accent-primary);
         }
 
+        /* Group cards styling */
+        .movement-card.is-group .video-wrapper {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+        }
+
+        .movement-card.is-group .group-icon {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-tertiary);
+        }
+
+        .movement-card.is-group .group-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .movement-card.is-group .group-icon span {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .movement-card.is-group:hover .group-icon {
+            color: var(--text-secondary);
+        }
+
+        .movement-card.is-group.selected .group-icon {
+            color: var(--accent-primary);
+        }
+
+        .movement-card.is-group.selected .video-wrapper {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+        }
+
         /* Settings dropdown */
         .settings-toggle {
             display: flex;
@@ -452,6 +491,12 @@
             margin-bottom: 4px;
         }
 
+        .result-cost {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
         .result-status {
             font-size: 0.65rem;
             color: var(--text-tertiary);
@@ -502,9 +547,474 @@
             transition: width 0.3s ease;
         }
 
+        /* Speed slider */
+        .speed-slider-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-top: 8px;
+        }
+        .speed-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .speed-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        .speed-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        .speed-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: right;
+        }
+
         /* Lightbox video adjustments */
         #video-lightbox .lightbox-next {
             right: calc(33.333% + var(--space-lg) + var(--space-xl));
+        }
+
+        /* Mode Tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .mode-tab {
+            padding: var(--space-sm) var(--space-lg);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -1px;
+        }
+
+        .mode-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .mode-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stitch Drop Zone */
+        .stitch-dropzone {
+            width: 100%;
+            min-height: 180px;
+            border: 2px dashed var(--border-primary);
+            border-radius: var(--radius-lg);
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: var(--space-md);
+        }
+
+        .stitch-dropzone:hover {
+            border-color: var(--text-secondary);
+            background: var(--bg-tertiary);
+        }
+
+        .stitch-dropzone.drag-over {
+            border-color: var(--accent-primary);
+            background: rgba(37, 99, 235, 0.08);
+            border-style: solid;
+        }
+
+        .stitch-dropzone.has-videos {
+            min-height: 100px;
+        }
+
+        .stitch-dropzone-icon {
+            font-size: 2.5rem;
+            color: var(--text-tertiary);
+        }
+
+        .stitch-dropzone-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stitch-dropzone-hint {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Stitch Video Grid */
+        .stitch-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+        }
+
+        .stitch-grid:empty {
+            display: none;
+        }
+
+        .stitch-slot {
+            height: 120px;
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-size: 12px;
+            color: #999;
+            transition: all 0.15s;
+        }
+
+        .stitch-slot:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.02);
+        }
+
+        .stitch-slot video {
+            height: 100%;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .stitch-slot .slot-number {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 22px;
+            height: 22px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stitch-slot .slot-duration {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .stitch-slot .remove-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 22px;
+            height: 22px;
+            background: rgba(220, 38, 38, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s;
+        }
+
+        .stitch-slot .remove-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .stitch-slot:hover .remove-btn {
+            display: flex;
+        }
+
+        .stitch-slot .trim-indicator {
+            position: absolute;
+            bottom: 6px;
+            left: 6px;
+            background: var(--accent-primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .stitch-slot.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        .stitch-slot.drag-target {
+            border: 2px dashed var(--accent-primary);
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        /* Trim Editor Modal */
+        .trim-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trim-modal.visible {
+            display: flex;
+        }
+
+        .trim-modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        .trim-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .trim-modal-header h3 {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .trim-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .trim-video-container {
+            background: #000;
+            position: relative;
+        }
+
+        .trim-video-container video {
+            width: 100%;
+            max-height: 50vh;
+            display: block;
+        }
+
+        .trim-timeline-container {
+            padding: var(--space-md);
+        }
+
+        .trim-timeline {
+            position: relative;
+            height: 70px;
+            background: #1a1a1a;
+            border-radius: var(--radius-md);
+            overflow: visible;
+            margin: 0 16px;
+        }
+
+        .trim-timeline-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .trim-timeline-frames {
+            display: flex;
+            height: 100%;
+        }
+
+        .trim-timeline-frames img {
+            height: 100%;
+            width: auto;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .trim-selection {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: rgba(37, 99, 235, 0.25);
+            border-top: 4px solid #3b82f6;
+            border-bottom: 4px solid #3b82f6;
+            box-sizing: border-box;
+        }
+
+        .trim-handle {
+            position: absolute;
+            top: -4px;
+            width: 20px;
+            height: calc(100% + 8px);
+            cursor: ew-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            background: #3b82f6;
+            border-radius: 4px;
+            transition: transform 0.1s, background 0.15s;
+        }
+
+        .trim-handle:hover {
+            background: #2563eb;
+            transform: scaleX(1.15);
+        }
+
+        .trim-handle:active {
+            background: #1d4ed8;
+        }
+
+        .trim-handle::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: white;
+            border-radius: 2px;
+            opacity: 0.9;
+        }
+
+        .trim-handle::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 24px;
+            background: white;
+            border-radius: 2px;
+            opacity: 0.9;
+            margin-left: 6px;
+        }
+
+        .trim-handle-in {
+            left: -10px;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .trim-handle-out {
+            right: -10px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .trim-playhead {
+            position: absolute;
+            top: -6px;
+            width: 3px;
+            height: calc(100% + 12px);
+            background: #fff;
+            pointer-events: none;
+            z-index: 15;
+            border-radius: 2px;
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+        }
+
+        .trim-playhead::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -4px;
+            width: 11px;
+            height: 11px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .trim-times {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-sm) 16px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .trim-times .selected-range {
+            color: #3b82f6;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .trim-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .trim-modal-footer .footer-left {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .trim-modal-footer .footer-right {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        /* Stitch button */
+        .stitch-btn {
+            width: 100%;
+            padding: var(--space-sm);
+            font-size: 0.875rem;
         }
 
     </style>
@@ -517,6 +1027,14 @@
         </header>
 
         <div class="main-layout">
+            <!-- Mode Tabs -->
+            <div class="mode-tabs">
+                <button class="mode-tab active" data-tab="generator">Generator</button>
+                <button class="mode-tab" data-tab="stitch">Stitch</button>
+            </div>
+
+            <!-- Generator Tab -->
+            <div class="tab-content active" id="generator-tab">
             <!-- Controls Panel -->
             <div class="controls-panel">
                 <!-- Upload Section -->
@@ -621,6 +1139,100 @@
                 </div>
                 <div class="results-grid" id="results-grid"></div>
             </div>
+            </div> <!-- End generator-tab -->
+
+            <!-- Stitch Tab -->
+            <div class="tab-content" id="stitch-tab">
+                <div class="controls-panel">
+                    <!-- Drop Zone -->
+                    <div class="stitch-dropzone" id="stitch-dropzone">
+                        <div class="stitch-dropzone-icon">📹</div>
+                        <div class="stitch-dropzone-text">Drop videos here to stitch them together</div>
+                        <div class="stitch-dropzone-hint">Supports MP4, MOV, WebM • Drag to reorder • Click to trim</div>
+                    </div>
+                    <input type="file" id="stitch-file-input" multiple accept="video/*" style="display: none;">
+
+                    <!-- Video Grid (appears after videos added) -->
+                    <div class="panel-section" id="stitch-videos-section" style="display: none;">
+                        <div class="section-header">
+                            <span class="section-title">Videos (drag to reorder)</span>
+                            <span class="section-title" id="stitch-count">0 videos</span>
+                        </div>
+                        <div class="stitch-grid" id="stitch-grid"></div>
+                    </div>
+
+                    <!-- Stitch Button -->
+                    <div class="generate-section">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px;">
+                                <input type="checkbox" id="stitch-instagram" style="width: 16px; height: 16px; cursor: pointer;">
+                                <span>Crop to 4:5 (Instagram)</span>
+                            </label>
+                        </div>
+                        <button class="btn btn--primary stitch-btn" id="stitch-btn" disabled>
+                            Stitch Videos
+                        </button>
+                        <div class="stats-line" id="stitch-stats">
+                            Drop video files to start
+                        </div>
+                        <!-- Inline Loader for Stitch -->
+                        <div class="inline-loader" id="stitch-loader" style="display: none;">
+                            <div class="loader-message" id="stitch-loader-message">Preparing...</div>
+                            <div class="loader-progress" id="stitch-loader-progress"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stitch Result -->
+                    <div class="results-section" id="stitch-result-section">
+                        <div class="results-header">
+                            <h3>Stitched Video</h3>
+                        </div>
+                        <div style="text-align: center;">
+                            <video id="stitch-result-video" controls style="max-width: 100%; max-height: 400px; border-radius: var(--radius-md);"></video>
+                            <div style="margin-top: var(--space-sm);">
+                                <button class="btn btn--primary" id="stitch-download-btn">Download</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trim Editor Modal -->
+    <div class="trim-modal" id="trim-modal" onclick="if(event.target === this) closeTrimModal()">
+        <div class="trim-modal-content">
+            <div class="trim-modal-header">
+                <h3>Trim Video</h3>
+                <button class="trim-modal-close" onclick="closeTrimModal()">&times;</button>
+            </div>
+            <div class="trim-video-container">
+                <video id="trim-video" onclick="toggleTrimPlayback()"></video>
+            </div>
+            <div class="trim-timeline-container">
+                <div class="trim-timeline" id="trim-timeline">
+                    <div class="trim-timeline-track" id="trim-track"></div>
+                    <div class="trim-selection" id="trim-selection">
+                        <div class="trim-handle trim-handle-in" id="trim-handle-in"></div>
+                        <div class="trim-handle trim-handle-out" id="trim-handle-out"></div>
+                    </div>
+                    <div class="trim-playhead" id="trim-playhead"></div>
+                </div>
+                <div class="trim-times">
+                    <span id="trim-time-start">0:00</span>
+                    <span class="selected-range" id="trim-time-range">Selected: 0:00 - 0:00</span>
+                    <span id="trim-time-end">0:00</span>
+                </div>
+            </div>
+            <div class="trim-modal-footer">
+                <div class="footer-left">
+                    <button class="btn btn--secondary" onclick="resetTrim()">Reset</button>
+                    <button class="btn btn--secondary" id="play-selection-btn" onclick="playSelection()">▶ Play Selection</button>
+                </div>
+                <div class="footer-right">
+                    <button class="btn btn--primary" onclick="applyTrim()">Apply</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -642,6 +1254,16 @@
                     <h3 class="lightbox-section-title">Prompt</h3>
                     <p class="lightbox-prompt-text" id="lightbox-video-prompt" style="white-space: pre-wrap;"></p>
                 </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Playback Speed</h3>
+                    <div class="speed-slider-container">
+                        <span style="font-size: 11px; color: #888;">1x</span>
+                        <input type="range" id="speed-slider" class="speed-slider" min="1" max="2" step="0.05" value="1">
+                        <span style="font-size: 11px; color: #888;">2x</span>
+                        <span class="speed-value" id="speed-value">1.0x</span>
+                    </div>
+                    <p style="font-size: 11px; color: #888; margin-top: 8px;">Speed applies to download</p>
+                </div>
                 <button class="lightbox-download" id="lightbox-video-download">Download Video</button>
             </div>
         </div>
@@ -660,7 +1282,12 @@
             selectedMovements: [],  // Array of movement IDs
             results: [],         // Generated videos
             generating: false,
-            lightboxIndex: 0     // Current video index in lightbox
+            lightboxIndex: 0,    // Current video index in lightbox
+            playbackSpeed: 1,    // Video playback speed
+            // Stitch state
+            stitchVideos: [],    // Array of { file, url, thumbnail, duration, inPoint, outPoint }
+            stitchDragIndex: null,
+            trimVideoIndex: null
         };
 
         let api;
@@ -779,6 +1406,23 @@
 
             // Download all
             document.getElementById('download-all-btn').addEventListener('click', downloadAll);
+
+            // Initialize speed controls
+            initSpeedButtons();
+
+            // Tab switching
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(`${tabName}-tab`).classList.add('active');
+                });
+            });
+
+            // Initialize stitch functionality
+            initStitch();
 
             console.log('🎬 Video Generator initialized');
         });
@@ -952,7 +1596,13 @@
         // Render movement grid (only called once on init)
         function renderMovementGrid() {
             const grid = document.getElementById('movement-grid');
-            grid.innerHTML = VIDEO_MOVEMENTS.map(movement => `
+
+            // Separate individual movements and groups
+            const individualMovements = VIDEO_MOVEMENTS.filter(m => !m.isGroup);
+            const groupMovements = VIDEO_MOVEMENTS.filter(m => m.isGroup);
+
+            // Render individual movements
+            let html = individualMovements.map(movement => `
                 <div class="movement-card ${state.selectedMovements.includes(movement.id) ? 'selected' : ''}"
                      data-id="${movement.id}">
                     <div class="video-wrapper">
@@ -967,8 +1617,29 @@
                 </div>
             `).join('');
 
-            // Add click and hover handlers
-            grid.querySelectorAll('.movement-card').forEach(card => {
+            // Render group movements (different style - no video preview)
+            html += groupMovements.map(movement => `
+                <div class="movement-card is-group ${state.selectedMovements.includes(movement.id) ? 'selected' : ''}"
+                     data-id="${movement.id}" data-is-group="true" title="${movement.description}">
+                    <div class="video-wrapper">
+                        <div class="group-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                            </svg>
+                            <span>Mix</span>
+                        </div>
+                    </div>
+                    <span class="movement-name">${movement.name}</span>
+                </div>
+            `).join('');
+
+            grid.innerHTML = html;
+
+            // Add click and hover handlers for individual movements
+            grid.querySelectorAll('.movement-card:not(.is-group)').forEach(card => {
                 const video = card.querySelector('video');
                 const id = card.dataset.id;
 
@@ -981,6 +1652,12 @@
                     video.pause();
                     video.currentTime = 0;
                 });
+            });
+
+            // Add click handlers for group movements
+            grid.querySelectorAll('.movement-card.is-group').forEach(card => {
+                const id = card.dataset.id;
+                card.addEventListener('click', () => toggleMovement(id));
             });
         }
 
@@ -1115,6 +1792,38 @@ Write ONLY the prompt.`
             }
         }
 
+        // Classify image type for movement selection
+        async function classifyImageType(imageUrl) {
+            try {
+                const response = await fetch('/api/analyze-gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_url: imageUrl,
+                        prompt: `Classify this image into ONE category. Reply with ONLY one word:
+- "face" if it shows a person's face/head (portrait, headshot, close-up with visible face)
+- "body" if it shows a person's body (full body, half body, fashion shot with person)
+- "product" if it shows a product without a person (shoes, bags, clothing on hanger/mannequin, accessories, objects)
+
+Reply with exactly one word: face, body, or product`
+                    })
+                });
+                const data = await response.json();
+                const content = (data.content || '').toLowerCase().trim();
+
+                // Extract the type from response
+                if (content.includes('face')) return 'face';
+                if (content.includes('body')) return 'body';
+                if (content.includes('product')) return 'product';
+
+                // Default to body if unclear
+                return 'body';
+            } catch (error) {
+                console.warn('Image classification failed, defaulting to body:', error);
+                return 'body';
+            }
+        }
+
         // Generate videos
         async function generateVideos() {
             // Only use selected images that have been uploaded
@@ -1124,7 +1833,6 @@ Write ONLY the prompt.`
             state.generating = true;  // Track that we're generating (for stats display)
             // Don't clear state.results - append to existing
 
-            const movements = state.selectedMovements.map(id => getMovementById(id));
             const settings = {
                 model_version: document.getElementById('model-version').value,
                 resolution: document.getElementById('resolution').value,
@@ -1133,7 +1841,74 @@ Write ONLY the prompt.`
                 camera_fixed: document.getElementById('camera-fixed').checked
             };
 
-            const totalTasks = selectedImages.length * movements.length;
+            // Check if any groups are selected
+            const hasGroups = state.selectedMovements.some(id => {
+                const m = getMovementById(id);
+                return m && m.isGroup;
+            });
+
+            // If groups are selected, classify all images first
+            let imageTypes = null;
+            if (hasGroups) {
+                console.log('🔍 Classifying images for smart movement selection...');
+                startLoadingAnimation('Analyzing images...');
+
+                // Classify all images in parallel
+                imageTypes = await Promise.all(
+                    selectedImages.map(img => classifyImageType(img.url))
+                );
+                console.log('📊 Image types:', imageTypes);
+            }
+
+            // Build all tasks - handling groups differently
+            const tasks = [];
+            const timestamp = Date.now();
+            const numImages = selectedImages.length;
+
+            // Pre-generate random movements for each group (with image type awareness)
+            const groupMovementsMap = {};
+            for (const movementId of state.selectedMovements) {
+                const movementDef = getMovementById(movementId);
+                if (movementDef && movementDef.isGroup) {
+                    // Get shuffled unique movements for all images, filtered by type
+                    groupMovementsMap[movementId] = getRandomsFromGroup(movementId, numImages, imageTypes);
+                }
+            }
+
+            for (let i = 0; i < selectedImages.length; i++) {
+                const image = selectedImages[i];
+
+                for (let j = 0; j < state.selectedMovements.length; j++) {
+                    const movementId = state.selectedMovements[j];
+                    const movementDef = getMovementById(movementId);
+
+                    if (movementDef && movementDef.isGroup) {
+                        // It's a group - use the pre-shuffled movement for this image index
+                        const randomMovement = groupMovementsMap[movementId][i];
+                        if (randomMovement) {
+                            const resultId = `result-${timestamp}-${i}-${j}`;
+                            tasks.push({
+                                image,
+                                movement: randomMovement,
+                                resultId,
+                                displayName: `${randomMovement.name} (${movementDef.name})`
+                            });
+                        }
+                    } else if (movementDef) {
+                        // Regular individual movement
+                        const resultId = `result-${timestamp}-${i}-${j}`;
+                        tasks.push({
+                            image,
+                            movement: movementDef,
+                            resultId,
+                            displayName: movementDef.name
+                        });
+                    }
+                }
+            }
+
+            const totalTasks = tasks.length;
+            if (totalTasks === 0) return;
 
             // Show progress and loader
             document.getElementById('progress-section').classList.add('visible');
@@ -1149,22 +1924,16 @@ Write ONLY the prompt.`
 
             let completed = 0;
 
-            // Build all tasks
-            const tasks = [];
-            for (let i = 0; i < selectedImages.length; i++) {
-                const image = selectedImages[i];
-                for (let j = 0; j < movements.length; j++) {
-                    const movement = movements[j];
-                    const resultId = `result-${Date.now()}-${i}-${j}`;
-                    tasks.push({ image, movement, resultId });
+            // Calculate cost per video for this batch
+            const costPerVideo = calculateVideoCost();
 
-                    // Add placeholder immediately
-                    addResultPlaceholder(resultId, movement.name, image.dataUrl);
-                }
+            // Add placeholders for all tasks
+            for (const task of tasks) {
+                addResultPlaceholder(task.resultId, task.displayName, task.image.dataUrl, costPerVideo);
             }
 
             // Process all tasks in parallel
-            const promises = tasks.map(async ({ image, movement, resultId }) => {
+            const promises = tasks.map(async ({ image, movement, resultId, displayName }) => {
                 let prompt = '';
                 try {
                     // Analyze image and build enhanced prompt
@@ -1191,13 +1960,13 @@ Write ONLY the prompt.`
                             id: resultId,
                             videoUrl: data.video.url,
                             url: data.video.url,  // For lightbox compatibility
-                            movement: movement.name,
+                            movement: displayName,
                             prompt: prompt,
                             sourceImage: image.dataUrl
                         };
                         state.results.push(result);
                         updateResultWithVideo(resultId, data.video.url, prompt);
-                        console.log(`✅ Video complete (${movement.name})`);
+                        console.log(`✅ Video complete (${displayName})`);
                     } else {
                         throw new Error(data.error || 'No video returned');
                     }
@@ -1208,7 +1977,7 @@ Write ONLY the prompt.`
                     state.results.push({
                         id: resultId,
                         error: error.message,
-                        movement: movement.name,
+                        movement: displayName,
                         prompt: prompt,
                         sourceImage: image.dataUrl
                     });
@@ -1232,7 +2001,7 @@ Write ONLY the prompt.`
         }
 
         // Add result placeholder
-        function addResultPlaceholder(id, movementName, sourceImage) {
+        function addResultPlaceholder(id, movementName, sourceImage, cost) {
             const resultsSection = document.getElementById('results-section');
             const grid = document.getElementById('results-grid');
 
@@ -1247,6 +2016,7 @@ Write ONLY the prompt.`
                     </div>
                     <div class="result-info">
                         <div class="result-movement">${movementName}</div>
+                        <div class="result-cost">$${cost.toFixed(2)}</div>
                     </div>
                 </div>
             `;
@@ -1341,11 +2111,61 @@ Write ONLY the prompt.`
             const downloadBtn = document.getElementById('lightbox-video-download');
 
             video.src = result.videoUrl;
+            video.playbackRate = state.playbackSpeed;
             promptEl.textContent = result.prompt || 'No prompt available';
             movementEl.textContent = result.movement || '';
             downloadBtn.onclick = () => downloadVideo(result.videoUrl, result.id);
 
+            // Update slider display to match current speed
+            const slider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
+            if (slider) slider.value = state.playbackSpeed;
+            if (speedValue) speedValue.textContent = state.playbackSpeed.toFixed(1) + 'x';
+            updateDownloadButtonText();
+
             video.play();
+        }
+
+        // Set playback speed
+        function setPlaybackSpeed(speed) {
+            state.playbackSpeed = speed;
+            const video = document.getElementById('lightbox-video');
+            if (video) {
+                video.playbackRate = speed;
+            }
+            // Update slider value display
+            const speedValue = document.getElementById('speed-value');
+            if (speedValue) {
+                speedValue.textContent = speed.toFixed(1) + 'x';
+            }
+            // Update slider position
+            const slider = document.getElementById('speed-slider');
+            if (slider) {
+                slider.value = speed;
+            }
+            updateDownloadButtonText();
+        }
+
+        // Update download button text based on speed
+        function updateDownloadButtonText() {
+            const downloadBtn = document.getElementById('lightbox-video-download');
+            if (downloadBtn) {
+                downloadBtn.textContent = state.playbackSpeed !== 1
+                    ? `Download Video (${state.playbackSpeed.toFixed(1)}x)`
+                    : 'Download Video';
+            }
+        }
+
+        // Initialize speed slider
+        function initSpeedButtons() {
+            const slider = document.getElementById('speed-slider');
+            if (slider) {
+                // Update on input (real-time as user drags)
+                slider.addEventListener('input', (e) => {
+                    const speed = parseFloat(e.target.value);
+                    setPlaybackSpeed(speed);
+                });
+            }
         }
 
         // Generate filename with proper naming convention
@@ -1364,18 +2184,82 @@ Write ONLY the prompt.`
             return `Setset_Video_${movementName}_${yy}${mm}${dd}_${hh}${min}_${num}.mp4`;
         }
 
-        // Download video
+        // Download video (with speed adjustment if needed)
         window.downloadVideo = async function(url, resultId) {
             // Find the result to get movement name
             const result = state.results.find(r => r.id === resultId);
             const movement = result?.movement || 'Unknown';
             const resultIndex = state.results.filter(r => r.videoUrl).indexOf(result) + 1;
 
-            const filename = generateFilename(movement, resultIndex);
+            let filename = generateFilename(movement, resultIndex);
+
+            // Add speed suffix if not 1x
+            if (state.playbackSpeed !== 1) {
+                const speedSuffix = `_${state.playbackSpeed}x`;
+                const extIndex = filename.lastIndexOf('.');
+                filename = extIndex > 0
+                    ? filename.slice(0, extIndex) + speedSuffix + filename.slice(extIndex)
+                    : filename + speedSuffix + '.mp4';
+            }
 
             try {
-                const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(url)}`);
-                const blob = await response.blob();
+                let blob;
+
+                // If speed is not 1x, process with server-side FFmpeg
+                if (state.playbackSpeed !== 1) {
+                    const downloadBtn = document.getElementById('lightbox-video-download');
+                    const originalText = downloadBtn?.textContent;
+
+                    // Animated progress indicator
+                    const stages = [
+                        'Downloading video...',
+                        'Processing 20%...',
+                        'Processing 40%...',
+                        'Processing 60%...',
+                        'Processing 80%...',
+                        'Finalizing...'
+                    ];
+                    let stageIndex = 0;
+
+                    if (downloadBtn) {
+                        downloadBtn.textContent = stages[0];
+                        downloadBtn.disabled = true;
+                    }
+
+                    // Animate through stages (estimated timing ~3s per stage)
+                    const progressInterval = setInterval(() => {
+                        stageIndex++;
+                        if (stageIndex < stages.length && downloadBtn) {
+                            downloadBtn.textContent = stages[stageIndex];
+                        }
+                    }, 3000);
+
+                    try {
+                        const response = await fetch('/api/video/speed', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ url, speed: state.playbackSpeed })
+                        });
+
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || 'Speed adjustment failed');
+                        }
+
+                        blob = await response.blob();
+                    } finally {
+                        clearInterval(progressInterval);
+                        if (downloadBtn) {
+                            downloadBtn.textContent = originalText || 'Download Video';
+                            downloadBtn.disabled = false;
+                        }
+                    }
+                } else {
+                    // Normal download at 1x speed
+                    const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(url)}`);
+                    blob = await response.blob();
+                }
+
                 const downloadUrl = URL.createObjectURL(blob);
 
                 const a = document.createElement('a');
@@ -1387,6 +2271,7 @@ Write ONLY the prompt.`
                 URL.revokeObjectURL(downloadUrl);
             } catch (error) {
                 console.error('Download failed:', error);
+                alert('Download failed: ' + error.message);
                 // Fallback: open in new tab
                 window.open(url, '_blank');
             }
@@ -1399,6 +2284,522 @@ Write ONLY the prompt.`
                 await downloadVideo(result.videoUrl, result.id);
                 await new Promise(r => setTimeout(r, 500));
             }
+        }
+
+        // =============================================
+        // STITCH FUNCTIONALITY
+        // =============================================
+
+        function initStitch() {
+            const dropzone = document.getElementById('stitch-dropzone');
+            const stitchFileInput = document.getElementById('stitch-file-input');
+
+            // File input handler
+            stitchFileInput.addEventListener('change', (e) => {
+                handleStitchFiles(Array.from(e.target.files));
+                e.target.value = '';
+            });
+
+            // Click dropzone to upload
+            dropzone.addEventListener('click', () => {
+                stitchFileInput.click();
+            });
+
+            // Drag and drop on dropzone
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('drag-over');
+            });
+
+            dropzone.addEventListener('dragleave', (e) => {
+                if (!dropzone.contains(e.relatedTarget)) {
+                    dropzone.classList.remove('drag-over');
+                }
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+                if (files.length > 0) handleStitchFiles(files);
+            });
+
+            // Stitch button
+            document.getElementById('stitch-btn').addEventListener('click', stitchVideos);
+
+            // Download stitched video
+            document.getElementById('stitch-download-btn').addEventListener('click', downloadStitchedVideo);
+
+            console.log('✂️ Stitch functionality initialized');
+        }
+
+        async function handleStitchFiles(files) {
+            for (const file of files) {
+                if (!file.type.startsWith('video/')) continue;
+
+                // Create video element to get metadata
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+
+                const url = URL.createObjectURL(file);
+                video.src = url;
+
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        const duration = video.duration;
+                        const width = video.videoWidth;
+                        const height = video.videoHeight;
+                        const aspectRatio = width / height;
+
+                        state.stitchVideos.push({
+                            file,
+                            url,
+                            duration,
+                            width,
+                            height,
+                            aspectRatio,
+                            inPoint: 0,
+                            outPoint: duration
+                        });
+
+                        resolve();
+                    };
+                    video.onerror = resolve;
+                });
+            }
+
+            renderStitchGrid();
+            updateStitchStats();
+        }
+
+        function captureVideoThumbnail(video) {
+            // Seek to 0.5 seconds or 10% of duration
+            const seekTime = Math.min(0.5, video.duration * 0.1);
+
+            return new Promise((resolve) => {
+                video.currentTime = seekTime;
+                video.onseeked = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+            });
+        }
+
+        function renderStitchGrid() {
+            const grid = document.getElementById('stitch-grid');
+            const videosSection = document.getElementById('stitch-videos-section');
+            const dropzone = document.getElementById('stitch-dropzone');
+            grid.innerHTML = '';
+
+            // Show/hide sections based on video count
+            if (state.stitchVideos.length > 0) {
+                videosSection.style.display = 'block';
+                dropzone.classList.add('has-videos');
+            } else {
+                videosSection.style.display = 'none';
+                dropzone.classList.remove('has-videos');
+            }
+
+            state.stitchVideos.forEach((vid, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'stitch-slot';
+                slot.dataset.index = index;
+                slot.draggable = true;
+
+                // Calculate width based on aspect ratio (height is fixed at 120px)
+                const slotHeight = 120;
+                const slotWidth = Math.round(slotHeight * vid.aspectRatio);
+                slot.style.width = `${slotWidth}px`;
+
+                const isTrimmed = vid.inPoint > 0.1 || vid.outPoint < vid.duration - 0.1;
+                const effectiveDuration = vid.outPoint - vid.inPoint;
+
+                slot.innerHTML = `
+                    <video src="${vid.url}" muted></video>
+                    <span class="slot-number">${index + 1}</span>
+                    <span class="slot-duration">${formatTime(effectiveDuration)}</span>
+                    ${isTrimmed ? '<span class="trim-indicator">Trimmed</span>' : ''}
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeStitchVideo(${index})">×</button>
+                `;
+
+                // Click to open trim editor
+                slot.addEventListener('click', (e) => {
+                    if (e.target.closest('.remove-btn')) return;
+                    openTrimModal(index);
+                });
+
+                // Hover to play
+                const video = slot.querySelector('video');
+                slot.addEventListener('mouseenter', () => {
+                    video.currentTime = vid.inPoint;
+                    video.play().catch(() => {});
+                });
+                slot.addEventListener('mouseleave', () => {
+                    video.pause();
+                    video.currentTime = vid.inPoint;
+                });
+
+                // Drag handlers for reordering
+                slot.addEventListener('dragstart', (e) => {
+                    state.stitchDragIndex = index;
+                    slot.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                slot.addEventListener('dragend', () => {
+                    slot.classList.remove('dragging');
+                    state.stitchDragIndex = null;
+                    document.querySelectorAll('.stitch-slot.drag-target').forEach(s => s.classList.remove('drag-target'));
+                });
+
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (state.stitchDragIndex !== null && state.stitchDragIndex !== index) {
+                        slot.classList.add('drag-target');
+                    }
+                });
+
+                slot.addEventListener('dragleave', () => {
+                    slot.classList.remove('drag-target');
+                });
+
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    slot.classList.remove('drag-target');
+
+                    if (state.stitchDragIndex !== null && state.stitchDragIndex !== index) {
+                        // Reorder
+                        const draggedVideo = state.stitchVideos.splice(state.stitchDragIndex, 1)[0];
+                        const newIndex = state.stitchDragIndex < index ? index : index;
+                        state.stitchVideos.splice(newIndex, 0, draggedVideo);
+                        renderStitchGrid();
+                        updateStitchStats();
+                    }
+                });
+
+                grid.appendChild(slot);
+            });
+        }
+
+        window.removeStitchVideo = function(index) {
+            URL.revokeObjectURL(state.stitchVideos[index].url);
+            state.stitchVideos.splice(index, 1);
+            renderStitchGrid();
+            updateStitchStats();
+        };
+
+        function updateStitchStats() {
+            const count = state.stitchVideos.length;
+            document.getElementById('stitch-count').textContent = `${count} video${count !== 1 ? 's' : ''}`;
+
+            const canStitch = count >= 2;
+            document.getElementById('stitch-btn').disabled = !canStitch;
+
+            if (count === 0) {
+                document.getElementById('stitch-stats').textContent = 'Drop video files to start';
+            } else if (count === 1) {
+                document.getElementById('stitch-stats').textContent = 'Add at least one more video';
+            } else {
+                const totalDuration = state.stitchVideos.reduce((sum, v) => sum + (v.outPoint - v.inPoint), 0);
+                document.getElementById('stitch-stats').textContent = `${count} videos — ${formatTime(totalDuration)} total`;
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // =============================================
+        // TRIM MODAL
+        // =============================================
+
+        function openTrimModal(index) {
+            state.trimVideoIndex = index;
+            const vid = state.stitchVideos[index];
+
+            const modal = document.getElementById('trim-modal');
+            const video = document.getElementById('trim-video');
+
+            video.src = vid.url;
+            video.currentTime = vid.inPoint;
+
+            modal.classList.add('visible');
+
+            video.onloadedmetadata = () => {
+                updateTrimUI();
+                setupTrimHandlers();
+            };
+        }
+
+        function closeTrimModal() {
+            document.getElementById('trim-modal').classList.remove('visible');
+            const video = document.getElementById('trim-video');
+            video.pause();
+            video.src = '';
+            state.trimVideoIndex = null;
+        }
+
+        function toggleTrimPlayback() {
+            const video = document.getElementById('trim-video');
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+
+        function updateTrimUI() {
+            if (state.trimVideoIndex === null) return;
+            const vid = state.stitchVideos[state.trimVideoIndex];
+            const video = document.getElementById('trim-video');
+            const duration = video.duration;
+
+            // Update time labels
+            document.getElementById('trim-time-start').textContent = formatTime(0);
+            document.getElementById('trim-time-end').textContent = formatTime(duration);
+            document.getElementById('trim-time-range').textContent =
+                `Selected: ${formatTime(vid.inPoint)} - ${formatTime(vid.outPoint)}`;
+
+            // Update selection box position
+            const selection = document.getElementById('trim-selection');
+            const inPercent = (vid.inPoint / duration) * 100;
+            const outPercent = (vid.outPoint / duration) * 100;
+            selection.style.left = `${inPercent}%`;
+            selection.style.width = `${outPercent - inPercent}%`;
+        }
+
+        function setupTrimHandlers() {
+            const timeline = document.getElementById('trim-timeline');
+            const video = document.getElementById('trim-video');
+            const selection = document.getElementById('trim-selection');
+            const handleIn = document.getElementById('trim-handle-in');
+            const handleOut = document.getElementById('trim-handle-out');
+            const playhead = document.getElementById('trim-playhead');
+
+            let dragging = null; // 'in', 'out', 'scrub'
+
+            const getTimeFromEvent = (e) => {
+                const rect = timeline.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = Math.max(0, Math.min(1, x / rect.width));
+                return percent * video.duration;
+            };
+
+            // Handle dragging
+            handleIn.onmousedown = (e) => {
+                e.preventDefault();
+                dragging = 'in';
+            };
+
+            handleOut.onmousedown = (e) => {
+                e.preventDefault();
+                dragging = 'out';
+            };
+
+            timeline.onmousedown = (e) => {
+                if (e.target === handleIn || e.target === handleOut) return;
+                dragging = 'scrub';
+                const time = getTimeFromEvent(e);
+                video.currentTime = time;
+            };
+
+            document.onmousemove = (e) => {
+                if (!dragging || state.trimVideoIndex === null) return;
+
+                const vid = state.stitchVideos[state.trimVideoIndex];
+                const time = getTimeFromEvent(e);
+
+                if (dragging === 'in') {
+                    vid.inPoint = Math.max(0, Math.min(time, vid.outPoint - 0.1));
+                    video.currentTime = vid.inPoint;
+                } else if (dragging === 'out') {
+                    vid.outPoint = Math.max(vid.inPoint + 0.1, Math.min(time, video.duration));
+                    video.currentTime = vid.outPoint;
+                } else if (dragging === 'scrub') {
+                    video.currentTime = time;
+                }
+
+                updateTrimUI();
+            };
+
+            document.onmouseup = () => {
+                dragging = null;
+            };
+
+            // Playhead tracking
+            video.ontimeupdate = () => {
+                const percent = (video.currentTime / video.duration) * 100;
+                playhead.style.left = `${percent}%`;
+            };
+        }
+
+        function resetTrim() {
+            if (state.trimVideoIndex === null) return;
+            const vid = state.stitchVideos[state.trimVideoIndex];
+            const video = document.getElementById('trim-video');
+            vid.inPoint = 0;
+            vid.outPoint = video.duration;
+            updateTrimUI();
+        }
+
+        function applyTrim() {
+            closeTrimModal();
+            renderStitchGrid();
+            updateStitchStats();
+        }
+
+        // Play only the selected in/out portion
+        function playSelection() {
+            if (state.trimVideoIndex === null) return;
+            const vid = state.stitchVideos[state.trimVideoIndex];
+            const video = document.getElementById('trim-video');
+            const btn = document.getElementById('play-selection-btn');
+
+            // Jump to in point and play
+            video.currentTime = vid.inPoint;
+            video.play();
+
+            // Update button to show playing state
+            btn.textContent = '⏸ Playing...';
+
+            // Stop at out point
+            const checkTime = () => {
+                if (video.currentTime >= vid.outPoint) {
+                    video.pause();
+                    video.currentTime = vid.inPoint;
+                    btn.textContent = '▶ Play Selection';
+                    video.removeEventListener('timeupdate', checkTime);
+                }
+            };
+            video.addEventListener('timeupdate', checkTime);
+
+            // Reset button if paused manually
+            video.addEventListener('pause', () => {
+                btn.textContent = '▶ Play Selection';
+            }, { once: true });
+        }
+
+        // =============================================
+        // STITCH API
+        // =============================================
+
+        async function stitchVideos() {
+            if (state.stitchVideos.length < 2) return;
+
+            const btn = document.getElementById('stitch-btn');
+            const loader = document.getElementById('stitch-loader');
+            const loaderMessage = document.getElementById('stitch-loader-message');
+            const loaderProgress = document.getElementById('stitch-loader-progress');
+
+            btn.disabled = true;
+            btn.textContent = 'Stitching...';
+            loader.style.display = 'block';
+
+            const stitchMessages = [
+                'Preparing your clips...',
+                'Analyzing video segments...',
+                'Trimming to your selections...',
+                'Aligning audio tracks...',
+                'Merging video streams...',
+                'Encoding final output...',
+                'Almost there...',
+                'Finalizing...'
+            ];
+
+            let messageIndex = 0;
+            const messageInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % stitchMessages.length;
+                loaderMessage.textContent = stitchMessages[messageIndex];
+            }, 2500);
+
+            try {
+                // Create FormData with all videos and their trim points
+                const formData = new FormData();
+                const totalSize = state.stitchVideos.reduce((sum, v) => sum + v.file.size, 0);
+                const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(1);
+
+                loaderMessage.textContent = 'Preparing your clips...';
+                loaderProgress.textContent = `${state.stitchVideos.length} videos • ${totalSizeMB} MB`;
+
+                for (let i = 0; i < state.stitchVideos.length; i++) {
+                    const vid = state.stitchVideos[i];
+                    formData.append('videos', vid.file);
+                    formData.append(`inPoint_${i}`, vid.inPoint.toString());
+                    formData.append(`outPoint_${i}`, vid.outPoint.toString());
+                }
+
+                // Check if Instagram 4:5 crop is enabled
+                const cropInstagram = document.getElementById('stitch-instagram').checked;
+                if (cropInstagram) {
+                    formData.append('aspectRatio', '4:5');
+                }
+
+                loaderMessage.textContent = 'Uploading videos to server...';
+
+                const response = await fetch('/api/video/stitch', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                loaderMessage.textContent = 'Processing with FFmpeg...';
+                loaderProgress.textContent = 'Trimming and concatenating clips';
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Stitch failed');
+                }
+
+                loaderMessage.textContent = 'Downloading result...';
+
+                const blob = await response.blob();
+                const resultUrl = URL.createObjectURL(blob);
+                const resultSizeMB = (blob.size / (1024 * 1024)).toFixed(1);
+
+                loaderMessage.textContent = 'Complete!';
+                loaderProgress.textContent = `Output: ${resultSizeMB} MB`;
+
+                // Show result
+                const resultSection = document.getElementById('stitch-result-section');
+                const resultVideo = document.getElementById('stitch-result-video');
+                resultSection.classList.add('visible');
+                resultVideo.src = resultUrl;
+
+                // Store for download
+                window.stitchedVideoBlob = blob;
+
+            } catch (error) {
+                console.error('Stitch failed:', error);
+                alert('Failed to stitch videos: ' + error.message);
+            } finally {
+                clearInterval(messageInterval);
+                btn.disabled = false;
+                btn.textContent = 'Stitch Videos';
+                setTimeout(() => { loader.style.display = 'none'; }, 1500);
+            }
+        }
+
+        function downloadStitchedVideo() {
+            if (!window.stitchedVideoBlob) return;
+
+            const now = new Date();
+            const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}`;
+            const filename = `Setset_Stitched_${timestamp}.mp4`;
+
+            const url = URL.createObjectURL(window.stitchedVideoBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>

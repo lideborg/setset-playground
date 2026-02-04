@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Lab</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        body {
+            background: var(--off-white);
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Saved images sidebar */
+        .saved-sidebar {
+            width: 280px;
+            background: var(--white);
+            border-left: 1px solid var(--gainsboro);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .saved-sidebar.collapsed {
+            width: 48px;
+        }
+
+        .sidebar-header {
+            padding: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+        }
+
+        .saved-sidebar.collapsed .sidebar-title,
+        .saved-sidebar.collapsed .saved-count {
+            display: none;
+        }
+
+        .saved-count {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            background: var(--off-white);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--slate);
+            padding: 4px;
+        }
+
+        .saved-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-xs);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            align-content: start;
+        }
+
+        .saved-sidebar.collapsed .saved-grid {
+            display: none;
+        }
+
+        .saved-image {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-xs);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .saved-image:hover {
+            border-color: var(--jet);
+        }
+
+        .saved-image.selected {
+            border-color: var(--jet);
+        }
+
+        .saved-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .saved-image .remove-saved {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 10px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .saved-image:hover .remove-saved {
+            display: flex;
+        }
+
+        .saved-image .round-badge {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: var(--radius-xs);
+        }
+
+        /* Phase container */
+        .phase-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-md);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-sm) var(--space-md);
+            border-bottom: 1px solid var(--gainsboro);
+            background: var(--white);
+        }
+
+        .header h1 {
+            font-size: var(--text-lg);
+            margin: 0;
+        }
+
+        /* Mode tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--off-white);
+            padding: 4px;
+            border-radius: var(--radius-md);
+        }
+
+        .mode-tab {
+            padding: 8px 20px;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            background: transparent;
+            color: var(--slate);
+            transition: all var(--transition-fast);
+        }
+
+        .mode-tab:hover {
+            color: var(--jet);
+        }
+
+        .mode-tab.active {
+            background: var(--white);
+            color: var(--jet);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .phase-indicator {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .phase-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gainsboro);
+            transition: all var(--transition-fast);
+        }
+
+        .phase-dot.active {
+            background: var(--jet);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .phase-dot.completed {
+            background: var(--jet);
+        }
+
+        /* Phase 1: Discovery - All questions visible */
+        .discovery-phase {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--space-md) 0;
+        }
+
+        .discovery-intro {
+            text-align: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .discovery-intro h2 {
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-xs);
+        }
+
+        .discovery-intro p {
+            color: var(--slate);
+            font-size: var(--text-sm);
+        }
+
+        .questions-scroll {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .question-card {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .question-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .question-optional {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+        }
+
+        .question-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .option-btn {
+            padding: 6px 12px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: var(--text-xs);
+            transition: all var(--transition-fast);
+            color: var(--slate);
+        }
+
+        .option-btn:hover {
+            border-color: var(--jet);
+            color: var(--jet);
+        }
+
+        .option-btn.selected {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: white;
+        }
+
+        .generate-action {
+            text-align: center;
+            padding: var(--space-md);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+        }
+
+        .generate-action p {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Legacy chat styles - keeping for backwards compatibility */
+        .chat-messages { display: none; }
+        .choices-container { display: none; }
+        .answers-summary { display: none; }
+        .discovery-complete { display: none; }
+
+        /* Phase 2: Generation */
+        .generation-phase {
+            display: none;
+        }
+
+        .generation-phase.active {
+            display: block;
+        }
+
+        .rounds-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .round-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .round-section.previous {
+            opacity: 0.7;
+        }
+
+        .round-section.current {
+            border-color: var(--jet);
+        }
+
+        .round-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .round-title {
+            font-size: var(--text-md);
+            font-weight: 600;
+        }
+
+        .round-subtitle {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .round-progress {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+        }
+
+        /* Image grid */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .image-card {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-card.loading {
+            aspect-ratio: 3/4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--french-gray);
+        }
+
+        .image-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+
+        .download-overlay-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .image-card:hover .download-overlay-btn {
+            display: flex;
+        }
+
+        .download-overlay-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        .image-actions {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            padding: var(--space-xs);
+            background: var(--off-white);
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .action-btn:hover {
+            border-color: var(--jet);
+        }
+
+        .action-btn.positive.active {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: white;
+        }
+
+        .action-btn.negative.active {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .action-btn.save.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: white;
+        }
+
+        /* Feedback section */
+        .feedback-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .feedback-box label {
+            display: block;
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-bottom: var(--space-2xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .feedback-box textarea {
+            width: 100%;
+            height: 80px;
+            padding: var(--space-sm);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            resize: none;
+            font-size: var(--text-sm);
+        }
+
+        .feedback-box textarea:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .feedback-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feedback-stats {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .feedback-stats span {
+            margin-right: var(--space-sm);
+        }
+
+        /* Phase 3: Enhancement */
+        .enhancement-phase {
+            display: none;
+        }
+
+        .enhancement-phase.active {
+            display: block;
+        }
+
+        .enhancement-header {
+            text-align: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .enhancement-header h2 {
+            margin-bottom: var(--space-xs);
+        }
+
+        .enhancement-header p {
+            color: var(--slate);
+        }
+
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+
+        .selection-card {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .selection-card:hover {
+            border-color: var(--french-gray);
+        }
+
+        .selection-card.selected {
+            border-color: var(--jet);
+        }
+
+        .selection-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .selection-card .check-overlay {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: var(--jet);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .selection-card.selected .check-overlay {
+            display: flex;
+        }
+
+        .talent-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .talent-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .talent-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            cursor: pointer;
+        }
+
+        .talent-toggle input {
+            display: none;
+        }
+
+        .talent-toggle .toggle-track {
+            width: 40px;
+            height: 22px;
+            background: var(--gainsboro);
+            border-radius: 11px;
+            position: relative;
+            transition: background var(--transition-fast);
+        }
+
+        .talent-toggle input:checked + .toggle-track {
+            background: var(--jet);
+        }
+
+        .talent-toggle .toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform var(--transition-fast);
+        }
+
+        .talent-toggle input:checked + .toggle-track .toggle-thumb {
+            transform: translateX(18px);
+        }
+
+        .talent-grid {
+            display: none;
+            grid-template-columns: repeat(8, 1fr);
+            gap: var(--space-xs);
+            padding-top: var(--space-sm);
+        }
+
+        .talent-grid.visible {
+            display: grid;
+        }
+
+        .talent-card {
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            opacity: 0.7;
+            transition: all var(--transition-fast);
+        }
+
+        .talent-card:hover {
+            opacity: 1;
+        }
+
+        .talent-card.selected {
+            opacity: 1;
+            border-color: var(--jet);
+        }
+
+        .talent-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .enhance-actions {
+            text-align: center;
+            padding: var(--space-md);
+        }
+
+        /* Results phase */
+        .results-phase {
+            display: none;
+        }
+
+        .results-phase.active {
+            display: block;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+
+        .result-card .download-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-card:hover .download-btn {
+            display: flex;
+        }
+
+        /* Loader */
+        .inline-loader {
+            display: none;
+            text-align: center;
+            padding: var(--space-lg);
+        }
+
+        .inline-loader.visible {
+            display: block;
+        }
+
+        .loader-message {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .loader-progress {
+            font-size: var(--text-xs);
+            color: var(--french-gray);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: var(--space-sm);
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--french-gray);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Set Lab</h1>
+                <div class="mode-tabs">
+                    <button class="mode-tab active" data-mode="campaign">Campaign</button>
+                    <button class="mode-tab" data-mode="ecommerce">E-commerce</button>
+                </div>
+                <div class="phase-indicator">
+                    <div class="phase-dot active" data-phase="1"></div>
+                    <div class="phase-dot" data-phase="2"></div>
+                    <div class="phase-dot" data-phase="3"></div>
+                    <div class="phase-dot" data-phase="4"></div>
+                </div>
+            </div>
+
+            <!-- Phase Container -->
+            <div class="phase-container">
+                <!-- Phase 1: Discovery -->
+                <div class="discovery-phase" id="discovery-phase">
+                    <div class="discovery-intro">
+                        <h2>Configure Your Shoot</h2>
+                        <p>Select options below or leave empty for variety. Click Generate when ready.</p>
+                    </div>
+                    <div class="questions-scroll" id="questions-scroll">
+                        <!-- Question cards will be rendered here -->
+                    </div>
+                    <div class="generate-action">
+                        <p id="generate-summary">16 images will be generated based on your selections</p>
+                        <button class="btn btn--primary btn--lg" id="start-generation">Generate Images</button>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Generation -->
+                <div class="generation-phase" id="generation-phase">
+                    <!-- All rounds stack here -->
+                    <div class="rounds-container" id="rounds-container">
+                        <!-- Round sections will be added here dynamically -->
+                    </div>
+
+                    <!-- Feedback section stays at bottom -->
+                    <div class="feedback-section" id="feedback-section">
+                        <div class="feedback-box" style="margin-bottom: var(--space-md);">
+                            <label>Feedback (what you liked about + marked, what to avoid from - marked)</label>
+                            <textarea id="feedback-text" placeholder="e.g., I loved the moody lighting in the + ones, but the poses in the - ones felt too stiff. More natural movement please..." style="height: 100px;"></textarea>
+                        </div>
+                        <div class="feedback-actions">
+                            <div class="feedback-stats">
+                                <span id="positive-count">0 positive</span>
+                                <span id="negative-count">0 negative</span>
+                                <span id="saved-count-inline">0 saved</span>
+                            </div>
+                            <button class="btn btn-primary" id="next-round-btn" disabled>Next Round</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3: Enhancement -->
+                <div class="enhancement-phase" id="enhancement-phase">
+                    <div class="enhancement-header">
+                        <h2>Select Images to Enhance</h2>
+                        <p>Choose your favorites from the saved images to create high-resolution versions</p>
+                    </div>
+
+                    <div class="selection-grid" id="selection-grid">
+                        <!-- Saved images for selection -->
+                    </div>
+
+                    <div class="talent-section">
+                        <div class="talent-header">
+                            <span>Use Setset Talent</span>
+                            <label class="talent-toggle">
+                                <input type="checkbox" id="use-talent">
+                                <div class="toggle-track">
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </label>
+                        </div>
+                        <p style="font-size: var(--text-xs); color: var(--slate); margin-bottom: var(--space-sm);">
+                            Replace model with Setset talent (optional - default keeps original)
+                        </p>
+                        <div class="talent-grid" id="talent-grid">
+                            <!-- Talent cards will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="enhance-actions">
+                        <button class="btn btn-primary btn-lg" id="enhance-btn" disabled>
+                            Enhance Selected (<span id="enhance-count">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Phase 4: Results -->
+                <div class="results-phase" id="results-phase">
+                    <div class="round-header">
+                        <div>
+                            <div class="round-title">Enhanced Results</div>
+                            <div class="round-subtitle">Your final high-resolution images</div>
+                        </div>
+                        <button class="btn btn-secondary" id="download-all-btn">Download All</button>
+                    </div>
+
+                    <div class="results-grid" id="results-grid">
+                        <!-- Final results -->
+                    </div>
+
+                    <div style="text-align: center; margin-top: var(--space-lg);">
+                        <button class="btn btn-secondary" id="start-over-btn">Start New Session</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Images Sidebar -->
+        <div class="saved-sidebar" id="saved-sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">Saved</span>
+                <span class="saved-count" id="sidebar-saved-count">0</span>
+                <button class="sidebar-toggle" id="sidebar-toggle">◀</button>
+            </div>
+            <div class="saved-grid" id="saved-grid">
+                <!-- Saved images appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared JS -->
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+
+    <script>
+        // ========== CONSTANTS ==========
+        const DISCOVERY_QUESTIONS = [
+            {
+                question: "What type of clothing are we shooting?",
+                category: "Clothing",
+                multiSelect: true,
+                options: [
+                    "Tailored / Suiting",
+                    "Casual / Streetwear",
+                    "Eveningwear / Formal",
+                    "Knitwear / Layered",
+                    "Minimalist Basics",
+                    "Athletic / Technical",
+                    "Denim / Workwear",
+                    "Bohemian / Flowy",
+                    "Leather / Edgy",
+                    "Resort / Beachwear",
+                    "Outerwear / Coats",
+                    "Lingerie / Intimates"
+                ]
+            },
+            {
+                question: "What mood should the imagery evoke?",
+                category: "Mood",
+                multiSelect: true,
+                options: [
+                    "Dark & Moody",
+                    "Light & Airy",
+                    "Bold & Confident",
+                    "Soft & Romantic",
+                    "Raw & Edgy",
+                    "Elegant & Refined",
+                    "Mysterious & Cinematic",
+                    "Playful & Fun",
+                    "Sensual & Intimate",
+                    "Cool & Nonchalant",
+                    "Fierce & Powerful",
+                    "Dreamy & Ethereal"
+                ]
+            },
+            {
+                question: "What environment fits the vision?",
+                category: "Environment",
+                multiSelect: true,
+                options: [
+                    "White Studio",
+                    "Gray/Black Studio",
+                    "Urban Street",
+                    "Natural Outdoor",
+                    "Architectural Interior",
+                    "Industrial/Warehouse",
+                    "Rooftop/Terrace",
+                    "Beach/Coastal",
+                    "Hotel/Luxury Interior",
+                    "Gallery/Museum",
+                    "Garden/Botanical",
+                    "European Street"
+                ]
+            },
+            {
+                question: "What lighting style?",
+                category: "Lighting",
+                multiSelect: true,
+                options: [
+                    "Soft & Diffused",
+                    "Hard & Dramatic",
+                    "Natural Window Light",
+                    "Golden Hour",
+                    "Flash / On-Camera",
+                    "Moody Low-Key",
+                    "Harsh Noon Sun",
+                    "Sculptural Side Light",
+                    "Chiaroscuro (High Contrast)",
+                    "Backlit / Rim Light",
+                    "Neon / Colored Gels",
+                    "Overcast / Flat"
+                ]
+            },
+            {
+                question: "What color palette?",
+                category: "Colors",
+                multiSelect: true,
+                options: [
+                    "Neutrals (Grays, Tans, Beige)",
+                    "Earth Tones (Browns, Greens)",
+                    "Bold Primary (Red, Blue, Yellow)",
+                    "Pastels (Soft tones)",
+                    "Warm Tones (Orange, Red, Gold)",
+                    "Cool Tones (Blue, Green, Teal)",
+                    "Muted / Desaturated",
+                    "Rich & Saturated",
+                    "Film Look / Vintage",
+                    "Clean / Bright",
+                    "Jewel Tones (Deep rich colors)",
+                    "Natural / Organic"
+                ]
+            },
+            {
+                question: "What energy in the poses?",
+                category: "Energy",
+                multiSelect: true,
+                options: [
+                    "Still & Composed",
+                    "Dynamic & Moving",
+                    "Relaxed & Natural",
+                    "Tense & Dramatic",
+                    "Playful & Expressive",
+                    "Powerful & Strong",
+                    "Soft & Feminine",
+                    "Bold & Masculine",
+                    "Candid & Spontaneous",
+                    "Editorial & Angular",
+                    "Intimate & Vulnerable",
+                    "Confident & Direct"
+                ]
+            },
+            {
+                question: "What framing/shots do you want?",
+                category: "Framing",
+                multiSelect: true,
+                options: [
+                    "Close-up / Headshot",
+                    "Half Body (Waist up)",
+                    "Three-Quarter Body",
+                    "Full Body",
+                    "Wide / Environmental",
+                    "Detail Shots"
+                ]
+            },
+            {
+                question: "How many people in each shot?",
+                category: "People",
+                multiSelect: false,
+                options: [
+                    "Solo (1 person)",
+                    "Duo (2 people)",
+                    "Trio (3 people)",
+                    "Mixed (vary it up)",
+                    "Group (2-4 people)",
+                    "Mostly solo, some duo"
+                ]
+            }
+        ];
+
+        // Shot types for variety
+        const SHOT_TYPES = [
+            { type: 'editorial', weight: 5, desc: 'Editorial campaign setting with creative environment' },
+            { type: 'studio', weight: 3, desc: 'Clean white studio background, professional e-commerce lighting' },
+            { type: 'portrait', weight: 2, desc: 'Portrait-focused shot, waist up, soft flattering lighting' },
+            { type: 'environmental', weight: 2, desc: 'Natural environment that complements the clothing' }
+        ];
+
+        // Gender options for variety
+        const GENDERS = ['female', 'male'];
+
+        // Interaction pools for multi-person shots
+        const INTERACTIONS = {
+            feminine: [
+                "gently leaning into each other, soft connection",
+                "standing close together, relaxed intimacy",
+                "walking arm in arm, graceful stride",
+                "elegant proximity, one slightly leaning toward the other",
+                "intimate but editorial distance, soft gazes",
+                "standing close with gentle interaction, soft energy between them",
+                "subtle touch, hand on shoulder or arm",
+                "mirroring each other's poses with slight variations"
+            ],
+            masculine: [
+                "standing shoulder to shoulder, confident power stance",
+                "strong independent poses, grounded body language",
+                "bold positioning with intentional space between them",
+                "powerful parallel stances, squared shoulders",
+                "stoic expressions, powerful presence together",
+                "confident lean against each other, bros",
+                "one slightly in front, creating depth and hierarchy",
+                "looking in same direction, unified purpose"
+            ],
+            neutral: [
+                "standing together, one slightly in front of the other",
+                "looking at camera together, natural chemistry",
+                "walking together, caught mid-stride",
+                "relaxed conversation moment, candid feel",
+                "facing each other at slight angle, engaged",
+                "back to back with confident stances",
+                "varied heights and positions creating visual interest",
+                "dynamic interaction mid-movement"
+            ],
+            playful: [
+                "laughing together, genuine moment",
+                "playful shoulder bump, fun energy",
+                "caught mid-joke, natural chemistry",
+                "one whispering to the other, intimate fun",
+                "racing or competing playfully",
+                "dancing or moving freely together",
+                "sharing a secret look, mischievous",
+                "casual arm around each other"
+            ]
+        };
+
+        const PROMPT_TEMPLATE = `A lifestyle photorealistic editorial photograph [SUBJECT_COUNT]
+[FRAMING].
+Captured by a photographer with medium format depth and tonal roll off,
+using a [LENS_PERSPECTIVE].
+Camera viewpoint [VIEWPOINT].
+[LIGHTING].
+[SUBJECT_DESCRIPTION]
+[STYLING].
+[ENVIRONMENT].
+[INTERACTION_LINE]
+Full color photography.`;
+
+        const PROMPT_OPTIONS = {
+            framing: ['framed from shoulders up', 'framed waist up', 'three quarter body', 'full body with negative space'],
+            lens: ['long lens perspective', 'standard lens perspective', 'wide lens perspective', 'experimental lens perspective'],
+            viewpoint: ['at eye level', 'slightly above', 'slightly below', 'off center'],
+            lighting: ['soft directional studio lighting', 'diffused window light', 'controlled flash balanced with ambient light', 'sculptural side lighting', 'harsh noon sun', 'golden hour warmth'],
+            expression: ['neutral', 'intense', 'distant', 'strange', 'confrontational', 'contemplative', 'ambiguous'],
+            poseEnergy: ['still', 'subtle tension', 'off balance', 'mid movement', 'relaxed', 'poised'],
+            gaze: ['off camera', 'unfocused', 'downward', 'direct but unreadable', 'looking past camera']
+        };
+
+        // ========== STATE ==========
+        const state = {
+            phase: 1,
+            currentRound: 1,
+            totalRounds: 3,
+
+            // Mode: 'campaign' or 'ecommerce'
+            mode: 'campaign',
+
+            // Discovery - now stores all selections at once
+            selections: {},  // { category: Set of selected options }
+
+            // Generation
+            currentImages: [],
+            savedImages: [],
+            generatedPrompts: [],
+
+            // Feedback tracking
+            markedPositive: new Set(),
+            markedNegative: new Set(),
+
+            // Enhancement
+            selectedForEnhance: new Set(),
+            selectedTalent: null,
+
+            // Results
+            enhancedResults: []
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const elements = {
+            // Phases
+            discoveryPhase: document.getElementById('discovery-phase'),
+            generationPhase: document.getElementById('generation-phase'),
+            enhancementPhase: document.getElementById('enhancement-phase'),
+            resultsPhase: document.getElementById('results-phase'),
+
+            // Mode tabs
+            modeTabs: document.querySelectorAll('.mode-tab'),
+
+            // Discovery
+            questionsScroll: document.getElementById('questions-scroll'),
+            generateSummary: document.getElementById('generate-summary'),
+            startGeneration: document.getElementById('start-generation'),
+
+            // Generation
+            roundsContainer: document.getElementById('rounds-container'),
+            feedbackSection: document.getElementById('feedback-section'),
+            feedbackText: document.getElementById('feedback-text'),
+            positiveCount: document.getElementById('positive-count'),
+            negativeCount: document.getElementById('negative-count'),
+            savedCountInline: document.getElementById('saved-count-inline'),
+            nextRoundBtn: document.getElementById('next-round-btn'),
+
+            // Sidebar
+            savedSidebar: document.getElementById('saved-sidebar'),
+            savedGrid: document.getElementById('saved-grid'),
+            sidebarSavedCount: document.getElementById('sidebar-saved-count'),
+            sidebarToggle: document.getElementById('sidebar-toggle'),
+
+            // Enhancement
+            selectionGrid: document.getElementById('selection-grid'),
+            useTalent: document.getElementById('use-talent'),
+            talentGrid: document.getElementById('talent-grid'),
+            enhanceBtn: document.getElementById('enhance-btn'),
+            enhanceCount: document.getElementById('enhance-count'),
+
+            // Results
+            resultsGrid: document.getElementById('results-grid'),
+            downloadAllBtn: document.getElementById('download-all-btn'),
+            startOverBtn: document.getElementById('start-over-btn'),
+
+            // Phase indicators
+            phaseDots: document.querySelectorAll('.phase-dot')
+        };
+
+        // ========== PHASE MANAGEMENT ==========
+        function setPhase(phase) {
+            state.phase = phase;
+
+            // Update phase dots
+            elements.phaseDots.forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i + 1 < phase) dot.classList.add('completed');
+                if (i + 1 === phase) dot.classList.add('active');
+            });
+
+            // Show/hide phases
+            elements.discoveryPhase.classList.toggle('hidden', phase !== 1);
+            elements.generationPhase.classList.toggle('active', phase === 2);
+            elements.enhancementPhase.classList.toggle('active', phase === 3);
+            elements.resultsPhase.classList.toggle('active', phase === 4);
+        }
+
+        // ========== PHASE 1: DISCOVERY ==========
+
+        // Render all questions at once
+        function renderAllQuestions() {
+            elements.questionsScroll.innerHTML = '';
+
+            // Initialize selections for each category if not exists
+            DISCOVERY_QUESTIONS.forEach(q => {
+                if (!state.selections[q.category]) {
+                    state.selections[q.category] = new Set();
+                }
+            });
+
+            // Render each question card
+            DISCOVERY_QUESTIONS.forEach((questionData, qIndex) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.dataset.category = questionData.category;
+
+                const isMultiSelect = questionData.multiSelect !== false;
+
+                card.innerHTML = `
+                    <div class="question-header">
+                        <span class="question-title">${questionData.question}</span>
+                        <span class="question-optional">Optional</span>
+                    </div>
+                    <div class="question-options" data-category="${questionData.category}" data-multiselect="${isMultiSelect}">
+                    </div>
+                `;
+
+                const optionsContainer = card.querySelector('.question-options');
+
+                questionData.options.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = option;
+                    btn.dataset.option = option;
+
+                    // Check if already selected
+                    if (state.selections[questionData.category]?.has(option)) {
+                        btn.classList.add('selected');
+                    }
+
+                    btn.addEventListener('click', () => {
+                        handleOptionClick(questionData.category, option, btn, isMultiSelect);
+                    });
+
+                    optionsContainer.appendChild(btn);
+                });
+
+                elements.questionsScroll.appendChild(card);
+            });
+
+            updateGenerateSummary();
+        }
+
+        function handleOptionClick(category, option, btn, isMultiSelect) {
+            if (!state.selections[category]) {
+                state.selections[category] = new Set();
+            }
+
+            if (isMultiSelect) {
+                // Toggle selection
+                if (state.selections[category].has(option)) {
+                    state.selections[category].delete(option);
+                    btn.classList.remove('selected');
+                } else {
+                    state.selections[category].add(option);
+                    btn.classList.add('selected');
+                }
+            } else {
+                // Single select - clear others first
+                const container = btn.closest('.question-options');
+                container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                state.selections[category].clear();
+                state.selections[category].add(option);
+                btn.classList.add('selected');
+            }
+
+            updateGenerateSummary();
+        }
+
+        function updateGenerateSummary() {
+            const totalSelections = Object.values(state.selections).reduce((sum, set) => sum + set.size, 0);
+            const modeText = state.mode === 'ecommerce' ? 'E-commerce (white studio)' : 'Campaign (creative editorial)';
+
+            if (totalSelections === 0) {
+                elements.generateSummary.textContent = `${modeText} • 16 images with random variety`;
+            } else {
+                elements.generateSummary.textContent = `${modeText} • 16 images based on ${totalSelections} selection${totalSelections > 1 ? 's' : ''}`;
+            }
+        }
+
+        function getBrandContext() {
+            // Build context from selections
+            const getSelected = (category) => {
+                const set = state.selections[category];
+                if (!set || set.size === 0) return 'Varied / Random';
+                return Array.from(set).join(', ');
+            };
+
+            // For E-commerce mode, override environment
+            let environment = getSelected('Environment');
+            if (state.mode === 'ecommerce') {
+                environment = 'White studio background, clean e-commerce setting';
+            }
+
+            return `
+MODE: ${state.mode === 'ecommerce' ? 'E-commerce / PDP' : 'Campaign / Editorial'}
+CLOTHING TYPE: ${getSelected('Clothing')}
+MOOD: ${getSelected('Mood')}
+ENVIRONMENT: ${environment}
+LIGHTING: ${getSelected('Lighting')}
+COLOR PALETTE: ${getSelected('Colors')}
+POSE ENERGY: ${getSelected('Energy')}
+FRAMING: ${getSelected('Framing')}
+PEOPLE: ${getSelected('People')}
+            `.trim();
+        }
+
+        function getPeopleCount() {
+            const peopleSet = state.selections.People;
+            const peopleChoice = peopleSet?.size > 0 ? Array.from(peopleSet)[0] : 'Solo (1 person)';
+
+            if (peopleChoice.includes('Solo')) return 1;
+            if (peopleChoice.includes('Duo')) return 2;
+            if (peopleChoice.includes('Trio')) return 3;
+            if (peopleChoice.includes('Group')) return Math.floor(Math.random() * 3) + 2;
+            if (peopleChoice.includes('Mixed')) return Math.random() < 0.5 ? 1 : (Math.random() < 0.7 ? 2 : 3);
+            if (peopleChoice.includes('Mostly solo')) return Math.random() < 0.7 ? 1 : 2;
+            return 1;
+        }
+
+        function getInteractionStyle() {
+            const energySet = state.selections.Energy;
+            const energy = energySet?.size > 0 ? Array.from(energySet).join(', ') : '';
+
+            if (energy.includes('Playful') || energy.includes('Expressive') || energy.includes('Spontaneous')) return 'playful';
+            if (energy.includes('Powerful') || energy.includes('Strong') || energy.includes('Tense') || energy.includes('Masculine') || energy.includes('Bold')) return 'masculine';
+            if (energy.includes('Soft') || energy.includes('Feminine') || energy.includes('Intimate') || energy.includes('Vulnerable')) return 'feminine';
+            if (energy.includes('Relaxed') || energy.includes('Natural') || energy.includes('Still')) return 'neutral';
+            return 'neutral';
+        }
+
+        function getRandomInteraction(numPeople) {
+            if (numPeople <= 1) return '';
+
+            const style = getInteractionStyle();
+            const pool = INTERACTIONS[style] || INTERACTIONS.neutral;
+            const interaction = pool[Math.floor(Math.random() * pool.length)];
+
+            const peopleText = numPeople === 2 ? 'two people' : `${numPeople} people`;
+            return `\nFeatures ${peopleText} together in the same shot, ${interaction}.`;
+        }
+
+        // ========== PHASE 2: GENERATION ==========
+        async function generatePrompts(brandContext, previousPrompts = [], feedback = {}) {
+            // Get people configuration
+            const peopleSet = state.selections.People;
+            const peopleChoice = peopleSet?.size > 0 ? Array.from(peopleSet)[0] : 'Solo';
+            const interactionStyle = getInteractionStyle();
+
+            // E-commerce mode specific settings
+            const isEcommerce = state.mode === 'ecommerce';
+
+            // Build people instruction based on selection
+            let peopleInstruction = '';
+            if (peopleChoice.includes('Solo')) {
+                peopleInstruction = 'All images should feature a single model.';
+            } else if (peopleChoice.includes('Duo')) {
+                peopleInstruction = `All images should feature two people together in the same shot. Include natural interactions between them - ${getInteractionExamples(interactionStyle)}.`;
+            } else if (peopleChoice.includes('Trio')) {
+                peopleInstruction = `All images should feature three people together in the same shot. Include group dynamics and varied interactions - ${getInteractionExamples(interactionStyle)}.`;
+            } else if (peopleChoice.includes('Group')) {
+                peopleInstruction = `Images should feature 2-4 people together. Vary the group sizes. Include natural group interactions - ${getInteractionExamples(interactionStyle)}.`;
+            } else if (peopleChoice.includes('Mixed')) {
+                peopleInstruction = `Mix of solo and group shots. About half solo, half with 2-3 people together. For group shots, include interactions - ${getInteractionExamples(interactionStyle)}.`;
+            } else if (peopleChoice.includes('Mostly solo')) {
+                peopleInstruction = `Mostly solo shots (10-12 of 16), with a few duo shots (4-6 of 16). For duo shots, include interactions - ${getInteractionExamples(interactionStyle)}.`;
+            }
+
+            // E-commerce specific instructions
+            const ecommerceRules = isEcommerce ? `
+E-COMMERCE MODE REQUIREMENTS (CRITICAL):
+- ALL images MUST be on a clean WHITE STUDIO BACKGROUND
+- Focus is on the GARMENTS - showcase the clothing clearly
+- Classic e-commerce angles: front view, three-quarter view, back view
+- Mostly straight-on shots, some slight angles for interest
+- Professional studio lighting - soft, even, flattering
+- Clean, crisp, commercial quality
+- Model should be secondary to the clothing
+- No creative/artistic environments - ONLY white studio
+- Poses should be classic PDP poses: standing straight, hands at sides or on hips, natural
+` : '';
+
+            const systemPrompt = `You are an expert editorial fashion photographer and creative director.
+Generate 16 unique prompts for fashion ${isEcommerce ? 'e-commerce / PDP' : 'editorial'} images based on the brand selections.
+
+Use this template structure for each prompt:
+${PROMPT_TEMPLATE}
+
+BRAND SELECTIONS:
+${brandContext}
+${ecommerceRules}
+PEOPLE CONFIGURATION:
+${peopleInstruction}
+
+${previousPrompts.length > 0 ? `
+LIKED PROMPTS (user marked as positive - learn from these):
+${previousPrompts.slice(0, 4).join('\n---\n')}
+
+${feedback.negativePrompts?.length > 0 ? `DISLIKED PROMPTS (user marked as negative - avoid similar approaches):
+${feedback.negativePrompts.slice(0, 3).join('\n---\n')}` : ''}
+
+USER FEEDBACK:
+${feedback.feedback || 'No specific feedback provided'}
+
+Use this feedback to refine your prompts - amplify what worked in the liked prompts, avoid what the user disliked.
+` : ''}
+
+RULES:
+- Match the CLOTHING TYPE in your styling descriptions
+- Match the MOOD in your expression and atmosphere descriptions
+- Match the ENVIRONMENT in your background descriptions - vary between the selected environments
+- Match the LIGHTING style specified - vary between the selected styles
+- Match the COLOR PALETTE in your wardrobe and environment colors
+- Match the ENERGY in your pose descriptions - vary between the selected energies
+- Match the FRAMING - distribute shots across the selected framing options
+- For multi-person shots: describe how people are positioned and interacting
+- Each prompt should be unique - vary framing, energy, environment across prompts
+- Keep it editorial and sophisticated, not commercial or catalog-like
+
+GENDER VARIETY (IMPORTANT):
+- Mix of male and female models - roughly 50/50 split
+- Explicitly specify "male model" or "female model" in each prompt
+- For duo/group shots, mix genders (male+female, or same gender pairs)
+
+SHOT TYPE VARIETY:
+${isEcommerce ? `
+- ALL 16 prompts: White studio background, e-commerce PDP style
+- Vary between: front view, three-quarter view, slight angles
+- Mix of full body (most common), three-quarter body, and half-body shots
+- Classic commercial poses focused on showcasing the garments
+` : `
+- About 8-10 prompts: editorial campaign shots with creative environments
+- About 4-5 prompts: clean white studio background, e-commerce style
+- About 2-3 prompts: portrait-focused, waist up
+`}
+COLOR (CRITICAL):
+- ALL images must be in FULL COLOR photography
+- NEVER black and white, NEVER monochrome
+- End each prompt with "Full color photography."
+
+Return ONLY the 16 prompts, numbered 1-16.`;
+
+            function getInteractionExamples(style) {
+                const examples = {
+                    feminine: 'gentle proximity, soft touches, elegant leaning, mirroring poses',
+                    masculine: 'shoulder to shoulder, confident stances, bold positioning, powerful presence',
+                    neutral: 'natural conversation, walking together, varied positions, engaged interaction',
+                    playful: 'laughing together, playful gestures, candid moments, dynamic energy'
+                };
+                return examples[style] || examples.neutral;
+            }
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: 'Generate exactly 16 rich, detailed editorial fashion prompts. Number them 1-16.' }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Raw Gemini response length:', data.content?.length);
+
+                // Split by numbered prompts (1. or 1) or **1** etc)
+                let prompts = [];
+                const numberedPattern = /(?:^|\n)(?:\*\*)?(\d+)[\.\)\:](?:\*\*)?\s*/g;
+                const parts = data.content.split(numberedPattern);
+
+                // Parts will be: [intro, "1", prompt1, "2", prompt2, ...]
+                for (let i = 2; i < parts.length; i += 2) {
+                    const prompt = parts[i]?.trim();
+                    if (prompt && prompt.length > 20) {
+                        prompts.push(prompt);
+                    }
+                }
+
+                // If numbered split didn't work, try double newline split
+                if (prompts.length < 10) {
+                    prompts = data.content.split(/\n\n+/)
+                        .map(p => p.replace(/^\d+[\.\)\:]\s*/, '').trim())
+                        .filter(p => p.length > 50);
+                }
+
+                console.log(`Parsed ${prompts.length} prompts from Gemini`);
+
+                // If still not enough, pad with rich fallback prompts
+                if (prompts.length < 16) {
+                    console.log(`Only got ${prompts.length}, padding with fallbacks`);
+                    const fallbacks = generateFallbackPrompts();
+                    while (prompts.length < 16) {
+                        prompts.push(fallbacks[prompts.length]);
+                    }
+                }
+
+                return prompts.slice(0, 16);
+            } catch (err) {
+                console.error('Failed to generate prompts:', err);
+                return generateFallbackPrompts();
+            }
+        }
+
+        function generateFallbackPrompts() {
+            const prompts = [];
+            const isEcommerce = state.mode === 'ecommerce';
+
+            const peopleSet = state.selections.People;
+            const peopleChoice = peopleSet?.size > 0 ? Array.from(peopleSet)[0] : 'Solo';
+
+            // Get selected options for variety or use defaults
+            const framingSet = state.selections.Framing;
+            const framingOptions = framingSet?.size > 0 ? Array.from(framingSet) : ['Half Body (Waist up)', 'Full Body', 'Three-Quarter Body'];
+
+            const envSet = state.selections.Environment;
+            const envOptions = envSet?.size > 0 ? Array.from(envSet) : ['White Studio', 'Urban Street'];
+
+            const energySet = state.selections.Energy;
+            const energyOptions = energySet?.size > 0 ? Array.from(energySet) : ['Relaxed & Natural', 'Confident & Direct'];
+
+            // E-commerce specific framings
+            const ecommerceFramings = ['full body', 'three quarter body', 'full body with negative space', 'framed waist up'];
+            const ecommercePoses = ['standing straight with hands at sides', 'hands on hips, confident stance', 'slight turn showing garment details', 'natural standing pose'];
+
+            for (let i = 0; i < 16; i++) {
+                const gender = i % 2 === 0 ? 'female' : 'male';
+
+                // Determine number of people
+                let numPeople = 1;
+                if (peopleChoice.includes('Solo')) numPeople = 1;
+                else if (peopleChoice.includes('Duo')) numPeople = 2;
+                else if (peopleChoice.includes('Trio')) numPeople = 3;
+                else if (peopleChoice.includes('Group')) numPeople = Math.floor(Math.random() * 3) + 2;
+                else if (peopleChoice.includes('Mixed')) numPeople = Math.random() < 0.5 ? 1 : (Math.random() < 0.7 ? 2 : 3);
+                else if (peopleChoice.includes('Mostly solo')) numPeople = i < 12 ? 1 : 2;
+
+                let framing, lens, viewpoint, lighting, environment, poseDesc;
+
+                if (isEcommerce) {
+                    // E-commerce specific settings
+                    framing = ecommerceFramings[i % ecommerceFramings.length];
+                    lens = 'standard lens perspective';
+                    viewpoint = i % 4 === 0 ? 'slightly above' : 'at eye level';
+                    lighting = 'soft, even studio lighting, professional e-commerce quality';
+                    environment = 'Clean white studio background, seamless white cyclorama';
+                    poseDesc = ecommercePoses[i % ecommercePoses.length];
+                } else {
+                    // Campaign/editorial settings
+                    framing = PROMPT_OPTIONS.framing[Math.floor(Math.random() * PROMPT_OPTIONS.framing.length)];
+                    lens = PROMPT_OPTIONS.lens[Math.floor(Math.random() * PROMPT_OPTIONS.lens.length)];
+                    viewpoint = PROMPT_OPTIONS.viewpoint[Math.floor(Math.random() * PROMPT_OPTIONS.viewpoint.length)];
+                    lighting = PROMPT_OPTIONS.lighting[Math.floor(Math.random() * PROMPT_OPTIONS.lighting.length)];
+
+                    // Shot type variety for campaign
+                    let shotType = 'editorial';
+                    if (i >= 12) shotType = 'portrait';
+                    else if (i >= 8) shotType = 'studio';
+
+                    environment = 'Creative editorial environment';
+                    if (shotType === 'studio') environment = 'Clean white studio background, professional e-commerce lighting';
+                    else if (shotType === 'portrait') environment = 'Soft portrait lighting, minimal background';
+
+                    poseDesc = `${PROMPT_OPTIONS.poseEnergy[Math.floor(Math.random() * PROMPT_OPTIONS.poseEnergy.length)]} posture`;
+                }
+
+                const expression = isEcommerce ? 'neutral, approachable' : PROMPT_OPTIONS.expression[Math.floor(Math.random() * PROMPT_OPTIONS.expression.length)];
+                const gaze = isEcommerce ? 'direct at camera' : PROMPT_OPTIONS.gaze[Math.floor(Math.random() * PROMPT_OPTIONS.gaze.length)];
+
+                let subjectCount, subjectDescription, interactionLine;
+
+                if (numPeople === 1) {
+                    subjectCount = `of a ${gender} fashion model`;
+                    subjectDescription = `The ${gender} model has a ${expression} expression, ${poseDesc}, with gaze ${gaze}.`;
+                    interactionLine = isEcommerce ? 'Focus on showcasing the garments clearly.' : 'The model is not holding or interacting with any objects.';
+                } else {
+                    const style = getInteractionStyle();
+                    const pool = INTERACTIONS[style] || INTERACTIONS.neutral;
+                    const interaction = pool[Math.floor(Math.random() * pool.length)];
+                    const genderMix = numPeople === 2 ? 'one male and one female model' : `${numPeople} models (mixed genders)`;
+                    subjectCount = `of ${genderMix} together in the same shot`;
+                    subjectDescription = `The models have ${expression} expressions and ${poseDesc}.`;
+                    interactionLine = `The models are ${interaction}. Natural chemistry between them.`;
+                }
+
+                const prompt = PROMPT_TEMPLATE
+                    .replace('[SUBJECT_COUNT]', subjectCount)
+                    .replace('[FRAMING]', framing)
+                    .replace('[LENS_PERSPECTIVE]', lens)
+                    .replace('[VIEWPOINT]', viewpoint)
+                    .replace('[LIGHTING]', lighting)
+                    .replace('[SUBJECT_DESCRIPTION]', subjectDescription)
+                    .replace('[STYLING]', 'Minimal wardrobe in neutral tones')
+                    .replace('[ENVIRONMENT]', environment)
+                    .replace('[INTERACTION_LINE]', interactionLine);
+
+                prompts.push(prompt);
+            }
+            return prompts;
+        }
+
+        async function generateImages(prompts) {
+            state.currentImages = [];
+            state.markedPositive.clear();
+            state.markedNegative.clear();
+
+            // Mark all previous rounds as "previous"
+            document.querySelectorAll('.round-section.current').forEach(el => {
+                el.classList.remove('current');
+                el.classList.add('previous');
+            });
+
+            // Create new round section
+            const roundSection = document.createElement('div');
+            roundSection.className = 'round-section current';
+            roundSection.id = `round-${state.currentRound}`;
+            roundSection.innerHTML = `
+                <div class="round-header">
+                    <div>
+                        <div class="round-title">Round ${state.currentRound}</div>
+                        <div class="round-subtitle">Mark images as + or -, save ones you like</div>
+                    </div>
+                    <div class="round-progress" id="round-${state.currentRound}-progress">Generating... 0/16</div>
+                </div>
+                <div class="image-grid" id="round-${state.currentRound}-grid">
+                </div>
+            `;
+
+            elements.roundsContainer.appendChild(roundSection);
+
+            // Get the grid for this round
+            const imageGrid = document.getElementById(`round-${state.currentRound}-grid`);
+            const progressEl = document.getElementById(`round-${state.currentRound}-progress`);
+
+            // Create placeholders
+            for (let i = 0; i < 16; i++) {
+                const card = document.createElement('div');
+                card.className = 'image-card loading';
+                card.id = `r${state.currentRound}-image-${i}`;
+                card.innerHTML = `<span style="color: var(--french-gray);">${i + 1}</span>`;
+                imageGrid.appendChild(card);
+            }
+
+            // Scroll to new round
+            roundSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            elements.feedbackSection.style.display = 'none';
+
+            let completed = 0;
+            const CONCURRENT = 6;
+            const roundNum = state.currentRound;
+
+            async function generateOne(prompt, index) {
+                try {
+                    const response = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: 'reve',
+                            prompt,
+                            aspect_ratio: '3:4',
+                            num_images: 1
+                        })
+                    });
+
+                    const data = await response.json();
+                    const imageUrl = data.images?.[0]?.url || data.image?.url;
+
+                    if (imageUrl) {
+                        state.currentImages[index] = { url: imageUrl, prompt };
+                        renderImageCard(index, imageUrl, roundNum);
+                    }
+                } catch (err) {
+                    console.error(`Failed to generate image ${index}:`, err);
+                    const card = document.getElementById(`r${roundNum}-image-${index}`);
+                    if (card) {
+                        card.innerHTML = '<span style="color: #ef4444;">Failed</span>';
+                    }
+                }
+
+                completed++;
+                if (progressEl) {
+                    progressEl.textContent = completed < 16 ? `Generating... ${completed}/16` : 'Done';
+                }
+            }
+
+            // Process with concurrency
+            const executing = new Set();
+            for (let i = 0; i < prompts.length; i++) {
+                const promise = generateOne(prompts[i], i).then(() => executing.delete(promise));
+                executing.add(promise);
+
+                if (executing.size >= CONCURRENT) {
+                    await Promise.race(executing);
+                }
+            }
+
+            await Promise.all(executing);
+
+            elements.feedbackSection.style.display = 'block';
+            elements.feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            updateFeedbackStats();
+        }
+
+        function renderImageCard(index, imageUrl, roundNum = state.currentRound) {
+            const card = document.getElementById(`r${roundNum}-image-${index}`);
+            if (!card) return;
+
+            card.className = 'image-card';
+            card.innerHTML = `
+                <img src="${imageUrl}" alt="Generated image">
+                <button class="download-overlay-btn" data-index="${index}" title="Download">&#x2193;</button>
+                <div class="image-actions">
+                    <button class="action-btn positive" data-index="${index}" data-round="${roundNum}" title="Like">+</button>
+                    <button class="action-btn negative" data-index="${index}" data-round="${roundNum}" title="Dislike">-</button>
+                    <button class="action-btn save" data-index="${index}" data-round="${roundNum}" title="Save to sidebar">&#x2605;</button>
+                </div>
+            `;
+
+            // Only add interactive event listeners for current round
+            if (roundNum === state.currentRound) {
+                card.querySelector('.positive').addEventListener('click', () => toggleMark(index, 'positive'));
+                card.querySelector('.negative').addEventListener('click', () => toggleMark(index, 'negative'));
+                card.querySelector('.save').addEventListener('click', () => saveImage(index));
+            }
+
+            card.querySelector('.download-overlay-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadImage(imageUrl, `setlab_r${roundNum}_${index + 1}.png`);
+            });
+        }
+
+        function toggleMark(index, type) {
+            const roundNum = state.currentRound;
+            const card = document.getElementById(`r${roundNum}-image-${index}`);
+            if (!card) return;
+
+            const positiveBtn = card.querySelector('.action-btn.positive');
+            const negativeBtn = card.querySelector('.action-btn.negative');
+
+            if (type === 'positive') {
+                if (state.markedPositive.has(index)) {
+                    state.markedPositive.delete(index);
+                    positiveBtn.classList.remove('active');
+                } else {
+                    state.markedPositive.add(index);
+                    state.markedNegative.delete(index);
+                    positiveBtn.classList.add('active');
+                    negativeBtn.classList.remove('active');
+                }
+            } else {
+                if (state.markedNegative.has(index)) {
+                    state.markedNegative.delete(index);
+                    negativeBtn.classList.remove('active');
+                } else {
+                    state.markedNegative.add(index);
+                    state.markedPositive.delete(index);
+                    negativeBtn.classList.add('active');
+                    positiveBtn.classList.remove('active');
+                }
+            }
+
+            updateFeedbackStats();
+        }
+
+        function saveImage(index) {
+            const image = state.currentImages[index];
+            if (!image) return;
+
+            const roundNum = state.currentRound;
+            const card = document.getElementById(`r${roundNum}-image-${index}`);
+            if (!card) return;
+
+            const saveBtn = card.querySelector('.action-btn.save');
+
+            // Check if already saved
+            const existingIndex = state.savedImages.findIndex(img => img.url === image.url);
+            if (existingIndex >= 0) {
+                // Unsave
+                state.savedImages.splice(existingIndex, 1);
+                saveBtn.classList.remove('active');
+            } else {
+                // Save
+                state.savedImages.push({
+                    url: image.url,
+                    prompt: image.prompt,
+                    round: state.currentRound
+                });
+                saveBtn.classList.add('active');
+            }
+
+            updateSavedSidebar();
+            updateFeedbackStats();
+        }
+
+        function updateSavedSidebar() {
+            elements.sidebarSavedCount.textContent = state.savedImages.length;
+            elements.savedGrid.innerHTML = '';
+
+            state.savedImages.forEach((image, index) => {
+                const div = document.createElement('div');
+                div.className = 'saved-image';
+                div.innerHTML = `
+                    <img src="${image.url}" alt="Saved">
+                    <span class="round-badge">R${image.round}</span>
+                    <button class="remove-saved" data-index="${index}">&times;</button>
+                `;
+
+                div.querySelector('.remove-saved').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    state.savedImages.splice(index, 1);
+                    updateSavedSidebar();
+                    updateFeedbackStats();
+                });
+
+                elements.savedGrid.appendChild(div);
+            });
+
+            // Save to localStorage
+            localStorage.setItem('setlab-saved', JSON.stringify(state.savedImages));
+        }
+
+        function updateFeedbackStats() {
+            elements.positiveCount.textContent = `${state.markedPositive.size} +`;
+            elements.negativeCount.textContent = `${state.markedNegative.size} -`;
+            elements.savedCountInline.textContent = `${state.savedImages.length} saved`;
+
+            const hasFeedback = state.markedPositive.size > 0 || state.markedNegative.size > 0;
+            const hasSaved = state.savedImages.length > 0;
+
+            // Enable button if we have feedback (to generate next round) or saved images (to finish)
+            elements.nextRoundBtn.disabled = !hasFeedback && !hasSaved;
+
+            // Update button text
+            if (hasFeedback) {
+                elements.nextRoundBtn.textContent = 'Generate Round ' + (state.currentRound + 1);
+            } else if (hasSaved) {
+                elements.nextRoundBtn.textContent = 'Finish & Enhance (' + state.savedImages.length + ')';
+            } else {
+                elements.nextRoundBtn.textContent = 'Mark images to continue';
+            }
+        }
+
+        async function handleNextRound() {
+            const feedbackText = elements.feedbackText.value.trim();
+
+            // Get prompts from marked images
+            const positivePrompts = Array.from(state.markedPositive)
+                .map(i => state.currentImages[i]?.prompt)
+                .filter(Boolean);
+
+            const negativePrompts = Array.from(state.markedNegative)
+                .map(i => state.currentImages[i]?.prompt)
+                .filter(Boolean);
+
+            // Check if user wants to finish (has saved images and no feedback marks)
+            const wantsToFinish = state.savedImages.length > 0 &&
+                                  state.markedPositive.size === 0 &&
+                                  state.markedNegative.size === 0;
+            if (wantsToFinish) {
+                // Go to enhancement phase
+                setPhase(3);
+                renderEnhancementPhase();
+                return;
+            }
+
+            state.currentRound++;
+            elements.feedbackText.value = '';
+
+            // Generate new prompts based on feedback
+            const prompts = await generatePrompts(
+                state.brandSummary,
+                positivePrompts,
+                { feedback: feedbackText, negativePrompts }
+            );
+
+            state.generatedPrompts = prompts;
+            await generateImages(prompts);
+        }
+
+        // ========== PHASE 3: ENHANCEMENT ==========
+        function renderEnhancementPhase() {
+            elements.selectionGrid.innerHTML = '';
+            state.selectedForEnhance.clear();
+
+            state.savedImages.forEach((image, index) => {
+                const card = document.createElement('div');
+                card.className = 'selection-card';
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <img src="${image.url}" alt="Saved">
+                    <div class="check-overlay">&#10003;</div>
+                `;
+
+                card.addEventListener('click', () => {
+                    if (state.selectedForEnhance.has(index)) {
+                        state.selectedForEnhance.delete(index);
+                        card.classList.remove('selected');
+                    } else {
+                        state.selectedForEnhance.add(index);
+                        card.classList.add('selected');
+                    }
+                    updateEnhanceButton();
+                });
+
+                elements.selectionGrid.appendChild(card);
+            });
+
+            loadTalentGrid();
+        }
+
+        function loadTalentGrid() {
+            // Load talent from assets
+            const talents = [
+                'Maeve', 'Yuki', 'Zara', 'Simone', 'Elena', 'Nina',
+                'Marcus', 'Kai', 'Darius', 'Theo', 'Oscar', 'Leo'
+            ];
+
+            elements.talentGrid.innerHTML = '';
+
+            talents.forEach((name, i) => {
+                const gender = i < 6 ? 'F' : 'M';
+                const num = i < 6 ? i + 1 : i - 5;
+                const card = document.createElement('div');
+                card.className = 'talent-card';
+                card.dataset.name = name;
+                card.innerHTML = `<img src="/assets/talent/thumbs/${gender}${num}.png" alt="${name}">`;
+
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.talent-card').forEach(c => c.classList.remove('selected'));
+                    if (state.selectedTalent === name) {
+                        state.selectedTalent = null;
+                    } else {
+                        state.selectedTalent = name;
+                        card.classList.add('selected');
+                    }
+                });
+
+                elements.talentGrid.appendChild(card);
+            });
+        }
+
+        function updateEnhanceButton() {
+            const count = state.selectedForEnhance.size;
+            elements.enhanceCount.textContent = count;
+            elements.enhanceBtn.disabled = count === 0;
+        }
+
+        async function handleEnhance() {
+            const selectedImages = Array.from(state.selectedForEnhance)
+                .map(i => state.savedImages[i])
+                .filter(Boolean);
+
+            if (selectedImages.length === 0) return;
+
+            setPhase(4);
+            elements.resultsGrid.innerHTML = '';
+            state.enhancedResults = [];
+
+            // Create placeholders
+            selectedImages.forEach((_, i) => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.id = `result-${i}`;
+                card.innerHTML = '<div style="aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; color: var(--french-gray);">Enhancing...</div>';
+                elements.resultsGrid.appendChild(card);
+            });
+
+            // Process images through enhancer
+            for (let i = 0; i < selectedImages.length; i++) {
+                const image = selectedImages[i];
+
+                try {
+                    // Upload image first
+                    const uploadRes = await fetch('/api/upload-url', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: image.url })
+                    });
+
+                    const { url: falUrl } = await uploadRes.json();
+
+                    // Build enhancement prompt
+                    let enhancePrompt = `Enhance this image with higher quality rendering.
+Keep the exact same composition, pose, and subject.
+Improve: sharper details, better lighting depth, refined textures.
+Maintain the editorial fashion photography feel.`;
+
+                    if (state.selectedTalent) {
+                        enhancePrompt += `\nReplace the model with ${state.selectedTalent} from the Setset roster while keeping the same pose and styling.`;
+                    }
+
+                    const response = await fetch('/api/remix', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: 'nano-pro',
+                            prompt: enhancePrompt,
+                            image_urls: [falUrl],
+                            aspect_ratio: '3:4',
+                            resolution: '2K',
+                            num_images: 1
+                        })
+                    });
+
+                    const data = await response.json();
+                    const resultUrl = data.images?.[0]?.url || data.image?.url;
+
+                    if (resultUrl) {
+                        state.enhancedResults.push({
+                            url: resultUrl,
+                            originalUrl: image.url
+                        });
+
+                        const card = document.getElementById(`result-${i}`);
+                        if (card) {
+                            card.innerHTML = `
+                                <img src="${resultUrl}" alt="Enhanced">
+                                <button class="download-btn" onclick="downloadImage('${resultUrl}', 'setlab_${i + 1}.png')">&#x2193;</button>
+                            `;
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Failed to enhance image ${i}:`, err);
+                    const card = document.getElementById(`result-${i}`);
+                    if (card) {
+                        card.innerHTML = '<div style="aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; color: var(--french-gray);">Failed</div>';
+                    }
+                }
+            }
+        }
+
+        // ========== UTILITY FUNCTIONS ==========
+        window.downloadImage = async function(url, filename) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                console.error('Download failed:', err);
+                window.open(url, '_blank');
+            }
+        };
+
+        async function downloadAllResults() {
+            for (let i = 0; i < state.enhancedResults.length; i++) {
+                await downloadImage(state.enhancedResults[i].url, `setlab_${i + 1}.png`);
+                await new Promise(r => setTimeout(r, 300));
+            }
+        }
+
+        function resetSession() {
+            state.phase = 1;
+            state.currentRound = 1;
+            state.selections = {};
+            state.currentImages = [];
+            state.savedImages = [];
+            state.generatedPrompts = [];
+            state.markedPositive.clear();
+            state.markedNegative.clear();
+            state.selectedForEnhance.clear();
+            state.selectedTalent = null;
+            state.enhancedResults = [];
+
+            localStorage.removeItem('setlab-saved');
+
+            elements.roundsContainer.innerHTML = '';
+            elements.savedGrid.innerHTML = '';
+            elements.sidebarSavedCount.textContent = '0';
+
+            setPhase(1);
+            renderAllQuestions();
+        }
+
+        // ========== EVENT LISTENERS ==========
+
+        // Mode tabs
+        elements.modeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                elements.modeTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                state.mode = tab.dataset.mode;
+                updateGenerateSummary();
+            });
+        });
+
+        elements.startGeneration.addEventListener('click', async () => {
+            setPhase(2);
+            const brandContext = getBrandContext();
+            const prompts = await generatePrompts(brandContext);
+            state.generatedPrompts = prompts;
+            await generateImages(prompts);
+        });
+
+        elements.nextRoundBtn.addEventListener('click', handleNextRound);
+
+        elements.sidebarToggle.addEventListener('click', () => {
+            elements.savedSidebar.classList.toggle('collapsed');
+            elements.sidebarToggle.textContent = elements.savedSidebar.classList.contains('collapsed') ? '▶' : '◀';
+        });
+
+        elements.useTalent.addEventListener('change', () => {
+            elements.talentGrid.classList.toggle('visible', elements.useTalent.checked);
+            if (!elements.useTalent.checked) {
+                state.selectedTalent = null;
+                document.querySelectorAll('.talent-card').forEach(c => c.classList.remove('selected'));
+            }
+        });
+
+        elements.enhanceBtn.addEventListener('click', handleEnhance);
+        elements.downloadAllBtn.addEventListener('click', downloadAllResults);
+        elements.startOverBtn.addEventListener('click', resetSession);
+
+        // ========== INITIALIZATION ==========
+        function init() {
+            // Load saved images from localStorage
+            const saved = localStorage.getItem('setlab-saved');
+            if (saved) {
+                try {
+                    state.savedImages = JSON.parse(saved);
+                    updateSavedSidebar();
+                } catch (e) {}
+            }
+
+            setPhase(1);
+            renderAllQuestions();
+        }
+
+        init();
+    </script>
+</body>
+</html>
