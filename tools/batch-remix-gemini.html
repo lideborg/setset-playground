@@ -1185,6 +1185,10 @@
             gap: var(--space-md);
         }
 
+        .tombolo-row.full-width {
+            grid-template-columns: 1fr;
+        }
+
         .tombolo-row-label {
             grid-column: 1 / -1;
             font-size: var(--text-xs);
@@ -1226,10 +1230,75 @@
             color: #22c55e;
         }
 
+        /* Group mode toggle */
+        .tombolo-mode-toggle {
+            display: flex;
+            gap: 2px;
+            margin-left: auto;
+        }
+
+        .tombolo-mode-btn {
+            padding: 2px 8px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .tombolo-mode-btn:first-child {
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+        }
+
+        .tombolo-mode-btn:last-child {
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+
+        .tombolo-mode-btn.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        .tombolo-mode-btn:hover:not(.active) {
+            background: var(--off-white);
+        }
+
         .tombolo-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 6px;
+        }
+
+        .tombolo-grid.wide {
+            grid-template-columns: repeat(8, 1fr);
+        }
+
+        .tombolo-slot-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tombolo-slot-wrapper .material-input {
+            width: 100%;
+            padding: 4px 6px;
+            font-size: 10px;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-xs);
+            background: var(--white);
+            text-align: center;
+        }
+
+        .tombolo-slot-wrapper .material-input::placeholder {
+            color: var(--french-gray);
+        }
+
+        .tombolo-slot-wrapper .material-input:focus {
+            outline: none;
+            border-color: var(--jet);
         }
 
         .tombolo-slot {
@@ -1277,6 +1346,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .tombolo-slot.paste-ready {
+            border-color: var(--jet);
+            border-style: dashed;
+            background: var(--off-white);
         }
 
         .tombolo-slot img {
@@ -1382,8 +1457,8 @@
         }
 
         .canny-guide-option {
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             border: 2px solid var(--gainsboro);
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -1406,7 +1481,7 @@
         }
 
         .canny-guide-option.none-option {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--slate);
             font-weight: 500;
         }
@@ -1486,6 +1561,13 @@
                 <div class="btn-group-compact" id="prompt-mode-buttons">
                     <button class="active" data-value="all">All × All</button>
                     <button data-value="sequential">Sequential</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Web:</label>
+                <div class="btn-group-compact" id="websearch-buttons">
+                    <button class="active" data-value="off">Off</button>
+                    <button data-value="on">On</button>
                 </div>
             </div>
             <div class="setting-item" style="margin-left: auto;">
@@ -1585,12 +1667,16 @@
         <div class="mode-panel" id="tombolo-panel">
             <div class="tombolo-container">
                 <div class="tombolo-categories" id="tombolo-categories">
-                    <!-- Row 1: Flat Lays -->
-                    <div class="tombolo-row">
-                        <div class="tombolo-row-label">Flat Lays</div>
+                    <!-- Row 1: Front (full width, 8 slots) -->
+                    <div class="tombolo-row full-width">
+                        <div class="tombolo-row-label">Front</div>
                         <div class="tombolo-category" data-category="front">
                             <div class="tombolo-category-header">
                                 <span class="tombolo-category-label">Front</span>
+                                <div class="tombolo-mode-toggle" data-category="front">
+                                    <button class="tombolo-mode-btn active" data-mode="single">1:1</button>
+                                    <button class="tombolo-mode-btn" data-mode="group">Group</button>
+                                </div>
                                 <span class="tombolo-category-status" id="status-front"></span>
                             </div>
                             <div class="canny-guide-selector" data-canny-category="front">
@@ -1599,14 +1685,29 @@
                                     <div class="canny-guide-option none-option active" data-canny-value="none">Off</div>
                                     <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Shirt_Front.png"><img src="/assets/guides/Shirt_Front.png" alt="Shirt"></div>
                                     <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Tshirt_Front.png"><img src="/assets/guides/Tshirt_Front.png" alt="T-shirt"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Cabana_Front.png" data-guide-prompt="The collar is open with the half-zip pulled partially down, creating a relaxed V-neck opening. Show the zipper placket and open collar styling."><img src="/assets/guides/Cabana_Front.png" alt="Cabana"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/CabanaHoodie_Front.png"><img src="/assets/guides/CabanaHoodie_Front.png" alt="Hoodie"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Sweater_Front.png"><img src="/assets/guides/Sweater_Front.png" alt="Sweater"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/BucketHat_Front.png"><img src="/assets/guides/BucketHat_Front.png" alt="Hat"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/HalfZipPullover_Front.png"><img src="/assets/guides/HalfZipPullover_Front.png" alt="Half Zip"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/HalfZipStriped_Front.png"><img src="/assets/guides/HalfZipStriped_Front.png" alt="Half Zip Striped"></div>
                                 </div>
                             </div>
-                            <div class="tombolo-grid" data-category="front"></div>
+                            <div class="tombolo-grid wide" data-category="front"></div>
                             <div class="tombolo-analysis-preview" id="analysis-front"></div>
                         </div>
+                    </div>
+
+                    <!-- Row 2: Back (full width, 8 slots) -->
+                    <div class="tombolo-row full-width">
+                        <div class="tombolo-row-label">Back</div>
                         <div class="tombolo-category" data-category="back">
                             <div class="tombolo-category-header">
                                 <span class="tombolo-category-label">Back</span>
+                                <div class="tombolo-mode-toggle" data-category="back">
+                                    <button class="tombolo-mode-btn active" data-mode="single">1:1</button>
+                                    <button class="tombolo-mode-btn" data-mode="group">Group</button>
+                                </div>
                                 <span class="tombolo-category-status" id="status-back"></span>
                             </div>
                             <div class="canny-guide-selector" data-canny-category="back">
@@ -1617,18 +1718,28 @@
                                     <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/Tshirt_Back.png"><img src="/assets/guides/Tshirt_Back.png" alt="T-shirt"></div>
                                 </div>
                             </div>
-                            <div class="tombolo-grid" data-category="back"></div>
+                            <div class="tombolo-grid wide" data-category="back"></div>
                             <div class="tombolo-analysis-preview" id="analysis-back"></div>
                         </div>
                     </div>
 
-                    <!-- Row 2: Collar Details -->
+                    <!-- Row 3: Collar 1 + Collar 2 -->
                     <div class="tombolo-row">
                         <div class="tombolo-row-label">Detail - Collar</div>
                         <div class="tombolo-category" data-category="collar1">
                             <div class="tombolo-category-header">
                                 <span class="tombolo-category-label">Collar 1</span>
+                                <div class="tombolo-mode-toggle" data-category="collar1">
+                                    <button class="tombolo-mode-btn active" data-mode="single">1:1</button>
+                                    <button class="tombolo-mode-btn" data-mode="group">Group</button>
+                                </div>
                                 <span class="tombolo-category-status" id="status-collar1"></span>
+                            </div>
+                            <div class="canny-guide-selector" data-canny-category="collar1">
+                                <span class="canny-guide-label">Guide</span>
+                                <div class="canny-guide-options">
+                                    <div class="canny-guide-option none-option active" data-canny-value="none">Off</div>
+                                </div>
                             </div>
                             <div class="tombolo-grid" data-category="collar1"></div>
                             <div class="tombolo-analysis-preview" id="analysis-collar1"></div>
@@ -1636,20 +1747,42 @@
                         <div class="tombolo-category" data-category="collar2">
                             <div class="tombolo-category-header">
                                 <span class="tombolo-category-label">Collar 2</span>
+                                <div class="tombolo-mode-toggle" data-category="collar2">
+                                    <button class="tombolo-mode-btn active" data-mode="single">1:1</button>
+                                    <button class="tombolo-mode-btn" data-mode="group">Group</button>
+                                </div>
                                 <span class="tombolo-category-status" id="status-collar2"></span>
+                            </div>
+                            <div class="canny-guide-selector" data-canny-category="collar2">
+                                <span class="canny-guide-label">Guide</span>
+                                <div class="canny-guide-options">
+                                    <div class="canny-guide-option none-option active" data-canny-value="none">Off</div>
+                                </div>
                             </div>
                             <div class="tombolo-grid" data-category="collar2"></div>
                             <div class="tombolo-analysis-preview" id="analysis-collar2"></div>
                         </div>
                     </div>
 
-                    <!-- Row 3: Detail (Logo/Print) -->
+                    <!-- Row 4: Detail 1 + Detail 2 -->
                     <div class="tombolo-row">
                         <div class="tombolo-row-label">Detail - Logo / Print</div>
                         <div class="tombolo-category" data-category="detail1">
                             <div class="tombolo-category-header">
                                 <span class="tombolo-category-label">Detail 1</span>
+                                <div class="tombolo-mode-toggle" data-category="detail1">
+                                    <button class="tombolo-mode-btn active" data-mode="single">1:1</button>
+                                    <button class="tombolo-mode-btn" data-mode="group">Group</button>
+                                </div>
                                 <span class="tombolo-category-status" id="status-detail1"></span>
+                            </div>
+                            <div class="canny-guide-selector" data-canny-category="detail1">
+                                <span class="canny-guide-label">Guide</span>
+                                <div class="canny-guide-options">
+                                    <div class="canny-guide-option none-option active" data-canny-value="none">Off</div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/BucketHat_Detail_Front.png" data-guide-prompt="This is a BUCKET HAT shown from the front angle. Match this exact composition: the hat crown facing forward, brim visible all around, chin strap hanging down with toggle. Position and angle the hat exactly as shown in this guide."><img src="/assets/guides/BucketHat_Detail_Front.png" alt="Hat Front"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/BucketHat_Detail_Side.png" data-guide-prompt="This is a BUCKET HAT shown from a 3/4 side angle. Match this exact composition: the hat rotated to show the side profile, brim angled, chin strap hanging down with toggle. Position and angle the hat exactly as shown in this guide."><img src="/assets/guides/BucketHat_Detail_Side.png" alt="Hat Side"></div>
+                                </div>
                             </div>
                             <div class="tombolo-grid" data-category="detail1"></div>
                             <div class="tombolo-analysis-preview" id="analysis-detail1"></div>
@@ -1657,7 +1790,19 @@
                         <div class="tombolo-category" data-category="detail2">
                             <div class="tombolo-category-header">
                                 <span class="tombolo-category-label">Detail 2</span>
+                                <div class="tombolo-mode-toggle" data-category="detail2">
+                                    <button class="tombolo-mode-btn active" data-mode="single">1:1</button>
+                                    <button class="tombolo-mode-btn" data-mode="group">Group</button>
+                                </div>
                                 <span class="tombolo-category-status" id="status-detail2"></span>
+                            </div>
+                            <div class="canny-guide-selector" data-canny-category="detail2">
+                                <span class="canny-guide-label">Guide</span>
+                                <div class="canny-guide-options">
+                                    <div class="canny-guide-option none-option active" data-canny-value="none">Off</div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/BucketHat_Detail_Front.png" data-guide-prompt="This is a BUCKET HAT shown from the front angle. Match this exact composition: the hat crown facing forward, brim visible all around, chin strap hanging down with toggle. Position and angle the hat exactly as shown in this guide."><img src="/assets/guides/BucketHat_Detail_Front.png" alt="Hat Front"></div>
+                                    <div class="canny-guide-option preset-option" data-canny-value="preset" data-guide-src="/assets/guides/BucketHat_Detail_Side.png" data-guide-prompt="This is a BUCKET HAT shown from a 3/4 side angle. Match this exact composition: the hat rotated to show the side profile, brim angled, chin strap hanging down with toggle. Position and angle the hat exactly as shown in this guide."><img src="/assets/guides/BucketHat_Detail_Side.png" alt="Hat Side"></div>
+                                </div>
                             </div>
                             <div class="tombolo-grid" data-category="detail2"></div>
                             <div class="tombolo-analysis-preview" id="analysis-detail2"></div>
@@ -1674,7 +1819,7 @@
                 <!-- Tombolo Generate Section -->
                 <div class="tombolo-generate-section">
                     <div class="tombolo-status" id="tombolo-status">Upload images to analyze</div>
-                    <button class="tombolo-generate-btn" id="tombolo-generate-btn" disabled>Generate All</button>
+                    <button class="tombolo-generate-btn" id="tombolo-generate-btn" disabled>Generate All <span class="btn-cost" id="tombolo-cost-value">$0.00</span></button>
                 </div>
             </div>
             <input type="file" id="tombolo-file-input" accept="image/*,.heic,.heif" multiple style="display: none;">
@@ -1861,6 +2006,7 @@
             seeds: 1,
             inputs: 6,
             promptMode: 'all',  // 'all' = all×all, 'sequential' = 1:1 mapping
+            webSearch: false,   // Google search grounding
             keepFilenames: false,
             template: 'none',  // 'none' or 'flatlay'
             mode: 'remix',  // 'remix' or 'edit'
@@ -1937,26 +2083,45 @@
             tomboloPanel: document.getElementById('tombolo-panel'),
             tomboloCategories: document.getElementById('tombolo-categories'),
             tomboloGenerateBtn: document.getElementById('tombolo-generate-btn'),
+            tomboloCostValue: document.getElementById('tombolo-cost-value'),
             tomboloStatus: document.getElementById('tombolo-status'),
             tomboloFileInput: document.getElementById('tombolo-file-input')
         };
 
         // ========== TOMBOLO STATE ==========
         const TOMBOLO_CATEGORIES = ['front', 'back', 'collar1', 'collar2', 'detail1', 'detail2'];
-        const TOMBOLO_SLOTS_PER_CATEGORY = 4;
+        const TOMBOLO_SLOTS_WIDE = 8;  // For front/back
+        const TOMBOLO_SLOTS_NORMAL = 4;  // For collar/detail
+
+        // Group mode state - 'single' (1:1) or 'group'
+        const tomboloGroupMode = {
+            front: 'single',
+            back: 'single',
+            collar1: 'single',
+            collar2: 'single',
+            detail1: 'single',
+            detail2: 'single'
+        };
+
+        function getTomboloSlotCount(category) {
+            return (category === 'front' || category === 'back') ? TOMBOLO_SLOTS_WIDE : TOMBOLO_SLOTS_NORMAL;
+        }
 
         let tomboloState = {
-            // Each category has array of 4 slots, each slot: { url, file, analysis, selected }
+            // Each category has array of slots, each slot: { url, file, analysis, selected }
             categories: {},
             currentUploadCategory: null,
             currentUploadSlot: null,
-            // Canny guide images for front/back: { url, falUrl }
-            cannyGuides: { front: null, back: null }
+            // Canny guide images for all categories: array of { url, falUrl, guidePrompt }
+            // Multiple guides can be selected - each becomes a separate task
+            cannyGuides: { front: [], back: [], collar1: [], collar2: [], detail1: [], detail2: [] },
+            // Paste target for clipboard paste
+            pasteTarget: null  // { category, slotIndex }
         };
 
         // Initialize tombolo state
         TOMBOLO_CATEGORIES.forEach(cat => {
-            tomboloState.categories[cat] = new Array(TOMBOLO_SLOTS_PER_CATEGORY).fill(null);
+            tomboloState.categories[cat] = new Array(getTomboloSlotCount(cat)).fill(null);
         });
 
         // Loading animation functions are now in /shared/js/loader.js
@@ -2369,6 +2534,7 @@ Return ONLY the prompt, nothing else.`;
                 e.target.classList.add('active');
                 state.seeds = parseInt(e.target.dataset.value);
                 updateCalculator();
+                updateTomboloStatus(); // Update Tombolo cost when seeds change
             }
         });
 
@@ -2428,6 +2594,15 @@ Return ONLY the prompt, nothing else.`;
                 e.target.classList.add('active');
                 state.promptMode = e.target.dataset.value;
                 updateCalculator();
+            }
+        });
+
+        // Web search buttons
+        document.getElementById('websearch-buttons').addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                document.querySelectorAll('#websearch-buttons button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.webSearch = e.target.dataset.value === 'on';
             }
         });
 
@@ -2671,41 +2846,16 @@ Return ONLY the prompt, nothing else.`;
                     }
 
                     try {
-                        // Collect all images to upload
-                        const imagesToUpload = [task.primary];
+                        // Collect all images (as base64 data URLs)
+                        const imagesToSend = [task.primary];
                         if (task.isGroup && task.additionalPrimaries) {
-                            imagesToUpload.push(...task.additionalPrimaries);
+                            imagesToSend.push(...task.additionalPrimaries);
                         }
-                        imagesToUpload.push(...task.secondaries);
+                        imagesToSend.push(...task.secondaries);
 
-                        uploading++;
-                        updateStatus();
-                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Uploading ${imagesToUpload.length} images...`);
-                        const uploadStart = performance.now();
-
-                        // Upload all images in parallel
-                        const uploadResults = await Promise.all(
-                            imagesToUpload.map(img => api.uploadBase64(img.url))
-                        );
-                        const imageUrls = uploadResults.map(r => r.url);
-
-                        // Check if cancelled after upload
-                        if (isCancelled) {
-                            uploading--;
-                            console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Cancelled after upload`);
-                            const placeholder = document.getElementById(placeholderId);
-                            if (placeholder) {
-                                placeholder.className = 'result-card cancelled';
-                                placeholder.innerHTML = 'Cancelled';
-                            }
-                            completed++;
-                            updateStatus();
-                            return;
-                        }
-
-                        uploading--;
-                        updateStatus();
-                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Uploads done (${((performance.now() - uploadStart) / 1000).toFixed(1)}s)`);
+                        // Extract base64 data URLs directly (skip fal.ai upload)
+                        const imageBase64s = imagesToSend.map(img => img.url);
+                        console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Preparing ${imageBase64s.length} images (direct base64)...`);
 
                         // Determine the prompt to use
                         let actualPrompt = task.prompt;
@@ -2717,8 +2867,8 @@ Return ONLY the prompt, nothing else.`;
 
                             console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Analyzing image for flat lay prompt...`);
                             try {
-                                // Use the primary image URL for analysis
-                                actualPrompt = await generateFlatLayPrompt(imageUrls[0]);
+                                // Use the primary image base64 for analysis
+                                actualPrompt = await generateFlatLayPrompt(imageBase64s[0]);
                                 console.log(`[Batch ${currentBatchId}][${taskId}/${total}] Generated prompt: "${actualPrompt.substring(0, 60)}..."`);
                             } catch (analyzeError) {
                                 console.error(`[Batch ${currentBatchId}][${taskId}/${total}] Analysis failed, using fallback prompt`);
@@ -2732,13 +2882,14 @@ Return ONLY the prompt, nothing else.`;
                         if (placeholder2) placeholder2.textContent = 'Generating';
                         console.log(`[Batch ${currentBatchId}][${taskId}/${total}] → Generating...`);
 
-                        // Build params for Gemini API
+                        // Build params for Gemini API - send base64 directly (no fal.ai upload needed)
                         const params = {
                             model: state.selectedModel,
                             prompt: actualPrompt,
-                            image_urls: imageUrls,
+                            image_base64s: imageBase64s,
                             aspect_ratio: state.aspectRatio,
-                            num_images: 1
+                            num_images: 1,
+                            web_search: state.webSearch
                         };
 
                         // Add resolution (both Gemini models support 1K, 2K, 4K)
@@ -2765,7 +2916,7 @@ Return ONLY the prompt, nothing else.`;
                                 prompt: actualPrompt,
                                 model: model.name,
                                 setIndex: task.setIndex,
-                                sourceImages: imageUrls,
+                                sourceImages: imageBase64s,
                                 originalName: task.originalName
                             });
                             // Replace placeholder with actual result
@@ -3393,7 +3544,8 @@ Return ONLY the prompt, nothing else.`;
                             prompt: prompt,
                             image_urls: imageUrls,
                             aspect_ratio: aspectRatio,
-                            resolution: resolution
+                            resolution: resolution,
+                            web_search: state.webSearch
                         })
                     });
 
@@ -3547,6 +3699,29 @@ Return ONLY the prompt, nothing else.`;
                                 clearStandaloneMainPasteHighlight();
                             }
                             console.log('📋 Pasted image into Edit mode');
+                        }
+                        break;
+                    }
+                }
+                return;
+            }
+
+            // Handle paste for Tombolo mode
+            if (state.mode === 'tombolo' && tomboloState.pasteTarget) {
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const file = item.getAsFile();
+                        if (file) {
+                            const { category, slotIndex } = tomboloState.pasteTarget;
+                            handleTomboloUpload(category, slotIndex, file);
+                            // Clear paste target
+                            document.querySelectorAll('.tombolo-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+                            tomboloState.pasteTarget = null;
+                            console.log(`📋 Pasted image into Tombolo ${category} slot ${slotIndex}`);
                         }
                         break;
                     }
@@ -4148,7 +4323,8 @@ Return ONLY the prompt, nothing else.`;
                                 prompt: prompt,
                                 image_urls: imageUrls,
                                 aspect_ratio: aspectRatio,
-                                resolution: resolution
+                                resolution: resolution,
+                                web_search: state.webSearch
                             })
                         });
 
@@ -4269,15 +4445,21 @@ Return ONLY the prompt, nothing else.`;
                 const grid = document.querySelector(`.tombolo-grid[data-category="${category}"]`);
                 if (!grid) return;
 
+                const slotCount = getTomboloSlotCount(category);
+                const showMaterialInput = (category === 'front' || category === 'back');
                 grid.innerHTML = '';
-                for (let i = 0; i < TOMBOLO_SLOTS_PER_CATEGORY; i++) {
+                for (let i = 0; i < slotCount; i++) {
+                    // Create wrapper for slot + optional material input
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'tombolo-slot-wrapper';
+
                     const slot = document.createElement('div');
                     slot.className = 'tombolo-slot';
                     slot.innerHTML = '+';
                     slot.dataset.category = category;
                     slot.dataset.slotIndex = i;
 
-                    // Click to toggle selection or open file picker
+                    // Click to toggle selection, set paste target, or open file picker
                     slot.addEventListener('click', (e) => {
                         if (e.target.closest('.remove-btn')) return;
                         const data = tomboloState.categories[category][i];
@@ -4287,10 +4469,24 @@ Return ONLY the prompt, nothing else.`;
                             renderTomboloSlot(category, i);
                             updateTomboloStatus();
                         } else {
-                            // Open file picker
-                            tomboloState.currentUploadCategory = category;
-                            tomboloState.currentUploadSlot = i;
-                            elements.tomboloFileInput.click();
+                            // Empty slot - toggle paste-ready state or open file picker on double-click
+                            const currentTarget = tomboloState.pasteTarget;
+                            const isCurrentTarget = currentTarget && currentTarget.category === category && currentTarget.slotIndex === i;
+
+                            // Clear all paste-ready states
+                            document.querySelectorAll('.tombolo-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+
+                            if (isCurrentTarget) {
+                                // Second click on same slot - open file picker
+                                tomboloState.pasteTarget = null;
+                                tomboloState.currentUploadCategory = category;
+                                tomboloState.currentUploadSlot = i;
+                                elements.tomboloFileInput.click();
+                            } else {
+                                // First click - set as paste target
+                                tomboloState.pasteTarget = { category, slotIndex: i };
+                                slot.classList.add('paste-ready');
+                            }
                         }
                     });
 
@@ -4313,7 +4509,27 @@ Return ONLY the prompt, nothing else.`;
                         }
                     });
 
-                    grid.appendChild(slot);
+                    wrapper.appendChild(slot);
+
+                    // Add material input for front/back
+                    if (showMaterialInput) {
+                        const materialInput = document.createElement('input');
+                        materialInput.type = 'text';
+                        materialInput.className = 'material-input';
+                        materialInput.placeholder = 'Material...';
+                        materialInput.dataset.category = category;
+                        materialInput.dataset.slotIndex = i;
+                        materialInput.addEventListener('input', (e) => {
+                            const data = tomboloState.categories[category][i];
+                            if (data) {
+                                data.materialOverride = e.target.value.trim();
+                            }
+                        });
+                        materialInput.addEventListener('click', (e) => e.stopPropagation());
+                        wrapper.appendChild(materialInput);
+                    }
+
+                    grid.appendChild(wrapper);
                 }
 
                 // Drag and drop on entire grid
@@ -4341,7 +4557,7 @@ Return ONLY the prompt, nothing else.`;
                             // Upload multiple files to consecutive slots
                             files.forEach((file, idx) => {
                                 const slotIdx = emptyIndex + idx;
-                                if (slotIdx < TOMBOLO_SLOTS_PER_CATEGORY && !tomboloState.categories[category][slotIdx]) {
+                                if (slotIdx < getTomboloSlotCount(category) && !tomboloState.categories[category][slotIdx]) {
                                     handleTomboloUpload(category, slotIdx, file);
                                 }
                             });
@@ -4355,11 +4571,13 @@ Return ONLY the prompt, nothing else.`;
         elements.tomboloFileInput.addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
             if (files.length > 0 && tomboloState.currentUploadCategory !== null) {
+                const category = tomboloState.currentUploadCategory;
+                const maxSlots = getTomboloSlotCount(category);
                 // Upload multiple files starting from current slot
                 files.forEach((file, idx) => {
                     const slotIdx = tomboloState.currentUploadSlot + idx;
-                    if (slotIdx < TOMBOLO_SLOTS_PER_CATEGORY) {
-                        handleTomboloUpload(tomboloState.currentUploadCategory, slotIdx, file);
+                    if (slotIdx < maxSlots) {
+                        handleTomboloUpload(category, slotIdx, file);
                     }
                 });
             }
@@ -4371,7 +4589,8 @@ Return ONLY the prompt, nothing else.`;
         // Handle Tombolo image upload (no analysis - that happens at generate time)
         async function handleTomboloUpload(category, slotIndex, file) {
             const grid = document.querySelector(`.tombolo-grid[data-category="${category}"]`);
-            const slot = grid?.children[slotIndex];
+            const wrapper = grid?.children[slotIndex];
+            const slot = wrapper?.querySelector('.tombolo-slot');
 
             // Show loading spinner
             if (slot) {
@@ -4421,7 +4640,9 @@ Return ONLY the prompt, nothing else.`;
         // Render a single Tombolo slot
         function renderTomboloSlot(category, slotIndex) {
             const grid = document.querySelector(`.tombolo-grid[data-category="${category}"]`);
-            const slot = grid?.children[slotIndex];
+            const wrapper = grid?.children[slotIndex];
+            const slot = wrapper?.querySelector('.tombolo-slot');
+            const materialInput = wrapper?.querySelector('.material-input');
             const data = tomboloState.categories[category][slotIndex];
 
             if (!slot) return;
@@ -4432,9 +4653,17 @@ Return ONLY the prompt, nothing else.`;
                     <img src="${data.url}" alt="Image">
                     <button class="remove-btn" onclick="event.stopPropagation(); removeTomboloImage('${category}', ${slotIndex})">&times;</button>
                 `;
+                // Update material input if it exists and has a stored value
+                if (materialInput && data.materialOverride) {
+                    materialInput.value = data.materialOverride;
+                }
             } else {
                 slot.className = 'tombolo-slot';
                 slot.innerHTML = '+';
+                // Clear material input
+                if (materialInput) {
+                    materialInput.value = '';
+                }
             }
         }
 
@@ -4463,7 +4692,7 @@ Return ONLY the prompt, nothing else.`;
                     break;
                 case 'detail1':
                 case 'detail2':
-                    analysisPrompt = `Describe this detail shot in 1 sentence. Mention what type of embellishment it is (embroidered patches, printed graphic, woven labels, etc.) and the fabric/pattern it sits on. Do NOT describe what specific images or text are on the patches - just say "embroidered patches" or "printed graphic". Example: "Embroidered patches on red and white striped terry cloth fabric."`;
+                    analysisPrompt = `Describe this product in 1-2 sentences. First identify what type of product it is (bucket hat, cap, shirt detail, etc.). Then describe the key visual details: colors, patterns, fabric texture, and any embellishments. Do NOT describe specific logos or text - just say "embroidered patches" or "printed graphic". Example for hat: "A bucket hat with white and red striped crown, navy brim, embroidered patches, and a chin strap with toggle." Example for garment detail: "Embroidered patches on red and white striped terry cloth fabric."`;
                     break;
             }
 
@@ -4552,22 +4781,58 @@ Return ONLY the prompt, nothing else.`;
         function updateTomboloStatus() {
             let totalImages = 0;
             let selectedImages = 0;
+            let totalTasks = 0;
+            let totalGuides = 0;
+            let hasGroupMode = false;
 
             TOMBOLO_CATEGORIES.forEach(cat => {
+                let catSelectedCount = 0;
                 tomboloState.categories[cat].forEach(data => {
                     if (data) {
                         totalImages++;
-                        if (data.selected) selectedImages++;
+                        if (data.selected) {
+                            selectedImages++;
+                            catSelectedCount++;
+                        }
                     }
                 });
+
+                if (catSelectedCount > 0) {
+                    // Calculate tasks for this category
+                    const guides = tomboloState.cannyGuides[cat] || [];
+                    const guideCount = guides.length > 0 ? guides.length : 1;
+                    if (guides.length > 0) totalGuides += guides.length;
+
+                    if (tomboloGroupMode[cat] === 'group' && catSelectedCount > 1) {
+                        // Group mode: all images = 1 task per guide
+                        totalTasks += guideCount;
+                        hasGroupMode = true;
+                    } else {
+                        // Single mode: each image = 1 task per guide
+                        totalTasks += catSelectedCount * guideCount;
+                    }
+                }
             });
+
+            // Multiply by seeds
+            const totalOutputs = totalTasks * state.seeds;
+            const cost = totalOutputs * 0.14;
 
             if (totalImages === 0) {
                 elements.tomboloStatus.textContent = 'Upload images to get started';
                 elements.tomboloGenerateBtn.disabled = true;
+                elements.tomboloCostValue.textContent = '$0.00';
             } else {
-                elements.tomboloStatus.textContent = `${selectedImages} images selected (${totalImages} total)`;
+                // Build status breakdown
+                let statusParts = [`${selectedImages} inputs`];
+                if (totalGuides > 0) statusParts.push(`${totalGuides} guide${totalGuides > 1 ? 's' : ''}`);
+                if (hasGroupMode) statusParts.push('group');
+                statusParts.push(`${state.seeds} seed${state.seeds > 1 ? 's' : ''}`);
+                statusParts.push(`= ${totalOutputs} outputs`);
+
+                elements.tomboloStatus.textContent = statusParts.join(' × ').replace(' × =', ' =');
                 elements.tomboloGenerateBtn.disabled = selectedImages === 0;
+                elements.tomboloCostValue.textContent = `$${cost.toFixed(2)}`;
             }
         }
 
@@ -4606,18 +4871,47 @@ Return ONLY the prompt, nothing else.`;
             console.log('[Tombolo] Analysis complete, building prompts...');
 
             // STEP 2: Build tasks with prompts (now that we have analyses)
+            // Each task may be multiplied by selected guides (if any)
             const tasks = [];
             TOMBOLO_CATEGORIES.forEach(category => {
-                tomboloState.categories[category].forEach((data, idx) => {
-                    if (data && data.selected) {
+                const selectedImages = tomboloState.categories[category]
+                    .map((data, idx) => ({ data, idx }))
+                    .filter(item => item.data && item.data.selected);
+
+                if (selectedImages.length === 0) return;
+
+                // Get guides for this category (or empty array / null for no guide)
+                const guides = tomboloState.cannyGuides[category] || [];
+                const guidesToUse = guides.length > 0 ? guides : [null]; // null = no guide
+
+                if (tomboloGroupMode[category] === 'group' && selectedImages.length > 1) {
+                    // GROUP MODE: All selected images become ONE task (per guide)
+                    console.log(`[Tombolo] ${category}: Group mode with ${selectedImages.length} images × ${guidesToUse.length} guide(s)`);
+                    guidesToUse.forEach(guide => {
                         tasks.push({
                             category,
-                            slotIndex: idx,
-                            data,
-                            prompt: buildTomboloPrompt(category, data)
+                            slotIndex: selectedImages[0].idx,
+                            isGroupTask: true,
+                            groupImages: selectedImages.map(item => item.data),
+                            guide: guide, // Include guide in task
+                            prompt: buildGroupTomboloPrompt(category, selectedImages.map(item => item.data), guide)
                         });
-                    }
-                });
+                    });
+                } else {
+                    // SINGLE MODE (1:1): Each selected image × each guide = separate tasks
+                    selectedImages.forEach(item => {
+                        guidesToUse.forEach(guide => {
+                            tasks.push({
+                                category,
+                                slotIndex: item.idx,
+                                data: item.data,
+                                isGroupTask: false,
+                                guide: guide, // Include guide in task
+                                prompt: buildTomboloPrompt(category, item.data, guide)
+                            });
+                        });
+                    });
+                }
             });
 
             if (tasks.length === 0) {
@@ -4656,18 +4950,37 @@ Return ONLY the prompt, nothing else.`;
                         // Update loader
                         tomboloLoader.updateProgress(`Uploading ${task.category}...`);
 
-                        // Upload image first (use falUrl if already uploaded during analysis)
-                        let imageUrl = task.data.falUrl;
-                        if (!imageUrl) {
-                            const uploadResult = await api.uploadBase64(task.data.url);
-                            imageUrl = uploadResult.url;
-                            task.data.falUrl = imageUrl;
+                        // Build image_urls array
+                        const imageUrls = [];
+                        const sourceImageUrls = []; // For result card tracking
+
+                        if (task.isGroupTask) {
+                            // GROUP MODE: Upload all images in the group
+                            console.log(`[Tombolo] Group task for ${task.category} with ${task.groupImages.length} images`);
+                            for (const imgData of task.groupImages) {
+                                let imageUrl = imgData.falUrl;
+                                if (!imageUrl) {
+                                    const uploadResult = await api.uploadBase64(imgData.url);
+                                    imageUrl = uploadResult.url;
+                                    imgData.falUrl = imageUrl;
+                                }
+                                imageUrls.push(imageUrl);
+                                sourceImageUrls.push(imgData.url);
+                            }
+                        } else {
+                            // SINGLE MODE: Upload single image
+                            let imageUrl = task.data.falUrl;
+                            if (!imageUrl) {
+                                const uploadResult = await api.uploadBase64(task.data.url);
+                                imageUrl = uploadResult.url;
+                                task.data.falUrl = imageUrl;
+                            }
+                            imageUrls.push(imageUrl);
+                            sourceImageUrls.push(task.data.url);
                         }
 
-                        // Build image_urls array - garment photo first, then canny guide if active
-                        const imageUrls = [imageUrl];
-                        const cannyGuide = (task.category === 'front' || task.category === 'back')
-                            ? tomboloState.cannyGuides[task.category] : null;
+                        // Add canny guide if task has one (guide goes last)
+                        const cannyGuide = task.guide || null;
                         if (cannyGuide) {
                             // Upload canny guide if not already uploaded to fal
                             if (!cannyGuide.falUrl) {
@@ -4686,6 +4999,7 @@ Return ONLY the prompt, nothing else.`;
                             imageUrls.push(cannyGuide.falUrl);
                         }
 
+                        console.log(`[Tombolo] Generating ${task.category} with ${imageUrls.length} image(s)${cannyGuide ? ' (incl. guide)' : ''}`);
                         tomboloLoader.updateProgress(`Generating ${task.category}...`);
 
                         // Generate using Gemini remix endpoint
@@ -4697,7 +5011,8 @@ Return ONLY the prompt, nothing else.`;
                                 prompt: task.prompt,
                                 image_urls: imageUrls,
                                 aspect_ratio: state.aspectRatio,
-                                resolution: state.resolution
+                                resolution: state.resolution,
+                                web_search: state.webSearch
                             })
                         });
 
@@ -4708,12 +5023,17 @@ Return ONLY the prompt, nothing else.`;
                         // Add to results
                         if (data.images && data.images.length > 0) {
                             data.images.forEach(img => {
+                                // Include guide in source images for lightbox display
+                                const allSourceImages = [...sourceImageUrls];
+                                if (cannyGuide && cannyGuide.url) {
+                                    allSourceImages.push(cannyGuide.url);
+                                }
                                 const card = createResultCard({
                                     url: img.url,
                                     prompt: task.prompt,
                                     model: 'Gemini 3 Pro',
-                                    sourceImages: [task.data.url],
-                                    category: task.category
+                                    sourceImages: allSourceImages,
+                                    category: task.category + (task.isGroupTask ? ' (Group)' : '')
                                 });
                                 elements.resultsGrid.prepend(card);
                             });
@@ -4738,41 +5058,115 @@ Return ONLY the prompt, nothing else.`;
 
         // Build prompt for Tombolo image
         // IMPORTANT: These prompts are generic - the specific garment details come from the analysis
-        function buildTomboloPrompt(category, data) {
-            const analysis = data.analysis || 'garment';
-            const hasCannyGuide = (category === 'front' || category === 'back') && tomboloState.cannyGuides[category];
+        // materialOverride allows user to specify material (e.g., "terrycloth") which overrides analysis
+        // guide parameter is optional - passed from task for multi-guide support
+        function buildTomboloPrompt(category, data, guide = null) {
+            // Use material override if provided, otherwise use Gemini analysis
+            const analysis = data.materialOverride || data.analysis || 'garment';
+            const hasCannyGuide = guide !== null;
 
             let prompt = '';
 
             switch (category) {
                 case 'front':
                     // Full front - hanging shape, gravity pulling straight down, pure white bg
-                    prompt = `Professional e-commerce product photography. Recreate this exact garment front view on PURE WHITE background. The garment: ${analysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture and weave clearly visible. Sharp focus throughout.`;
+                    prompt = `Professional e-commerce product photography. Recreate this exact garment front view on PURE WHITE background. The garment: ${analysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. The garment should have a subtle natural volume and body - not pressed completely flat, but with a gentle three-dimensional quality as if it has some air underneath, giving it life and dimension. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture and weave clearly visible. Sharp focus throughout.`;
                     break;
                 case 'back':
                     // Full back - hanging shape, gravity pulling straight down, pure white bg
-                    prompt = `Professional e-commerce product photography. Recreate this exact garment back view on PURE WHITE background. The garment: ${analysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture visible. Sharp focus throughout.`;
+                    prompt = `Professional e-commerce product photography. Recreate this exact garment back view on PURE WHITE background. The garment: ${analysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. The garment should have a subtle natural volume and body - not pressed completely flat, but with a gentle three-dimensional quality as if it has some air underneath, giving it life and dimension. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture visible. Sharp focus throughout.`;
                     break;
                 case 'collar1':
-                    // Detail shot of collar area - straight from above
-                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Camera straight down from above. The detail: ${analysis}. Sharp focus on fabric texture, labels, and trim details. Show material quality.`;
+                    // Detail shot of collar area - 45 degree angle from above
+                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Camera at approximately 45-degree angle from above, showing depth and dimension of the collar construction. The detail: ${analysis}. Sharp focus on fabric texture, labels, buttons, and trim details. Show material quality and craftsmanship. Clean studio lighting.`;
                     break;
                 case 'collar2':
-                    // Detail shot of collar area - angled from the side
-                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Shot at an angle from the side to show depth and dimension. The detail: ${analysis}. Sharp focus on fabric texture, labels, and trim details. Show material quality.`;
+                    // Detail shot of collar area - slightly different 45 degree angle
+                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Camera at a 45-degree elevated angle, slightly different perspective than standard. The detail: ${analysis}. Focus on collar shape, construction details, and fabric quality. Show how the collar sits and folds. Professional studio lighting with soft shadows for depth.`;
                     break;
                 case 'detail1':
+                    // Detail - macro style with shallow depth of field
+                    prompt = `Professional e-commerce product photography. Recreate this exact product shot preserving all colors, patterns, fabric textures, and details visible in the reference image. The product: ${analysis}. Clean studio photography on pure white background. Macro-style close-up with subtle shallow depth of field - main subject in sharp focus, edges slightly softer. Studio lighting with neutral white balance.`;
+                    break;
                 case 'detail2':
-                    // Detail of embroidery/print/logo - PRESERVE the garment fabric, studio lighting
-                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up shot showing the embroidery, patches, or graphic details on the garment. IMPORTANT: Preserve the garment's fabric pattern and texture visible in the reference - do not replace with plain white. The detail: ${analysis}. Studio lighting with neutral white balance. Even focus throughout - no shallow depth of field. Sharp and clean, not like a phone photo.`;
+                    // Detail - slightly lower angle, even focus
+                    prompt = `Professional e-commerce product photography. Recreate this exact product shot preserving all colors, patterns, fabric textures, and details visible in the reference image. The product: ${analysis}. Clean studio photography on pure white background. Shot from a slightly lower angle to show dimension and texture. Even focus throughout - everything sharp. Studio lighting with soft shadows for depth.`;
                     break;
             }
 
             // Add canny guide instruction when a structural guide is active
-            if (hasCannyGuide) {
+            if (hasCannyGuide && guide) {
                 prompt += ` IMPORTANT: A second reference image is provided as a structural guide. Follow this guide image for the overall composition, shape, silhouette, and proportions of the garment. The garment's appearance, colors, fabric, and all visual details should come from the first photo reference - but the position, size, and shape should match the structural guide.`;
+
+                // Add guide-specific styling details if provided
+                if (guide.guidePrompt) {
+                    prompt += ` STYLING NOTE: ${guide.guidePrompt}`;
+                }
             }
 
+            return prompt;
+        }
+
+        // Build prompt for GROUP mode - combines multiple image analyses
+        // guide parameter is optional - passed from task for multi-guide support
+        function buildGroupTomboloPrompt(category, imagesData, guide = null) {
+            // Analyze the role of each image based on its content
+            // First image is typically the main garment, subsequent images are detail references
+            const analyses = imagesData.map((d, i) => ({
+                index: i + 1,
+                analysis: d.materialOverride || d.analysis || 'garment',
+                isFirst: i === 0
+            }));
+
+            const hasCannyGuide = guide !== null;
+
+            // Build the main prompt based on category
+            let prompt = '';
+            const primaryAnalysis = analyses[0].analysis;
+            const detailAnalyses = analyses.slice(1).map(a => a.analysis);
+
+            switch (category) {
+                case 'front':
+                    prompt = `Professional e-commerce product photography. Recreate this exact garment front view on PURE WHITE background. PRIMARY GARMENT (Image 1): ${primaryAnalysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. The garment should have a subtle natural volume and body - not pressed completely flat, but with a gentle three-dimensional quality as if it has some air underneath, giving it life and dimension. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture and weave clearly visible. Sharp focus throughout.`;
+                    break;
+                case 'back':
+                    prompt = `Professional e-commerce product photography. Recreate this exact garment back view on PURE WHITE background. PRIMARY GARMENT (Image 1): ${primaryAnalysis}. The garment should appear as if floating - shoulders hold the shape at the top, sleeves and body hang straight down with gravity. Perfectly symmetrical and centered. The garment should have a subtle natural volume and body - not pressed completely flat, but with a gentle three-dimensional quality as if it has some air underneath, giving it life and dimension. No wind, no movement, no tilting or leaning to either side - the garment hangs perfectly still and straight. NO hanger visible. NO shadow. Clean pure white background with no gradients. Fabric texture visible. Sharp focus throughout.`;
+                    break;
+                case 'collar1':
+                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Camera at approximately 45-degree angle from above, showing depth and dimension of the collar construction. PRIMARY DETAIL (Image 1): ${primaryAnalysis}. Sharp focus on fabric texture, labels, buttons, and trim details. Show material quality and craftsmanship. Clean studio lighting.`;
+                    break;
+                case 'collar2':
+                    prompt = `Professional e-commerce detail photography. Recreate this exact close-up of the collar/neck area on PURE WHITE background. Camera at a 45-degree elevated angle, slightly different perspective than standard. PRIMARY DETAIL (Image 1): ${primaryAnalysis}. Focus on collar shape, construction details, and fabric quality. Show how the collar sits and folds. Professional studio lighting with soft shadows for depth.`;
+                    break;
+                case 'detail1':
+                    prompt = `Professional e-commerce product photography. Recreate this exact product shot preserving all colors, patterns, fabric textures, and details visible in the reference image. PRIMARY PRODUCT (Image 1): ${primaryAnalysis}. Clean studio photography on pure white background. Macro-style close-up with subtle shallow depth of field - main subject in sharp focus, edges slightly softer. Studio lighting with neutral white balance.`;
+                    break;
+                case 'detail2':
+                    prompt = `Professional e-commerce product photography. Recreate this exact product shot preserving all colors, patterns, fabric textures, and details visible in the reference image. PRIMARY PRODUCT (Image 1): ${primaryAnalysis}. Clean studio photography on pure white background. Shot from a slightly lower angle to show dimension and texture. Even focus throughout - everything sharp. Studio lighting with soft shadows for depth.`;
+                    break;
+            }
+
+            // Add detail reference images instructions
+            if (detailAnalyses.length > 0) {
+                prompt += ` IMPORTANT DETAIL REFERENCES: Additional reference images are provided for specific details that must be accurately preserved.`;
+                detailAnalyses.forEach((detail, i) => {
+                    prompt += ` Reference Image ${i + 2}: ${detail} - ensure this detail is accurately reproduced in the final image.`;
+                });
+                prompt += ` Use the primary image (Image 1) for overall garment appearance, but reference the detail images to ensure logos, embroidery, patterns, and other specific details are accurately rendered.`;
+            }
+
+            // Add canny guide instruction when a structural guide is active
+            if (hasCannyGuide && guide) {
+                const guideImageNum = imagesData.length + 1; // Guide comes after all product images
+                prompt += ` STRUCTURAL GUIDE (Image ${guideImageNum}): A structural guide image is provided. Follow this guide for the overall composition, shape, silhouette, and proportions of the garment. The garment's appearance, colors, fabric, and all visual details should come from the product photo references - but the position, size, and shape should match the structural guide.`;
+
+                // Add guide-specific styling details if provided
+                if (guide.guidePrompt) {
+                    prompt += ` STYLING NOTE: ${guide.guidePrompt}`;
+                }
+            }
+
+            console.log(`[Tombolo Group] Built prompt for ${category} with ${imagesData.length} images${hasCannyGuide ? ' + guide' : ''}`);
             return prompt;
         }
 
@@ -4810,20 +5204,36 @@ Return ONLY the prompt, nothing else.`;
             document.querySelectorAll('.canny-guide-selector').forEach(selector => {
                 const category = selector.dataset.cannyCategory;
 
-                // Click on "Off" option
+                // Click on "Off" option - clears all selected guides
                 selector.querySelector('.none-option').addEventListener('click', () => {
-                    tomboloState.cannyGuides[category] = null;
+                    tomboloState.cannyGuides[category] = [];
                     updateCannyGuideUI(category);
                 });
 
-                // Click on preset guide thumbnails
+                // Click on preset guide thumbnails - TOGGLE selection (multi-select)
                 selector.querySelectorAll('.preset-option').forEach(presetOption => {
                     presetOption.addEventListener('click', () => {
                         const src = presetOption.dataset.guideSrc;
-                        tomboloState.cannyGuides[category] = {
-                            url: src,       // static asset path
-                            falUrl: null    // will upload to fal during generation
-                        };
+                        const guidePrompt = presetOption.dataset.guidePrompt || null;
+                        const guides = tomboloState.cannyGuides[category];
+
+                        // Check if already selected
+                        const existingIndex = guides.findIndex(g => g.url === src);
+
+                        if (existingIndex >= 0) {
+                            // Remove if already selected
+                            guides.splice(existingIndex, 1);
+                            console.log(`[Tombolo] Removed guide from ${category}: ${src}`);
+                        } else {
+                            // Add to selection
+                            guides.push({
+                                url: src,
+                                falUrl: null,
+                                guidePrompt: guidePrompt
+                            });
+                            console.log(`[Tombolo] Added guide to ${category}: ${src} (${guides.length} total)`);
+                        }
+
                         updateCannyGuideUI(category);
                     });
                 });
@@ -4836,22 +5246,44 @@ Return ONLY the prompt, nothing else.`;
 
             const noneOption = selector.querySelector('.none-option');
             const presetOptions = selector.querySelectorAll('.preset-option');
-            const guide = tomboloState.cannyGuides[category];
+            const guides = tomboloState.cannyGuides[category] || [];
 
             // Reset all
             noneOption.classList.remove('active');
             presetOptions.forEach(p => p.classList.remove('active'));
 
-            if (guide) {
-                // Find and activate the matching preset
+            if (guides.length === 0) {
+                noneOption.classList.add('active');
+            } else {
+                // Mark all selected guides as active
+                const selectedUrls = guides.map(g => g.url);
                 presetOptions.forEach(p => {
-                    if (p.dataset.guideSrc === guide.url) {
+                    if (selectedUrls.includes(p.dataset.guideSrc)) {
                         p.classList.add('active');
                     }
                 });
-            } else {
-                noneOption.classList.add('active');
             }
+        }
+
+        // Initialize group mode toggles
+        function initTomboloGroupToggles() {
+            document.querySelectorAll('.tombolo-mode-toggle').forEach(toggle => {
+                const category = toggle.dataset.category;
+                const buttons = toggle.querySelectorAll('.tombolo-mode-btn');
+
+                buttons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const mode = btn.dataset.mode;
+                        tomboloGroupMode[category] = mode;
+
+                        // Update active state
+                        buttons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        console.log(`[Tombolo] ${category} mode changed to: ${mode}`);
+                    });
+                });
+            });
         }
 
         // Initialize
@@ -4859,6 +5291,7 @@ Return ONLY the prompt, nothing else.`;
         renderSets();
         initTomboloGrids();
         initCannyGuides();
+        initTomboloGroupToggles();
     </script>
 </body>
 </html>

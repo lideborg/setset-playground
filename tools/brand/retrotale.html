@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Retro Tale</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👜</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-md);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .page-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+        }
+
+        /* Settings Bar */
+        .settings-bar {
+            display: flex;
+            gap: var(--space-md);
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2xs);
+        }
+
+        .setting-item label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            white-space: nowrap;
+        }
+
+        .btn-group-compact {
+            display: flex;
+            gap: 2px;
+        }
+
+        .btn-group-compact button {
+            padding: 4px 8px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-group-compact button:first-child {
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+        }
+
+        .btn-group-compact button:last-child {
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+
+        .btn-group-compact button:only-child {
+            border-radius: var(--radius-xs);
+        }
+
+        .btn-group-compact button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        /* Category Rows */
+        .category-rows {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .category-row {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--off-white);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .category-thumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .category-placeholder {
+            width: 48px;
+            height: 48px;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .category-name {
+            font-size: var(--text-sm);
+            color: var(--jet);
+            font-weight: 600;
+        }
+
+        .category-products {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+            padding: var(--space-md);
+        }
+
+        /* Product Groups (within category row) */
+        .product-group {
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            padding: var(--space-xs);
+        }
+
+        .product-group-header {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            font-weight: 500;
+            margin-bottom: var(--space-2xs);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-group-clear {
+            font-size: var(--text-2xs);
+            color: var(--french-gray);
+            cursor: pointer;
+        }
+
+        .product-group-clear:hover {
+            color: var(--jet);
+        }
+
+        .product-group-slots {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-2xs);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--slate);
+            background: var(--off-white);
+        }
+
+        .upload-slot.filled {
+            border-style: solid;
+            border-color: var(--jet);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .placeholder {
+            font-size: 18px;
+            color: var(--gainsboro);
+            font-weight: 300;
+        }
+
+        .upload-slot .slot-label {
+            font-size: 8px;
+            color: var(--french-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-top: 2px;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        /* Model Selector */
+        .model-selector {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+            overflow: hidden;
+        }
+
+        .model-selector-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--off-white);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .model-selector-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .model-selector-subtitle {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: var(--space-xs);
+            padding: var(--space-md);
+        }
+
+        .model-card {
+            position: relative;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .model-card:hover {
+            border-color: var(--slate);
+        }
+
+        .model-card.selected {
+            border-color: var(--jet);
+        }
+
+        .model-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .model-card .model-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2px 4px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 8px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .model-card.none-selected {
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 3/4;
+            border: 2px dashed var(--gainsboro);
+        }
+
+        .model-card.none-selected:hover {
+            border-color: var(--slate);
+            border-style: dashed;
+        }
+
+        .model-card.none-selected.selected {
+            border-color: var(--jet);
+            border-style: solid;
+            background: var(--white);
+        }
+
+        .model-card.none-selected span {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        /* Generate Section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .generate-info {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-header h2 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .result-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+
+        .result-card.loading {
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            aspect-ratio: 3/4;
+        }
+
+        .result-card .spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .batch-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) 0;
+        }
+
+        .batch-divider::before,
+        .batch-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">A Retro Tale</h1>
+        </div>
+
+        <!-- Settings Bar -->
+        <div class="settings-bar">
+            <div class="setting-item">
+                <label>Ratio:</label>
+                <div class="btn-group-compact" id="aspect-buttons">
+                    <button data-value="1:1">1:1</button>
+                    <button class="active" data-value="3:4">3:4</button>
+                    <button data-value="4:3">4:3</button>
+                    <button data-value="9:16">9:16</button>
+                    <button data-value="16:9">16:9</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Resolution:</label>
+                <div class="btn-group-compact" id="resolution-buttons">
+                    <button data-value="1K">1K</button>
+                    <button class="active" data-value="2K">2K</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Seeds:</label>
+                <div class="btn-group-compact" id="seeds-buttons">
+                    <button class="active" data-value="1">1</button>
+                    <button data-value="2">2</button>
+                    <button data-value="3">3</button>
+                    <button data-value="4">4</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Selector -->
+        <div class="model-selector">
+            <div class="model-selector-header">
+                <div>
+                    <div class="model-selector-title">Model (Optional)</div>
+                    <div class="model-selector-subtitle">Select a model to replace the default reference</div>
+                </div>
+            </div>
+            <div class="model-grid" id="model-grid">
+                <!-- Generated dynamically -->
+            </div>
+        </div>
+
+        <!-- Category Rows -->
+        <div class="category-rows" id="category-rows">
+            <!-- Generated dynamically -->
+        </div>
+
+        <input type="file" id="file-input" accept="image/*" multiple>
+
+        <!-- Generate Section -->
+        <div class="generate-section">
+            <div class="generate-info" id="generate-info">Upload product images to generate</div>
+            <button class="btn btn--primary" id="generate-btn" disabled>Generate</button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Inline Loader (shared style) -->
+    <div class="inline-loader" id="inline-loader">
+        <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+        <div class="loader-progress" id="loader-progress">Preparing...</div>
+    </div>
+
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script src="/shared/js/lightbox.js"></script>
+    <script>
+        // Female models with descriptions
+        const FEMALE_MODELS = [
+            { id: 'maya', name: 'Maya Johnson', thumb: '/shared/images/talent/thumbs/talent-02_MayaJohnson.png', image: '/shared/images/talent/talent-02_MayaJohnson.png', description: 'A mid 20s female with dark brown wavy hair, medium tan skin, and strong eyebrows.' },
+            { id: 'emma', name: 'Emma Sullivan', thumb: '/shared/images/talent/thumbs/talent-04_EmmaSullivan.png', image: '/shared/images/talent/talent-04_EmmaSullivan.png', description: 'A young Caucasian female in her early 20s with brown straight shoulder-length hair, fair skin, and prominent cheekbones.' },
+            { id: 'zara', name: 'Zara Mitchell', thumb: '/shared/images/talent/thumbs/talent-06_ZaraMitchell.png', image: '/shared/images/talent/talent-06_ZaraMitchell.png', description: 'A young female with dark skin, natural black hair, and striking features.' },
+            { id: 'sophia', name: 'Sophia Anderson', thumb: '/shared/images/talent/thumbs/talent-07_SophiaAnderson.png', image: '/shared/images/talent/talent-07_SophiaAnderson.png', description: 'A young Caucasian female in her early 20s with light brown, wavy, shoulder-length hair, fair skin, and thick eyebrows.' },
+            { id: 'nina', name: 'Nina Davis', thumb: '/shared/images/talent/thumbs/talent-09_NinaDavis.png', image: '/shared/images/talent/talent-09_NinaDavis.png', description: 'A mid 20s Southeast Asian female with long, straight black hair, medium brown skin tone, and high cheekbones.' },
+            { id: 'luna', name: 'Luna Park', thumb: '/shared/images/talent/thumbs/talent-11_LunaPark.png', image: '/shared/images/talent/talent-11_LunaPark.png', description: 'A Caucasian female in her early 20s with long brown hair, fair skin, and thick eyebrows.' },
+            { id: 'mia', name: 'Mia Parker', thumb: '/shared/images/talent/thumbs/talent-13_MiaParker.png', image: '/shared/images/talent/talent-13_MiaParker.png', description: 'A young Black female with short natural curls and deep brown skin.' },
+            { id: 'isabella', name: 'Isabella Rodriguez', thumb: '/shared/images/talent/thumbs/talent-16_IsabellaRodriguez.png', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png', description: 'A Caucasian woman in her 40s with grey shoulder-length hair and intense blue eyes.' },
+            { id: 'casey', name: 'Casey White', thumb: '/shared/images/talent/thumbs/talent-18_CaseyWhite.png', image: '/shared/images/talent/talent-18_CaseyWhite.png', description: 'A mid 20s Asian female with long black hair pulled back, medium skin tone, and a symmetrical face.' },
+            { id: 'avery', name: 'Avery Taylor', thumb: '/shared/images/talent/thumbs/talent-21_AveryTaylor.png', image: '/shared/images/talent/talent-21_AveryTaylor.png', description: 'A mid-20s Black female with short curly black hair, medium brown skin, and strong eyebrows.' },
+            { id: 'sofia', name: 'Sofia Rodriguez', thumb: '/shared/images/talent/thumbs/talent-27_SofiaRodriguez.png', image: '/shared/images/talent/talent-27_SofiaRodriguez.png', description: 'A young Latina female with warm brown skin and dark hair.' },
+            { id: 'clara', name: 'Clara Devereaux', thumb: '/shared/images/talent/thumbs/talent-29_ClaraDevereaux.png', image: '/shared/images/talent/talent-29_ClaraDevereaux.png', description: 'A young female with elegant features and fair skin.' }
+        ];
+
+        // Product categories with reference models (randomly selected per generation)
+        const CATEGORIES = [
+            {
+                id: 'bags',
+                name: 'Bags',
+                thumb: '/assets/brand/retrotale/reference_model.jpg',
+                secondSlotLabel: 'Mannequin',
+                referenceModels: [
+                    '/assets/brand/retrotale/reference_model.jpg',
+                    '/assets/brand/retrotale/reference_model_02.jpg',
+                    '/assets/brand/retrotale/reference_model_03.jpg'
+                ],
+                prompt: 'Replace the bag the model is holding with this exact product. Match the bag precisely: same material, color, hardware, shape, and size. Use the mannequin image to determine the correct scale of the bag relative to the model. Keep the model pose, lighting, and background identical.'
+            },
+            {
+                id: 'watch_male',
+                name: 'Watch Male',
+                thumb: '/assets/brand/retrotale/reference_watch_male.jpg',
+                secondSlotLabel: 'Angle 2',
+                referenceModels: [
+                    '/assets/brand/retrotale/reference_watch_male.jpg',
+                    '/assets/brand/retrotale/reference_watch_male_02.jpg'
+                ],
+                prompt: 'Replace the watch on the male wrist with this exact watch. Match the watch precisely: same case shape, dial design, bracelet/band style, and all details. Use the wrist reference to determine the correct scale.'
+            },
+            {
+                id: 'watch_female',
+                name: 'Watch Female',
+                thumb: '/assets/brand/retrotale/reference_watch_female.jpg',
+                secondSlotLabel: 'Angle 2',
+                referenceModels: [
+                    '/assets/brand/retrotale/reference_watch_female.jpg',
+                    '/assets/brand/retrotale/reference_watch_female_02.jpg'
+                ],
+                prompt: 'Replace the watch on the female wrist with this exact watch. Match the watch precisely: same case shape, dial design, bracelet/band style, and all details. Use the wrist reference to determine the correct scale.'
+            },
+            {
+                id: 'necklace',
+                name: 'Necklace',
+                thumb: '/assets/brand/retrotale/necklace/necklace_01.jpg',
+                secondSlotLabel: 'Angle 2',
+                referenceModels: [
+                    '/assets/brand/retrotale/necklace/necklace_01.jpg',
+                    '/assets/brand/retrotale/necklace/necklace_02.jpg',
+                    '/assets/brand/retrotale/necklace/necklace_03.jpg'
+                ],
+                prompt: 'Add this exact necklace to the model. Match it precisely: same chain style, pendant design, material, and all details. The necklace should sit naturally on the neck/chest area. Keep the model pose, lighting, and background identical.'
+            },
+            {
+                id: 'earring',
+                name: 'Earring',
+                thumb: '/assets/brand/retrotale/earring/earring_01.jpg',
+                secondSlotLabel: 'Angle 2',
+                referenceModels: [
+                    '/assets/brand/retrotale/earring/earring_01.jpg',
+                    '/assets/brand/retrotale/earring/earring_02.jpg',
+                    '/assets/brand/retrotale/earring/earring_03.jpg'
+                ],
+                prompt: 'Add these exact earrings to the model. Match them precisely: same design, material, size, and all details. The earrings should be visible on the ears. Keep the model pose, lighting, and background identical.'
+            }
+        ];
+
+        // Helper function to get a random reference model for a category
+        function getRandomReferenceModel(category) {
+            const randomIndex = Math.floor(Math.random() * category.referenceModels.length);
+            return category.referenceModels[randomIndex];
+        }
+
+        // State - each category has 4 product groups
+        const state = {
+            categories: {},
+            selectedModels: [], // Array of model objects - rotates through them
+            aspectRatio: '3:4',
+            resolution: '2K',
+            seeds: 1,
+            webSearch: true, // Default ON
+            results: [],
+            batchCounter: 0,
+            uploadedReferenceUrls: {},
+            uploadedModelUrls: {} // { modelId: falUrl }
+        };
+
+        // Track which model to use next (rotates through selected models)
+        let selectedModelIndex = 0;
+
+        // Initialize category groups
+        CATEGORIES.forEach(cat => {
+            state.categories[cat.id] = [
+                { product: null, mannequin: null },
+                { product: null, mannequin: null },
+                { product: null, mannequin: null },
+                { product: null, mannequin: null }
+            ];
+        });
+
+        // Track which slot is being filled
+        let activeCategory = null;
+        let activeGroupIndex = null;
+        let activeSlotType = null;
+
+        // DOM Elements
+        const elements = {
+            aspectButtons: document.getElementById('aspect-buttons'),
+            resolutionButtons: document.getElementById('resolution-buttons'),
+            seedsButtons: document.getElementById('seeds-buttons'),
+            modelGrid: document.getElementById('model-grid'),
+            categoryRows: document.getElementById('category-rows'),
+            fileInput: document.getElementById('file-input'),
+            generateInfo: document.getElementById('generate-info'),
+            generateBtn: document.getElementById('generate-btn'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid')
+        };
+
+        // Initialize shared loader
+        let loader = null;
+        let lightbox = null;
+
+        // Initialize
+        function init() {
+            renderModelGrid();
+            renderCategoryRows();
+            setupEventListeners();
+            updateUI();
+        }
+
+        function renderModelGrid() {
+            let html = `<div class="model-card none-selected ${state.selectedModels.length === 0 ? 'selected' : ''}" data-model="none"><span>None</span></div>`;
+
+            FEMALE_MODELS.forEach(model => {
+                const isSelected = state.selectedModels.some(m => m.id === model.id);
+                html += `
+                    <div class="model-card ${isSelected ? 'selected' : ''}" data-model="${model.id}">
+                        <img src="${model.thumb}" alt="${model.name}" loading="lazy">
+                        <div class="model-name">${model.name.split(' ')[0]}</div>
+                    </div>
+                `;
+            });
+
+            elements.modelGrid.innerHTML = html;
+
+            // Add click handlers
+            elements.modelGrid.querySelectorAll('.model-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const modelId = card.dataset.model;
+
+                    if (modelId === 'none') {
+                        // Clear all selections
+                        state.selectedModels = [];
+                        state.uploadedModelUrls = {};
+                    } else {
+                        // Toggle this model's selection
+                        const model = FEMALE_MODELS.find(m => m.id === modelId);
+                        const existingIndex = state.selectedModels.findIndex(m => m.id === modelId);
+
+                        if (existingIndex >= 0) {
+                            // Remove from selection
+                            state.selectedModels.splice(existingIndex, 1);
+                        } else {
+                            // Add to selection
+                            state.selectedModels.push(model);
+                        }
+                    }
+
+                    renderModelGrid(); // Re-render to update selection state
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            // Aspect ratio buttons
+            elements.aspectButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.aspectButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.aspectRatio = e.target.dataset.value;
+                }
+            });
+
+            // Resolution buttons
+            elements.resolutionButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.resolutionButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.resolution = e.target.dataset.value;
+                }
+            });
+
+            // Seeds buttons
+            elements.seedsButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    elements.seedsButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.seeds = parseInt(e.target.dataset.value);
+                    updateUI();
+                }
+            });
+
+            // File input
+            elements.fileInput.addEventListener('change', handleFileSelect);
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', handleGenerate);
+
+            // Global paste handler
+            document.addEventListener('paste', handlePaste);
+        }
+
+        function renderCategoryRows() {
+            let html = '';
+            CATEGORIES.forEach(cat => {
+                const groups = state.categories[cat.id];
+                const emoji = cat.id.startsWith('watch') ? '⌚' : cat.id === 'necklace' ? '📿' : cat.id === 'earring' ? '💎' : '👜';
+
+                html += `
+                    <div class="category-row" data-category="${cat.id}">
+                        <div class="category-header">
+                            ${cat.thumb
+                                ? `<img src="${cat.thumb}" alt="${cat.name}" class="category-thumb">`
+                                : `<div class="category-placeholder">${emoji}</div>`
+                            }
+                            <div class="category-name">${cat.name}</div>
+                        </div>
+                        <div class="category-products">
+                            ${groups.map((group, idx) => `
+                                <div class="product-group" data-category="${cat.id}" data-group="${idx}">
+                                    <div class="product-group-header">
+                                        <span>Product ${idx + 1}</span>
+                                        ${(group.product || group.mannequin)
+                                            ? `<span class="product-group-clear" data-category="${cat.id}" data-group="${idx}">Clear</span>`
+                                            : ''}
+                                    </div>
+                                    <div class="product-group-slots">
+                                        <div class="upload-slot ${group.product ? 'filled' : ''}"
+                                             data-category="${cat.id}" data-group="${idx}" data-slot="product">
+                                            ${group.product
+                                                ? `<img src="${group.product.thumbnail}" alt="Product"><button class="remove-btn">&times;</button>`
+                                                : `<div class="placeholder">+</div><div class="slot-label">Front</div>`
+                                            }
+                                        </div>
+                                        <div class="upload-slot ${group.mannequin ? 'filled' : ''}"
+                                             data-category="${cat.id}" data-group="${idx}" data-slot="mannequin">
+                                            ${group.mannequin
+                                                ? `<img src="${group.mannequin.thumbnail}" alt="Scale"><button class="remove-btn">&times;</button>`
+                                                : `<div class="placeholder">+</div><div class="slot-label">Scale</div>`
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            elements.categoryRows.innerHTML = html;
+
+            // Attach event handlers
+            attachSlotHandlers();
+        }
+
+        function attachSlotHandlers() {
+            // Slot click handlers
+            document.querySelectorAll('.upload-slot').forEach(slot => {
+                slot.addEventListener('click', (e) => {
+                    const category = slot.dataset.category;
+                    const groupIndex = parseInt(slot.dataset.group);
+                    const slotType = slot.dataset.slot;
+
+                    if (e.target.classList.contains('remove-btn')) {
+                        state.categories[category][groupIndex][slotType] = null;
+                        renderCategoryRows();
+                        updateUI();
+                    } else if (!slot.classList.contains('filled')) {
+                        activeCategory = category;
+                        activeGroupIndex = groupIndex;
+                        activeSlotType = slotType;
+                        elements.fileInput.click();
+                    }
+                });
+
+                // Drag and drop
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    slot.style.borderColor = 'var(--jet)';
+                });
+
+                slot.addEventListener('dragleave', () => {
+                    if (!slot.classList.contains('filled')) {
+                        slot.style.borderColor = '';
+                    }
+                });
+
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slot.style.borderColor = '';
+
+                    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    if (files.length === 0) return;
+
+                    const category = slot.dataset.category;
+                    const groupIndex = parseInt(slot.dataset.group);
+                    const slotType = slot.dataset.slot;
+
+                    // Fill dropped slot
+                    handleFileForSlot(files[0], category, groupIndex, slotType);
+
+                    // If second file, fill other slot
+                    if (files.length >= 2) {
+                        const otherSlot = slotType === 'product' ? 'mannequin' : 'product';
+                        if (!state.categories[category][groupIndex][otherSlot]) {
+                            handleFileForSlot(files[1], category, groupIndex, otherSlot);
+                        }
+                    }
+                });
+            });
+
+            // Clear handlers
+            document.querySelectorAll('.product-group-clear').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const category = btn.dataset.category;
+                    const groupIndex = parseInt(btn.dataset.group);
+                    state.categories[category][groupIndex] = { product: null, mannequin: null };
+                    renderCategoryRows();
+                    updateUI();
+                });
+            });
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0 && activeCategory !== null && activeGroupIndex !== null && activeSlotType !== null) {
+                handleFileForSlot(files[0], activeCategory, activeGroupIndex, activeSlotType);
+            }
+            e.target.value = '';
+            activeCategory = null;
+            activeGroupIndex = null;
+            activeSlotType = null;
+        }
+
+        function handlePaste(e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    if (file) {
+                        e.preventDefault();
+                        // Find first empty slot across all categories
+                        for (const cat of CATEGORIES) {
+                            const groups = state.categories[cat.id];
+                            for (let i = 0; i < groups.length; i++) {
+                                if (!groups[i].product) {
+                                    handleFileForSlot(file, cat.id, i, 'product');
+                                    return;
+                                }
+                                if (!groups[i].mannequin) {
+                                    handleFileForSlot(file, cat.id, i, 'mannequin');
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        async function handleFileForSlot(file, category, groupIndex, slotType) {
+            const thumbnail = await createThumbnail(file, 150);
+            state.categories[category][groupIndex][slotType] = { file, thumbnail, uploaded: null };
+            renderCategoryRows();
+            updateUI();
+        }
+
+        function createThumbnail(file, maxSize = 150) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        height = Math.round((height * maxSize) / width);
+                        width = maxSize;
+                    } else {
+                        width = Math.round((width * maxSize) / height);
+                        height = maxSize;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    URL.revokeObjectURL(url);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+
+                img.src = url;
+            });
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function compressImageForUpload(dataUrl, maxSize = 2500) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxSize || height > maxSize) {
+                        if (width > height) {
+                            height = Math.round((height * maxSize) / width);
+                            width = maxSize;
+                        } else {
+                            width = Math.round((width * maxSize) / height);
+                            height = maxSize;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    resolve(canvas.toDataURL('image/jpeg', 0.9));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        function updateUI() {
+            // Count complete groups across all categories
+            let totalProducts = 0;
+            const categoryCounts = {};
+
+            CATEGORIES.forEach(cat => {
+                const complete = state.categories[cat.id].filter(g => g.product && g.mannequin).length;
+                if (complete > 0) {
+                    categoryCounts[cat.name] = complete;
+                    totalProducts += complete;
+                }
+            });
+
+            elements.generateBtn.disabled = totalProducts === 0;
+
+            if (totalProducts === 0) {
+                elements.generateInfo.textContent = 'Upload product image pairs to generate';
+            } else {
+                const totalImages = totalProducts * state.seeds;
+                const breakdown = Object.entries(categoryCounts).map(([name, count]) => `${count} ${name.toLowerCase()}`).join(', ');
+                elements.generateInfo.textContent = `${breakdown} | ${state.seeds} seed${state.seeds > 1 ? 's' : ''} | ${totalImages} output${totalImages > 1 ? 's' : ''}`;
+            }
+        }
+
+        async function analyzeProduct(productUrl, mannequinUrl, categoryId) {
+            console.log(`🔍 Analyzing ${categoryId} product...`);
+
+            let analysisPrompt;
+
+            if (categoryId === 'watch_male' || categoryId === 'watch_female') {
+                analysisPrompt = `Analyze these two product images of a watch.
+
+Both images show the watch itself (studio/product shots). Use both angles to understand all details.
+
+Describe the watch in EXTREME detail:
+
+1. **CASE**: Shape (round, square, rectangular, tonneau), material (steel, gold, rose gold, two-tone silver/gold, etc.), finish (polished, brushed, satin)
+2. **DIAL**: Color, texture (sunburst, guilloché, plain), markers (Roman numerals, Arabic, indices, diamonds), complications (date window, chronograph subdials, moonphase), brand name/logo placement
+3. **HANDS**: Style (sword, dauphine, baton, alpha, cathedral), color (silver, gold, blued steel), luminous material
+4. **BEZEL**: Type (fluted, smooth, rotating, gem-set), material, width
+5. **CROWN**: Shape, size, any gems or logo
+6. **BRACELET/STRAP**: Type (jubilee, oyster, president, leather, rubber), material, color, link pattern, clasp type
+
+Format your response as:
+PRODUCT: [comprehensive description of every visible detail of the watch - this will be used to recreate the watch exactly]`;
+            } else if (categoryId === 'necklace') {
+                analysisPrompt = `Analyze these two product images of a necklace.
+
+Both images show the necklace itself (studio/product shots). Use both angles to understand all details.
+
+Describe the necklace in EXTREME detail:
+
+1. **CHAIN**: Style (cable, box, rope, snake, figaro, etc.), material (gold, silver, rose gold, platinum), thickness, length
+2. **PENDANT** (if any): Shape, size, material, design, any stones or gems
+3. **CLASP**: Type (lobster, spring ring, toggle, etc.)
+4. **OVERALL LOOK**: Delicate or chunky, modern or vintage, minimalist or ornate
+
+Format your response as:
+PRODUCT: [comprehensive description of every visible detail of the necklace - this will be used to recreate the necklace exactly]`;
+            } else if (categoryId === 'earring') {
+                analysisPrompt = `Analyze these two product images of earrings.
+
+Both images show the earrings themselves (studio/product shots). Use both angles to understand all details.
+
+Describe the earrings in EXTREME detail:
+
+1. **TYPE**: Studs, hoops, drops, dangles, ear cuffs, etc.
+2. **MATERIAL**: Gold, silver, rose gold, platinum, etc.
+3. **DESIGN**: Shape, pattern, any decorative elements
+4. **STONES** (if any): Type, color, cut, setting style
+5. **SIZE**: Small/medium/large, length if drop/dangle style
+6. **CLOSURE**: Post, lever-back, hook, clip-on, etc.
+
+Format your response as:
+PRODUCT: [comprehensive description of every visible detail of the earrings - this will be used to recreate the earrings exactly]`;
+            } else {
+                analysisPrompt = `Analyze these two images of a ${categoryId === 'bags' ? 'bag/handbag' : 'product'}.
+
+Image 1 is the product itself (flat/studio shot).
+Image 2 shows the product on a MANNEQUIN DUMMY - this shows how the product is worn AND the EXACT scale.
+
+Describe the product in detail:
+
+1. Type/style (e.g., shoulder bag, tote, clutch, crossbody, hobo bag, bucket bag, etc.)
+2. Material and texture (leather, canvas, suede, woven, etc.)
+3. Color and finish (matte, glossy, distressed, polished, etc.)
+4. Hardware/details (buckles, zippers, clasps, chains, studs, etc.)
+5. Notable design features (stitching, patterns, logo, pockets, etc.)
+
+6. **EXACT SIZE** - CRITICAL: Measure the bag relative to the mannequin's body:
+   - How wide is the bag compared to the mannequin's torso?
+   - How tall is the bag?
+   - Where does the TOP of the bag sit?
+   - Where does the BOTTOM of the bag sit?
+
+7. **HOW IT'S WORN**: Describe EXACTLY how the bag is worn on the mannequin.
+
+Format your response as THREE parts:
+PRODUCT: [detailed description of the bag appearance]
+SIZE: [exact measurements relative to body]
+WEARING STYLE: [exactly how the mannequin is wearing the bag]`;
+            }
+
+            try {
+                const response = await fetch('/api/analyze-gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_urls: [productUrl, mannequinUrl],
+                        prompt: analysisPrompt
+                    })
+                });
+
+                const data = await response.json();
+                console.log('✅ Product analysis:', data.content);
+                return data.content || `a ${categoryId === 'bags' ? 'designer handbag' : categoryId}`;
+            } catch (error) {
+                console.error('❌ Analysis failed:', error);
+                return `a ${categoryId === 'bags' ? 'designer handbag' : categoryId}`;
+            }
+        }
+
+        async function handleGenerate() {
+            // Collect all complete groups across all categories
+            const allTasks = [];
+
+            for (const cat of CATEGORIES) {
+                const groups = state.categories[cat.id];
+                const completeGroups = groups
+                    .map((g, i) => ({ ...g, index: i, categoryId: cat.id, category: cat }))
+                    .filter(g => g.product && g.mannequin);
+
+                allTasks.push(...completeGroups);
+            }
+
+            if (allTasks.length === 0) return;
+
+            // Initialize loader
+            if (!loader) {
+                loader = new StudioLoader();
+            }
+
+            loader.start('Uploading images...');
+            elements.generateBtn.disabled = true;
+
+            try {
+                // Upload all product images
+                for (let i = 0; i < allTasks.length; i++) {
+                    const task = allTasks[i];
+                    loader.updateProgress(`Uploading ${task.category.name} #${task.index + 1}...`);
+
+                    if (!task.product.uploaded) {
+                        const fullDataUrl = await readFileAsDataURL(task.product.file);
+                        const compressedUrl = await compressImageForUpload(fullDataUrl, 2500);
+                        const result = await api.uploadBase64(compressedUrl);
+                        task.product.uploaded = result.url;
+                    }
+
+                    if (!task.mannequin.uploaded) {
+                        const fullDataUrl = await readFileAsDataURL(task.mannequin.file);
+                        const compressedUrl = await compressImageForUpload(fullDataUrl, 2500);
+                        const result = await api.uploadBase64(compressedUrl);
+                        task.mannequin.uploaded = result.url;
+                    }
+                }
+
+                // Upload reference models for each category that has tasks
+                const categoriesWithTasks = [...new Set(allTasks.map(t => t.categoryId))];
+                for (const catId of categoriesWithTasks) {
+                    const cat = CATEGORIES.find(c => c.id === catId);
+                    for (const refPath of cat.referenceModels) {
+                        if (!state.uploadedReferenceUrls[refPath]) {
+                            loader.updateProgress(`Uploading ${cat.name} references...`);
+                            const refResponse = await fetch(refPath);
+                            const refBlob = await refResponse.blob();
+                            const refDataUrl = await new Promise(resolve => {
+                                const reader = new FileReader();
+                                reader.onload = e => resolve(e.target.result);
+                                reader.readAsDataURL(refBlob);
+                            });
+                            const refResult = await api.uploadBase64(refDataUrl);
+                            state.uploadedReferenceUrls[refPath] = refResult.url;
+                        }
+                    }
+                }
+
+                // Upload all selected model images
+                if (state.selectedModels.length > 0) {
+                    for (const model of state.selectedModels) {
+                        if (!state.uploadedModelUrls[model.id]) {
+                            loader.updateProgress(`Uploading ${model.name} reference...`);
+                            const modelResponse = await fetch(model.image);
+                            const modelBlob = await modelResponse.blob();
+                            const modelDataUrl = await new Promise(resolve => {
+                                const reader = new FileReader();
+                                reader.onload = e => resolve(e.target.result);
+                                reader.readAsDataURL(modelBlob);
+                            });
+                            const modelResult = await api.uploadBase64(modelDataUrl);
+                            state.uploadedModelUrls[model.id] = modelResult.url;
+                        }
+                    }
+                }
+
+                // Reset model rotation index for this batch
+                selectedModelIndex = 0;
+
+                // Analyze each product
+                for (let i = 0; i < allTasks.length; i++) {
+                    const task = allTasks[i];
+                    loader.updateProgress(`Analyzing ${task.category.name} #${task.index + 1}...`);
+                    task.analysis = await analyzeProduct(
+                        task.product.uploaded,
+                        task.mannequin.uploaded,
+                        task.categoryId
+                    );
+                }
+
+                loader.stop();
+
+                // Show results section
+                elements.resultsSection.classList.add('visible');
+                state.batchCounter++;
+
+                // Create batch divider
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                const batchDivider = document.createElement('div');
+                batchDivider.className = 'batch-divider';
+                batchDivider.textContent = `Batch ${state.batchCounter} - ${timeStr}`;
+
+                // Create placeholder cards
+                const totalImages = allTasks.length * state.seeds;
+                const placeholders = [];
+                let cardIndex = 0;
+
+                for (const task of allTasks) {
+                    for (let seed = 0; seed < state.seeds; seed++) {
+                        const card = document.createElement('div');
+                        card.className = 'result-card loading';
+                        card.id = `result-${state.batchCounter}-${cardIndex}`;
+                        card.innerHTML = '<div class="spinner"></div>';
+                        placeholders.push(card);
+                        cardIndex++;
+                    }
+                }
+
+                // Insert at beginning
+                const firstChild = elements.resultsGrid.firstChild;
+                placeholders.reverse().forEach(card => {
+                    elements.resultsGrid.insertBefore(card, firstChild);
+                });
+                elements.resultsGrid.insertBefore(batchDivider, firstChild);
+
+                // Build generation tasks
+                const genTasks = [];
+                cardIndex = 0;
+
+                for (const task of allTasks) {
+                    const cat = task.category;
+
+                    // Get random reference model
+                    const refPath = getRandomReferenceModel(cat);
+                    const refUrl = state.uploadedReferenceUrls[refPath];
+                    console.log(`🎲 ${cat.name} using random reference: ${refPath.split('/').pop()}`);
+
+                    let prompt;
+                    if (task.categoryId === 'watch_male' || task.categoryId === 'watch_female') {
+                        prompt = `${cat.prompt}
+
+${task.analysis}
+
+CRITICAL REQUIREMENTS - MUST FOLLOW EXACTLY:
+
+1. **MATCH THE WATCH EXACTLY**: Recreate this watch with perfect accuracy:
+   - Case: same shape, material, finish (two-tone, polished, brushed)
+   - Dial: same color, markers (Roman numerals if shown), date window position, brand logo
+   - Hands: same style and color
+   - Bezel: same type (fluted, smooth) and material
+   - Bracelet: same link pattern, two-tone pattern if applicable, same clasp
+
+2. **SCALE**: The watch should fit naturally on the wrist - same size as the original watch in the reference image.
+
+3. **POSITION**: Keep the exact same wrist position, angle, and background from the reference image.
+
+ONLY replace the watch. Keep everything else (wrist, skin, hand position, background) identical to the reference.`;
+                    } else if (task.categoryId === 'necklace') {
+                        prompt = `${cat.prompt}
+
+${task.analysis}
+
+CRITICAL REQUIREMENTS - MUST FOLLOW EXACTLY:
+
+1. **MATCH THE NECKLACE EXACTLY**: Recreate this necklace with perfect accuracy:
+   - Chain: same style, material, thickness
+   - Pendant: same shape, size, design, stones
+   - Overall look: same delicacy/chunkiness, style
+
+2. **PLACEMENT**: The necklace should sit naturally on the neck/chest area, visible and properly positioned.
+
+3. **SCALE**: Match the size of the necklace as shown in the reference images.
+
+Keep the model's face, hair, clothing, pose, and background from the reference image. Add the necklace naturally.`;
+                    } else if (task.categoryId === 'earring') {
+                        prompt = `${cat.prompt}
+
+${task.analysis}
+
+CRITICAL REQUIREMENTS - MUST FOLLOW EXACTLY:
+
+1. **MATCH THE EARRINGS EXACTLY**: Recreate these earrings with perfect accuracy:
+   - Type: same style (studs, hoops, drops, etc.)
+   - Material: same metal color and finish
+   - Design: same shape, pattern, stones
+
+2. **PLACEMENT**: The earrings should be visible on the ears, properly positioned.
+
+3. **SCALE**: Match the size of the earrings as shown in the reference images.
+
+Keep the model's face, hair, clothing, pose, and background from the reference image. Add the earrings naturally to both ears.`;
+                    } else {
+                        prompt = `${cat.prompt}
+
+${task.analysis}
+
+CRITICAL REQUIREMENTS - MUST FOLLOW EXACTLY:
+
+1. **SIZE IS THE #1 PRIORITY**: Use the SIZE measurements from the analysis above.
+   - Match the EXACT proportions relative to body
+   - The bag CANNOT be smaller than described
+
+2. **WEARING STYLE**: Copy the mannequin's wearing style EXACTLY.
+
+3. **APPEARANCE**: Match the product exactly - same material, color, hardware, studs, straps, buckles.
+
+Keep the model's face, hair, clothing, pose, and background from the reference image. ONLY replace the bag.`;
+                    }
+
+                    // Build image URLs array
+                    const imageUrls = [refUrl, task.product.uploaded, task.mannequin.uploaded];
+
+                    // If models are selected, rotate through them
+                    if (state.selectedModels.length > 0) {
+                        const currentModel = state.selectedModels[selectedModelIndex % state.selectedModels.length];
+                        const modelUrl = state.uploadedModelUrls[currentModel.id];
+
+                        if (modelUrl) {
+                            imageUrls.push(modelUrl);
+                            prompt += `
+
+**REPLACE THE MODEL**: Use the person from the additional reference image as the model. This is ${currentModel.name}: ${currentModel.description}
+
+The generated image must show THIS SPECIFIC PERSON (matching her face, skin tone, hair) holding/wearing the product. Keep the pose and composition similar to the original reference, but the person must be ${currentModel.name}.`;
+
+                            console.log(`🔄 Using model: ${currentModel.name} (${selectedModelIndex % state.selectedModels.length + 1}/${state.selectedModels.length})`);
+                        }
+
+                        // Rotate to next model for the next generation
+                        selectedModelIndex++;
+                    }
+
+                    for (let seed = 0; seed < state.seeds; seed++) {
+                        const currentCardIndex = cardIndex;
+                        genTasks.push(() => generateImage(prompt, imageUrls, state.batchCounter, currentCardIndex, `${cat.name} #${task.index + 1}`));
+                        cardIndex++;
+                    }
+                }
+
+                console.log(`🖼️ Generating ${totalImages} images in parallel`);
+
+                // Run all in parallel
+                await Promise.all(genTasks.map(task => task()));
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                loader.stop();
+                alert('Generation failed: ' + error.message);
+            }
+
+            elements.generateBtn.disabled = false;
+        }
+
+        async function generateImage(prompt, imageUrls, batchId, cardIndex, productName = '') {
+            const card = document.getElementById(`result-${batchId}-${cardIndex}`);
+
+            try {
+                const response = await fetch('/api/remix-gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'gemini-3-pro',
+                        prompt: prompt,
+                        image_urls: imageUrls,
+                        aspect_ratio: state.aspectRatio,
+                        resolution: state.resolution,
+                        web_search: state.webSearch
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.images && data.images.length > 0) {
+                    const imageUrl = data.images[0].url;
+                    card.classList.remove('loading');
+                    card.innerHTML = `<img src="${imageUrl}" alt="Result">`;
+
+                    const resultIndex = state.results.length;
+                    state.results.push({ url: imageUrl, prompt, productName });
+
+                    card.addEventListener('click', () => {
+                        if (!lightbox) {
+                            lightbox = new Lightbox();
+                        }
+                        const lightboxResults = state.results.map((r, idx) => ({
+                            url: r.url,
+                            prompt: r.prompt,
+                            modelName: r.productName || 'A Retro Tale',
+                            filename: `ARetroTale_${String(idx + 1).padStart(2, '0')}.png`
+                        }));
+                        lightbox.setResults(lightboxResults);
+                        lightbox.open(resultIndex);
+                    });
+                } else {
+                    throw new Error(data.error || 'Generation failed');
+                }
+
+            } catch (error) {
+                console.error(`Card ${cardIndex + 1} failed:`, error);
+                card.classList.remove('loading');
+                card.innerHTML = `<div style="padding: 20px; text-align: center; color: #dc2626; font-size: 12px;">Failed: ${error.message}</div>`;
+            }
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

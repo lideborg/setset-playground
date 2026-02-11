@@ -10,127 +10,10 @@
     <link rel="stylesheet" href="/shared/css/components.css">
     <style>
         .container {
-            max-width: 900px;
+            max-width: 1200px;
         }
 
-        .input-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-lg);
-            margin-bottom: var(--space-lg);
-        }
-
-        @media (max-width: 700px) {
-            .input-section {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Image upload slots */
-        .frame-slot {
-            aspect-ratio: 16/9;
-            border: 2px dashed var(--gainsboro);
-            border-radius: var(--radius-md);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            background: var(--off-white);
-            transition: all var(--transition-fast);
-        }
-
-        .frame-slot:hover {
-            border-color: var(--ash-grey);
-            background: var(--white);
-        }
-
-        .frame-slot.filled {
-            border-style: solid;
-            border-color: var(--jet);
-        }
-
-        .frame-slot.filled img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .frame-slot .placeholder {
-            text-align: center;
-            color: var(--ash-grey);
-        }
-
-        .frame-slot .placeholder-icon {
-            font-size: 32px;
-            margin-bottom: var(--space-xs);
-        }
-
-        .frame-slot .placeholder-text {
-            font-size: var(--text-sm);
-            font-weight: 500;
-        }
-
-        .frame-slot .placeholder-hint {
-            font-size: var(--text-xs);
-            margin-top: 4px;
-        }
-
-        .frame-slot .remove-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 28px;
-            height: 28px;
-            background: rgba(0,0,0,0.7);
-            color: var(--white);
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .frame-slot.filled:hover .remove-btn {
-            display: flex;
-        }
-
-        .frame-slot.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .frame-label {
-            font-size: var(--text-sm);
-            font-weight: 600;
-            margin-bottom: var(--space-xs);
-            color: var(--carbon);
-        }
-
-        .frame-label .badge {
-            font-size: var(--text-2xs);
-            font-weight: 500;
-            padding: 2px 6px;
-            border-radius: var(--radius-xs);
-            margin-left: 6px;
-        }
-
-        .frame-label .badge.required {
-            background: var(--jet);
-            color: var(--white);
-        }
-
-        .frame-label .badge.optional {
-            background: var(--off-white);
-            color: var(--slate);
-        }
-
-        /* Settings row */
+        /* Settings section */
         .settings-section {
             background: var(--white);
             border: 1px solid var(--gainsboro);
@@ -244,35 +127,182 @@
             color: var(--slate);
         }
 
-        /* Prompt */
-        .prompt-section {
+        /* Pairs slider */
+        .pairs-slider-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .pairs-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+
+        .pairs-value {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            min-width: 40px;
+        }
+
+        /* Duration slider */
+        .duration-slider-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .duration-slider {
+            width: 120px;
+            cursor: pointer;
+        }
+
+        .duration-value {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            min-width: 30px;
+        }
+
+        /* Input pairs grid */
+        .pairs-container {
             margin-bottom: var(--space-lg);
         }
 
-        .prompt-textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: var(--space-sm);
-            border: 1px solid var(--gainsboro);
+        .pairs-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .pair-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .pair-frames {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+        }
+
+        .pair-number {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--space-xs);
+        }
+
+        /* Image upload slots */
+        .frame-slot {
+            aspect-ratio: 16/9;
+            border: 2px dashed var(--gainsboro);
             border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--off-white);
+            transition: all var(--transition-fast);
+        }
+
+        .frame-slot:hover {
+            border-color: var(--ash-grey);
+            background: var(--white);
+        }
+
+        .frame-slot.filled {
+            border-style: solid;
+            border-color: var(--jet);
+        }
+
+        .frame-slot.filled img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .frame-slot .placeholder {
+            text-align: center;
+            color: var(--ash-grey);
+        }
+
+        .frame-slot .placeholder-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .frame-slot .placeholder-text {
+            font-size: var(--text-xs);
+            font-weight: 500;
+        }
+
+        .frame-slot .remove-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .frame-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .frame-slot.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .frame-label {
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            color: var(--slate);
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        /* Prompt textarea for each pair */
+        .pair-prompt {
+            width: 100%;
+            min-height: 60px;
+            padding: var(--space-xs);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
             font-family: var(--font-sans);
-            font-size: var(--text-sm);
+            font-size: var(--text-xs);
             resize: vertical;
             transition: border-color var(--transition-fast);
         }
 
-        .prompt-textarea:focus {
+        .pair-prompt:focus {
             outline: none;
             border-color: var(--jet);
         }
 
-        .prompt-hint {
-            font-size: var(--text-xs);
+        .pair-prompt::placeholder {
             color: var(--ash-grey);
-            margin-top: var(--space-xs);
         }
 
-        /* Generate button */
+        /* Generate section */
         .generate-section {
             display: flex;
             align-items: center;
@@ -322,6 +352,24 @@
             gap: var(--space-md);
         }
 
+        .batch-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) 0;
+        }
+
+        .batch-divider::before,
+        .batch-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
         .video-card {
             background: var(--white);
             border: 1px solid var(--gainsboro);
@@ -343,10 +391,21 @@
             gap: var(--space-sm);
         }
 
+        .video-card-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .video-card-pair {
+            font-size: var(--text-2xs);
+            font-weight: 600;
+            color: var(--jet);
+            margin-bottom: 2px;
+        }
+
         .video-card-prompt {
             font-size: var(--text-xs);
             color: var(--slate);
-            flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -360,20 +419,6 @@
 
         .video-card.generating {
             position: relative;
-        }
-
-        .video-card.generating::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--off-white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1;
         }
 
         .video-card .generating-overlay {
@@ -408,6 +453,12 @@
         input[type="file"] {
             display: none;
         }
+
+        @media (max-width: 900px) {
+            .pairs-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -417,14 +468,22 @@
             <p class="hero-subtitle">Transform images into video using Kling AI</p>
         </div>
 
-        <!-- Model Selection -->
+        <!-- Settings -->
         <div class="settings-section">
             <div class="setting-row">
                 <div class="setting-group">
                     <span class="setting-label">Model</span>
                     <div class="model-tabs">
-                        <button class="model-tab active" data-model="v1.6">v1.6 Pro <span class="model-badge">First+Last Frame</span></button>
-                        <button class="model-tab" data-model="v2.6">v2.6 Pro <span class="model-badge">Better Quality + Audio</span></button>
+                        <button class="model-tab" data-model="v1.6">v1.6 Pro <span class="model-badge">F+L</span></button>
+                        <button class="model-tab" data-model="v2.6">v2.6 Pro <span class="model-badge">Audio</span></button>
+                        <button class="model-tab active" data-model="v3.0">v3.0 <span class="model-badge">F+L New</span></button>
+                    </div>
+                </div>
+                <div class="setting-group" id="v3-quality-group" style="display: flex;">
+                    <span class="setting-label">Quality</span>
+                    <div class="toggle-buttons" id="v3-quality-buttons">
+                        <button class="toggle-btn active" data-value="pro">Pro</button>
+                        <button class="toggle-btn" data-value="standard">Standard</button>
                     </div>
                 </div>
             </div>
@@ -433,8 +492,12 @@
                 <div class="setting-group">
                     <span class="setting-label">Duration</span>
                     <div class="toggle-buttons" id="duration-buttons">
-                        <button class="toggle-btn active" data-value="5">5 sec</button>
-                        <button class="toggle-btn" data-value="10">10 sec</button>
+                        <button class="toggle-btn" data-value="5">5s</button>
+                        <button class="toggle-btn active" data-value="10">10s</button>
+                    </div>
+                    <div class="duration-slider-group" id="duration-slider-v3" style="display: none;">
+                        <input type="range" class="duration-slider" id="v3-duration-slider" min="3" max="15" value="5" step="1">
+                        <span class="duration-value" id="v3-duration-value">5s</span>
                     </div>
                 </div>
 
@@ -453,55 +516,34 @@
                         <span>Generate Audio</span>
                     </label>
                 </div>
+
+                <div class="setting-group pairs-slider-group">
+                    <span class="setting-label">Pairs</span>
+                    <input type="range" class="pairs-slider" id="pairs-slider" min="1" max="3" value="1" step="1">
+                    <span class="pairs-value" id="pairs-value">2</span>
+                </div>
+
+                <div class="setting-group">
+                    <label class="checkbox-toggle">
+                        <input type="checkbox" id="enhance-prompt">
+                        <span>Enhance Prompts</span>
+                    </label>
+                </div>
             </div>
         </div>
 
-        <!-- Image Inputs -->
-        <div class="input-section">
-            <div class="frame-upload">
-                <div class="frame-label">
-                    First Frame <span class="badge required">Required</span>
-                </div>
-                <div class="frame-slot" id="first-frame-slot">
-                    <div class="placeholder">
-                        <div class="placeholder-icon">🖼️</div>
-                        <div class="placeholder-text">Click or drop image</div>
-                        <div class="placeholder-hint">Starting frame of video</div>
-                    </div>
-                    <button class="remove-btn">&times;</button>
-                </div>
-                <input type="file" id="first-frame-input" accept="image/*">
-            </div>
-
-            <div class="frame-upload" id="last-frame-container">
-                <div class="frame-label">
-                    Last Frame <span class="badge optional">Optional</span>
-                </div>
-                <div class="frame-slot" id="last-frame-slot">
-                    <div class="placeholder">
-                        <div class="placeholder-icon">🎬</div>
-                        <div class="placeholder-text">Click or drop image</div>
-                        <div class="placeholder-hint">Ending frame (v1.6 only)</div>
-                    </div>
-                    <button class="remove-btn">&times;</button>
-                </div>
-                <input type="file" id="last-frame-input" accept="image/*">
-            </div>
-        </div>
-
-        <!-- Prompt -->
-        <div class="prompt-section">
-            <textarea class="prompt-textarea" id="prompt" placeholder="One prompt per line = one video&#10;&#10;The person slowly turns their head and smiles&#10;Hair blows gently in the wind&#10;Camera slowly zooms in on face"></textarea>
-            <p class="prompt-hint">Each line creates a separate video. Describe motion, actions, and camera movement.</p>
+        <!-- Input Pairs -->
+        <div class="pairs-container" id="pairs-container">
+            <!-- Dynamically generated -->
         </div>
 
         <!-- Generate -->
         <div class="generate-section">
             <div class="generate-info" id="generate-info">
-                Upload an image to generate video
+                Upload images to generate videos
             </div>
             <button class="btn btn--primary generate-btn" id="generate-btn" disabled>
-                Generate Video
+                Generate Videos
             </button>
         </div>
 
@@ -517,43 +559,79 @@
     <script src="/shared/js/utils.js"></script>
     <script src="/shared/js/api.js"></script>
     <script>
+        // Logging with timestamps
+        const startTime = performance.now();
+        function log(message, ...args) {
+            const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+            console.log(`[${elapsed}s] ${message}`, ...args);
+        }
+
         // State
         const state = {
-            model: 'v1.6',
+            model: 'v3.0',
+            v3Quality: { pro: true, standard: false }, // Can select both
             duration: '5',
             aspectRatio: '16:9',
-            generateAudio: true,
-            firstFrame: null,
-            lastFrame: null,
-            results: [] // Array of { url, prompt }
+            generateAudio: false,
+            enhancePrompt: false,
+            numPairs: 1, // 1 = 2 pairs per row (actual pairs = numPairs * 2)
+            pairs: [], // Array of { firstFrame, lastFrame, prompt }
+            results: [],
+            batchCounter: 0
         };
 
-        // Kling pricing (approximate from fal.ai)
-        // v1.6 Pro: ~$0.50 for 5s, ~$1.00 for 10s
-        // v2.6 Pro: ~$0.65 for 5s, ~$1.30 for 10s (higher quality + audio)
+        // Initialize pairs array
+        function initializePairs() {
+            const totalPairs = state.numPairs * 2;
+            while (state.pairs.length < totalPairs) {
+                state.pairs.push({ firstFrame: null, lastFrame: null, prompt: '' });
+            }
+            // Trim if reduced
+            state.pairs.length = totalPairs;
+        }
+
+        // Kling pricing
         function calculateVideoCost() {
             const duration = parseInt(state.duration);
-            if (state.model === 'v2.6') {
+            if (state.model === 'v3.0') {
+                // v3.0/O3 pricing per second (audio always off for v3.0)
+                // Pro: $0.224/sec, Standard: $0.084/sec
+                let cost = 0;
+                if (state.v3Quality.pro) cost += duration * 0.224;
+                if (state.v3Quality.standard) cost += duration * 0.084;
+                return cost;
+            } else if (state.model === 'v2.6') {
                 return duration === 5 ? 0.65 : 1.30;
             } else {
                 return duration === 5 ? 0.50 : 1.00;
             }
         }
 
+        // Get number of v3 variants selected
+        function getV3VariantCount() {
+            let count = 0;
+            if (state.v3Quality.pro) count++;
+            if (state.v3Quality.standard) count++;
+            return count;
+        }
+
         // DOM Elements
         const elements = {
             modelTabs: document.querySelectorAll('.model-tab'),
-            durationButtons: document.querySelectorAll('#duration-buttons .toggle-btn'),
+            durationButtons: document.getElementById('duration-buttons'),
+            durationSliderV3: document.getElementById('duration-slider-v3'),
+            v3DurationSlider: document.getElementById('v3-duration-slider'),
+            v3DurationValue: document.getElementById('v3-duration-value'),
+            v3QualityGroup: document.getElementById('v3-quality-group'),
+            v3QualityButtons: document.getElementById('v3-quality-buttons'),
             aspectButtons: document.querySelectorAll('#aspect-buttons .toggle-btn'),
             aspectGroup: document.getElementById('aspect-ratio-group'),
             audioGroup: document.getElementById('audio-group'),
             generateAudio: document.getElementById('generate-audio'),
-            firstFrameSlot: document.getElementById('first-frame-slot'),
-            firstFrameInput: document.getElementById('first-frame-input'),
-            lastFrameContainer: document.getElementById('last-frame-container'),
-            lastFrameSlot: document.getElementById('last-frame-slot'),
-            lastFrameInput: document.getElementById('last-frame-input'),
-            prompt: document.getElementById('prompt'),
+            pairsSlider: document.getElementById('pairs-slider'),
+            pairsValue: document.getElementById('pairs-value'),
+            enhancePrompt: document.getElementById('enhance-prompt'),
+            pairsContainer: document.getElementById('pairs-container'),
             generateBtn: document.getElementById('generate-btn'),
             generateInfo: document.getElementById('generate-info'),
             resultsSection: document.getElementById('results-section'),
@@ -562,7 +640,9 @@
 
         // Initialize
         function init() {
+            initializePairs();
             setupEventListeners();
+            renderPairs();
             updateUI();
         }
 
@@ -574,15 +654,39 @@
                     tab.classList.add('active');
                     state.model = tab.dataset.model;
                     updateUI();
+                    renderPairs();
                 });
             });
 
-            // Duration buttons
-            elements.durationButtons.forEach(btn => {
+            // Duration buttons (v1.6 and v2.6)
+            elements.durationButtons.querySelectorAll('.toggle-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    elements.durationButtons.forEach(b => b.classList.remove('active'));
+                    elements.durationButtons.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     state.duration = btn.dataset.value;
+                    updateUI();
+                });
+            });
+
+            // Duration slider (v3.0)
+            elements.v3DurationSlider.addEventListener('input', () => {
+                state.duration = elements.v3DurationSlider.value;
+                elements.v3DurationValue.textContent = `${state.duration}s`;
+                updateUI();
+            });
+
+            // V3 quality buttons (multi-select)
+            elements.v3QualityButtons.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const quality = btn.dataset.value;
+                    state.v3Quality[quality] = !state.v3Quality[quality];
+                    btn.classList.toggle('active', state.v3Quality[quality]);
+                    // Ensure at least one is selected
+                    if (!state.v3Quality.pro && !state.v3Quality.standard) {
+                        state.v3Quality[quality] = true;
+                        btn.classList.add('active');
+                    }
+                    updateUI();
                 });
             });
 
@@ -600,77 +704,164 @@
                 state.generateAudio = elements.generateAudio.checked;
             });
 
-            // First frame upload
-            elements.firstFrameSlot.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-btn')) {
-                    state.firstFrame = null;
-                    renderFrameSlot('first');
-                    updateUI();
-                } else if (!state.firstFrame) {
-                    elements.firstFrameInput.click();
-                }
+            // Pairs slider
+            elements.pairsSlider.addEventListener('input', () => {
+                state.numPairs = parseInt(elements.pairsSlider.value);
+                elements.pairsValue.textContent = state.numPairs * 2;
+                initializePairs();
+                renderPairs();
+                updateUI();
             });
 
-            elements.firstFrameInput.addEventListener('change', (e) => {
-                handleFileUpload(e.target.files[0], 'first');
-                e.target.value = '';
-            });
-
-            // Last frame upload
-            elements.lastFrameSlot.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-btn')) {
-                    state.lastFrame = null;
-                    renderFrameSlot('last');
-                    updateUI();
-                } else if (!state.lastFrame) {
-                    elements.lastFrameInput.click();
-                }
-            });
-
-            elements.lastFrameInput.addEventListener('change', (e) => {
-                handleFileUpload(e.target.files[0], 'last');
-                e.target.value = '';
-            });
-
-            // Drag and drop
-            [elements.firstFrameSlot, elements.lastFrameSlot].forEach((slot, i) => {
-                const type = i === 0 ? 'first' : 'last';
-                slot.addEventListener('dragover', (e) => e.preventDefault());
-                slot.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    const file = e.dataTransfer.files[0];
-                    if (file && file.type.startsWith('image/')) {
-                        handleFileUpload(file, type);
-                    }
-                });
-            });
-
-            // Clipboard paste - global listener
-            document.addEventListener('paste', (e) => {
-                const items = e.clipboardData?.items;
-                if (!items) return;
-
-                for (const item of items) {
-                    if (item.type.startsWith('image/')) {
-                        e.preventDefault();
-                        const file = item.getAsFile();
-                        if (file) {
-                            // Paste to first frame if empty, otherwise to last frame
-                            const targetType = !state.firstFrame ? 'first' :
-                                              (state.model === 'v1.6' && !state.lastFrame ? 'last' : 'first');
-                            handleFileUpload(file, targetType);
-                            console.log(`📋 Pasted image to ${targetType} frame`);
-                        }
-                        break;
-                    }
-                }
+            // Enhance prompt toggle
+            elements.enhancePrompt.addEventListener('change', () => {
+                state.enhancePrompt = elements.enhancePrompt.checked;
+                log(`Enhance prompts: ${state.enhancePrompt ? 'enabled' : 'disabled'}`);
             });
 
             // Generate button
             elements.generateBtn.addEventListener('click', handleGenerate);
+
+            // Global paste handler
+            document.addEventListener('paste', handlePaste);
         }
 
-        // Compress image to fit within size limit (10MB for Kling)
+        function handlePaste(e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        // Find first empty slot
+                        for (let i = 0; i < state.pairs.length; i++) {
+                            if (!state.pairs[i].firstFrame) {
+                                handleFileUpload(file, i, 'first');
+                                log(`📋 Pasted image to pair ${i + 1} first frame`);
+                                return;
+                            }
+                            const supportsLastFrame = state.model === 'v1.6' || state.model === 'v3.0';
+                            if (supportsLastFrame && !state.pairs[i].lastFrame) {
+                                handleFileUpload(file, i, 'last');
+                                log(`📋 Pasted image to pair ${i + 1} last frame`);
+                                return;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        function renderPairs() {
+            const totalPairs = state.numPairs * 2;
+            const supportsLastFrame = state.model === 'v1.6' || state.model === 'v3.0';
+
+            let html = '';
+            for (let row = 0; row < state.numPairs; row++) {
+                html += '<div class="pairs-row">';
+                for (let col = 0; col < 2; col++) {
+                    const pairIndex = row * 2 + col;
+                    const pair = state.pairs[pairIndex] || { firstFrame: null, lastFrame: null, prompt: '' };
+
+                    html += `
+                        <div class="pair-group" data-pair="${pairIndex}">
+                            <div class="pair-number">Video ${pairIndex + 1}</div>
+                            <div class="pair-frames">
+                                <div class="frame-wrapper">
+                                    <div class="frame-slot ${pair.firstFrame ? 'filled' : ''}"
+                                         data-pair="${pairIndex}" data-type="first">
+                                        ${pair.firstFrame ? `
+                                            <img src="${pair.firstFrame.url}" alt="First frame">
+                                            <button class="remove-btn">&times;</button>
+                                        ` : `
+                                            <div class="placeholder">
+                                                <div class="placeholder-icon">🖼️</div>
+                                                <div class="placeholder-text">First Frame</div>
+                                            </div>
+                                        `}
+                                    </div>
+                                    <div class="frame-label">First</div>
+                                </div>
+                                <div class="frame-wrapper">
+                                    <div class="frame-slot ${pair.lastFrame ? 'filled' : ''} ${!supportsLastFrame ? 'disabled' : ''}"
+                                         data-pair="${pairIndex}" data-type="last">
+                                        ${pair.lastFrame ? `
+                                            <img src="${pair.lastFrame.url}" alt="Last frame">
+                                            <button class="remove-btn">&times;</button>
+                                        ` : `
+                                            <div class="placeholder">
+                                                <div class="placeholder-icon">🎬</div>
+                                                <div class="placeholder-text">Last Frame</div>
+                                            </div>
+                                        `}
+                                    </div>
+                                    <div class="frame-label">Last ${!supportsLastFrame ? '(v1.6/v3.0)' : ''}</div>
+                                </div>
+                            </div>
+                            <textarea class="pair-prompt" data-pair="${pairIndex}"
+                                placeholder="Describe the motion... (e.g., slowly turns head and smiles)">${pair.prompt}</textarea>
+                            <input type="file" class="file-input" data-pair="${pairIndex}" accept="image/*">
+                        </div>
+                    `;
+                }
+                html += '</div>';
+            }
+
+            elements.pairsContainer.innerHTML = html;
+
+            // Attach event listeners to new elements
+            document.querySelectorAll('.frame-slot').forEach(slot => {
+                const pairIndex = parseInt(slot.dataset.pair);
+                const type = slot.dataset.type;
+
+                slot.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-btn')) {
+                        state.pairs[pairIndex][type === 'first' ? 'firstFrame' : 'lastFrame'] = null;
+                        renderPairs();
+                        updateUI();
+                    } else if (!slot.classList.contains('disabled') && !slot.classList.contains('filled')) {
+                        const input = document.querySelector(`.file-input[data-pair="${pairIndex}"]`);
+                        input.dataset.targetType = type;
+                        input.click();
+                    }
+                });
+
+                // Drag and drop
+                slot.addEventListener('dragover', (e) => e.preventDefault());
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (slot.classList.contains('disabled')) return;
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        handleFileUpload(file, pairIndex, type);
+                    }
+                });
+            });
+
+            // File input handlers
+            document.querySelectorAll('.file-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const pairIndex = parseInt(input.dataset.pair);
+                    const type = input.dataset.targetType || 'first';
+                    handleFileUpload(e.target.files[0], pairIndex, type);
+                    e.target.value = '';
+                });
+            });
+
+            // Prompt textarea handlers
+            document.querySelectorAll('.pair-prompt').forEach(textarea => {
+                textarea.addEventListener('input', (e) => {
+                    const pairIndex = parseInt(textarea.dataset.pair);
+                    state.pairs[pairIndex].prompt = e.target.value;
+                    updateUI();
+                });
+            });
+        }
+
+        // Compress image
         async function compressImage(dataUrl, maxSizeBytes = 9 * 1024 * 1024) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -679,7 +870,6 @@
                     let width = img.width;
                     let height = img.height;
 
-                    // Scale down if very large
                     const maxDimension = 2048;
                     if (width > maxDimension || height > maxDimension) {
                         const scale = maxDimension / Math.max(width, height);
@@ -692,235 +882,392 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Try different quality levels until under size limit
                     let quality = 0.92;
                     let result = canvas.toDataURL('image/jpeg', quality);
 
-                    while (result.length > maxSizeBytes * 1.37 && quality > 0.3) { // base64 is ~37% larger
+                    while (result.length > maxSizeBytes * 1.37 && quality > 0.3) {
                         quality -= 0.1;
                         result = canvas.toDataURL('image/jpeg', quality);
                     }
 
-                    console.log(`📦 Compressed image: ${(result.length / 1024 / 1024).toFixed(2)}MB at quality ${quality.toFixed(1)}`);
+                    log(`📦 Compressed image: ${(result.length / 1024 / 1024).toFixed(2)}MB at quality ${quality.toFixed(1)}`);
                     resolve(result);
                 };
                 img.src = dataUrl;
             });
         }
 
-        async function handleFileUpload(file, type) {
+        async function handleFileUpload(file, pairIndex, type) {
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = async (e) => {
                 let dataUrl = e.target.result;
 
-                // Compress if over 8MB
                 if (dataUrl.length > 8 * 1024 * 1024) {
-                    console.log(`🔄 Image too large (${(dataUrl.length / 1024 / 1024).toFixed(2)}MB), compressing...`);
+                    log(`🔄 Image too large (${(dataUrl.length / 1024 / 1024).toFixed(2)}MB), compressing...`);
                     dataUrl = await compressImage(dataUrl);
                 }
 
                 if (type === 'first') {
-                    state.firstFrame = { file, url: dataUrl };
+                    state.pairs[pairIndex].firstFrame = { file, url: dataUrl };
                 } else {
-                    state.lastFrame = { file, url: dataUrl };
+                    state.pairs[pairIndex].lastFrame = { file, url: dataUrl };
                 }
-                renderFrameSlot(type);
+
+                log(`📷 Uploaded ${type} frame for pair ${pairIndex + 1}`);
+                renderPairs();
                 updateUI();
             };
             reader.readAsDataURL(file);
         }
 
-        function renderFrameSlot(type) {
-            const slot = type === 'first' ? elements.firstFrameSlot : elements.lastFrameSlot;
-            const frame = type === 'first' ? state.firstFrame : state.lastFrame;
+        function updateUI() {
+            const isV16 = state.model === 'v1.6';
+            const isV30 = state.model === 'v3.0';
+            const supportsLastFrame = isV16 || isV30;
 
-            if (frame) {
-                slot.classList.add('filled');
-                slot.innerHTML = `
-                    <img src="${frame.url}" alt="${type} frame">
-                    <button class="remove-btn">&times;</button>
-                `;
+            // Show/hide model-specific options
+            elements.aspectGroup.style.display = (isV16 || isV30) ? 'flex' : 'none';
+            elements.audioGroup.style.display = state.model === 'v2.6' ? 'flex' : 'none'; // Only v2.6 has audio
+            elements.v3QualityGroup.style.display = isV30 ? 'flex' : 'none';
+
+            // Show correct duration controls
+            elements.durationButtons.style.display = isV30 ? 'none' : 'flex';
+            elements.durationSliderV3.style.display = isV30 ? 'flex' : 'none';
+
+            // Count valid pairs (has at least first frame)
+            const validPairs = state.pairs.filter(p => p.firstFrame);
+            const pairsWithPrompt = validPairs.filter(p => p.prompt.trim());
+
+            elements.generateBtn.disabled = validPairs.length === 0;
+
+            if (validPairs.length === 0) {
+                elements.generateInfo.textContent = 'Upload images to generate videos';
             } else {
-                slot.classList.remove('filled');
-                const icon = type === 'first' ? '🖼️' : '🎬';
-                const hint = type === 'first' ? 'Starting frame of video' : 'Ending frame (v1.6 only)';
-                slot.innerHTML = `
-                    <div class="placeholder">
-                        <div class="placeholder-icon">${icon}</div>
-                        <div class="placeholder-text">Click or drop image</div>
-                        <div class="placeholder-hint">${hint}</div>
-                    </div>
-                    <button class="remove-btn">&times;</button>
-                `;
+                let modelInfo;
+                if (isV30) {
+                    const variants = [];
+                    if (state.v3Quality.pro) variants.push('Pro');
+                    if (state.v3Quality.standard) variants.push('Std');
+                    modelInfo = `v3.0 ${variants.join('+')}`;
+                } else {
+                    modelInfo = isV16 ? 'v1.6 Pro' : 'v2.6 Pro';
+                }
+                const costPerVideo = calculateVideoCost();
+                const variantCount = isV30 ? getV3VariantCount() : 1;
+                const totalVideos = validPairs.length * variantCount;
+                const totalCost = (costPerVideo * validPairs.length).toFixed(2);
+                const enhanceNote = state.enhancePrompt ? ' • Enhanced' : '';
+                elements.generateInfo.textContent = `${modelInfo} • ${state.duration}s • ${totalVideos} video${totalVideos > 1 ? 's' : ''}${enhanceNote} • $${totalCost}`;
             }
         }
 
-        function updateUI() {
-            const isV16 = state.model === 'v1.6';
+        // Analyze image with Gemini for prompt enhancement
+        async function analyzeImageWithGemini(imageUrl, type) {
+            log(`🔍 Analyzing ${type} image with Gemini...`);
+            const analyzeStart = performance.now();
 
-            // Show/hide model-specific options
-            elements.aspectGroup.style.display = isV16 ? 'flex' : 'none';
-            elements.audioGroup.style.display = isV16 ? 'none' : 'flex';
+            const analysisPrompt = type === 'first'
+                ? `Briefly describe this image for video generation context. Focus on:
+                   - Subject (person, object, scene)
+                   - Current pose/position
+                   - Setting/environment (2-3 key elements)
+                   - Mood/atmosphere
+                   Keep it under 50 words.`
+                : `Briefly describe the target state in this image for video transition. Focus on:
+                   - Final pose/position
+                   - Key differences from a starting frame
+                   - Movement endpoint
+                   Keep it under 30 words.`;
 
-            // Enable/disable last frame based on model
-            if (isV16) {
-                elements.lastFrameContainer.style.opacity = '1';
-                elements.lastFrameSlot.classList.remove('disabled');
-            } else {
-                elements.lastFrameContainer.style.opacity = '0.4';
-                elements.lastFrameSlot.classList.add('disabled');
-                state.lastFrame = null;
-                renderFrameSlot('last');
+            try {
+                const response = await fetch('/api/analyze-gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_url: imageUrl,
+                        prompt: analysisPrompt
+                    })
+                });
+
+                const data = await response.json();
+                const elapsed = ((performance.now() - analyzeStart) / 1000).toFixed(2);
+                log(`✅ ${type} image analysis complete (${elapsed}s):`, data.content?.substring(0, 100) + '...');
+                return data.content || '';
+            } catch (error) {
+                log(`❌ ${type} image analysis failed:`, error.message);
+                return '';
             }
+        }
 
-            // Count prompts (one per line)
-            const prompts = elements.prompt.value.split('\n').filter(line => line.trim());
-            const promptCount = prompts.length;
+        // Enhance prompt using Gemini
+        async function enhancePromptWithGemini(userPrompt, firstAnalysis, lastAnalysis, imageUrl) {
+            log(`✨ Enhancing prompt with Gemini...`);
+            const enhanceStart = performance.now();
 
-            // Update generate button and info
-            const hasFirstFrame = !!state.firstFrame;
+            const enhancePromptText = `You are helping create a prompt for Kling 1.6 AI video generation (image-to-video).
 
-            elements.generateBtn.disabled = !hasFirstFrame;
+CONTEXT:
+- First frame: ${firstAnalysis || 'Not analyzed'}
+- Last frame: ${lastAnalysis || 'Not provided'}
+- User's motion description: "${userPrompt || 'Subtle natural movement'}"
 
-            if (!hasFirstFrame) {
-                elements.generateInfo.textContent = 'Upload an image to generate video';
-            } else {
-                const modelInfo = isV16 ? 'Kling v1.6 Pro' : 'Kling v2.6 Pro';
-                const frameInfo = state.lastFrame ? ' (first + last frame)' : '';
-                const videoCount = promptCount > 0 ? promptCount : 1;
-                const costPerVideo = calculateVideoCost();
-                const totalCost = (costPerVideo * videoCount).toFixed(2);
-                elements.generateInfo.textContent = `${modelInfo} • ${state.duration}s${frameInfo} • ${videoCount} video${videoCount > 1 ? 's' : ''} • $${costPerVideo.toFixed(2)}/video • $${totalCost} total`;
+KLING 1.6 BEST PRACTICES:
+- Focus ONLY on motion/movement - never describe what's already in the image
+- Use single, simple actions (1-3 movements max)
+- Include one camera movement if appropriate (tracking shot, slow zoom, static)
+- Add motion endpoint ("then settles", "comes to rest")
+- Keep it under 40 words
+- Use natural language, not keyword spam
+
+Write an enhanced prompt that describes the motion to transition from first to last frame (or create natural movement if no last frame). Return ONLY the prompt text, nothing else.`;
+
+            try {
+                const response = await fetch('/api/analyze-gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_url: imageUrl,
+                        prompt: enhancePromptText
+                    })
+                });
+
+                const data = await response.json();
+                let enhanced = data.content || userPrompt || 'Subtle natural movement and gentle motion';
+
+                // Clean up quotes if present
+                if ((enhanced.startsWith('"') && enhanced.endsWith('"')) ||
+                    (enhanced.startsWith("'") && enhanced.endsWith("'"))) {
+                    enhanced = enhanced.slice(1, -1);
+                }
+
+                const elapsed = ((performance.now() - enhanceStart) / 1000).toFixed(2);
+                log(`✅ Prompt enhanced (${elapsed}s):`, enhanced);
+                return enhanced;
+            } catch (error) {
+                log(`❌ Prompt enhancement failed:`, error.message);
+                return userPrompt || 'Subtle natural movement and gentle motion';
             }
         }
 
         async function handleGenerate() {
-            if (!state.firstFrame) return;
+            const validPairs = state.pairs
+                .map((p, i) => ({ ...p, index: i }))
+                .filter(p => p.firstFrame);
 
-            // Parse prompts - one per line
-            const promptText = elements.prompt.value.trim();
-            const prompts = promptText ? promptText.split('\n').filter(line => line.trim()) : ['Subtle natural movement and gentle motion'];
+            if (validPairs.length === 0) return;
 
-            // Reset results
-            state.results = [];
+            log(`🚀 Starting generation for ${validPairs.length} video(s)`);
+            const totalStart = performance.now();
+
+            state.batchCounter++;
+            const currentBatch = state.batchCounter;
             elements.generateBtn.disabled = true;
 
-            // Calculate cost for display
             const costPerVideo = calculateVideoCost();
 
-            // Show results section with placeholders
+            // Show results section
             elements.resultsSection.classList.add('visible');
-            elements.videosGrid.innerHTML = prompts.map((prompt, i) => `
-                <div class="video-card generating" id="video-card-${i}">
+
+            // Create batch divider
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const batchDivider = document.createElement('div');
+            batchDivider.className = 'batch-divider';
+            batchDivider.id = `batch-divider-${currentBatch}`;
+            batchDivider.textContent = `Batch ${currentBatch} • ${timeStr}`;
+
+            // Build list of models to generate
+            let modelsToGenerate = [];
+            if (state.model === 'v3.0') {
+                if (state.v3Quality.pro) modelsToGenerate.push('v3.0-pro');
+                if (state.v3Quality.standard) modelsToGenerate.push('v3.0-standard');
+            } else {
+                modelsToGenerate.push(state.model);
+            }
+
+            // Build tasks: each pair × each model variant
+            const tasks = [];
+            validPairs.forEach(pair => {
+                modelsToGenerate.forEach(model => {
+                    tasks.push({ pair, model, variantLabel: model.replace('v3.0-', '').toUpperCase() });
+                });
+            });
+
+            // Create placeholder cards for all tasks
+            const placeholderCards = tasks.map((task, i) => {
+                const card = document.createElement('div');
+                card.className = 'video-card generating';
+                card.id = `video-card-${currentBatch}-${task.pair.index}-${task.model}`;
+                const isV3 = task.model.startsWith('v3.0');
+                const variantTag = isV3 ? ` <span style="opacity:0.6">(${task.variantLabel})</span>` : '';
+                const perVideoCost = isV3
+                    ? (task.model === 'v3.0-pro' ? 0.224 : 0.084) * parseInt(state.duration)
+                    : costPerVideo;
+                card.innerHTML = `
                     <div class="generating-overlay">
                         <div class="generating-spinner"></div>
-                        <div class="generating-text">Generating...</div>
+                        <div class="generating-text">Preparing...</div>
                     </div>
                     <video style="aspect-ratio: 16/9;"></video>
                     <div class="video-card-footer">
-                        <span class="video-card-prompt" title="${prompt}">${prompt}</span>
-                        <span class="video-card-cost">$${costPerVideo.toFixed(2)}</span>
+                        <div class="video-card-info">
+                            <div class="video-card-pair">Video ${task.pair.index + 1}${variantTag}</div>
+                            <span class="video-card-prompt" title="${task.pair.prompt || 'Auto motion'}">${task.pair.prompt || 'Auto motion'}</span>
+                        </div>
+                        <span class="video-card-cost">$${perVideoCost.toFixed(2)}</span>
                         <button class="btn btn--sm" disabled>Download</button>
                     </div>
-                </div>
-            `).join('');
+                `;
+                return card;
+            });
 
-            try {
-                // Upload first frame
-                const firstFrameResult = await api.uploadBase64(state.firstFrame.url);
-                const imageUrl = firstFrameResult.url;
+            // Insert batch divider and cards at the beginning
+            const firstChild = elements.videosGrid.firstChild;
+            placeholderCards.reverse().forEach(card => {
+                elements.videosGrid.insertBefore(card, firstChild);
+            });
+            elements.videosGrid.insertBefore(batchDivider, firstChild);
 
-                // Upload last frame if present (v1.6 only)
-                let tailImageUrl = null;
-                if (state.model === 'v1.6' && state.lastFrame) {
-                    const lastFrameResult = await api.uploadBase64(state.lastFrame.url);
-                    tailImageUrl = lastFrameResult.url;
-                }
+            // Process all tasks in parallel
+            const generatePromises = tasks.map(async (task) => {
+                const { pair, model, variantLabel } = task;
+                const pairStart = performance.now();
+                const card = document.getElementById(`video-card-${currentBatch}-${pair.index}-${model}`);
+                const statusText = card?.querySelector('.generating-text');
 
-                // Generate all videos in parallel
-                const generatePromises = prompts.map(async (prompt, index) => {
-                    try {
-                        // Build request
-                        const params = {
-                            model: state.model,
-                            image_url: imageUrl,
-                            prompt: prompt.trim(),
-                            duration: state.duration,
-                            falKey: api.getFalKey()
-                        };
+                try {
+                    // Step 1: Upload images
+                    if (statusText) statusText.textContent = 'Uploading...';
+                    log(`[Video ${pair.index + 1}] Uploading first frame...`);
 
-                        if (state.model === 'v1.6') {
-                            if (tailImageUrl) params.tail_image_url = tailImageUrl;
-                            params.aspect_ratio = state.aspectRatio;
-                        } else {
-                            params.generate_audio = state.generateAudio;
-                        }
+                    const uploadStart = performance.now();
+                    const firstFrameResult = await api.uploadBase64(pair.firstFrame.url);
+                    const imageUrl = firstFrameResult.url;
 
-                        // Call API
-                        const response = await fetch('/api/video', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(params)
-                        });
+                    let tailImageUrl = null;
+                    const supportsLastFrame = state.model === 'v1.6' || state.model === 'v3.0';
+                    if (supportsLastFrame && pair.lastFrame) {
+                        log(`[Video ${pair.index + 1}] Uploading last frame...`);
+                        const lastFrameResult = await api.uploadBase64(pair.lastFrame.url);
+                        tailImageUrl = lastFrameResult.url;
+                    }
 
-                        const data = await response.json();
+                    const uploadElapsed = ((performance.now() - uploadStart) / 1000).toFixed(2);
+                    log(`[Video ${pair.index + 1}] Uploads complete (${uploadElapsed}s)`);
 
-                        if (!response.ok) {
-                            throw new Error(data.error || 'Video generation failed');
-                        }
+                    // Step 2: Enhance prompt if enabled
+                    let finalPrompt = pair.prompt.trim() || 'Subtle natural movement and gentle motion';
 
-                        const videoUrl = data.video?.url || data.url;
-                        if (videoUrl) {
-                            // Update the card with the video
-                            const card = document.getElementById(`video-card-${index}`);
-                            if (card) {
-                                card.classList.remove('generating');
-                                const overlay = card.querySelector('.generating-overlay');
-                                if (overlay) overlay.remove();
+                    if (state.enhancePrompt) {
+                        if (statusText) statusText.textContent = 'Analyzing...';
 
-                                const video = card.querySelector('video');
-                                video.src = videoUrl;
-                                video.controls = true;
-                                video.loop = true;
+                        // Analyze images in parallel
+                        const [firstAnalysis, lastAnalysis] = await Promise.all([
+                            analyzeImageWithGemini(imageUrl, 'first'),
+                            tailImageUrl ? analyzeImageWithGemini(tailImageUrl, 'last') : Promise.resolve('')
+                        ]);
 
-                                const downloadBtn = card.querySelector('.btn');
-                                downloadBtn.disabled = false;
-                                downloadBtn.onclick = () => {
-                                    const now = new Date();
-                                    const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-                                    downloadFile(videoUrl, `Setset_Video_${timestamp}_${index + 1}.mp4`);
-                                };
-                            }
+                        if (statusText) statusText.textContent = 'Enhancing prompt...';
+                        finalPrompt = await enhancePromptWithGemini(pair.prompt, firstAnalysis, lastAnalysis, imageUrl);
 
-                            state.results.push({ url: videoUrl, prompt: prompt.trim() });
-                        }
-                    } catch (error) {
-                        console.error(`Generate error for prompt ${index}:`, error);
-                        const card = document.getElementById(`video-card-${index}`);
-                        if (card) {
-                            card.classList.remove('generating');
-                            const overlay = card.querySelector('.generating-overlay');
-                            if (overlay) {
-                                overlay.innerHTML = `<div class="generating-text" style="color: #dc2626;">Failed: ${error.message}</div>`;
-                            }
+                        // Update the card prompt display
+                        const promptSpan = card?.querySelector('.video-card-prompt');
+                        if (promptSpan) {
+                            promptSpan.textContent = finalPrompt;
+                            promptSpan.title = finalPrompt;
                         }
                     }
-                });
 
-                await Promise.all(generatePromises);
+                    // Step 3: Generate video
+                    if (statusText) statusText.textContent = 'Generating...';
+                    const variantInfo = model.startsWith('v3.0') ? ` [${variantLabel}]` : '';
+                    log(`[Video ${pair.index + 1}${variantInfo}] Starting video generation with prompt: "${finalPrompt.substring(0, 60)}..."`);
 
-            } catch (error) {
-                console.error('Generate error:', error);
-                alert('Failed to generate videos: ' + error.message);
-            } finally {
-                elements.generateBtn.disabled = false;
-            }
+                    const genStart = performance.now();
+
+                    const params = {
+                        model: model,
+                        image_url: imageUrl,
+                        prompt: finalPrompt,
+                        duration: state.duration,
+                        falKey: api.getFalKey()
+                    };
+
+                    if (model === 'v1.6') {
+                        if (tailImageUrl) params.tail_image_url = tailImageUrl;
+                        params.aspect_ratio = state.aspectRatio;
+                    } else if (model.startsWith('v3.0')) {
+                        if (tailImageUrl) params.tail_image_url = tailImageUrl;
+                        params.aspect_ratio = state.aspectRatio;
+                        params.generate_audio = false; // Always off for v3.0
+                    } else {
+                        params.generate_audio = state.generateAudio;
+                    }
+
+                    const response = await fetch('/api/video', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params)
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Video generation failed');
+                    }
+
+                    const videoUrl = data.video?.url || data.url;
+                    const genElapsed = ((performance.now() - genStart) / 1000).toFixed(2);
+                    const totalElapsed = ((performance.now() - pairStart) / 1000).toFixed(2);
+
+                    log(`[Video ${pair.index + 1}${variantInfo}] ✅ Generation complete (gen: ${genElapsed}s, total: ${totalElapsed}s)`);
+
+                    if (videoUrl && card) {
+                        card.classList.remove('generating');
+                        const overlay = card.querySelector('.generating-overlay');
+                        if (overlay) overlay.remove();
+
+                        const video = card.querySelector('video');
+                        video.src = videoUrl;
+                        video.controls = true;
+                        video.loop = true;
+
+                        const downloadBtn = card.querySelector('.btn');
+                        downloadBtn.disabled = false;
+                        downloadBtn.onclick = () => {
+                            const now = new Date();
+                            const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+                            const variantSuffix = model.startsWith('v3.0') ? `_${variantLabel}` : '';
+                            downloadFile(videoUrl, `Setset_Video_${timestamp}_${pair.index + 1}${variantSuffix}.mp4`);
+                        };
+
+                        state.results.push({ url: videoUrl, prompt: finalPrompt, pairIndex: pair.index });
+                    }
+
+                } catch (error) {
+                    const totalElapsed = ((performance.now() - pairStart) / 1000).toFixed(2);
+                    const variantInfo = model.startsWith('v3.0') ? ` [${variantLabel}]` : '';
+                    log(`[Video ${pair.index + 1}${variantInfo}] ❌ Failed after ${totalElapsed}s:`, error.message);
+
+                    if (card) {
+                        card.classList.remove('generating');
+                        const overlay = card.querySelector('.generating-overlay');
+                        if (overlay) {
+                            overlay.innerHTML = `<div class="generating-text" style="color: #dc2626;">Failed: ${error.message}</div>`;
+                        }
+                    }
+                }
+            });
+
+            await Promise.all(generatePromises);
+
+            const totalElapsed = ((performance.now() - totalStart) / 1000).toFixed(2);
+            log(`🏁 All generations complete! Total time: ${totalElapsed}s, Success: ${state.results.length}/${tasks.length}`);
+
+            elements.generateBtn.disabled = false;
         }
-
-        // Prompt input triggers UI update
-        elements.prompt.addEventListener('input', updateUI);
 
         // Initialize
         init();

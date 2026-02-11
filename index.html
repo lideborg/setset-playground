@@ -304,6 +304,7 @@
                 <span class="chevron">▼</span>
             </div>
             <div class="nav-group collapsed" id="video-group">
+                <a class="nav-item" data-tool="video-general">General</a>
                 <a class="nav-item" data-tool="video-movements">Movements</a>
                 <a class="nav-item" data-tool="video-frames">First/Last Frame</a>
             </div>
@@ -330,6 +331,16 @@
             </div>
             <div class="nav-group collapsed" id="voice-group">
                 <a class="nav-item" data-tool="chat">Chat</a>
+            </div>
+
+            <!-- BRAND -->
+            <div class="nav-collapsible collapsed" data-group="brand">
+                <span>Brand</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="nav-group collapsed" id="brand-group">
+                <a class="nav-item" data-tool="rondorff">Ron Dorff</a>
+                <a class="nav-item" data-tool="retrotale">A Retro Tale</a>
             </div>
 
             <div class="nav-divider"></div>
@@ -405,10 +416,14 @@
             'location': `/tools/location-generator.html?v=${v}`,
             'location-creator': `/tools/location-creator.html?v=${v}`,
             // Video
+            'video-general': `/tools/video-general.html?v=${v}`,
             'video-movements': `/tools/video-gen.html?v=${v}`,
             'video-frames': `/tools/video.html?v=${v}`,
             // Voice
             'chat': `/tools/chat.html?v=${v}`,
+            // Brand
+            'rondorff': `/tools/brand/rondorff.html?v=${v}`,
+            'retrotale': `/tools/brand/retrotale.html?v=${v}`,
             // Library
             'models-library': `/tools/models-library.html?v=${v}`,
             'pose-library': `/tools/pose-library.html?v=${v}`,

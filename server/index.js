@@ -215,7 +215,7 @@ app.post('/api/remix', async (req, res) => {
  */
 app.post('/api/remix-gemini', async (req, res) => {
     try {
-        const { model, prompt, image_urls, aspect_ratio, resolution, num_images = 1 } = req.body;
+        const { model, prompt, image_urls, image_base64s, aspect_ratio, resolution, num_images = 1, web_search = false } = req.body;
 
         if (!prompt) {
             return res.status(400).json({ error: 'Prompt is required' });
@@ -226,13 +226,37 @@ app.post('/api/remix-gemini', async (req, res) => {
 
         console.log(`🎨 [Gemini Remix] Model: ${modelId}`);
         console.log(`🎨 [Gemini Remix] Prompt: ${prompt.substring(0, 100)}...`);
-        console.log(`🎨 [Gemini Remix] Images: ${image_urls?.length || 0}`);
+        console.log(`🎨 [Gemini Remix] Images: ${image_base64s?.length || image_urls?.length || 0} (${image_base64s ? 'base64' : 'urls'})`);
+        console.log(`🎨 [Gemini Remix] Web Search: ${web_search ? 'ON' : 'OFF'}`);
 
         // Build the content parts array
         const parts = [{ text: prompt }];
 
-        // Add images if provided (for image-to-image)
-        if (image_urls && image_urls.length > 0) {
+        // Add images - prefer base64 if provided (skips fal.ai upload)
+        if (image_base64s && image_base64s.length > 0) {
+            for (const b64 of image_base64s) {
+                // Handle data URLs or raw base64
+                let mimeType = 'image/jpeg';
+                let base64Data = b64;
+
+                if (b64.startsWith('data:')) {
+                    const match = b64.match(/^data:([^;]+);base64,(.+)$/);
+                    if (match) {
+                        mimeType = match[1];
+                        base64Data = match[2];
+                    }
+                }
+
+                parts.push({
+                    inline_data: {
+                        mime_type: mimeType,
+                        data: base64Data
+                    }
+                });
+            }
+        }
+        // Fallback to URLs if no base64 provided
+        else if (image_urls && image_urls.length > 0) {
             for (const imageUrl of image_urls) {
                 // Fetch the image and convert to base64
                 const imageResponse = await fetch(imageUrl);
@@ -273,6 +297,13 @@ app.post('/api/remix-gemini', async (req, res) => {
                 // Gemini uses imageSize: "1K", "2K", "4K"
                 requestBody.generationConfig.imageConfig.imageSize = resolution;
             }
+        }
+
+        // Add web search / grounding tool if enabled
+        if (web_search) {
+            requestBody.tools = [{
+                google_search: {}
+            }];
         }
 
         const response = await fetch(endpoint, {
@@ -331,58 +362,77 @@ app.post('/api/remix-gemini', async (req, res) => {
  */
 app.post('/api/analyze-gemini', async (req, res) => {
     try {
-        const { image_url, image, prompt } = req.body;
+        const { image_url, image_urls, image, prompt } = req.body;
 
-        if ((!image_url && !image) || !prompt) {
-            return res.status(400).json({ error: 'Image (URL or base64) and prompt are required' });
+        // Support single image_url, array of image_urls, or base64 image
+        const hasImage = image_url || (image_urls && image_urls.length > 0) || image;
+        if (!hasImage || !prompt) {
+            return res.status(400).json({ error: 'Image (URL, URLs array, or base64) and prompt are required' });
         }
 
         // Use gemini-2.0-flash for fast text analysis
         const modelId = 'gemini-2.0-flash';
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
 
-        console.log(`🔍 [Gemini Analyze] Analyzing image...`);
+        // Build parts array - start with prompt
+        const parts = [{ text: prompt }];
 
-        let base64Data, mimeType;
+        // Helper function to add image to parts
+        const addImageToParts = async (url) => {
+            const imageResponse = await fetch(url);
+            const imageBuffer = await imageResponse.buffer();
+            const base64Data = imageBuffer.toString('base64');
 
+            let mimeType = 'image/jpeg';
+            if (url.includes('.png')) mimeType = 'image/png';
+            else if (url.includes('.webp')) mimeType = 'image/webp';
+
+            parts.push({
+                inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data
+                }
+            });
+        };
+
+        // Handle different image input formats
         if (image) {
             // Handle base64 data URL (e.g., "data:image/png;base64,...")
             const matches = image.match(/^data:([^;]+);base64,(.+)$/);
+            let mimeType, base64Data;
             if (matches) {
                 mimeType = matches[1];
                 base64Data = matches[2];
             } else {
-                // Assume raw base64 JPEG if no prefix
                 mimeType = 'image/jpeg';
                 base64Data = image;
             }
-        } else {
-            // Fetch from URL
-            const imageResponse = await fetch(image_url);
-            const imageBuffer = await imageResponse.buffer();
-            base64Data = imageBuffer.toString('base64');
-
-            // Determine mime type from URL
-            mimeType = 'image/jpeg';
-            if (image_url.includes('.png')) mimeType = 'image/png';
-            else if (image_url.includes('.webp')) mimeType = 'image/webp';
+            parts.push({
+                inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data
+                }
+            });
+            console.log(`🔍 [Gemini Analyze] Analyzing 1 image (base64)...`);
+        } else if (image_urls && image_urls.length > 0) {
+            // Multiple image URLs
+            console.log(`🔍 [Gemini Analyze] Analyzing ${image_urls.length} images...`);
+            for (const url of image_urls) {
+                await addImageToParts(url);
+            }
+        } else if (image_url) {
+            // Single image URL
+            console.log(`🔍 [Gemini Analyze] Analyzing 1 image...`);
+            await addImageToParts(image_url);
         }
 
         const requestBody = {
             contents: [{
-                parts: [
-                    { text: prompt },
-                    {
-                        inline_data: {
-                            mime_type: mimeType,
-                            data: base64Data
-                        }
-                    }
-                ]
+                parts: parts
             }],
             generationConfig: {
                 temperature: 0.7,
-                maxOutputTokens: 500
+                maxOutputTokens: 1000
             }
         };
 
@@ -451,7 +501,7 @@ app.post('/api/bg-replace', async (req, res) => {
 /**
  * POST /api/video
  * Generate video from images using Kling video models
- * Supports v1.6 Pro (first/last frame) and v2.6 Pro (better quality + audio)
+ * Supports v1.6 Pro (first/last frame), v2.6 Pro (better quality + audio), and v3.0/O3 (reference-to-video)
  */
 app.post('/api/video', async (req, res) => {
     try {
@@ -466,29 +516,49 @@ app.post('/api/video', async (req, res) => {
 
         // Determine endpoint based on model
         let endpoint;
-        if (model === 'v2.6') {
+        if (model === 'v3.0-pro') {
+            endpoint = 'fal-ai/kling-video/o3/pro/reference-to-video';
+        } else if (model === 'v3.0-standard') {
+            endpoint = 'fal-ai/kling-video/o3/standard/reference-to-video';
+        } else if (model === 'v2.6') {
             endpoint = 'fal-ai/kling-video/v2.6/pro/image-to-video';
         } else {
             endpoint = 'fal-ai/kling-video/v1.6/pro/image-to-video';
         }
 
         // Build params based on model
-        const params = {
-            prompt,
-            image_url,
-            duration: duration || '5'
-        };
+        let params;
 
-        if (model === 'v2.6') {
-            // v2.6 specific params
-            if (generate_audio !== undefined) params.generate_audio = generate_audio;
-            if (negative_prompt) params.negative_prompt = negative_prompt;
-        } else {
-            // v1.6 specific params
-            if (tail_image_url) params.tail_image_url = tail_image_url;
+        if (model === 'v3.0-pro' || model === 'v3.0-standard') {
+            // v3.0/O3 uses start_image_url and end_image_url
+            params = {
+                prompt,
+                start_image_url: image_url,
+                duration: duration || '5',
+                generate_audio: generate_audio !== undefined ? generate_audio : false
+            };
+            if (tail_image_url) params.end_image_url = tail_image_url;
             if (aspect_ratio) params.aspect_ratio = aspect_ratio;
-            if (cfg_scale !== undefined) params.cfg_scale = cfg_scale;
             if (negative_prompt) params.negative_prompt = negative_prompt;
+            if (cfg_scale !== undefined) params.cfg_scale = cfg_scale;
+        } else {
+            params = {
+                prompt,
+                image_url,
+                duration: duration || '5'
+            };
+
+            if (model === 'v2.6') {
+                // v2.6 specific params
+                if (generate_audio !== undefined) params.generate_audio = generate_audio;
+                if (negative_prompt) params.negative_prompt = negative_prompt;
+            } else {
+                // v1.6 specific params
+                if (tail_image_url) params.tail_image_url = tail_image_url;
+                if (aspect_ratio) params.aspect_ratio = aspect_ratio;
+                if (cfg_scale !== undefined) params.cfg_scale = cfg_scale;
+                if (negative_prompt) params.negative_prompt = negative_prompt;
+            }
         }
 
         console.log(`🎬 [Video] Model: ${model}, Endpoint: ${endpoint}`);
@@ -2673,7 +2743,7 @@ IMPORTANT: Always end your response with a relevant follow-up question to keep t
                     },
                     ...messages
                 ],
-                max_tokens: 1000,
+                max_tokens: 4000,
                 temperature: 0.7
             })
         });

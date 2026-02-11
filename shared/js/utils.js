@@ -8,6 +8,28 @@
  * Uses proxy endpoint to bypass CORS and ensure proper filename
  */
 async function downloadFile(url, filename) {
+    // Handle data URLs directly (no proxy needed)
+    if (url.startsWith('data:')) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+    }
+
+    // Handle blob URLs directly
+    if (url.startsWith('blob:')) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+    }
+
     try {
         // Use proxy to bypass CORS issues with CDN URLs
         const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(url)}`);
