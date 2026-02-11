@@ -153,6 +153,37 @@
             background: var(--gainsboro);
         }
 
+        .download-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .download-buttons .download-btn {
+            padding: var(--space-2xs) var(--space-xs);
+            font-size: 10px;
+        }
+
+        /* Lightbox download buttons */
+        .lightbox-download-buttons {
+            display: flex;
+            gap: var(--space-xs);
+            flex-direction: column;
+        }
+
+        .lightbox-download-buttons .lightbox-download {
+            margin: 0;
+        }
+
+        .lightbox-download.secondary {
+            background: var(--off-white);
+            color: var(--jet);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .lightbox-download.secondary:hover {
+            background: var(--gainsboro);
+        }
+
         /* Settings row */
         .settings-row {
             display: flex;
@@ -187,6 +218,28 @@
             margin-bottom: var(--space-sm);
             padding-bottom: var(--space-xs);
             border-bottom: 1px solid var(--gainsboro);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .batch-download-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .batch-download-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .batch-download-btn:hover {
+            background: var(--gainsboro);
         }
 
         /* Lightbox with checkerboard */
@@ -230,7 +283,7 @@
                 <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
                     <input type="checkbox" id="keep-filenames" style="width: 16px; height: 16px;">
                     <span style="font-size: var(--text-sm);">Keep filenames</span>
-                    <span style="font-size: var(--text-xs); color: var(--slate);">(saves as originalname_nobg.png)</span>
+                    <span style="font-size: var(--text-xs); color: var(--slate);">(saves with original filename)</span>
                 </label>
             </div>
 
@@ -287,9 +340,14 @@
                     <h3 class="lightbox-section-title">Dimensions</h3>
                     <p id="lightbox-dimensions" style="font-size: 14px; color: #666;"></p>
                 </div>
-                <button class="lightbox-download" id="lightbox-download">
-                    Download PNG
-                </button>
+                <div class="lightbox-download-buttons">
+                    <button class="lightbox-download" id="lightbox-download-png">
+                        Download PNG (transparent)
+                    </button>
+                    <button class="lightbox-download secondary" id="lightbox-download-jpg">
+                        Download JPEG (white bg)
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -341,7 +399,8 @@
             lightboxOriginal: document.getElementById('lightbox-original'),
             lightboxDimensions: document.getElementById('lightbox-dimensions'),
             lightboxClose: document.getElementById('lightbox-close'),
-            lightboxDownload: document.getElementById('lightbox-download')
+            lightboxDownloadPng: document.getElementById('lightbox-download-png'),
+            lightboxDownloadJpg: document.getElementById('lightbox-download-jpg')
         };
 
         function startLoadingAnimation(text) {
@@ -573,14 +632,24 @@
                         <img src="${result.url}" alt="Result">
                         <div class="result-info">
                             <span class="result-meta">${result.width || '?'}x${result.height || '?'}</span>
-                            <button class="download-btn" onclick="event.stopPropagation(); downloadResult(${result.globalIndex})">Download</button>
+                            <div class="download-buttons">
+                                <button class="download-btn" onclick="event.stopPropagation(); downloadResult(${result.globalIndex})">PNG</button>
+                                <button class="download-btn" onclick="event.stopPropagation(); downloadResultJpeg(${result.globalIndex})">JPG</button>
+                            </div>
                         </div>
                     </div>
                 `).join('');
 
                 return `
                     <div class="result-group">
-                        <div class="result-group-header">Batch ${batchId}</div>
+                        <div class="result-group-header">
+                            <span>Batch ${batchId}</span>
+                            <div class="batch-download-buttons">
+                                <button class="batch-download-btn" onclick="downloadBatchPng(${batchId})">Save PNG</button>
+                                <button class="batch-download-btn" onclick="downloadBatchJpeg(${batchId})">Save JPEG</button>
+                                <button class="batch-download-btn" onclick="downloadBatchAll(${batchId})">Save All</button>
+                            </div>
+                        </div>
                         <div class="results-grid">${cardsHtml}</div>
                     </div>
                 `;
@@ -610,8 +679,12 @@
             document.body.style.overflow = '';
         }
 
-        elements.lightboxDownload.addEventListener('click', () => {
+        elements.lightboxDownloadPng.addEventListener('click', () => {
             downloadResult(state.lightboxIndex);
+        });
+
+        elements.lightboxDownloadJpg.addEventListener('click', () => {
+            downloadResultJpeg(state.lightboxIndex);
         });
 
         window.downloadResult = async function(index) {
@@ -619,7 +692,7 @@
             let filename;
 
             if (state.keepFilenames && result.originalName) {
-                filename = `${result.originalName}_nobg.png`;
+                filename = `${result.originalName}.png`;
             } else {
                 const now = new Date();
                 const date = now.toISOString().slice(2, 10).replace(/-/g, '');
@@ -629,6 +702,80 @@
             }
 
             downloadFile(result.url, filename);
+        };
+
+        window.downloadResultJpeg = async function(index) {
+            const result = state.results[index];
+            let filename;
+
+            if (state.keepFilenames && result.originalName) {
+                filename = `${result.originalName}.jpg`;
+            } else {
+                const now = new Date();
+                const date = now.toISOString().slice(2, 10).replace(/-/g, '');
+                const time = now.toTimeString().slice(0, 5).replace(':', '');
+                const num = String(index + 1).padStart(2, '0');
+                filename = `Setset_BgRemove_${date}_${time}_${num}.jpg`;
+            }
+
+            // Convert PNG with transparency to JPEG with white background
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+
+                // Fill with white background
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw image on top
+                ctx.drawImage(img, 0, 0);
+
+                // Convert to JPEG and download
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }, 'image/jpeg', 0.95);
+            };
+            img.src = result.url;
+        };
+
+        // Batch download functions
+        window.downloadBatchPng = async function(batchId) {
+            const batchResults = state.results.filter(r => r.batchId === batchId);
+            for (let i = 0; i < batchResults.length; i++) {
+                const globalIndex = state.results.indexOf(batchResults[i]);
+                await downloadResult(globalIndex);
+                // Small delay between downloads to prevent browser issues
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        };
+
+        window.downloadBatchJpeg = async function(batchId) {
+            const batchResults = state.results.filter(r => r.batchId === batchId);
+            for (let i = 0; i < batchResults.length; i++) {
+                const globalIndex = state.results.indexOf(batchResults[i]);
+                await downloadResultJpeg(globalIndex);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        };
+
+        window.downloadBatchAll = async function(batchId) {
+            const batchResults = state.results.filter(r => r.batchId === batchId);
+            for (let i = 0; i < batchResults.length; i++) {
+                const globalIndex = state.results.indexOf(batchResults[i]);
+                await downloadResult(globalIndex);
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await downloadResultJpeg(globalIndex);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
         };
 
         // Keyboard

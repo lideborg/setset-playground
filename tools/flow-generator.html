@@ -92,9 +92,44 @@
             object-fit: cover;
         }
 
-        .upload-slot .plus {
+        .upload-slot .placeholder {
+            text-align: center;
+            color: var(--french-gray);
+            pointer-events: none;
+        }
+
+        .upload-slot .placeholder-icon {
             font-size: 24px;
-            color: var(--gainsboro);
+            margin-bottom: 4px;
+        }
+
+        .upload-slot .placeholder-text {
+            font-size: var(--text-xs);
+        }
+
+        .upload-slot .placeholder-hint {
+            font-size: var(--text-2xs);
+            margin-top: 2px;
+            opacity: 0.7;
+        }
+
+        .upload-slot:focus {
+            outline: none;
+            border-color: var(--jet);
+            border-style: solid;
+            background: var(--white);
+        }
+
+        .upload-slot .browse-link {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .upload-slot .browse-link:hover {
+            color: var(--jet);
         }
 
         .upload-slot .remove-btn {
@@ -419,6 +454,24 @@
             text-align: center;
         }
 
+        .batch-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) 0;
+        }
+
+        .batch-divider::before,
+        .batch-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
         /* Settings bar - matching batch-remix-gemini */
         .settings-bar {
             display: flex;
@@ -540,6 +593,47 @@
             <h1 class="flow-title">Flow Generator</h1>
         </div>
 
+        <!-- Settings Bar -->
+        <div class="settings-bar">
+            <div class="setting-item">
+                <label>Aspect:</label>
+                <div class="btn-group-compact" id="aspect-buttons">
+                    <button data-value="1:1">1:1</button>
+                    <button class="active" data-value="3:4">3:4</button>
+                    <button data-value="4:3">4:3</button>
+                    <button data-value="16:9">16:9</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Res:</label>
+                <div class="btn-group-compact" id="resolution-buttons">
+                    <button data-value="1K">1K</button>
+                    <button class="active" data-value="2K">2K</button>
+                    <button data-value="4K">4K</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label>Seeds:</label>
+                <div class="btn-group-compact" id="seeds-buttons">
+                    <button class="active" data-value="1">1</button>
+                    <button data-value="2">2</button>
+                    <button data-value="3">3</button>
+                    <button data-value="4">4</button>
+                </div>
+            </div>
+
+            <div class="settings-spacer"></div>
+
+            <div class="selection-info" id="selection-info">0 templates selected</div>
+
+            <div class="global-actions">
+                <button class="action-btn" onclick="selectAll(true)">Select All</button>
+                <button class="action-btn" onclick="selectAll(false)">Deselect All</button>
+            </div>
+
+            <button class="generate-btn" id="generate-btn" disabled>Generate</button>
+        </div>
+
         <!-- Upload Section -->
         <div class="upload-section">
             <div class="section-header">
@@ -605,47 +699,6 @@
                 </div>
                 <div class="template-grid" id="environment-grid"></div>
             </div>
-        </div>
-
-        <!-- Settings Bar -->
-        <div class="settings-bar">
-            <div class="setting-item">
-                <label>Aspect:</label>
-                <div class="btn-group-compact" id="aspect-buttons">
-                    <button data-value="1:1">1:1</button>
-                    <button class="active" data-value="3:4">3:4</button>
-                    <button data-value="4:3">4:3</button>
-                    <button data-value="16:9">16:9</button>
-                </div>
-            </div>
-            <div class="setting-item">
-                <label>Res:</label>
-                <div class="btn-group-compact" id="resolution-buttons">
-                    <button data-value="1K">1K</button>
-                    <button class="active" data-value="2K">2K</button>
-                    <button data-value="4K">4K</button>
-                </div>
-            </div>
-            <div class="setting-item">
-                <label>Seeds:</label>
-                <div class="btn-group-compact" id="seeds-buttons">
-                    <button class="active" data-value="1">1</button>
-                    <button data-value="2">2</button>
-                    <button data-value="3">3</button>
-                    <button data-value="4">4</button>
-                </div>
-            </div>
-
-            <div class="settings-spacer"></div>
-
-            <div class="selection-info" id="selection-info">0 templates selected</div>
-
-            <div class="global-actions">
-                <button class="action-btn" onclick="selectAll(true)">Select All</button>
-                <button class="action-btn" onclick="selectAll(false)">Deselect All</button>
-            </div>
-
-            <button class="generate-btn" id="generate-btn" disabled>Generate</button>
         </div>
 
         <!-- Loader -->
@@ -716,7 +769,7 @@
             { id: 'studio-mannequin', name: 'Studio Mannequin', icon: '🧍', promptBase: 'Professional fashion photography shot on medium format camera. {GARMENT} displayed on a minimal white or light gray mannequin torso in a clean white photo studio. Slightly wider shot showing the mannequin and studio context. Soft professional lighting, seamless white backdrop. Editorial product photography style.' },
             { id: 'draped-chair', name: 'Draped on Chair', icon: '🪑', promptBase: 'Editorial still life photography shot on medium format camera. {GARMENT} artfully draped over a minimal modern designer chair in a clean white photo studio. Effortless casual arrangement, fabric falling naturally with elegant folds. Soft diffused studio lighting, pure white backdrop. Contemporary minimal aesthetic.' },
             { id: 'hanging', name: 'Hanging Hook', icon: '🪝', promptBase: 'Professional product photography shot on medium format camera. {GARMENT} hanging naturally from a minimal black or brass wall hook against a clean pure white wall. Natural drape showing garment silhouette and length. Straight-on angle, soft diffused studio lighting. Simple elegant minimal presentation.' },
-            { id: 'folded-stack', name: 'Folded Stack', icon: '📚', promptBase: 'Professional product photography shot on medium format camera. {GARMENT} neatly folded and stacked on pure white surface, showing neat presentation and fabric quality. Clean retail-style folding, crisp edges. Bird\'s eye or slight angle view. Soft even studio lighting. Minimal clean aesthetic.' },
+            { id: 'design-sketch', name: 'Design Sketch', icon: '✏️', promptBase: 'Clean technical fashion illustration of {GARMENT} for a wholesale line sheet. Vector-style flat drawing with thin black outlines, no shading or gradients. Solid flat colors matching the garment colors. Pure white background. Front view, perfectly symmetrical. Style of a professional fashion CAD sketch or technical flat. Minimal, precise, clean lines. No texture rendering, no shadows, no 3D effects. Like an Adobe Illustrator vector file. CRITICAL: If the reference garment has ANY logos, graphics, prints, or text, you MUST include them EXACTLY as shown - same design, same placement (chest, back, sleeve), same colors. The print/graphic must be clearly visible and accurate to the original.' },
             { id: 'hanger-front', name: 'On Hanger', icon: '🧥', promptBase: 'Professional product photography shot on medium format camera. {GARMENT} displayed on a thin black velvet hanger against pure white seamless background. Full front view, garment hanging naturally showing silhouette and drape. Clean retail presentation style. Soft even studio lighting.' },
             { id: 'crumpled-art', name: 'Artful Crumple', icon: '🌀', promptBase: 'Editorial still life photography shot on medium format camera. {GARMENT} artfully crumpled and arranged on pure white surface, creating organic sculptural shapes and interesting shadows. Intentional creative arrangement showing fabric texture and movement. Soft directional studio lighting. Contemporary art direction.' }
         ];
@@ -865,7 +918,20 @@
             return DIVERSE_MODEL_DESCRIPTIONS[Math.floor(Math.random() * DIVERSE_MODEL_DESCRIPTIONS.length)];
         }
 
+        // Detect if garment is bottoms (pants, shorts, skirts, etc.)
+        function isBottomsGarment(analysisText) {
+            const bottomsKeywords = [
+                'pants', 'pant', 'trousers', 'trouser', 'jeans', 'jean',
+                'shorts', 'short', 'skirt', 'culottes', 'leggings', 'joggers',
+                'chinos', 'slacks', 'bottoms', 'sweatpants', 'cargo'
+            ];
+            const lowerAnalysis = analysisText.toLowerCase();
+            return bottomsKeywords.some(keyword => lowerAnalysis.includes(keyword));
+        }
+
         // ========== STATE ==========
+        let batchCounter = 0;
+
         const state = {
             uploadedImages: [], // Array of { url, file, analysis }
             selectedTemplates: new Set(),
@@ -960,6 +1026,7 @@
                 const slot = document.createElement('div');
                 slot.className = 'upload-slot';
                 slot.dataset.index = i;
+                slot.tabIndex = 0; // Make focusable
 
                 if (state.uploadedImages[i]) {
                     slot.classList.add('filled');
@@ -968,8 +1035,22 @@
                         <button class="remove-btn" onclick="removeImage(${i})">&times;</button>
                     `;
                 } else {
-                    slot.innerHTML = '<span class="plus">+</span>';
-                    slot.addEventListener('click', () => triggerUpload(i));
+                    slot.innerHTML = `
+                        <div class="placeholder">
+                            <div class="placeholder-icon">+</div>
+                            <div class="placeholder-text">Click & paste</div>
+                            <div class="placeholder-hint">or drag & drop</div>
+                            <span class="browse-link" data-index="${i}">browse</span>
+                        </div>
+                    `;
+                    // Click to focus (for paste), not to open file picker
+                    slot.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('browse-link')) {
+                            triggerUpload(parseInt(e.target.dataset.index));
+                        } else {
+                            slot.focus();
+                        }
+                    });
                 }
 
                 // Drag and drop
@@ -1019,6 +1100,9 @@
         function setupEventListeners() {
             // File input
             elements.fileInput.addEventListener('change', handleFileSelect);
+
+            // Clipboard paste
+            document.addEventListener('paste', handlePaste);
 
             // Aspect buttons
             elements.aspectButtons.addEventListener('click', (e) => {
@@ -1077,6 +1161,35 @@
             const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             if (files.length > 0) {
                 processFile(files[0], index);
+            }
+        }
+
+        function handlePaste(e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        // Check if a specific upload slot is focused
+                        const focusedSlot = document.activeElement?.closest('.upload-slot');
+                        let slotIndex;
+
+                        if (focusedSlot && focusedSlot.dataset.index !== undefined) {
+                            slotIndex = parseInt(focusedSlot.dataset.index);
+                        } else {
+                            // Find first empty slot
+                            slotIndex = state.uploadedImages.findIndex(img => img === null);
+                            if (slotIndex === -1) {
+                                slotIndex = 0;
+                            }
+                        }
+                        processFile(file, slotIndex);
+                    }
+                    return;
+                }
             }
         }
 
@@ -1251,10 +1364,22 @@
             elements.loader.classList.remove('active');
             elements.progressSection.style.display = 'block';
             elements.resultsSection.style.display = 'block';
-            elements.progressTitle.textContent = 'Generating...';
+            elements.generateBtn.disabled = true;
+
+            // Create batch divider
+            batchCounter++;
+            const currentBatchId = batchCounter;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const divider = document.createElement('div');
+            divider.className = 'batch-divider';
+            divider.id = `batch-divider-${currentBatchId}`;
+            divider.textContent = `Batch ${currentBatchId} • ${timeStr}`;
+            elements.resultsGrid.insertBefore(divider, elements.resultsGrid.firstChild);
+
+            elements.progressTitle.textContent = `Batch ${currentBatchId}: Generating...`;
             elements.progressCount.textContent = `0 / ${tasks.length}`;
             elements.progressBar.style.width = '0%';
-            elements.generateBtn.disabled = true;
 
             let completed = 0;
 
@@ -1313,19 +1438,20 @@
                 }));
             }
 
-            elements.progressTitle.textContent = 'Complete!';
+            elements.progressTitle.textContent = `Batch ${currentBatchId}: Complete!`;
             elements.generateBtn.disabled = false;
         }
 
         async function analyzeGarment(imageUrl) {
-            const prompt = `Analyze this garment image for fashion photography. Describe in one sentence:
+            const prompt = `Analyze this garment image for fashion photography. Describe in one detailed sentence:
 - What type of garment it is (shirt, jacket, dress, pants, etc.)
 - The material/fabric (cotton, denim, silk, wool, etc.)
 - The color(s) - be specific (e.g., "navy blue", "cream white")
 - Any notable details (patterns, buttons, zippers, collar style)
+- IMPORTANT: If there are any graphics, prints, logos, or text on the garment, describe them in detail - what they look like, where they are placed (chest, back, sleeve), their colors, and any text content
 
-Do NOT mention brand names, logos, or text. Keep it simple and factual.
-Example: "A navy blue cotton Oxford shirt with white buttons and a classic collar."`;
+Keep it factual and descriptive.
+Example: "A black cotton t-shirt with a large white graphic print on the chest featuring abstract geometric shapes and the text 'STUDIO' in bold sans-serif font."`;
 
             try {
                 const response = await fetch('/api/analyze-gemini', {
@@ -1352,6 +1478,9 @@ Example: "A navy blue cotton Oxford shirt with white buttons and a classic colla
                 return template.promptBase.replace('{GARMENT}', garmentAnalysis);
             }
 
+            // Check if this is bottoms - requires full body shot
+            const isBottoms = isBottomsGarment(garmentAnalysis);
+
             // For on-person shots, build model description
             let modelDesc;
             if (hasTalentRef) {
@@ -1362,21 +1491,39 @@ Example: "A navy blue cotton Oxford shirt with white buttons and a classic colla
                 modelDesc = getRandomModelDescription();
             }
 
+            // Full body requirement for bottoms
+            const fullBodyRequirement = isBottoms
+                ? 'IMPORTANT: This is a bottoms garment - the shot MUST be full-body from head to feet, showing the entire garment including the full length of the legs and shoes. Do not crop at waist or knees. '
+                : '';
+
             template = STUDIO_TEMPLATES.find(t => t.id === templateId);
             if (template) {
                 const poses = STUDIO_POSES[template.poseType];
-                const pose = poses[Math.floor(Math.random() * poses.length)];
-                return `${pose} ${modelDesc} The model is wearing ${garmentAnalysis}. ${MODEL_SUFFIX_BASE}`;
+                let pose = poses[Math.floor(Math.random() * poses.length)];
+
+                // For bottoms, ensure pose text emphasizes full body
+                if (isBottoms) {
+                    // Replace any "Chest-up" or "Close-up" or "Tight" with "Full-body"
+                    pose = pose.replace(/Chest-up|Close-up|Tight|Half-body/gi, 'Full-body');
+                }
+
+                return `${fullBodyRequirement}${pose} ${modelDesc} The model is wearing ${garmentAnalysis}. ${MODEL_SUFFIX_BASE}`;
             }
 
             template = ENVIRONMENT_TEMPLATES.find(t => t.id === templateId);
             if (template) {
                 const envs = ENVIRONMENT_POSES[template.envType];
-                const env = envs[Math.floor(Math.random() * envs.length)];
-                return `${env} ${modelDesc} The model is wearing ${garmentAnalysis}. ${MODEL_SUFFIX_BASE}`;
+                let env = envs[Math.floor(Math.random() * envs.length)];
+
+                // For bottoms, ensure pose text emphasizes full body
+                if (isBottoms) {
+                    env = env.replace(/Chest-up|Close-up|Tight|Half-body/gi, 'Full-body');
+                }
+
+                return `${fullBodyRequirement}${env} ${modelDesc} The model is wearing ${garmentAnalysis}. ${MODEL_SUFFIX_BASE}`;
             }
 
-            return `Fashion photography of ${garmentAnalysis}. ${modelDesc} ${MODEL_SUFFIX_BASE}`;
+            return `${fullBodyRequirement}Fashion photography of ${garmentAnalysis}. ${modelDesc} ${MODEL_SUFFIX_BASE}`;
         }
 
         function addResult(result) {

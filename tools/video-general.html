@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video General - Multi-Image to Video</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .container {
+            max-width: 1000px;
+        }
+
+        /* Settings section */
+        .settings-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-md);
+        }
+
+        .setting-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .setting-label {
+            font-size: var(--text-xs);
+            font-weight: 500;
+            color: var(--slate);
+            min-width: 60px;
+        }
+
+        /* Toggle buttons */
+        .toggle-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .toggle-btn {
+            padding: 6px 12px;
+            font-size: var(--text-xs);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--off-white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .toggle-btn:hover {
+            border-color: var(--ash-grey);
+        }
+
+        .toggle-btn.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Duration slider */
+        .duration-slider-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .duration-slider {
+            width: 120px;
+            cursor: pointer;
+        }
+
+        .duration-value {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            min-width: 30px;
+        }
+
+        /* Upload grid */
+        .upload-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .upload-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .upload-section-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        .upload-section-subtitle {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-md);
+            background: var(--off-white);
+            min-height: 120px;
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot {
+            aspect-ratio: 16/9;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .slot-number {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: var(--radius-xs);
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot .placeholder {
+            text-align: center;
+            color: var(--ash-grey);
+        }
+
+        .upload-slot .placeholder-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .upload-slot .placeholder-text {
+            font-size: var(--text-2xs);
+            font-weight: 500;
+        }
+
+        /* Prompt section */
+        .prompt-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: var(--space-sm);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-sans);
+            font-size: var(--text-sm);
+            resize: vertical;
+            margin-bottom: var(--space-sm);
+        }
+
+        .prompt-textarea:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .prompt-textarea::placeholder {
+            color: var(--ash-grey);
+        }
+
+        .prompt-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        /* Enhanced prompt display */
+        .enhanced-prompt-container {
+            display: none;
+            margin-top: var(--space-md);
+        }
+
+        .enhanced-prompt-container.visible {
+            display: block;
+        }
+
+        .enhanced-prompt-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .enhanced-prompt-box {
+            background: var(--carbon);
+            color: var(--off-white);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            line-height: 1.5;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .enhanced-prompt-box:hover {
+            background: var(--jet);
+        }
+
+        .enhanced-prompt-box::after {
+            content: 'Click to copy';
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            font-size: var(--text-2xs);
+            color: var(--ash-grey);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .enhanced-prompt-box:hover::after {
+            opacity: 1;
+        }
+
+        .enhanced-prompt-box.copied::after {
+            content: 'Copied!';
+            color: #22c55e;
+            opacity: 1;
+        }
+
+        /* Generate section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-lg);
+        }
+
+        .generate-btn {
+            padding: 14px 32px;
+            font-size: 15px;
+            min-width: 180px;
+        }
+
+        .generate-info {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .results-header h2 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .batch-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--french-gray);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) 0;
+        }
+
+        .batch-divider::before,
+        .batch-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gainsboro);
+        }
+
+        .video-card {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .video-card video {
+            width: 100%;
+            display: block;
+            background: var(--carbon);
+        }
+
+        .video-card-footer {
+            padding: var(--space-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+        }
+
+        .video-card-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .video-card-label {
+            font-size: var(--text-2xs);
+            font-weight: 600;
+            color: var(--jet);
+            margin-bottom: 2px;
+        }
+
+        .video-card-prompt {
+            font-size: var(--text-xs);
+            color: var(--slate);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .video-card-cost {
+            font-size: var(--text-xs);
+            color: var(--ash-grey);
+            margin-left: var(--space-xs);
+        }
+
+        .video-card.generating {
+            position: relative;
+        }
+
+        .video-card .generating-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--off-white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .video-card .generating-spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: var(--space-xs);
+        }
+
+        .video-card .generating-text {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Enhance button loading state */
+        .btn.enhancing {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .btn.enhancing::after {
+            content: '...';
+            animation: dots 1s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Video General</h1>
+            <p class="hero-subtitle">Multi-image to video using Kling O3</p>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <div class="setting-row">
+                <div class="setting-group">
+                    <span class="setting-label">Quality</span>
+                    <div class="toggle-buttons" id="quality-buttons">
+                        <button class="toggle-btn active" data-value="pro">Pro</button>
+                        <button class="toggle-btn" data-value="standard">Standard</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <span class="setting-label">Mode</span>
+                    <div class="toggle-buttons" id="mode-buttons">
+                        <button class="toggle-btn active" data-value="1x1">1x1</button>
+                        <button class="toggle-btn" data-value="group">Group</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <span class="setting-label">Duration</span>
+                    <div class="duration-slider-group">
+                        <input type="range" class="duration-slider" id="duration-slider" min="3" max="15" value="5" step="1">
+                        <span class="duration-value" id="duration-value">5s</span>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <span class="setting-label">Aspect</span>
+                    <div class="toggle-buttons" id="aspect-buttons">
+                        <button class="toggle-btn active" data-value="16:9">16:9</button>
+                        <button class="toggle-btn" data-value="9:16">9:16</button>
+                        <button class="toggle-btn" data-value="1:1">1:1</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-section-header">
+                <div>
+                    <div class="upload-section-title">Images</div>
+                    <div class="upload-section-subtitle" id="upload-subtitle">Drag & drop, paste, or click to upload</div>
+                </div>
+                <button class="btn btn--sm" id="clear-all-btn" style="display: none;">Clear All</button>
+            </div>
+            <div class="upload-grid" id="upload-grid">
+                <!-- Slots generated dynamically -->
+            </div>
+            <input type="file" id="file-input" accept="image/*" multiple>
+        </div>
+
+        <!-- Prompt Section -->
+        <div class="prompt-section">
+            <textarea class="prompt-textarea" id="prompt-textarea" placeholder="Describe the motion... (e.g., camera slowly orbits around the product, smooth 360 rotation)"></textarea>
+            <div class="prompt-actions">
+                <button class="btn btn--secondary" id="enhance-btn">Enhance</button>
+                <button class="btn btn--primary generate-btn" id="generate-btn" disabled>Generate</button>
+            </div>
+
+            <!-- Enhanced prompt display -->
+            <div class="enhanced-prompt-container" id="enhanced-container">
+                <div class="enhanced-prompt-label">Enhanced prompt (click to copy):</div>
+                <div class="enhanced-prompt-box" id="enhanced-box"></div>
+            </div>
+        </div>
+
+        <!-- Generate Info -->
+        <div class="generate-section">
+            <div class="generate-info" id="generate-info">
+                Upload images to generate videos
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+            </div>
+            <div class="videos-grid" id="videos-grid"></div>
+        </div>
+    </div>
+
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/api.js"></script>
+    <script>
+        // Logging with timestamps
+        const startTime = performance.now();
+        function log(message, ...args) {
+            const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+            console.log(`[${elapsed}s] ${message}`, ...args);
+        }
+
+        // State
+        const state = {
+            quality: 'pro', // 'pro' or 'standard'
+            mode: '1x1', // '1x1' or 'group'
+            duration: 5,
+            aspectRatio: '16:9',
+            images: [], // Array of { file, url, uploaded: null }
+            results: [],
+            batchCounter: 0
+        };
+
+        const MAX_SLOTS = 12;
+
+        // Pricing per second
+        const PRICING = {
+            pro: 0.224,
+            standard: 0.084
+        };
+
+        // DOM Elements
+        const elements = {
+            qualityButtons: document.querySelectorAll('#quality-buttons .toggle-btn'),
+            modeButtons: document.querySelectorAll('#mode-buttons .toggle-btn'),
+            durationSlider: document.getElementById('duration-slider'),
+            durationValue: document.getElementById('duration-value'),
+            aspectButtons: document.querySelectorAll('#aspect-buttons .toggle-btn'),
+            uploadGrid: document.getElementById('upload-grid'),
+            uploadSubtitle: document.getElementById('upload-subtitle'),
+            clearAllBtn: document.getElementById('clear-all-btn'),
+            fileInput: document.getElementById('file-input'),
+            promptTextarea: document.getElementById('prompt-textarea'),
+            enhanceBtn: document.getElementById('enhance-btn'),
+            generateBtn: document.getElementById('generate-btn'),
+            enhancedContainer: document.getElementById('enhanced-container'),
+            enhancedBox: document.getElementById('enhanced-box'),
+            generateInfo: document.getElementById('generate-info'),
+            resultsSection: document.getElementById('results-section'),
+            videosGrid: document.getElementById('videos-grid')
+        };
+
+        // Initialize
+        function init() {
+            renderUploadGrid();
+            setupEventListeners();
+            updateUI();
+        }
+
+        function setupEventListeners() {
+            // Quality buttons
+            elements.qualityButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    elements.qualityButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.quality = btn.dataset.value;
+                    updateUI();
+                });
+            });
+
+            // Mode buttons
+            elements.modeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    elements.modeButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.mode = btn.dataset.value;
+                    updateUI();
+                });
+            });
+
+            // Duration slider
+            elements.durationSlider.addEventListener('input', () => {
+                state.duration = parseInt(elements.durationSlider.value);
+                elements.durationValue.textContent = `${state.duration}s`;
+                updateUI();
+            });
+
+            // Aspect buttons
+            elements.aspectButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    elements.aspectButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.aspectRatio = btn.dataset.value;
+                });
+            });
+
+            // File input
+            elements.fileInput.addEventListener('change', handleFileSelect);
+
+            // Clear all button
+            elements.clearAllBtn.addEventListener('click', () => {
+                state.images = [];
+                renderUploadGrid();
+                updateUI();
+            });
+
+            // Prompt textarea
+            elements.promptTextarea.addEventListener('input', updateUI);
+
+            // Enhance button
+            elements.enhanceBtn.addEventListener('click', handleEnhance);
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', handleGenerate);
+
+            // Enhanced box click to copy
+            elements.enhancedBox.addEventListener('click', () => {
+                const text = elements.enhancedBox.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    elements.enhancedBox.classList.add('copied');
+                    setTimeout(() => elements.enhancedBox.classList.remove('copied'), 1500);
+                });
+            });
+
+            // Global paste handler
+            document.addEventListener('paste', handlePaste);
+
+            // Drag and drop on upload grid
+            elements.uploadGrid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                elements.uploadGrid.classList.add('drag-over');
+            });
+
+            elements.uploadGrid.addEventListener('dragleave', () => {
+                elements.uploadGrid.classList.remove('drag-over');
+            });
+
+            elements.uploadGrid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                elements.uploadGrid.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                handleFiles(files);
+            });
+        }
+
+        function renderUploadGrid() {
+            let html = '';
+            for (let i = 0; i < MAX_SLOTS; i++) {
+                const image = state.images[i];
+                if (image) {
+                    html += `
+                        <div class="upload-slot filled" data-index="${i}">
+                            <img src="${image.thumbnail}" alt="Image ${i + 1}">
+                            <span class="slot-number">${i + 1}</span>
+                            <button class="remove-btn">&times;</button>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="upload-slot" data-index="${i}">
+                            <div class="placeholder">
+                                <div class="placeholder-icon">+</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            elements.uploadGrid.innerHTML = html;
+
+            // Attach click handlers
+            document.querySelectorAll('.upload-slot').forEach(slot => {
+                const index = parseInt(slot.dataset.index);
+
+                slot.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-btn')) {
+                        state.images.splice(index, 1);
+                        renderUploadGrid();
+                        updateUI();
+                    } else if (!slot.classList.contains('filled')) {
+                        elements.fileInput.click();
+                    }
+                });
+            });
+
+            // Show/hide clear all button
+            elements.clearAllBtn.style.display = state.images.length > 0 ? 'block' : 'none';
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+            e.target.value = '';
+        }
+
+        function handlePaste(e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            const files = [];
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    if (file) files.push(file);
+                }
+            }
+
+            if (files.length > 0) {
+                e.preventDefault();
+                handleFiles(files);
+            }
+        }
+
+        async function handleFiles(files) {
+            for (const file of files) {
+                if (state.images.length >= MAX_SLOTS) break;
+
+                // Create small thumbnail for display (fast), keep file for upload later
+                const thumbnail = await createThumbnail(file, 200);
+                state.images.push({ file, thumbnail, uploaded: null });
+                log(`Added image ${state.images.length}`);
+            }
+
+            renderUploadGrid();
+            updateUI();
+        }
+
+        // Create a small thumbnail for grid display (keeps UI fast)
+        function createThumbnail(file, maxSize = 200) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Scale down to thumbnail size
+                    if (width > height) {
+                        height = Math.round((height * maxSize) / width);
+                        width = maxSize;
+                    } else {
+                        width = Math.round((width * maxSize) / height);
+                        height = maxSize;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    URL.revokeObjectURL(url);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+
+                img.src = url;
+            });
+        }
+
+        // Read file as data URL (for upload compression)
+        function readFileAsDataURL(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Compress image for upload - resize to max 2500px on longest side, convert to JPEG
+        function compressImageForUpload(dataUrl, maxSize = 2500) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    const originalSize = `${width}x${height}`;
+
+                    // Only resize if larger than maxSize
+                    if (width > maxSize || height > maxSize) {
+                        if (width > height) {
+                            height = Math.round((height * maxSize) / width);
+                            width = maxSize;
+                        } else {
+                            width = Math.round((width * maxSize) / height);
+                            height = maxSize;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Use JPEG for smaller file size (quality 0.9)
+                    const compressedUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+                    const sizeKB = Math.round(compressedUrl.length * 0.75 / 1024);
+                    log(`Compressed ${originalSize} -> ${width}x${height} (${sizeKB}KB)`);
+                    resolve(compressedUrl);
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        function updateUI() {
+            const imageCount = state.images.length;
+            const prompt = elements.promptTextarea.value.trim();
+
+            // Update subtitle
+            if (imageCount === 0) {
+                elements.uploadSubtitle.textContent = 'Drag & drop, paste, or click to upload';
+            } else {
+                elements.uploadSubtitle.textContent = `${imageCount} image${imageCount > 1 ? 's' : ''} uploaded`;
+            }
+
+            // Enable/disable generate button
+            elements.generateBtn.disabled = imageCount === 0;
+
+            // Calculate cost and video count
+            if (imageCount === 0) {
+                elements.generateInfo.textContent = 'Upload images to generate videos';
+            } else {
+                const videoCount = state.mode === '1x1' ? imageCount : 1;
+                const costPerVideo = PRICING[state.quality] * state.duration;
+                const totalCost = (costPerVideo * videoCount).toFixed(2);
+                const qualityLabel = state.quality === 'pro' ? 'Pro' : 'Std';
+                const modeLabel = state.mode === '1x1' ? '1x1' : 'Group';
+
+                elements.generateInfo.textContent = `O3 ${qualityLabel} | ${modeLabel} | ${state.duration}s | ${videoCount} video${videoCount > 1 ? 's' : ''} | $${totalCost}`;
+            }
+        }
+
+        async function handleEnhance() {
+            const prompt = elements.promptTextarea.value.trim();
+            if (!prompt && state.images.length === 0) {
+                alert('Please add some images or write a prompt first');
+                return;
+            }
+
+            elements.enhanceBtn.classList.add('enhancing');
+            elements.enhanceBtn.textContent = 'Enhancing';
+
+            try {
+                // Upload first image if available for context
+                let imageUrl = null;
+                if (state.images.length > 0 && !state.images[0].uploaded) {
+                    log('Compressing and uploading first image for analysis...');
+                    const fullDataUrl = await readFileAsDataURL(state.images[0].file);
+                    const compressedUrl = await compressImageForUpload(fullDataUrl, 2500);
+                    const result = await api.uploadBase64(compressedUrl);
+                    state.images[0].uploaded = result.url;
+                    imageUrl = result.url;
+                } else if (state.images.length > 0) {
+                    imageUrl = state.images[0].uploaded;
+                }
+
+                // Build enhancement prompt
+                const modeContext = state.mode === 'group'
+                    ? `The user has ${state.images.length} images that will be combined as visual references for a single video. Think of these as keyframes or different angles of the same subject.`
+                    : `The user has ${state.images.length} images, and each will generate a separate video with the same prompt.`;
+
+                const enhancePromptText = `You are helping create a motion prompt for Kling O3 AI video generation.
+
+CONTEXT:
+- ${modeContext}
+- Duration: ${state.duration} seconds
+- User's description: "${prompt || 'No prompt provided - suggest natural, cinematic motion'}"
+
+KLING O3 BEST PRACTICES:
+- Focus ONLY on motion and camera movement - never describe static elements
+- Use clear, specific movements (pan, orbit, dolly, zoom, rotate)
+- Include timing cues ("slowly", "gradually", "quick")
+- For product shots, consider: smooth rotation, orbit, reveal transitions
+- Keep it under 50 words
+- Use natural language, not keyword spam
+
+Write an enhanced motion prompt. Return ONLY the prompt text, nothing else.`;
+
+                const response = await fetch('/api/analyze-gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image_url: imageUrl || 'https://via.placeholder.com/1',
+                        prompt: enhancePromptText
+                    })
+                });
+
+                const data = await response.json();
+                let enhanced = data.content || prompt || 'Smooth cinematic camera movement with gentle motion';
+
+                // Clean up quotes if present
+                if ((enhanced.startsWith('"') && enhanced.endsWith('"')) ||
+                    (enhanced.startsWith("'") && enhanced.endsWith("'"))) {
+                    enhanced = enhanced.slice(1, -1);
+                }
+
+                // Show enhanced prompt
+                elements.enhancedBox.textContent = enhanced;
+                elements.enhancedContainer.classList.add('visible');
+
+                log('Enhanced prompt:', enhanced);
+
+            } catch (error) {
+                log('Enhance error:', error);
+                alert('Failed to enhance prompt: ' + error.message);
+            } finally {
+                elements.enhanceBtn.classList.remove('enhancing');
+                elements.enhanceBtn.textContent = 'Enhance';
+            }
+        }
+
+        async function handleGenerate() {
+            if (state.images.length === 0) return;
+
+            const prompt = elements.promptTextarea.value.trim() || 'Smooth cinematic motion';
+
+            log(`Starting generation: ${state.images.length} images, mode: ${state.mode}, quality: ${state.quality}`);
+
+            state.batchCounter++;
+            const currentBatch = state.batchCounter;
+            elements.generateBtn.disabled = true;
+
+            // Show results section
+            elements.resultsSection.classList.add('visible');
+
+            // Create batch divider
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const batchDivider = document.createElement('div');
+            batchDivider.className = 'batch-divider';
+            batchDivider.textContent = `Batch ${currentBatch} - ${timeStr}`;
+
+            // Determine number of videos
+            const videoCount = state.mode === '1x1' ? state.images.length : 1;
+            const costPerVideo = PRICING[state.quality] * state.duration;
+
+            // Create placeholder cards
+            const placeholderCards = [];
+            for (let i = 0; i < videoCount; i++) {
+                const card = document.createElement('div');
+                card.className = 'video-card generating';
+                card.id = `video-card-${currentBatch}-${i}`;
+
+                const label = state.mode === '1x1' ? `Image ${i + 1}` : `Group (${state.images.length} images)`;
+
+                card.innerHTML = `
+                    <div class="generating-overlay">
+                        <div class="generating-spinner"></div>
+                        <div class="generating-text">Uploading...</div>
+                    </div>
+                    <video style="aspect-ratio: 16/9;"></video>
+                    <div class="video-card-footer">
+                        <div class="video-card-info">
+                            <div class="video-card-label">${label}</div>
+                            <span class="video-card-prompt" title="${prompt}">${prompt}</span>
+                        </div>
+                        <span class="video-card-cost">$${costPerVideo.toFixed(2)}</span>
+                        <button class="btn btn--sm" disabled>Download</button>
+                    </div>
+                `;
+                placeholderCards.push(card);
+            }
+
+            // Insert at beginning of grid
+            const firstChild = elements.videosGrid.firstChild;
+            placeholderCards.reverse().forEach(card => {
+                elements.videosGrid.insertBefore(card, firstChild);
+            });
+            elements.videosGrid.insertBefore(batchDivider, firstChild);
+
+            try {
+                // Compress and upload all images first
+                for (let i = 0; i < state.images.length; i++) {
+                    if (!state.images[i].uploaded) {
+                        log(`Compressing and uploading image ${i + 1}...`);
+                        // Read file fresh, then compress
+                        const fullDataUrl = await readFileAsDataURL(state.images[i].file);
+                        const compressedUrl = await compressImageForUpload(fullDataUrl, 2500);
+                        const result = await api.uploadBase64(compressedUrl);
+                        state.images[i].uploaded = result.url;
+                    }
+                }
+
+                if (state.mode === '1x1') {
+                    // Generate one video per image
+                    const promises = state.images.map((img, i) => generateVideo(img.uploaded, prompt, currentBatch, i));
+                    await Promise.all(promises);
+                } else {
+                    // Group mode: use first image as the main reference
+                    // Note: Kling O3 image-to-video only supports single image input
+                    // For true multi-image, we'd need a different approach
+                    const card = document.getElementById(`video-card-${currentBatch}-0`);
+                    const statusText = card?.querySelector('.generating-text');
+                    if (statusText) statusText.textContent = 'Generating...';
+
+                    await generateVideo(state.images[0].uploaded, prompt, currentBatch, 0);
+                }
+
+            } catch (error) {
+                log('Generation error:', error);
+            }
+
+            elements.generateBtn.disabled = false;
+            log('All generations complete');
+        }
+
+        async function generateVideo(imageUrl, prompt, batchId, index) {
+            const card = document.getElementById(`video-card-${batchId}-${index}`);
+            const statusText = card?.querySelector('.generating-text');
+
+            try {
+                if (statusText) statusText.textContent = 'Generating...';
+
+                const model = state.quality === 'pro' ? 'v3.0-pro' : 'v3.0-standard';
+
+                const params = {
+                    model,
+                    image_url: imageUrl,
+                    prompt,
+                    duration: String(state.duration),
+                    aspect_ratio: state.aspectRatio,
+                    generate_audio: false,
+                    falKey: api.getFalKey()
+                };
+
+                log(`[Video ${index + 1}] Generating with ${model}...`);
+
+                const response = await fetch('/api/video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Video generation failed');
+                }
+
+                const videoUrl = data.video?.url || data.url;
+                log(`[Video ${index + 1}] Complete:`, videoUrl);
+
+                if (videoUrl && card) {
+                    card.classList.remove('generating');
+                    const overlay = card.querySelector('.generating-overlay');
+                    if (overlay) overlay.remove();
+
+                    const video = card.querySelector('video');
+                    video.src = videoUrl;
+                    video.controls = true;
+                    video.loop = true;
+
+                    const downloadBtn = card.querySelector('.btn');
+                    downloadBtn.disabled = false;
+                    downloadBtn.onclick = () => {
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                        downloadFile(videoUrl, `Setset_Video_${timestamp}_${index + 1}.mp4`);
+                    };
+
+                    state.results.push({ url: videoUrl, prompt, index });
+                }
+
+            } catch (error) {
+                log(`[Video ${index + 1}] Error:`, error.message);
+
+                if (card) {
+                    card.classList.remove('generating');
+                    const overlay = card.querySelector('.generating-overlay');
+                    if (overlay) {
+                        overlay.innerHTML = `<div class="generating-text" style="color: #dc2626;">Failed: ${error.message}</div>`;
+                    }
+                }
+            }
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
