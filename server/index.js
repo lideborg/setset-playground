@@ -517,9 +517,9 @@ app.post('/api/video', async (req, res) => {
         // Determine endpoint based on model
         let endpoint;
         if (model === 'v3.0-pro') {
-            endpoint = 'fal-ai/kling-video/o3/pro/reference-to-video';
+            endpoint = 'fal-ai/kling-video/o3/pro/image-to-video';
         } else if (model === 'v3.0-standard') {
-            endpoint = 'fal-ai/kling-video/o3/standard/reference-to-video';
+            endpoint = 'fal-ai/kling-video/o3/standard/image-to-video';
         } else if (model === 'v2.6') {
             endpoint = 'fal-ai/kling-video/v2.6/pro/image-to-video';
         } else {
@@ -529,11 +529,11 @@ app.post('/api/video', async (req, res) => {
         // Build params based on model
         let params;
 
-        if (model === 'v3.0-pro' || model === 'v3.0-standard') {
-            // v3.0/O3 uses start_image_url and end_image_url
+        if (model.startsWith('v3.0')) {
+            // v3.0/O3 uses image_url and end_image_url
             params = {
                 prompt,
-                start_image_url: image_url,
+                image_url,
                 duration: duration || '5',
                 generate_audio: generate_audio !== undefined ? generate_audio : false
             };
@@ -583,6 +583,73 @@ app.post('/api/video', async (req, res) => {
         // Log detailed validation errors
         if (error.body?.detail) {
             console.error('❌ [Video] Detail:', JSON.stringify(error.body.detail, null, 2));
+        }
+        const errorMessage = error.body?.detail?.[0]?.msg || error.message;
+        res.status(500).json({ error: errorMessage });
+    }
+});
+
+/**
+ * POST /api/video-360
+ * Generate 360° rotation videos using Kling reference-to-video
+ * Uses the same image as start + end frame for seamless looping
+ * Supports optional elements (frontal + reference images) for character consistency
+ */
+app.post('/api/video-360', async (req, res) => {
+    try {
+        const { prompt, start_image_url, end_image_url, duration, aspect_ratio, quality, elements: elementsArr } = req.body;
+
+        if (!start_image_url || !prompt) {
+            return res.status(400).json({ error: 'start_image_url and prompt are required' });
+        }
+
+        // Configure fal with the appropriate key
+        fal.config({ credentials: getFalKey(req) });
+
+        // Determine endpoint based on quality
+        const qualityLevel = quality === 'standard' ? 'standard' : 'pro';
+        const endpoint = `fal-ai/kling-video/o3/${qualityLevel}/reference-to-video`;
+
+        // Build params
+        const params = {
+            prompt,
+            start_image_url,
+            end_image_url: end_image_url || start_image_url,
+            duration: duration || '8',
+            shot_type: 'customize'
+        };
+
+        if (aspect_ratio) params.aspect_ratio = aspect_ratio;
+
+        // Add elements if provided
+        if (elementsArr && Array.isArray(elementsArr) && elementsArr.length > 0) {
+            params.elements = elementsArr.map(el => ({
+                frontal_image_url: el.frontal_image_url,
+                reference_image_urls: el.reference_image_urls || []
+            }));
+        }
+
+        console.log(`🔄 [Video 360] Quality: ${qualityLevel}, Endpoint: ${endpoint}`);
+        console.log(`🔄 [Video 360] Params:`, JSON.stringify(params, null, 2));
+
+        // Use fal.subscribe for long-running video generation
+        const result = await fal.subscribe(endpoint, {
+            input: params,
+            logs: true,
+            onQueueUpdate: (update) => {
+                if (update.status === 'IN_PROGRESS') {
+                    console.log(`🔄 [Video 360] Progress: ${update.logs?.map(l => l.message).join(', ') || 'processing...'}`);
+                }
+            }
+        });
+
+        console.log(`✅ [Video 360] Complete:`, JSON.stringify(result.data, null, 2));
+
+        res.json(result.data);
+    } catch (error) {
+        console.error('❌ [Video 360] Error:', error);
+        if (error.body?.detail) {
+            console.error('❌ [Video 360] Detail:', JSON.stringify(error.body.detail, null, 2));
         }
         const errorMessage = error.body?.detail?.[0]?.msg || error.message;
         res.status(500).json({ error: errorMessage });
