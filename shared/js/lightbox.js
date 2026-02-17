@@ -30,7 +30,11 @@ class Lightbox {
             prev: document.getElementById('lightbox-prev'),
             next: document.getElementById('lightbox-next'),
             speedSection: document.getElementById('lightbox-speed-section'),
-            speedButtons: document.querySelectorAll('.speed-btn')
+            speedButtons: document.querySelectorAll('.speed-btn'),
+            inputsSection: document.getElementById('lightbox-inputs-section'),
+            inputsGrid: document.getElementById('lightbox-inputs-grid'),
+            poseSection: document.getElementById('lightbox-pose-section'),
+            poseIndicator: document.getElementById('lightbox-pose-indicator')
         };
 
         this.bindEvents();
@@ -55,6 +59,13 @@ class Lightbox {
                         <div class="lightbox-section">
                             <h3 class="lightbox-section-title">Prompt</h3>
                             <p class="lightbox-prompt-text" id="lightbox-prompt"></p>
+                        </div>
+                        <div class="lightbox-section lightbox-pose-section" id="lightbox-pose-section" style="display: none;">
+                            <div class="lightbox-pose-indicator" id="lightbox-pose-indicator"></div>
+                        </div>
+                        <div class="lightbox-section lightbox-inputs-section" id="lightbox-inputs-section" style="display: none;">
+                            <h3 class="lightbox-section-title">Input Images</h3>
+                            <div class="lightbox-inputs-grid" id="lightbox-inputs-grid"></div>
                         </div>
                         <div class="lightbox-section lightbox-speed-section" id="lightbox-speed-section" style="display: none;">
                             <h3 class="lightbox-section-title">Playback Speed</h3>
@@ -103,6 +114,44 @@ class Lightbox {
                     color: #888;
                     margin-top: 8px;
                 }
+                .lightbox-inputs-grid {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                    margin-top: 8px;
+                }
+                .lightbox-input-thumb {
+                    width: 50px;
+                    height: 50px;
+                    object-fit: cover;
+                    border-radius: 4px;
+                    border: 1px solid #e5e5e5;
+                    cursor: pointer;
+                    transition: transform 0.15s, border-color 0.15s;
+                }
+                .lightbox-input-thumb:hover {
+                    transform: scale(1.1);
+                    border-color: #333;
+                }
+                .lightbox-input-label {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+                .lightbox-input-label span {
+                    font-size: 9px;
+                    color: #666;
+                    margin-top: 2px;
+                }
+                .lightbox-pose-indicator {
+                    font-size: 13px;
+                    font-weight: 500;
+                    padding: 6px 12px;
+                    background: #f5f5f5;
+                    border-radius: 4px;
+                    display: inline-block;
+                }
             </style>
         `;
         document.body.insertAdjacentHTML('beforeend', html);
@@ -148,6 +197,8 @@ class Lightbox {
 
             switch (e.key) {
                 case 'Escape':
+                case 'x':
+                case 'X':
                     this.close();
                     break;
                 case 'ArrowLeft':
@@ -252,6 +303,38 @@ class Lightbox {
 
         this.elements.model.textContent = result.modelName || 'Unknown';
         this.elements.prompt.textContent = result.prompt || '';
+
+        // Show pose indicator if usedCopyPose is defined
+        if (this.elements.poseSection && this.elements.poseIndicator) {
+            if (typeof result.usedCopyPose !== 'undefined') {
+                this.elements.poseSection.style.display = 'block';
+                if (result.usedCopyPose) {
+                    this.elements.poseIndicator.textContent = 'Pose: Copied from environment';
+                    this.elements.poseIndicator.style.color = '#2196F3';
+                } else {
+                    this.elements.poseIndicator.textContent = 'Pose: Generated from library';
+                    this.elements.poseIndicator.style.color = '#4CAF50';
+                }
+            } else {
+                this.elements.poseSection.style.display = 'none';
+            }
+        }
+
+        // Render input images if available
+        if (this.elements.inputsSection && this.elements.inputsGrid) {
+            if (result.inputImages && result.inputImages.length > 0) {
+                this.elements.inputsSection.style.display = 'block';
+                this.elements.inputsGrid.innerHTML = result.inputImages.map((url, i) => `
+                    <div class="lightbox-input-label">
+                        <img src="${url}" class="lightbox-input-thumb" onclick="window.open('${url}', '_blank')" title="Image ${i + 1}">
+                        <span>${i + 1}</span>
+                    </div>
+                `).join('');
+            } else {
+                this.elements.inputsSection.style.display = 'none';
+                this.elements.inputsGrid.innerHTML = '';
+            }
+        }
 
         // Update nav visibility
         if (this.elements.prev) {

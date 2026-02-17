@@ -29,7 +29,7 @@ const STUDIO_MESSAGES = [
 class StudioLoader {
     constructor(options = {}) {
         this.messages = options.messages || STUDIO_MESSAGES;
-        this.interval = options.interval || 2000;
+        this.interval = options.interval || 1500;
         this.loadingInterval = null;
         this.lastMessageIndex = -1;
 

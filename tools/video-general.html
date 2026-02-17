@@ -137,7 +137,7 @@
         }
 
         .upload-slot {
-            aspect-ratio: 16/9;
+            aspect-ratio: 3/4;
             border: 1px solid var(--gainsboro);
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -209,6 +209,16 @@
         .upload-slot .placeholder-text {
             font-size: var(--text-2xs);
             font-weight: 500;
+        }
+
+        .upload-slot.paste-ready {
+            border-color: var(--jet);
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .upload-slot.paste-ready .placeholder {
+            color: var(--jet);
         }
 
         /* Prompt section */
@@ -580,7 +590,8 @@
             aspectRatio: '16:9',
             images: [], // Array of { file, url, uploaded: null }
             results: [],
-            batchCounter: 0
+            batchCounter: 0,
+            pasteTargetIndex: null // Index of slot ready for paste
         };
 
         const MAX_SLOTS = 12;
@@ -733,12 +744,23 @@
             document.querySelectorAll('.upload-slot').forEach(slot => {
                 const index = parseInt(slot.dataset.index);
 
+                // Single click: remove btn or set paste target
                 slot.addEventListener('click', (e) => {
                     if (e.target.classList.contains('remove-btn')) {
                         state.images.splice(index, 1);
                         renderUploadGrid();
                         updateUI();
                     } else if (!slot.classList.contains('filled')) {
+                        // Set this slot as paste target
+                        clearPasteTarget();
+                        state.pasteTargetIndex = index;
+                        slot.classList.add('paste-ready');
+                    }
+                });
+
+                // Double click: open file dialog for empty slots
+                slot.addEventListener('dblclick', (e) => {
+                    if (!slot.classList.contains('filled')) {
                         elements.fileInput.click();
                     }
                 });
@@ -752,6 +774,11 @@
             const files = Array.from(e.target.files);
             handleFiles(files);
             e.target.value = '';
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            state.pasteTargetIndex = null;
         }
 
         function handlePaste(e) {
@@ -768,8 +795,32 @@
 
             if (files.length > 0) {
                 e.preventDefault();
-                handleFiles(files);
+                // If a specific slot is targeted, insert at that index
+                if (state.pasteTargetIndex !== null && files.length === 1) {
+                    handleFileAtIndex(files[0], state.pasteTargetIndex);
+                } else {
+                    handleFiles(files);
+                }
+                clearPasteTarget();
             }
+        }
+
+        async function handleFileAtIndex(file, index) {
+            const thumbnail = await createThumbnail(file, 200);
+            // Insert at specific index, shifting others if needed
+            if (state.images[index]) {
+                // Replace existing
+                state.images[index] = { file, thumbnail, uploaded: null };
+            } else {
+                // Fill the gap - ensure array is long enough
+                while (state.images.length < index) {
+                    state.images.push(null);
+                }
+                state.images[index] = { file, thumbnail, uploaded: null };
+            }
+            log(`Added image at index ${index}`);
+            renderUploadGrid();
+            updateUI();
         }
 
         async function handleFiles(files) {
