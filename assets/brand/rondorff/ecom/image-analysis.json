@@ -1,0 +1,1144 @@
+{
+  "version": 1,
+  "analyzedAt": "2026-02-18T15:51:23.286Z",
+  "images": {
+    "21bg97.so_2.jpg": {
+      "shotType": "flat lay",
+      "part": "handle",
+      "details": [
+        "stitching",
+        "fabric texture",
+        "handle reinforcement"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "mauve to orange"
+      ],
+      "description": "A close-up flat lay shows a mauve tote bag handle and the top corner of the bag on an off-white surface.",
+      "productColor": "warm gradient from mauve to sunset orange"
+    },
+    "21bg97.so_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "canvas material",
+        "stitched handle attachment",
+        "color gradient"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "mauve to orange"
+      ],
+      "description": "Flat lay shot of a canvas tote bag with a mauve to orange gradient.",
+      "productColor": "warm gradient from mauve to sunset orange"
+    },
+    "21bg97.so_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "corner",
+      "details": [
+        "fabric texture",
+        "grommets",
+        "seam"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "mauve to orange"
+      ],
+      "description": "A close-up shot of a salmon-colored canvas bag corner, featuring a visible seam and two black grommets with inscribed text.",
+      "productColor": "warm gradient from mauve to sunset orange"
+    },
+    "21bg97.so_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "handles",
+        "stitching",
+        "graphic text",
+        "metal detail",
+        "ombre effect"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "mauve to orange"
+      ],
+      "description": "A pink and orange ombre canvas tote bag with black 'FEARLESS SUMMER' text is shot in a flat lay.",
+      "productColor": "warm gradient from mauve to sunset orange"
+    },
+    "21bg97.so_print.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "gradient color",
+        "large text",
+        "brand info",
+        "handle stitching"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "mauve to orange"
+      ],
+      "description": "Close-up flat lay shot of a peach and grey gradient canvas tote bag with large black text reading 'FEARLESS SUMMER'.",
+      "productColor": "warm gradient from mauve to sunset orange"
+    },
+    "21ca653dd.so_2.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "embroidery",
+        "eyelets",
+        "seams",
+        "bill",
+        "button"
+      ],
+      "colors": [
+        "sunset orange"
+      ],
+      "description": "A flat lay of an orange baseball cap with black 'Sunset Boy' embroidery on a white background.",
+      "productColor": "sunset orange with black embroidery"
+    },
+    "21ca653dd.so_3.jpg": {
+      "shotType": "flat lay",
+      "part": "back",
+      "details": [
+        "adjustable strap",
+        "metal eyelet",
+        "brand snap button",
+        "interior lining"
+      ],
+      "colors": [
+        "sunset orange"
+      ],
+      "description": "A flat lay image shows the back of an orange baseball cap with an adjustable strap, metal eyelet, and branded snap buttons on a white background.",
+      "productColor": "sunset orange with black embroidery"
+    },
+    "21ca653dd.so_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "eyelets",
+        "stitching",
+        "fabric texture",
+        "strap"
+      ],
+      "colors": [
+        "sunset orange"
+      ],
+      "description": "A close-up shot of an orange baseball cap, showcasing the fabric texture, stitching details, and black eyelets with red centers.",
+      "productColor": "sunset orange with black embroidery"
+    },
+    "21ca653dd.so_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "embroidered logo",
+        "eyelets",
+        "seams",
+        "bill"
+      ],
+      "colors": [
+        "sunset orange"
+      ],
+      "description": "Overhead studio shot of an orange baseball cap with black embroidered lettering on a white background.",
+      "productColor": "sunset orange with black embroidery"
+    },
+    "21sr20dd.so_2.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "ruching",
+        "seam",
+        "binding",
+        "lining"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot of a peach-colored swimsuit bottom showing ruching, seam, binding, and white lining details.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sr20dd.so_3.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "ribbed side",
+        "stitching",
+        "lining",
+        "fabric texture",
+        "brand tag"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot of the front of a peach and orange gradient swimsuit bottom, showing the ribbed side, stitching, and white lining.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sr20dd.so_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "elastic waistband",
+        "seams",
+        "color gradient"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay of an orange and pink gradient swimsuit bottom on a white background.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sr20dd.so_belt.jpg": {
+      "shotType": "close-up",
+      "part": "waistband",
+      "details": [
+        "ribbed waistband",
+        "drawstring",
+        "branded drawstring",
+        "knot"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot of a peach-colored garment featuring a ribbed waistband and a white drawstring with black text detail, tied in a knot.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sr20dd.so_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "drawstring",
+        "elastic waistband",
+        "gradient color"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "Flat lay of a pair of gradient orange swim briefs with a white lining and a drawstring with the brand name printed on it.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sr21b.s_2.jpg": {
+      "shotType": "close-up",
+      "part": "side",
+      "details": [
+        "stitching",
+        "lining",
+        "band",
+        "fabric texture"
+      ],
+      "colors": [
+        "sand",
+        "tan",
+        "white waistband"
+      ],
+      "description": "A close-up shot of the side of a tan and white swimsuit bottom with visible stitching and a light grey lining.",
+      "productColor": "sand/tan with white branded waistband"
+    },
+    "21sr21b.s_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "white waistband",
+        "brown body",
+        "seam details"
+      ],
+      "colors": [
+        "sand",
+        "tan",
+        "white waistband"
+      ],
+      "description": "A pair of brown underwear with a white waistband is photographed in a flat lay on a white surface.",
+      "productColor": "sand/tan with white branded waistband"
+    },
+    "21sr21b.s_belt.jpg": {
+      "shotType": "close-up",
+      "part": "eyelet / drawstring",
+      "details": [
+        "black eyelet",
+        "drawstring with black tips",
+        "drawstring with 'Paris Stockholm' text"
+      ],
+      "colors": [
+        "sand",
+        "tan",
+        "white waistband"
+      ],
+      "description": "Close-up shot of a beige garment with a white stripe and a drawstring with black tips and the text 'Paris Stockholm' printed on it, threaded through a black eyelet.",
+      "productColor": "sand/tan with white branded waistband"
+    },
+    "21sr21b.s_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "waistband",
+      "details": [
+        "waistband",
+        "eyelets",
+        "logo",
+        "stitching"
+      ],
+      "colors": [
+        "sand",
+        "tan",
+        "white waistband"
+      ],
+      "description": "A close-up shot of the waistband of a beige and white garment, featuring black eyelets with a circular logo and detailed stitching, set against a neutral background.",
+      "productColor": "sand/tan with white branded waistband"
+    },
+    "21sr21b.s_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "drawstring",
+        "branded cord",
+        "white waistband",
+        "lining",
+        "metal eyelets"
+      ],
+      "colors": [
+        "sand",
+        "tan",
+        "white waistband"
+      ],
+      "description": "A tan swimsuit bottom with a white waistband and branded black and white drawstrings is laid flat on a light surface.",
+      "productColor": "sand/tan with white branded waistband"
+    },
+    "21ss20.rw_belt.jpg": {
+      "shotType": "close-up",
+      "part": "side",
+      "details": [
+        "knit pattern",
+        "ribbed trim",
+        "drawstrings",
+        "metal eyelets",
+        "metal drawstring tips"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A close-up shot of a beige knit garment's side featuring ribbed trim, metal eyelets, and drawstrings with metal tips.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ss20.rw_belt_2.jpg": {
+      "shotType": "close-up",
+      "part": "edge",
+      "details": [
+        "knit pattern",
+        "ribbed edge",
+        "drawstring eyelet",
+        "drawstring"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A close-up shot of a beige knit garment featuring a ribbed edge, drawstring eyelet, and a portion of the drawstring.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ss20.rw_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "collar",
+      "details": [
+        "knit pattern",
+        "buttons",
+        "brand name on buttons"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A close-up shot showcases the knit collar of a beige sweater, featuring black buttons with the brand name.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ss20.rw_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "knit texture",
+        "drawstring with metal tips",
+        "ribbed waistband",
+        "buttons on the side"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "Flat lay of beige knit shorts with a drawstring waistband and buttons on the side.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ss21.be_2.jpg": {
+      "shotType": "close-up",
+      "part": "fabric",
+      "details": [
+        "corduroy",
+        "ribbed texture",
+        "pocket",
+        "seam"
+      ],
+      "colors": [
+        "beige",
+        "tan"
+      ],
+      "description": "A close-up shot of a light brown corduroy fabric showing the texture, pocket and seam.",
+      "productColor": "tan beige corduroy"
+    },
+    "21ss21.be_back.jpg": {
+      "shotType": "flat lay",
+      "part": "back",
+      "details": [
+        "corduroy texture",
+        "elastic waistband",
+        "back pockets"
+      ],
+      "colors": [
+        "beige",
+        "tan"
+      ],
+      "description": "A pair of beige corduroy shorts with an elastic waistband are laid flat on a white surface, showcasing the back pockets and textured fabric.",
+      "productColor": "tan beige corduroy"
+    },
+    "21ss21.be_belt.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "corduroy texture",
+        "black button",
+        "buttonhole",
+        "seam"
+      ],
+      "colors": [
+        "beige",
+        "tan"
+      ],
+      "description": "A close-up shot shows the front of a beige corduroy garment with a black button and visible seam.",
+      "productColor": "tan beige corduroy"
+    },
+    "21ss21.be_belt_2.jpg": {
+      "shotType": "close-up",
+      "part": "waistband",
+      "details": [
+        "corduroy texture",
+        "elastic waistband",
+        "pocket stitching",
+        "button"
+      ],
+      "colors": [
+        "beige",
+        "tan"
+      ],
+      "description": "A close-up shot of a brown corduroy pants waistband, showcasing the elastic, pocket stitching, and a black button.",
+      "productColor": "tan beige corduroy"
+    },
+    "21ss21.be_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "waistband",
+      "details": [
+        "corduroy texture",
+        "branded buttons",
+        "stitching"
+      ],
+      "colors": [
+        "beige",
+        "tan"
+      ],
+      "description": "A close-up shot of a beige corduroy waistband featuring black branded buttons.",
+      "productColor": "tan beige corduroy"
+    },
+    "21ss21.be_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "corduroy texture",
+        "elastic waistband",
+        "buttons",
+        "pockets"
+      ],
+      "colors": [
+        "beige",
+        "tan"
+      ],
+      "description": "Flat lay of tan corduroy shorts featuring an elastic waistband, front pockets, and button details on a white surface.",
+      "productColor": "tan beige corduroy"
+    },
+    "21ss21.be_pocket.jpg": {
+      "shotType": "close-up",
+      "part": "hem",
+      "details": [
+        "corduroy texture",
+        "seam",
+        "folded hem"
+      ],
+      "colors": [
+        "beige",
+        "tan"
+      ],
+      "description": "A close-up shot of a brown corduroy garment hem, showing the texture and seam details.",
+      "productColor": "tan beige corduroy"
+    },
+    "21sw2019.so_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "crew neck",
+        "sleeveless",
+        "ombre dye",
+        "seam detail"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay of a pink and orange ombre dyed sleeveless crew neck shirt.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sw2019.so_collar.jpg": {
+      "shotType": "close-up",
+      "part": "collar",
+      "details": [
+        "crew neck",
+        "ribbed collar",
+        "brand tag",
+        "size tag",
+        "fabric texture"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot of a pink crew neck sweatshirt collar, showcasing the ribbed texture, brand tag, and size.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sw2019.so_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "collar",
+      "details": [
+        "button details",
+        "Ron Dorff logo",
+        "ribbed knit",
+        "collar trim"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot of the collar of an orange ribbed knit shirt, featuring two black buttons with the Ron Dorff logo.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sw2019.so_fabrics.jpg": {
+      "shotType": "close-up",
+      "part": "fabric",
+      "details": [
+        "fabric texture",
+        "creases"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot of a textured fabric with a color gradient from gray to brown, showing subtle creases and the weave of the material.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sw2019.so_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "crew neck",
+        "sleeveless",
+        "ombre dye",
+        "two-button detail"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay of a sleeveless crew neck shirt with a pink to orange ombre dye, featuring two buttons on the top right.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21sw2019.so_sleeves.jpg": {
+      "shotType": "close-up",
+      "part": "collar",
+      "details": [
+        "ribbed knit texture",
+        "seam details",
+        "color gradient"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "Close-up shot of a pink ribbed knit garment featuring a color gradient from pink to peach, highlighting the collar and seam details.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21tk189.rw_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "textured knit",
+        "sleeveless cut",
+        "ribbed edges"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A beige knit sleeveless top is laid flat on a white surface, showcasing its textured knit and simple design.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21tk189.rw_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "sleeve",
+      "details": [
+        "knit texture",
+        "button",
+        "brand name on button"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A close-up shot of a beige knitted sleeve featuring two black buttons with white text, showcasing the knit texture and brand detail.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21tk189.rw_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "ribbed knit",
+        "sleeveless",
+        "round neck",
+        "brand label",
+        "folded"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A beige sleeveless knit top is neatly folded on a white background, showcasing its ribbed texture and round neck.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21tk189.rw_sleeves.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "knit texture",
+        "ribbed trim",
+        "sleeveless opening"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A close-up shows the detailed knit texture and ribbed trim of a beige sleeveless top.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21tk189.rw_sleeves_2.jpg": {
+      "shotType": "flat lay / close-up",
+      "part": "collar / sleeve",
+      "details": [
+        "ribbed collar",
+        "knit pattern",
+        "sleeve opening"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "Close-up flat lay of a beige knitted top, focusing on the ribbed collar and sleeve detail, against a white background.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1115dd.so_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "short sleeves",
+        "crew neck",
+        "ombre pattern"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay of a short-sleeved T-shirt with an ombre design fading from pink to orange.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1115dd.so_collar.jpg": {
+      "shotType": "flat lay",
+      "part": "collar",
+      "details": [
+        "crew neck",
+        "brand label",
+        "size tag",
+        "stitching"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay of a pink t-shirt showing the crew neck collar and brand label.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1115dd.so_fabrics.jpg": {
+      "shotType": "close-up",
+      "part": "fabric",
+      "details": [
+        "ribbed texture",
+        "soft folds",
+        "knit construction"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot shows the texture and weave of a beige and brown knit fabric with soft folds.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1115dd.so_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "crew neck",
+        "short sleeves",
+        "ombre effect",
+        "brand label on the collar"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "Flat lay of a pink and orange ombre crew neck t-shirt on a white background.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1115dd.so_sleeves.jpg": {
+      "shotType": "close-up",
+      "part": "sleeve",
+      "details": [
+        "seam",
+        "fabric texture",
+        "sleeve hem"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "Close-up shot of the sleeve and seam detail of a dusty rose t-shirt with another light brown garment partially visible.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1267.so_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "sleeveless",
+        "ombre dye",
+        "seams",
+        "crew neck"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay captures a sleeveless shirt with a pink to orange ombre dye pattern.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1267.so_collar.jpg": {
+      "shotType": "close-up",
+      "part": "collar",
+      "details": [
+        "ribbed collar",
+        "brand label",
+        "seam",
+        "size label"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "Close-up shot of a mauve t-shirt collar with a black brand label.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1267.so_fabrics.jpg": {
+      "shotType": "close-up",
+      "part": "fabric",
+      "details": [
+        "fabric texture",
+        "wrinkles",
+        "printed text",
+        "Ron Dorff x Brian Atwood"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot of beige fabric with wrinkles and printed text for Ron Dorff x Brian Atwood.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1267.so_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "sunset gradient",
+        "sleeveless",
+        "crew neck",
+        "Sunset Boy text"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay of a pink and orange gradient sleeveless t-shirt with the text 'Sunset Boy' in black on the front.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1267.so_print.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "ribbed collar",
+        "printed text \"SUNSET BOY\"",
+        "printed text \"SERIOUS SPORTSWEAR FOR MEN BY RON DORFF X BRIAN ATWOOD\"",
+        "fabric texture"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A flat lay of a beige t-shirt featuring a vertical black \"SUNSET BOY\" print and smaller text with brand information.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1267.so_sleeves.jpg": {
+      "shotType": "close-up",
+      "part": "hem",
+      "details": [
+        "hem",
+        "stitching",
+        "fabric texture",
+        "double hem"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close-up shot shows the mauve fabric and double stitched hem of a t-shirt on a white surface.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ts1505.rw_2.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "knit pattern",
+        "buttons",
+        "ribbed border"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "Close-up shot of a beige knit fabric featuring a unique waffle-like texture, a buttoned placket, and a ribbed border.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "waffle knit texture",
+        "short sleeves",
+        "crew neck"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A beige waffle knit short sleeve shirt is laid flat on a white surface.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_buttons.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "knit pattern",
+        "button",
+        "ribbing"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A close-up shot of a grey knit fabric with a textured pattern and a single button closure.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_collar.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "collar",
+        "button",
+        "tag",
+        "woven texture"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "Flat lay shot of the front of a beige knit cardigan featuring a collar, button closure, woven texture, and brand tag.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "shoulder",
+      "details": [
+        "knit pattern",
+        "branded buttons",
+        "sleeve edge"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "Close-up shot of a beige knit garment featuring two black branded buttons on the shoulder.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_fabrics.jpg": {
+      "shotType": "close-up",
+      "part": "fabric",
+      "details": [
+        "knit pattern",
+        "horizontal lines",
+        "yarn texture"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A close-up shot of a gray knit fabric showing the texture and pattern of the yarn.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "knit texture",
+        "button placket",
+        "camp collar",
+        "short sleeves",
+        "brand tag",
+        "side buttons"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A beige knit shirt with a camp collar, button placket, and short sleeves is laid flat on a white surface.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_sleeves.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "collar",
+        "sleeve",
+        "knit pattern",
+        "ribbed texture"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A flat lay shot of a beige knit sweater with a collar and a textured knit pattern, showcasing the front of the garment.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ts1505.rw_sleeves_2.jpg": {
+      "shotType": "close-up",
+      "part": "sleeve",
+      "details": [
+        "knit pattern",
+        "ribbed cuff",
+        "open stitch"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "Close-up of a beige knit sweater sleeve featuring an open stitch pattern and ribbed cuff, laid flat on a light grey surface.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21ur30.w_2.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "stitching",
+        "seams",
+        "elastic band",
+        "fabric texture"
+      ],
+      "colors": [
+        "white"
+      ],
+      "description": "Close-up shot of the front of a white garment showing the stitching, seams, and fabric texture.",
+      "productColor": "white with black branding details"
+    },
+    "21ur30.w_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "seams",
+        "straps",
+        "fabric folds"
+      ],
+      "colors": [
+        "white"
+      ],
+      "description": "A white bikini bottom is laid flat on a white surface, showcasing the seams, straps, and fabric folds.",
+      "productColor": "white with black branding details"
+    },
+    "21ur30.w_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "waistband",
+      "details": [
+        "seam",
+        "buttons",
+        "brand name on buttons"
+      ],
+      "colors": [
+        "white"
+      ],
+      "description": "Close-up shot of the waistband of a white garment featuring black buttons with visible branding details.",
+      "productColor": "white with black branding details"
+    },
+    "21ur30.w_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "hood",
+        "straps",
+        "buttons",
+        "seams"
+      ],
+      "colors": [
+        "white"
+      ],
+      "description": "A flat lay shot of a white hood with straps and black buttons on a gray surface.",
+      "productColor": "white with black branding details"
+    },
+    "21ur42.w_2.jpg": {
+      "shotType": "close-up",
+      "part": "front",
+      "details": [
+        "fabric texture",
+        "stitching",
+        "straps"
+      ],
+      "colors": [
+        "black"
+      ],
+      "description": "Close-up shot of a black cotton bra on a white background, highlighting the fabric and stitching.",
+      "productColor": "black with branded waistband"
+    },
+    "21ur42.w_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "stitching",
+        "tag",
+        "elastic"
+      ],
+      "colors": [
+        "black"
+      ],
+      "description": "A black thong is laid flat on a white surface.",
+      "productColor": "black with branded waistband"
+    },
+    "21ur42.w_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "strap / eyelet",
+      "details": [
+        "black fabric",
+        "eyelets",
+        "strap loop",
+        "stitching"
+      ],
+      "colors": [
+        "black"
+      ],
+      "description": "Close-up shot of the black fabric strap with eyelets of a garment over a white background.",
+      "productColor": "black with branded waistband"
+    },
+    "21ur42.w_front.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "hood",
+        "straps",
+        "buttons",
+        "seam lines",
+        "gathering"
+      ],
+      "colors": [
+        "black"
+      ],
+      "description": "Flat lay of a black hood with straps and buttons on a white background.",
+      "productColor": "black with branded waistband"
+    },
+    "21ca653dd.so_back.jpg": {
+      "shotType": "close-up",
+      "part": "front and side",
+      "details": [
+        "button",
+        "stitching",
+        "adjustable strap",
+        "eyelet"
+      ],
+      "colors": [
+        "sunset orange"
+      ],
+      "description": "Close-up studio shot of an orange baseball cap on a white surface, highlighting the fabric texture, stitching and adjustable strap.",
+      "productColor": "sunset orange with black embroidery"
+    },
+    "21sr20dd.so_eyelet.jpg": {
+      "shotType": "close-up",
+      "part": "eyelet",
+      "details": [
+        "black eyelets with logo",
+        "ribbed material",
+        "trim"
+      ],
+      "colors": [
+        "sunset orange gradient",
+        "warm pink to orange"
+      ],
+      "description": "A close up shot of pink ribbed fabric with black eyelets on a white background.",
+      "productColor": "warm gradient from dusty pink to sunset orange"
+    },
+    "21ss20.rw_back.jpg": {
+      "shotType": "flat lay",
+      "part": "front",
+      "details": [
+        "ribbed waistband",
+        "knit texture",
+        "hemmed edges"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "Flat lay shot of beige knit shorts on a white background showcasing the ribbed waistband and textured knit fabric.",
+      "productColor": "natural beige crochet knit"
+    },
+    "21tk189.rw_collar.jpg": {
+      "shotType": "flat lay",
+      "part": "collar",
+      "details": [
+        "ribbed collar",
+        "knit pattern",
+        "brand label",
+        "size label"
+      ],
+      "colors": [
+        "natural beige",
+        "cream"
+      ],
+      "description": "A flat lay close-up of a beige knit sweater collar with a black Ron Dorff brand label and size M tag.",
+      "productColor": "natural beige crochet knit"
+    }
+  },
+  "colorsNormalized": true
+}

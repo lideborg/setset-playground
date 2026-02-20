@@ -1,0 +1,13 @@
+{
+  "sku": "21UR42.W",
+  "name": "RD Thong Underwear",
+  "color": "White",
+  "material": "95% cotton, 5% elasthanne",
+  "prompts": {
+    "flat_lay": "Professional e-commerce flat lay photograph of Ron Dorff RD Thong Underwear in White, 95% cotton, 5% elasthanne.\n\nCOMPOSITION: Follow the line drawing guide for garment placement. Thong-style underwear with minimal coverage.\n\nGARMENT DETAILS - MUST BE EXACT:\n- EYELETS: Two small BLACK metal eyelets on the waistband (dark/gunmetal color, NOT silver).\n- WAISTBAND: Clean, elastic waistband with subtle Ron Dorff branding.\n- STYLE: Thong cut - minimal back coverage, clean construction.\n- Material: 95% cotton, 5% elasthanne - soft, stretchy fabric with slight sheen.\n\nSTYLING: Underwear laid perfectly flat. Waistband straight across top, thong back portion visible.\n\nCOLOR: Match the EXACT white from the input image - clean, bright white. No off-white or cream tones.\n\nLIGHTING: Professional soft studio lighting with even, diffused illumination. Show fabric texture and construction details clearly.\n\nBACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.\n\nHigh-end fashion e-commerce aesthetic. Clean, minimal presentation.",
+
+    "eyelet": "Macro detail shot of the eyelets on Ron Dorff RD Thong Underwear in White, 95% cotton, 5% elasthanne.\n\nCRITICAL DETAILS:\n- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)\n- Eyelets are positioned on the waistband\n- Show the cotton/elasthanne fabric texture surrounding the eyelets\n- Waistband edge and construction visible\n\nCOMPOSITION: Close-up/macro shot. Garment laid flat. Show fabric texture and eyelet detail clearly.\n\nLIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets.\n\nBACKGROUND: Light gray studio surface.",
+
+    "belt": "Detail shot of the waistband on Ron Dorff RD Thong Underwear in White, 95% cotton, 5% elasthanne.\n\nCRITICAL DETAILS:\n- Clean white elastic waistband\n- Ron Dorff branding/logo on waistband (subtle)\n- Show the construction where waistband meets garment body\n- Material: 95% cotton, 5% elasthanne - soft with slight stretch\n\nCOMPOSITION: Close-up of waistband area. Garment laid flat. Show the clean finish and branding.\n\nCOLOR: Match the EXACT white from the input image - clean, bright white.\n\nLIGHTING: Professional soft studio lighting. Even illumination.\n\nBACKGROUND: Light gray studio surface."
+  }
+}

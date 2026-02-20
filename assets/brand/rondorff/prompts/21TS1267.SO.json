@@ -1,0 +1,11 @@
+{
+  "sku": "21TS1267.SO",
+  "name": "Sleeveless T-Shirt \"Sunset Boy\"",
+  "color": "Sunset Orange",
+  "material": "100% organic cotton",
+  "prompts": {
+    "flat_lay": "Professional e-commerce flat lay photograph of Ron Dorff Sleeveless T-Shirt \"Sunset Boy\" in Sunset Orange, 100% organic cotton.\n\nCOMPOSITION: Follow the line drawing guide for garment placement. IMPORTANT: Maintain realistic sleeveless t-shirt proportions - the width-to-height ratio should match a natural sleeveless/tank top silhouette. Do NOT stretch or elongate the garment vertically.\n\nGARMENT DETAILS - MUST BE EXACT:\n- SLEEVELESS: This is a sleeveless t-shirt/tank top with clean-finished armholes (designed sleeveless, not cut-off). Wide armholes clearly visible on both sides.\n- NO EYELETS on this garment\n- COLLAR: Round neckline, ribbed or bound with clean finish.\n- PRINT/GRAPHIC: \"Sunset Boy\" print visible on the front chest area.\n- Ron Dorff label visible at the inside neckline.\n\nSTYLING: T-shirt laid perfectly flat with relaxed, natural proportions. Sleeveless armholes clearly visible on both sides. Smooth 100% organic cotton texture visible throughout.\n\nCOLOR: CRITICAL - Copy the EXACT gradient from the input image. This t-shirt has an OMBRE/DIP-DYE effect: lighter pink-toned orange at the TOP, fading to deeper vibrant orange at the BOTTOM. Match this gradient EXACTLY as shown in the input. Do NOT make it solid orange - preserve the gradient transition.\n\nLIGHTING: BRIGHT, CLEAN, EVEN studio lighting. No harsh shadows. Do NOT overexpose or wash out the vibrant orange color.\n\nBACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.\n\nHigh-end fashion e-commerce aesthetic. The sleeveless t-shirt should look naturally proportioned and relaxed.",
+
+    "print": "Cropped detail shot matching composition from reference photo (last image).\n\nGARMENT: Sleeveless t-shirt from image 1 - copy the EXACT print \"SUNSET BOY\" and ombre gradient.\nANGLE: Slight 30-degree angle looking down - NOT flat overhead.\nFRAMING: Collar at top, print on chest, crop at mid-torso. NOT full garment.\nFABRIC: Smooth and flat - NO wrinkles, NO folds, NO bunching.\nBACKGROUND: LIGHT warm gray - bright and clean."
+  }
+}
