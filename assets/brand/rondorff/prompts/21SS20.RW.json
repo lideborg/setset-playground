@@ -1,0 +1,17 @@
+{
+  "sku": "21SS20.RW",
+  "name": "Crochet Knit Shorts",
+  "color": "Natural",
+  "material": "100% organic cotton",
+  "prompts": {
+    "flat_lay": "Flat lay matching reference photo (last image).\n\nCopy product from image 1: Natural/beige crochet knit shorts.\nDRAWSTRINGS: Must be OUT and laid flat pointing straight down - symmetrical.\nCrochet knit texture, black eyelets near hem. NO pockets on this style.\nFabric smooth and flat - no wrinkles.\nBACKGROUND: Light warm gray, bright and clean.",
+
+    "eyelet": "Eyelet detail shot matching reference photo (last image).\n\nCopy fabric/color from image 1: Natural/beige crochet knit.\nTwo BLACK metal eyelets near hem - show clearly.\nDiagonal angle, fabric smooth, crochet texture visible.\nBACKGROUND: Light gray.",
+
+    "belt": "Waistband detail shot matching reference photo (last image).\n\nCOMPOSITION: 30-45 degree diagonal angle - waistband runs across TOP of frame diagonally.\nDRAWSTRINGS: Straight down, perfectly symmetrical, parallel to each other.\nNO labels visible - clean, precise composition.\nCopy fabric/color from image 1: Natural/beige crochet knit.\nBACKGROUND: Light gray.",
+
+    "fabrics": "Macro fabric texture shot.\n\nCopy EXACT crochet knit pattern from image 1.\nShow open-weave texture clearly - holes/gaps in weave visible.\nFill frame with fabric, top-down angle.\nColor: warm beige/sand \"Natural\" - not white.\nLIGHTING: Bright, clean. BACKGROUND: Light gray.",
+
+    "back": "Back view flat lay matching reference photo style.\n\nCopy from image 1: Natural/beige crochet knit shorts.\nShow back construction, waistband, pockets.\nFlat lay, smooth fabric.\nBACKGROUND: Light warm gray."
+  }
+}

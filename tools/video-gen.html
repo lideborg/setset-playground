@@ -1330,10 +1330,8 @@
                 if (files.length > 0) handleFileUpload(files, null);
             });
 
-            // Clipboard paste handler
+            // Clipboard paste handler - paste to selected slot or first empty slot
             document.addEventListener('paste', async (e) => {
-                if (!pasteTarget) return;
-
                 const items = e.clipboardData?.items;
                 if (!items) return;
 
@@ -1342,7 +1340,13 @@
                         e.preventDefault();
                         const file = item.getAsFile();
                         if (file) {
-                            handleFileUpload([file], pasteTarget.slotIndex);
+                            // Use paste target if set, otherwise find first empty slot
+                            let targetIndex = pasteTarget ? pasteTarget.slotIndex : state.images.findIndex(img => !img);
+                            if (targetIndex === -1 || targetIndex >= NUM_SLOTS) {
+                                console.log('No empty slots available');
+                                return;
+                            }
+                            handleFileUpload([file], targetIndex);
                             clearPasteTarget();
                         }
                         break;

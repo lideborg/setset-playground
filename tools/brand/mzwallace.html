@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MZ Wallace - Setset</title>
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        .tool-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .tool-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-600);
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        /* Bag Upload */
+        .bag-upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-md);
+            padding: var(--space-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--gray-50);
+        }
+
+        .bag-upload-area:hover {
+            border-color: var(--gray-400);
+            background: var(--gray-100);
+        }
+
+        .bag-upload-area.has-images {
+            padding: var(--space-md);
+        }
+
+        .bag-preview-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            justify-content: center;
+        }
+
+        .bag-preview {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .bag-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+        }
+
+        .bag-preview .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--error);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-text {
+            color: var(--gray-500);
+            font-size: 14px;
+        }
+
+        .upload-text strong {
+            color: var(--gray-700);
+        }
+
+        /* Art Direction Grid */
+        .art-direction-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .art-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .art-card:hover {
+            transform: scale(1.02);
+        }
+
+        .art-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .art-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .art-card .art-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4px 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 10px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Talent Grid */
+        .talent-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .talent-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .talent-card:hover {
+            transform: scale(1.03);
+        }
+
+        .talent-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .talent-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .talent-card .talent-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4px 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        /* Styling Grid */
+        .styling-grid {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .styling-card {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            opacity: 0.5;
+        }
+
+        .styling-card:hover {
+            opacity: 0.8;
+        }
+
+        .styling-card.selected {
+            border-color: var(--primary);
+            opacity: 1;
+        }
+
+        .styling-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-lg);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            margin-top: var(--space-xl);
+        }
+
+        .generate-section .btn {
+            min-width: 160px;
+        }
+
+        .generate-status {
+            flex: 1;
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        /* Results */
+        .results-section {
+            margin-top: var(--space-xl);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        .result-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-card .download-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            padding: 6px 12px;
+            background: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .result-card:hover .download-btn {
+            opacity: 1;
+        }
+
+        /* Loader */
+        .loader-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .loader-overlay.visible {
+            display: flex;
+        }
+
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            font-size: 16px;
+            color: var(--gray-700);
+        }
+
+        /* Hidden file input */
+        #bag-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="tool-container">
+        <header class="tool-header">
+            <h1>MZ Wallace</h1>
+            <a href="/" class="btn btn--sm btn--outline">Back to Home</a>
+        </header>
+
+        <!-- Bag Upload Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Product Images</h2>
+                <span class="section-subtitle">Upload bag images to feature in the shot</span>
+            </div>
+            <div class="bag-upload-area" id="bag-upload-area">
+                <div class="upload-text">
+                    <strong>Click to upload</strong> or drag and drop<br>
+                    PNG, JPG up to 10MB
+                </div>
+                <div class="bag-preview-grid" id="bag-preview-grid"></div>
+            </div>
+            <input type="file" id="bag-input" accept="image/*" multiple>
+        </section>
+
+        <!-- Art Direction Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Art Direction</h2>
+                <span class="section-subtitle">Select a reference image for pose and composition</span>
+            </div>
+            <div class="art-direction-grid" id="art-direction-grid"></div>
+        </section>
+
+        <!-- Talent Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Select Model</h2>
+                <span class="section-subtitle">Choose a Setset model to feature</span>
+            </div>
+            <div class="talent-grid" id="talent-grid"></div>
+        </section>
+
+        <!-- Styling Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Styling</h2>
+                <span class="section-subtitle">Click to toggle items (shoes will be added to the shot)</span>
+            </div>
+            <div class="styling-grid" id="styling-grid"></div>
+        </section>
+
+        <!-- Generate Section -->
+        <div class="generate-section">
+            <button class="btn btn--primary" id="generate-btn" disabled>Generate</button>
+            <div class="generate-status" id="generate-status">
+                Upload a bag, select art direction and a model to generate
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <section class="results-section" id="results-section" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title">Results</h2>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </section>
+    </div>
+
+    <!-- Loader Overlay -->
+    <div class="loader-overlay" id="loader-overlay">
+        <div class="loader-spinner"></div>
+        <div class="loader-text" id="loader-text">Generating...</div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script>
+        // Art Direction Images
+        const ART_DIRECTION = [
+            { id: 'eden_sequin', file: '1109x2351_eden_sequin_micro_sutton_crossbody_a12.jpg', label: 'Eden Sequin Crossbody' },
+            { id: 'pacific_metro', file: '1620x2383_pacific_large_metro_shoulder_ii_a10.jpg', label: 'Pacific Metro Shoulder' },
+            { id: 'black_waverly', file: '1772b2294_black_waverly_shoulder_a10.jpg', label: 'Black Waverly Shoulder' },
+            { id: 'midnight_velvet', file: '1782n2360_midnight_velvet_mini_metro_tote_deluxe_a10.jpg', label: 'Midnight Velvet Tote' },
+            { id: 'apple_waverly', file: '1814b1546_apple_small_waverly_hobo_a10.jpg', label: 'Apple Waverly Hobo' },
+            { id: 'dawn_sling', file: '1888x1600_dawn_small_metro_sling_a10.jpg', label: 'Dawn Metro Sling' },
+            { id: 'apple_camera', file: '1950x1546_apple_small_metro_camera_bag_ii_a10.jpg', label: 'Apple Camera Bag' },
+            { id: 'magnet_crosby', file: '1951c1595_magnet_mini_crosby_ii_a10.jpg', label: 'Magnet Crosby' },
+            { id: 'black_nik', file: '1960x1590_black_nik_ii_a12_copy.jpg', label: 'Black Nik' }
+        ];
+
+        // Female Talent Only
+        const TALENT = [
+            { id: 'maya', name: 'Maya Johnson', image: '/shared/images/talent/talent-02_MayaJohnson.png', thumb: '/shared/images/talent/thumbs/talent-02_MayaJohnson.png' },
+            { id: 'emma', name: 'Emma Sullivan', image: '/shared/images/talent/talent-04_EmmaSullivan.png', thumb: '/shared/images/talent/thumbs/talent-04_EmmaSullivan.png' },
+            { id: 'zara', name: 'Zara Mitchell', image: '/shared/images/talent/talent-06_ZaraMitchell.png', thumb: '/shared/images/talent/thumbs/talent-06_ZaraMitchell.png' },
+            { id: 'sophia', name: 'Sophia Anderson', image: '/shared/images/talent/talent-07_SophiaAnderson.png', thumb: '/shared/images/talent/thumbs/talent-07_SophiaAnderson.png' },
+            { id: 'nina', name: 'Nina Davis', image: '/shared/images/talent/talent-09_NinaDavis.png', thumb: '/shared/images/talent/thumbs/talent-09_NinaDavis.png' },
+            { id: 'luna', name: 'Luna Park', image: '/shared/images/talent/talent-11_LunaPark.png', thumb: '/shared/images/talent/thumbs/talent-11_LunaPark.png' },
+            { id: 'isabella', name: 'Isabella Rodriguez', image: '/shared/images/talent/talent-16_IsabellaRodriguez.png', thumb: '/shared/images/talent/thumbs/talent-16_IsabellaRodriguez.png' },
+            { id: 'casey', name: 'Casey White', image: '/shared/images/talent/talent-18_CaseyWhite.png', thumb: '/shared/images/talent/thumbs/talent-18_CaseyWhite.png' },
+            { id: 'sam', name: 'Sam Wilson', image: '/shared/images/talent/talent-19_SamWilson.png', thumb: '/shared/images/talent/thumbs/talent-19_SamWilson.png' },
+            { id: 'avery', name: 'Avery Taylor', image: '/shared/images/talent/talent-21_AveryTaylor.png', thumb: '/shared/images/talent/thumbs/talent-21_AveryTaylor.png' },
+            { id: 'sofia', name: 'Sofia Rodriguez', image: '/shared/images/talent/talent-27_SofiaRodriguez.png', thumb: '/shared/images/talent/thumbs/talent-27_SofiaRodriguez.png' },
+            { id: 'clara', name: 'Clara Devereaux', image: '/shared/images/talent/talent-29_ClaraDevereaux.png', thumb: '/shared/images/talent/thumbs/talent-29_ClaraDevereaux.png' },
+            { id: 'zoe', name: 'Zoe Washington', image: '/shared/images/talent/talent-30_ZoeWashington.png', thumb: '/shared/images/talent/thumbs/talent-30_ZoeWashington.png' },
+            { id: 'emily', name: 'Emily Hart', image: '/shared/images/talent/talent-31_EmilyHart.png', thumb: '/shared/images/talent/thumbs/talent-31_EmilyHart.png' }
+        ];
+
+        // Styling Images (shoes)
+        const STYLING = [
+            { id: 'shoes1', file: 'cq5dam.web.he7e3da.1000.1000.jpg', label: 'Green Ballet Flats' }
+        ];
+
+        // State
+        const state = {
+            bagImages: [], // { file, url, uploaded }
+            selectedArtDirection: null,
+            selectedTalent: null,
+            selectedStyling: [],
+            results: []
+        };
+
+        // DOM Elements
+        const elements = {
+            bagUploadArea: document.getElementById('bag-upload-area'),
+            bagInput: document.getElementById('bag-input'),
+            bagPreviewGrid: document.getElementById('bag-preview-grid'),
+            artDirectionGrid: document.getElementById('art-direction-grid'),
+            talentGrid: document.getElementById('talent-grid'),
+            stylingGrid: document.getElementById('styling-grid'),
+            generateBtn: document.getElementById('generate-btn'),
+            generateStatus: document.getElementById('generate-status'),
+            resultsSection: document.getElementById('results-section'),
+            resultsGrid: document.getElementById('results-grid'),
+            loaderOverlay: document.getElementById('loader-overlay'),
+            loaderText: document.getElementById('loader-text')
+        };
+
+        // Initialize
+        function init() {
+            renderArtDirection();
+            renderTalent();
+            renderStyling();
+            bindEvents();
+        }
+
+        function renderArtDirection() {
+            elements.artDirectionGrid.innerHTML = ART_DIRECTION.map(art => `
+                <div class="art-card" data-id="${art.id}">
+                    <img src="/assets/brand/mzwallace/art-direction/${art.file}" alt="${art.label}">
+                    <div class="art-label">${art.label}</div>
+                </div>
+            `).join('');
+
+            // Bind click events
+            elements.artDirectionGrid.querySelectorAll('.art-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    elements.artDirectionGrid.querySelectorAll('.art-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    state.selectedArtDirection = ART_DIRECTION.find(a => a.id === card.dataset.id);
+                    updateGenerateButton();
+                });
+            });
+        }
+
+        function renderTalent() {
+            elements.talentGrid.innerHTML = TALENT.map(t => `
+                <div class="talent-card" data-id="${t.id}">
+                    <img src="${t.thumb}" alt="${t.name}">
+                    <div class="talent-name">${t.name}</div>
+                </div>
+            `).join('');
+
+            // Bind click events
+            elements.talentGrid.querySelectorAll('.talent-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    elements.talentGrid.querySelectorAll('.talent-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    state.selectedTalent = TALENT.find(t => t.id === card.dataset.id);
+                    updateGenerateButton();
+                });
+            });
+        }
+
+        function renderStyling() {
+            elements.stylingGrid.innerHTML = STYLING.map(s => `
+                <div class="styling-card" data-id="${s.id}">
+                    <img src="/assets/brand/mzwallace/styling/${s.file}" alt="${s.label}">
+                </div>
+            `).join('');
+
+            // Bind click events
+            elements.stylingGrid.querySelectorAll('.styling-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('selected');
+                    const styling = STYLING.find(s => s.id === card.dataset.id);
+                    if (card.classList.contains('selected')) {
+                        state.selectedStyling.push(styling);
+                    } else {
+                        state.selectedStyling = state.selectedStyling.filter(s => s.id !== styling.id);
+                    }
+                });
+            });
+        }
+
+        function bindEvents() {
+            // Bag upload area click
+            elements.bagUploadArea.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                elements.bagInput.click();
+            });
+
+            // Drag and drop
+            elements.bagUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                elements.bagUploadArea.style.borderColor = 'var(--primary)';
+            });
+
+            elements.bagUploadArea.addEventListener('dragleave', () => {
+                elements.bagUploadArea.style.borderColor = '';
+            });
+
+            elements.bagUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                elements.bagUploadArea.style.borderColor = '';
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                handleBagFiles(files);
+            });
+
+            // File input change
+            elements.bagInput.addEventListener('change', (e) => {
+                handleBagFiles(Array.from(e.target.files));
+                e.target.value = '';
+            });
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', handleGenerate);
+        }
+
+        function handleBagFiles(files) {
+            files.forEach(file => {
+                const url = URL.createObjectURL(file);
+                state.bagImages.push({ file, url, uploaded: null });
+            });
+            renderBagPreviews();
+            updateGenerateButton();
+        }
+
+        function renderBagPreviews() {
+            if (state.bagImages.length === 0) {
+                elements.bagUploadArea.classList.remove('has-images');
+                elements.bagUploadArea.querySelector('.upload-text').style.display = 'block';
+                elements.bagPreviewGrid.innerHTML = '';
+                return;
+            }
+
+            elements.bagUploadArea.classList.add('has-images');
+            elements.bagUploadArea.querySelector('.upload-text').style.display = 'none';
+
+            elements.bagPreviewGrid.innerHTML = state.bagImages.map((bag, idx) => `
+                <div class="bag-preview">
+                    <img src="${bag.url}" alt="Bag ${idx + 1}">
+                    <button class="remove-btn" data-idx="${idx}">&times;</button>
+                </div>
+            `).join('');
+
+            // Bind remove buttons
+            elements.bagPreviewGrid.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(btn.dataset.idx);
+                    URL.revokeObjectURL(state.bagImages[idx].url);
+                    state.bagImages.splice(idx, 1);
+                    renderBagPreviews();
+                    updateGenerateButton();
+                });
+            });
+        }
+
+        function updateGenerateButton() {
+            const canGenerate = state.bagImages.length > 0 && state.selectedArtDirection && state.selectedTalent;
+            elements.generateBtn.disabled = !canGenerate;
+
+            if (!state.bagImages.length) {
+                elements.generateStatus.textContent = 'Upload product images to get started';
+            } else if (!state.selectedArtDirection) {
+                elements.generateStatus.textContent = 'Select an art direction reference';
+            } else if (!state.selectedTalent) {
+                elements.generateStatus.textContent = 'Select a model';
+            } else {
+                elements.generateStatus.textContent = `Ready to generate with ${state.selectedTalent.name}`;
+            }
+        }
+
+        async function handleGenerate() {
+            showLoader('Uploading images...');
+
+            try {
+                // Upload bag images
+                const bagUrls = [];
+                for (const bag of state.bagImages) {
+                    if (!bag.uploaded) {
+                        const uploaded = await api.uploadImage(bag.file);
+                        bag.uploaded = uploaded;
+                    }
+                    bagUrls.push(bag.uploaded);
+                }
+
+                // Upload art direction image
+                showLoader('Uploading reference...');
+                const artResponse = await fetch(`/assets/brand/mzwallace/art-direction/${state.selectedArtDirection.file}`);
+                const artBlob = await artResponse.blob();
+                const artUrl = await api.uploadImage(artBlob);
+
+                // Upload talent image
+                showLoader('Uploading model...');
+                const talentResponse = await fetch(state.selectedTalent.image);
+                const talentBlob = await talentResponse.blob();
+                const talentUrl = await api.uploadImage(talentBlob);
+
+                // Upload styling images if selected
+                const stylingUrls = [];
+                for (const styling of state.selectedStyling) {
+                    showLoader('Uploading styling...');
+                    const stylingResponse = await fetch(`/assets/brand/mzwallace/styling/${styling.file}`);
+                    const stylingBlob = await stylingResponse.blob();
+                    const stylingUrl = await api.uploadImage(stylingBlob);
+                    stylingUrls.push(stylingUrl);
+                }
+
+                // Build prompt
+                showLoader('Generating image...');
+
+                const prompt = buildPrompt(stylingUrls.length > 0);
+
+                // Build input images array
+                const inputImages = [
+                    artUrl,           // Reference composition
+                    talentUrl,        // Model
+                    ...bagUrls,       // Product bags
+                    ...stylingUrls    // Styling items
+                ];
+
+                // Generate image using Gemini
+                const response = await fetch('/api/remix', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        images: inputImages,
+                        prompt,
+                        model: 'gemini',
+                        aspectRatio: '3:4'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Generation failed');
+                }
+
+                const data = await response.json();
+
+                if (data.images && data.images.length > 0) {
+                    state.results = data.images;
+                    renderResults();
+                } else {
+                    throw new Error('No images returned');
+                }
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                alert('Generation failed: ' + error.message);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function buildPrompt(hasStyling) {
+            let prompt = `Create a professional e-commerce fashion photograph.
+
+REFERENCE IMAGE (Image 1): Use this as the exact reference for pose, composition, camera angle, lighting setup, and overall art direction. Match the pose precisely.
+
+MODEL (Image 2): This is the person who should appear in the generated image. Preserve her exact facial features, skin tone, and appearance.
+
+PRODUCT BAG (Image 3+): This is the bag that should be featured in the shot. The model should be holding or wearing this bag in the same way as the reference.`;
+
+            if (hasStyling) {
+                prompt += `
+
+STYLING: Include the shoes shown in the styling reference images. The model should wear these shoes.`;
+            }
+
+            prompt += `
+
+REQUIREMENTS:
+- Match the reference image's composition, pose, and lighting exactly
+- Keep the model's face and appearance identical to Image 2
+- Feature the product bag prominently
+- Professional studio lighting on clean white/light gray background
+- High-end e-commerce quality
+- Full body shot showing the complete outfit and bag`;
+
+            return prompt;
+        }
+
+        function renderResults() {
+            elements.resultsSection.style.display = 'block';
+            elements.resultsGrid.innerHTML = state.results.map((url, idx) => `
+                <div class="result-card">
+                    <img src="${url}" alt="Result ${idx + 1}">
+                    <button class="download-btn" data-url="${url}" data-idx="${idx}">Download</button>
+                </div>
+            `).join('');
+
+            // Bind download buttons
+            elements.resultsGrid.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const url = btn.dataset.url;
+                    const idx = btn.dataset.idx;
+                    try {
+                        const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(url)}`);
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = `mzwallace_${state.selectedTalent.id}_${Date.now()}_${idx}.png`;
+                        a.click();
+                        URL.revokeObjectURL(blobUrl);
+                    } catch (e) {
+                        window.open(url, '_blank');
+                    }
+                });
+            });
+
+            // Scroll to results
+            elements.resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showLoader(text) {
+            elements.loaderText.textContent = text;
+            elements.loaderOverlay.classList.add('visible');
+        }
+
+        function hideLoader() {
+            elements.loaderOverlay.classList.remove('visible');
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

@@ -653,7 +653,7 @@
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: sweep 2s ease-in-out infinite;
+    animation: sweep 1.2s ease-in-out infinite;
 }
 
 .loader-message.fade-out {
@@ -661,7 +661,7 @@
 }
 
 .loader-message.fade-in {
-    animation: loader-fade-in 0.25s ease-out forwards, sweep 2s ease-in-out infinite;
+    animation: loader-fade-in 0.25s ease-out forwards, sweep 1.2s ease-in-out infinite;
 }
 
 @keyframes sweep {

@@ -134,6 +134,22 @@ app.post('/api/generate', async (req, res) => {
             enable_safety_checker: false
         };
 
+        // Z Image uses image_size instead of aspect_ratio
+        // Convert aspect_ratio to image_size format for Z Image
+        if (model === 'zimage' && requestParams.aspect_ratio) {
+            const aspectToSize = {
+                '16:9': 'landscape_16_9',
+                '9:16': 'portrait_16_9',
+                '4:3': 'landscape_4_3',
+                '3:4': 'portrait_4_3',
+                '1:1': 'square_hd',
+                '3:2': 'landscape_4_3', // closest match
+                '2:3': 'portrait_4_3'   // closest match
+            };
+            requestParams.image_size = aspectToSize[requestParams.aspect_ratio] || 'landscape_16_9';
+            delete requestParams.aspect_ratio;
+        }
+
         console.log(`📤 [Generate] Params:`, JSON.stringify(requestParams, null, 2));
 
         const response = await fetch(endpoint, {
@@ -257,8 +273,8 @@ app.post('/api/remix-gemini', async (req, res) => {
         }
         // Fallback to URLs if no base64 provided
         else if (image_urls && image_urls.length > 0) {
-            for (const imageUrl of image_urls) {
-                // Fetch the image and convert to base64
+            // Fetch ALL images in parallel for speed
+            const imagePromises = image_urls.map(async (imageUrl) => {
                 const imageResponse = await fetch(imageUrl);
                 const imageBuffer = await imageResponse.buffer();
                 const base64Data = imageBuffer.toString('base64');
@@ -268,13 +284,16 @@ app.post('/api/remix-gemini', async (req, res) => {
                 if (imageUrl.includes('.png')) mimeType = 'image/png';
                 else if (imageUrl.includes('.webp')) mimeType = 'image/webp';
 
-                parts.push({
+                return {
                     inline_data: {
                         mime_type: mimeType,
                         data: base64Data
                     }
-                });
-            }
+                };
+            });
+
+            const imageParts = await Promise.all(imagePromises);
+            parts.push(...imageParts);
         }
 
         // Build request body for Gemini
@@ -325,13 +344,36 @@ app.post('/api/remix-gemini', async (req, res) => {
             });
         }
 
+        // Check for content filter / safety block
+        const candidate = data.candidates?.[0];
+        const finishReason = candidate?.finishReason;
+        const safetyRatings = candidate?.safetyRatings;
+
+        // Detect blocked content
+        if (finishReason === 'SAFETY' || finishReason === 'BLOCKED' || finishReason === 'OTHER') {
+            console.warn(`⚠️ [Gemini Remix] Content blocked! Reason: ${finishReason}`);
+            if (safetyRatings) {
+                const blockedCategories = safetyRatings
+                    .filter(r => r.probability !== 'NEGLIGIBLE' && r.probability !== 'LOW')
+                    .map(r => `${r.category}: ${r.probability}`);
+                console.warn(`⚠️ [Gemini Remix] Safety flags: ${blockedCategories.join(', ') || 'none flagged'}`);
+            }
+            // Return empty images array but with reason
+            return res.json({
+                images: [],
+                blocked: true,
+                reason: finishReason,
+                safetyRatings
+            });
+        }
+
         // Debug: Log full response structure
         console.log(`📦 [Gemini Remix] Response structure:`, JSON.stringify(data, null, 2).substring(0, 1000));
 
         // Extract images from response
         const images = [];
-        if (data.candidates && data.candidates[0]?.content?.parts) {
-            for (const part of data.candidates[0].content.parts) {
+        if (candidate?.content?.parts) {
+            for (const part of candidate.content.parts) {
                 // Gemini returns inlineData (camelCase), not inline_data
                 const inlineData = part.inlineData || part.inline_data;
                 console.log(`📄 [Gemini Remix] Part type:`, part.text ? 'text' : inlineData ? 'inlineData' : 'unknown');
@@ -343,7 +385,12 @@ app.post('/api/remix-gemini', async (req, res) => {
             }
         }
 
-        console.log(`✅ [Gemini Remix] Generated ${images.length} image(s)`);
+        // Log if no images but not explicitly blocked (could still be safety related)
+        if (images.length === 0 && !finishReason) {
+            console.warn(`⚠️ [Gemini Remix] No images returned, no explicit block. Response:`, JSON.stringify(data).substring(0, 500));
+        }
+
+        console.log(`✅ [Gemini Remix] Generated ${images.length} image(s)${finishReason ? ` (finish: ${finishReason})` : ''}`);
 
         // Return in same format as FAL API for compatibility
         res.json({ images });
@@ -516,12 +563,23 @@ app.post('/api/video', async (req, res) => {
 
         // Determine endpoint based on model
         let endpoint;
-        if (model === 'v3.0-pro') {
+        if (model === 'v3-pro') {
+            // Kling V3 Pro image-to-video (cinematic, $0.224/s no audio)
+            endpoint = 'fal-ai/kling-video/v3/pro/image-to-video';
+        } else if (model === 'v3-standard') {
+            // Kling V3 Standard image-to-video (faster, cheaper)
+            endpoint = 'fal-ai/kling-video/v3/standard/image-to-video';
+        } else if (model === 'v3.0-pro') {
+            // O3 Pro image-to-video
             endpoint = 'fal-ai/kling-video/o3/pro/image-to-video';
         } else if (model === 'v3.0-standard') {
             endpoint = 'fal-ai/kling-video/o3/standard/image-to-video';
         } else if (model === 'v2.6') {
             endpoint = 'fal-ai/kling-video/v2.6/pro/image-to-video';
+        } else if (model === 'v2.1-pro') {
+            endpoint = 'fal-ai/kling-video/v2.1/pro/image-to-video';
+        } else if (model === 'v2.1-standard') {
+            endpoint = 'fal-ai/kling-video/v2.1/standard/image-to-video';
         } else {
             endpoint = 'fal-ai/kling-video/v1.6/pro/image-to-video';
         }
@@ -529,8 +587,8 @@ app.post('/api/video', async (req, res) => {
         // Build params based on model
         let params;
 
-        if (model.startsWith('v3.0')) {
-            // v3.0/O3 uses image_url and end_image_url
+        if (model === 'v3-pro' || model === 'v3-standard') {
+            // Kling V3 image-to-video uses image_url
             params = {
                 prompt,
                 image_url,
@@ -541,6 +599,27 @@ app.post('/api/video', async (req, res) => {
             if (aspect_ratio) params.aspect_ratio = aspect_ratio;
             if (negative_prompt) params.negative_prompt = negative_prompt;
             if (cfg_scale !== undefined) params.cfg_scale = cfg_scale;
+        } else if (model === 'v3.0-pro' || model === 'v3.0-standard') {
+            // O3 reference-to-video uses start_image_url and end_image_url
+            params = {
+                prompt,
+                start_image_url: image_url,
+                duration: duration || '5',
+                generate_audio: generate_audio !== undefined ? generate_audio : false
+            };
+            if (tail_image_url) params.end_image_url = tail_image_url;
+            if (aspect_ratio) params.aspect_ratio = aspect_ratio;
+            if (negative_prompt) params.negative_prompt = negative_prompt;
+            if (cfg_scale !== undefined) params.cfg_scale = cfg_scale;
+        } else if (model === 'v2.1-pro' || model === 'v2.1-standard') {
+            // Kling v2.1 image-to-video
+            params = {
+                prompt,
+                image_url,
+                duration: duration || '5'
+            };
+            if (aspect_ratio) params.aspect_ratio = aspect_ratio;
+            if (negative_prompt) params.negative_prompt = negative_prompt;
         } else {
             params = {
                 prompt,
@@ -974,6 +1053,188 @@ Return ONLY the prompts. Separate each prompt with TWO blank lines. No numbering
         res.json({ prompts });
     } catch (error) {
         console.error('Environment prompts error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/prompts/campaign
+ * Generate swimwear campaign prompts using Gemini
+ * Specifically designed for Ron Dorff style shoots
+ */
+app.post('/api/prompts/campaign', async (req, res) => {
+    try {
+        const {
+            numPrompts = 10,
+            environments = ['ibiza'],
+            lighting = ['midday'],
+            includeModel = true
+        } = req.body;
+
+        console.log(`📝 [Campaign Prompts] Generating ${numPrompts} prompts`);
+        console.log(`   Environments: ${environments.join(', ')}`);
+        console.log(`   Lighting: ${lighting.join(', ')}`);
+        console.log(`   Include model: ${includeModel}`);
+
+        const systemPrompt = `You are an expert at writing photorealistic image generation prompts for premium male swimwear brand campaigns. Your prompts should create campaign-ready imagery.
+
+BRAND CONTEXT:
+- Premium European male swimwear/beachwear brand
+- Aesthetic: Clean, graphic, composed, editorial
+- Models: Athletic, suntanned, healthy looking men
+- Vibe: Sophisticated summer, not overly commercial
+
+ENVIRONMENT GUIDELINES:
+${environments.includes('rocky-beach') ? `
+ROCKY BEACH (Ibiza-style bright limestone):
+- Light limestone, sandstone, beige/cream/honey-toned rocks
+- Rocks should be PROMINENT - in foreground creating depth and framing
+- Intimate scale, NOT vast landscapes
+- Rocky textures are key visual elements
+- Small sandy areas between rocks, turquoise water visible
+- Clean, pristine beach - no clutter or tourists
+- NO trees, NO vast panoramas, NO generic "Mediterranean" feel
+` : ''}
+${environments.includes('black-sand') ? `
+BLACK SAND BEACH (volcanic/dark):
+- Black lava rock, basalt formations, dark volcanic sand
+- Dramatic dark textures contrasting with lighter sand areas
+- Rugged coastal scenery with texture
+- Moody, dramatic feel
+` : ''}
+${environments.includes('architecture-v1') ? `
+ARCHITECTURE V1 (MINIMAL, INTEGRATED, REALISTIC):
+- Architecture must be REAL PLACES - rooftop terraces, seaside promenades, piers, balconies
+- NO random structures dropped on beach - must feel like a real location
+- Warm tones: terracotta, ochre, cream, sandy concrete
+- Ocean visible on horizon
+- GRAPHIC compositions with strong geometric lines
+
+APPROVED ARCHITECTURE LOCATIONS:
+- Flat rooftop terrace with low terracotta/ochre walls, model seated on wall edge, ocean and sky beyond
+- Seaside concrete promenade with simple railing, model leaning on railing looking at ocean
+- Empty rooftop with geometric flat surfaces creating angular shadows, model standing/seated
+- Concrete pier extending over water, model walking or standing at edge
+
+ARCHITECTURE AVOID LIST:
+- NO random concrete blocks or structures on beach
+- NO bridges, NO fake-looking standalone objects
+- NO messy beaches, NO overly pink/unrealistic skies
+- NO Greek-style columns or arches
+` : ''}
+${environments.includes('architecture-v2') ? `
+ARCHITECTURE V2 (REFINED MINIMAL):
+- Even more minimal than v1 - single architectural elements only
+- Focus on: flat rooftop edges, low walls, simple railings, clean terraces
+- Model interacting with architecture: seated on ledge, leaning on wall, standing by railing
+- Warm Mediterranean tones: terracotta, ochre, cream concrete
+- Ocean ALWAYS visible as backdrop
+- Strong graphic compositions with geometric shadows
+- Empty, serene, no clutter
+- Think: 1990s editorial campaign on a luxury villa rooftop
+` : ''}
+
+LIGHTING OPTIONS TO USE:
+${lighting.includes('midday') ? '- MIDDAY: Bright summer sun, vivid blue sky, high sun, warm but not orange, crisp daylight' : ''}
+${lighting.includes('sunrise') ? '- SUNRISE: Soft warm light, golden pink sky, gentle shadows, peaceful atmosphere' : ''}
+${lighting.includes('sunset') ? '- SUNSET: Golden hour, warm orange tones, long dramatic shadows, romantic mood' : ''}
+
+${includeModel ? `
+MODEL GUIDELINES:
+- Athletic male model in swimwear ONLY (briefs, swim shorts) - no shirts unless tank top
+- Suntanned, healthy skin
+- FACE MUST ALWAYS BE VISIBLE - NEVER crop out the face
+- Confident, relaxed poses - NOT awkward, stiff, or jumping
+- NO PROPS: no bags, no hats, no accessories, no towels
+
+CRITICAL FRAMING RULES:
+- ALWAYS full body shots: head to feet visible (90% of shots)
+- Occasional 3/4 body: head to knees (10% of shots)
+- NEVER just lower body/torso - face MUST be in frame
+- NEVER close-up on just swimwear without face
+
+POSE VARIETY (use ALL of these across prompts - MAXIMUM variety):
+- Standing confidently with direct gaze at camera
+- Seated casually on rocks/ledge/wall edge, legs extended
+- Walking naturally toward or away from camera
+- Leaning against wall/railing with weight shifted
+- Looking off to the side pensively at horizon
+- Crouching or squatting casually
+- Mid-stride walking shot
+- Seated with one knee up, arm resting on knee
+- Standing with hands adjusting waistband
+
+CAMERA ANGLE VARIETY (mix these up):
+- Eye level straight on
+- Slightly low angle (model appears taller/more powerful)
+- Side profile view
+- 3/4 angle view
+- Model positioned left/center/right of frame (vary placement)
+` : 'Generate ENVIRONMENT ONLY - no people, empty scenes.'}
+
+COMPOSITION RULES:
+- Intimate, close framing - NOT vast landscapes
+- Rocks/architecture creating foreground interest and depth
+- Clean, graphic compositions
+- Professional fashion photography aesthetic
+
+PROMPT FORMAT:
+Each prompt should be 2-3 sentences, starting with "Photorealistic campaign image for premium male swimwear brand."
+Include: subject (if model), specific environment details, lighting quality, composition notes.
+End with: "professional fashion photography, natural light only"
+
+Generate ${numPrompts} unique, varied prompts. Return ONLY the prompts, one per line, no numbering.`;
+
+        const userMessage = `Generate ${numPrompts} photorealistic swimwear campaign prompts using these settings:
+- Environments: ${environments.join(', ')}
+- Lighting: ${lighting.join(', ')}
+- ${includeModel ? 'Include male model in swimwear' : 'Environment only, no people'}
+
+CRITICAL: Each prompt MUST be completely different from the others:
+- Use DIFFERENT poses for each prompt (standing, seated, walking, leaning, crouching, etc.)
+- Use DIFFERENT camera angles (eye level, low angle, side profile, 3/4 view)
+- Use DIFFERENT model placements (left, center, right of frame)
+- Use DIFFERENT swimwear colors and styles
+- Use DIFFERENT specific locations within the environment type
+- NO two prompts should feel similar - maximum variety is essential`;
+
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+
+        const response = await fetch(`${endpoint}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: systemPrompt },
+                        { text: userMessage }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.9,
+                    maxOutputTokens: 4000
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Campaign Prompts] Gemini error:', data);
+            return res.status(response.status).json({ error: data.error?.message || 'Prompt generation failed' });
+        }
+
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        let prompts = content.split('\n').filter(line => line.trim() && line.includes('Photorealistic'));
+
+        // Clean up prompts
+        prompts = prompts.map(p => p.trim().replace(/^\d+[\.\)]\s*/, ''));
+
+        console.log(`✅ [Campaign Prompts] Generated ${prompts.length} prompts`);
+
+        res.json({ prompts });
+    } catch (error) {
+        console.error('❌ [Campaign Prompts] Error:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -2505,8 +2766,9 @@ app.get('/api/proxy-download', async (req, res) => {
         res.setHeader('Content-Type', contentType);
         res.setHeader('Content-Disposition', 'attachment');
 
-        // Stream the response
-        const buffer = await response.buffer();
+        // Stream the response (use arrayBuffer for broader compatibility)
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
         res.send(buffer);
 
         console.log(`✅ [Proxy Download] Success: ${buffer.length} bytes`);
