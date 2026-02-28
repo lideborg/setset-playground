@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Alva - Mugshot</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fafafa;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: var(--space-sm);
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: var(--space-xs);
+        }
+
+        /* Tabs - underline style like Ron Dorff */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--gainsboro);
+            margin-bottom: var(--space-sm);
+        }
+
+        .tab {
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--slate);
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.15s;
+        }
+
+        .tab:hover {
+            color: var(--jet);
+        }
+
+        .tab.active {
+            color: var(--jet);
+            border-bottom-color: var(--jet);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            background: var(--white);
+            border: 1px solid var(--jet);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Upload Grid */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            padding: 6px;
+            border: 2px dashed var(--gainsboro);
+            margin-bottom: var(--space-xs);
+            transition: all 0.15s;
+        }
+
+        .upload-grid.drag-over {
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .upload-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            background: var(--off-white);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--gainsboro);
+            transition: all 0.15s;
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+            color: var(--slate);
+        }
+
+        .upload-slot.filled {
+            border-color: var(--jet);
+            background: var(--white);
+        }
+
+        .upload-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            opacity: 1;
+        }
+
+        /* Analyze Section - Compact */
+        .analyze-section {
+            display: flex;
+            gap: var(--space-xs);
+            align-items: center;
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+        }
+
+        .analyze-section .btn {
+            padding: 6px 12px;
+            font-size: 10px;
+        }
+
+        .analyze-status {
+            font-size: 10px;
+            color: var(--slate);
+        }
+
+        /* Characteristics Modal */
+        .characteristics-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .characteristics-modal.visible {
+            display: flex;
+        }
+
+        .characteristics-content {
+            background: var(--white);
+            border: 1px solid var(--jet);
+            padding: var(--space-md);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .characteristics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .characteristics-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .characteristics-subtitle {
+            font-size: 10px;
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+        }
+
+        .characteristic-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border: 1px solid var(--gainsboro);
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 11px;
+        }
+
+        .characteristic-option:hover {
+            border-color: var(--jet);
+        }
+
+        .characteristic-option.selected {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .characteristic-checkbox {
+            width: 14px;
+            height: 14px;
+            border: 1px solid var(--jet);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .characteristic-option.selected .characteristic-checkbox::after {
+            content: '✓';
+            font-size: 10px;
+        }
+
+        .characteristic-text {
+            line-height: 1.3;
+        }
+
+        .custom-description-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--gainsboro);
+            font-size: 10px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 40px;
+            margin-top: 4px;
+        }
+
+        .custom-description-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .characteristics-actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+            padding-top: var(--space-md);
+            border-top: 1px solid var(--gainsboro);
+        }
+
+        .characteristics-actions .btn {
+            flex: 1;
+        }
+
+        /* Selected Characteristics Display */
+        .selected-characteristics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-top: var(--space-sm);
+        }
+
+        .characteristic-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--off-white);
+            border: 1px solid var(--jet);
+            font-size: 11px;
+        }
+
+        .characteristic-tag .remove {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        .characteristic-tag .remove:hover {
+            opacity: 1;
+        }
+
+        /* Add Feature Row */
+        .add-feature-row {
+            display: flex;
+            gap: var(--space-xs);
+            margin-top: var(--space-sm);
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+        }
+
+        .add-feature-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--gainsboro);
+            font-size: 11px;
+            font-family: inherit;
+        }
+
+        .add-feature-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .add-feature-input::placeholder {
+            color: var(--slate);
+        }
+
+        /* Describe Tab */
+        .description-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: var(--space-sm);
+            border: 1px solid var(--gainsboro);
+            font-family: inherit;
+            font-size: 11px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .description-textarea:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .description-textarea::placeholder {
+            color: var(--slate);
+            font-size: 11px;
+        }
+
+        /* Settings Section - No rounded corners */
+        .settings-section {
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-xs);
+        }
+
+        .section-title {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .settings-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm) var(--space-md);
+            align-items: flex-start;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .setting-label {
+            font-size: 9px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--slate);
+        }
+
+        /* Compact Button Groups - No rounded corners */
+        .btn-group {
+            display: flex;
+            position: relative;
+        }
+
+        .btn-group button {
+            padding: 4px 8px;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--slate);
+            position: relative;
+            margin-left: -1px;
+        }
+
+        .btn-group button:first-child {
+            margin-left: 0;
+        }
+
+        .btn-group button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+            z-index: 2;
+        }
+
+        .btn-group button:hover:not(.active) {
+            border-color: var(--jet);
+            z-index: 1;
+        }
+
+        /* Multi-select button group */
+        .btn-group.multi-select button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        /* Edginess Slider - In box like buttons */
+        .edginess-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--gainsboro);
+            padding: 4px 8px;
+            gap: 8px;
+            min-width: 160px;
+        }
+
+        .edginess-label {
+            font-size: 9px;
+            color: var(--slate);
+        }
+
+        .edginess-slider {
+            flex: 1;
+            height: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--gainsboro);
+            cursor: pointer;
+        }
+
+        .edginess-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            background: var(--jet);
+            cursor: pointer;
+        }
+
+        /* Generate Section */
+        .generate-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .cost-display {
+            font-size: 10px;
+            color: var(--slate);
+            margin-left: auto;
+        }
+
+        .cost-display-main {
+            font-size: 11px;
+            color: var(--slate);
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border: 1px solid var(--jet);
+            background: var(--white);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn:hover {
+            background: var(--off-white);
+        }
+
+        .btn--primary {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        .btn--primary:hover {
+            background: #333;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            display: none;
+            background: var(--white);
+            border: 1px solid var(--jet);
+            padding: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+        }
+
+        .progress-count {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .progress-bar-track {
+            height: 4px;
+            background: var(--gainsboro);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--jet);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: var(--space-lg);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md);
+            background: var(--white);
+            border: 1px solid var(--jet);
+            border-bottom: none;
+        }
+
+        .results-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            background: var(--jet);
+            border: 1px solid var(--jet);
+        }
+
+        .result-card {
+            position: relative;
+            aspect-ratio: 3/4;
+            background: var(--white);
+            overflow: hidden;
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .result-card .placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            background: var(--off-white);
+        }
+
+        .result-card .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result-card .placeholder-text {
+            font-size: 10px;
+            color: var(--slate);
+        }
+
+        .result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: var(--space-sm);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .result-card:hover .result-overlay {
+            opacity: 1;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .result-btn {
+            flex: 1;
+            padding: 6px 10px;
+            background: var(--white);
+            border: 1px solid var(--jet);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .result-btn:hover {
+            background: var(--jet);
+            color: var(--white);
+        }
+
+        /* Batch Separator */
+        .batch-separator {
+            grid-column: 1 / -1;
+            background: var(--off-white);
+            padding: 8px var(--space-md);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+            border-top: 1px solid var(--gainsboro);
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+        }
+
+        .lightbox.visible {
+            display: flex;
+        }
+
+        .lightbox-content {
+            display: flex;
+            gap: var(--space-lg);
+            max-height: 90vh;
+        }
+
+        .lightbox-image {
+            max-height: 85vh;
+            max-width: 60vw;
+            object-fit: contain;
+        }
+
+        .lightbox-info {
+            width: 300px;
+            background: var(--white);
+            padding: var(--space-md);
+            overflow-y: auto;
+        }
+
+        .lightbox-info h3 {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .lightbox-info p {
+            font-size: 12px;
+            margin-bottom: var(--space-md);
+            line-height: 1.5;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: var(--space-md);
+            right: var(--space-md);
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-prev { left: var(--space-md); }
+        .lightbox-next { right: var(--space-md); }
+
+        /* Inline Loader */
+        .inline-loader {
+            display: none;
+            text-align: center;
+            padding: var(--space-md);
+        }
+
+        .inline-loader.visible {
+            display: block;
+        }
+
+        .loader-message {
+            font-size: 13px;
+            font-weight: 500;
+            color: #2563eb;
+            letter-spacing: 0.3px;
+            transition: opacity 0.25s ease;
+        }
+
+        .loader-message.fade-out {
+            opacity: 0;
+        }
+
+        .loader-message.fade-in {
+            opacity: 1;
+        }
+
+        .loader-progress {
+            font-size: 11px;
+            color: var(--slate);
+            margin-top: 6px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .inline-loader.visible .loader-message {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .reference-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .settings-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Mugshot</h1>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('references')">References</button>
+            <button class="tab" onclick="switchTab('describe')">Describe</button>
+        </div>
+
+        <!-- References Tab -->
+        <div id="tab-references" class="tab-content active">
+            <div class="upload-grid" id="upload-grid"></div>
+            <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+
+            <div class="analyze-section" id="analyze-section">
+                <button class="btn btn--primary" onclick="analyzeReferences()">Analyze Faces</button>
+                <button class="btn" onclick="clearReferences()">Clear All</button>
+                <span class="analyze-status" id="analyze-status"></span>
+            </div>
+
+            <div class="selected-characteristics" id="selected-characteristics"></div>
+
+            <div class="add-feature-row" id="add-feature-row">
+                <input type="text" class="add-feature-input" id="add-feature-input" placeholder="Add custom feature...">
+                <button class="btn" onclick="addCustomFeature()">Add</button>
+            </div>
+        </div>
+
+        <!-- Describe Tab -->
+        <div id="tab-describe" class="tab-content">
+            <textarea class="description-textarea" id="description-input"
+                placeholder="Describe the person you want to create...&#10;&#10;Example: Scandinavian woman with sharp features, high cheekbones, cool undertones, natural freckles, strawberry blonde hair"></textarea>
+        </div>
+
+        <!-- Portrait Settings -->
+        <div class="settings-section">
+            <div class="section-title">Portrait Settings</div>
+
+            <!-- Row 1: Gender, Age, Ethnicity -->
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <div class="setting-label">Gender</div>
+                    <div class="btn-group multi-select" id="gender-group">
+                        <button class="active" data-value="female">Female</button>
+                        <button class="active" data-value="male">Male</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Age</div>
+                    <div class="btn-group multi-select" id="age-group">
+                        <button class="active" data-value="20s">20s</button>
+                        <button class="active" data-value="30s">30s</button>
+                        <button data-value="40s">40s</button>
+                        <button data-value="50s">50s</button>
+                        <button data-value="60s">60s</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Ethnicity</div>
+                    <div class="btn-group multi-select" id="ethnicity-group">
+                        <button class="active" data-value="diverse">Diverse</button>
+                        <button data-value="european">European</button>
+                        <button data-value="east-asian">E. Asian</button>
+                        <button data-value="south-asian">S. Asian</button>
+                        <button data-value="african">African</button>
+                        <button data-value="latin">Latin</button>
+                        <button data-value="middle-eastern">M. Eastern</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Expression, Clothing -->
+            <div class="settings-grid" style="margin-top: var(--space-xs);">
+                <div class="setting-group">
+                    <div class="setting-label">Expression</div>
+                    <div class="btn-group multi-select" id="expression-group">
+                        <button data-value="random">Random</button>
+                        <button class="active" data-value="neutral">Neutral</button>
+                        <button data-value="subtle-smile">Subtle</button>
+                        <button data-value="warm-smile">Warm</button>
+                        <button data-value="laugh">Laugh</button>
+                        <button data-value="serious">Serious</button>
+                        <button data-value="fierce">Fierce</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Clothing</div>
+                    <div class="btn-group" id="clothing-group">
+                        <button class="active" data-value="white">White</button>
+                        <button data-value="black">Black</button>
+                        <button data-value="neutral">Neutral</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Edginess</div>
+                    <div class="edginess-box">
+                        <span class="edginess-label">Clean</span>
+                        <input type="range" class="edginess-slider" id="edginess-slider" min="0" max="100" value="50" step="10">
+                        <span class="edginess-label">Raw</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Facial Hair (males), Makeup (females) -->
+            <div class="settings-grid" style="margin-top: var(--space-xs);">
+                <div class="setting-group">
+                    <div class="setting-label">Facial Hair <span style="opacity:0.5">(males)</span></div>
+                    <div class="btn-group multi-select" id="facial-hair-group">
+                        <button class="active" data-value="none">None</button>
+                        <button data-value="stubble">Stubble</button>
+                        <button data-value="heavy-stubble">Heavy</button>
+                        <button data-value="short-beard">Beard</button>
+                        <button data-value="mustache">Mustache</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Makeup <span style="opacity:0.5">(females)</span></div>
+                    <div class="btn-group multi-select" id="makeup-group">
+                        <button class="active" data-value="none">None</button>
+                        <button data-value="minimal">Minimal</button>
+                        <button data-value="soft-glam">Soft Glam</button>
+                        <button data-value="bold-lips">Bold Lips</button>
+                        <button data-value="editorial">Editorial</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generation Settings -->
+        <div class="settings-section">
+            <div class="section-title">Generation Settings</div>
+            <div class="settings-row">
+                <!-- Model -->
+                <div class="setting-group">
+                    <div class="setting-label">Model</div>
+                    <div class="btn-group" id="model-group">
+                        <button class="active" data-value="reve">Reve</button>
+                        <button data-value="nanobanana">Nano Flash</button>
+                    </div>
+                </div>
+
+                <!-- Aspect Ratio -->
+                <div class="setting-group">
+                    <div class="setting-label">Aspect</div>
+                    <div class="btn-group" id="aspect-group">
+                        <button data-value="2:3">2:3</button>
+                        <button class="active" data-value="3:4">3:4</button>
+                        <button data-value="4:5">4:5</button>
+                        <button data-value="1:1">1:1</button>
+                    </div>
+                </div>
+
+                <!-- Number of Results -->
+                <div class="setting-group">
+                    <div class="setting-label">Count</div>
+                    <div class="btn-group" id="count-group">
+                        <button data-value="5">5</button>
+                        <button class="active" data-value="10">10</button>
+                        <button data-value="15">15</button>
+                        <button data-value="20">20</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Section -->
+        <div class="generate-section">
+            <div class="cost-display-main" id="cost-display-main">10 × $0.04 = $0.40</div>
+            <button class="btn btn--primary" id="generate-btn" onclick="generatePortraits()">Generate</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="inline-loader" id="inline-loader">
+                <div class="loader-message" id="loader-message">Setting up the Studio...</div>
+                <div class="loader-progress" id="loader-progress">Preparing...</div>
+            </div>
+            <div class="progress-bar-track" style="margin-top: var(--space-sm);">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section" style="display: none;">
+            <div class="results-header">
+                <span class="results-title">Generated Portraits</span>
+                <button class="btn" onclick="downloadAll()">Download All</button>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Characteristics Modal -->
+    <div class="characteristics-modal" id="characteristics-modal">
+        <div class="characteristics-content">
+            <div class="characteristics-title">Select Characteristics</div>
+            <div class="characteristics-subtitle">Choose traits to emphasize (optional)</div>
+            <div id="characteristics-options"></div>
+            <div class="custom-description-section">
+                <div class="characteristics-subtitle" style="margin-top: var(--space-sm);">Or describe what you like</div>
+                <textarea class="custom-description-input" id="custom-description-input" placeholder="e.g., strong jawlines, high cheekbones, expressive eyes..."></textarea>
+            </div>
+            <div class="characteristics-actions">
+                <button class="btn" onclick="closeCharacteristicsModal()">Skip</button>
+                <button class="btn btn--primary" onclick="applyCharacteristics()">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="if(event.target === this) closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">&#8249;</button>
+        <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">&#8250;</button>
+        <div class="lightbox-content">
+            <img class="lightbox-image" id="lightbox-image" src="">
+            <div class="lightbox-info">
+                <h3>Prompt</h3>
+                <p id="lightbox-prompt"></p>
+                <h3>Settings</h3>
+                <p id="lightbox-settings"></p>
+                <button class="btn btn--primary" style="width: 100%;" id="lightbox-download">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/api.js"></script>
+    <script src="/shared/js/loader.js"></script>
+    <script>
+        // Mugshot-specific loader messages
+        const MUGSHOT_LOADER_MESSAGES = [
+            "Studying the Features...",
+            "Adjusting the Key Light...",
+            "Setting the White Balance...",
+            "Checking the Framing...",
+            "Analyzing Bone Structure...",
+            "Matching Skin Tones...",
+            "Rendering the Portrait...",
+            "Perfecting the Expression...",
+            "Softening the Shadows...",
+            "Focusing the Eyes...",
+            "Capturing the Likeness...",
+            "Refining the Details...",
+            "Processing the Image...",
+            "Applying the Style...",
+            "Final Touches..."
+        ];
+    </script>
+    <script>
+        // ========== STATE ==========
+        const state = {
+            activeTab: 'references',
+            referenceImages: [], // { file, dataUrl }
+            analyzedCharacteristics: [], // from Gemini analysis
+            selectedCharacteristics: [], // user selected
+            faceDescriptions: [], // detailed face analysis per image
+            customDescription: '', // user's custom description
+            description: '',
+            genders: ['female', 'male'],
+            ages: ['20s', '30s'],
+            ethnicities: ['diverse'], // 'diverse' means all ethnicities
+            expressions: ['neutral'],
+            clothing: 'white', // white, black, neutral
+            facialHair: ['none'], // for males
+            makeup: ['none'], // for females
+            edginess: 50,
+            model: 'reve',
+            aspectRatio: '3:4',
+            resultCount: 10,
+            allResults: [], // persisted across generations
+            generating: false,
+            lightboxIndex: 0,
+            batchCounter: 0
+        };
+
+        // Model costs
+        const MODEL_COSTS = {
+            'reve': 0.04,
+            'nanobanana': 0.08
+        };
+
+        // Initialize the studio loader with mugshot messages
+        let mugshotLoader = null;
+        function getMugshotLoader() {
+            if (!mugshotLoader) {
+                mugshotLoader = new StudioLoader({
+                    messages: MUGSHOT_LOADER_MESSAGES,
+                    interval: 1800
+                });
+            }
+            return mugshotLoader;
+        }
+
+        // Aspect ratio to dimensions
+        const ASPECT_SIZES = {
+            '2:3': { width: 768, height: 1152 },
+            '3:4': { width: 768, height: 1024 },
+            '4:5': { width: 816, height: 1020 },
+            '1:1': { width: 1024, height: 1024 }
+        };
+
+        // Facial hair options (for males)
+        const FACIAL_HAIR = {
+            'none': '', // no mention
+            'stubble': 'visible light stubble on jaw and chin, 2-day beard growth',
+            'heavy-stubble': 'heavy dark stubble covering jaw and chin, prominent 5 o\'clock shadow, visible facial hair texture',
+            'short-beard': 'short trimmed beard covering jaw and chin, neat groomed facial hair, visible beard texture',
+            'full-beard': 'full thick beard covering lower face, dense facial hair with visible texture and volume',
+            'mustache': 'prominent mustache above upper lip, visible mustache hair texture'
+        };
+
+        // Makeup options (for females)
+        const MAKEUP = {
+            'none': '', // no mention, natural
+            'minimal': 'subtle natural makeup, light mascara, tinted lips, even skin tone',
+            'soft-glam': 'soft glamorous makeup, smoky eyeshadow, defined lashes with mascara, subtle contour, glossy nude lips',
+            'bold-lips': 'striking bold red lipstick, matte lip color, minimal eye makeup, clean skin',
+            'editorial': 'high fashion editorial makeup, dramatically defined eyebrows, smoky dramatic eye makeup, contoured cheekbones, matte skin finish',
+            'fresh': 'fresh dewy glowing skin, glossy lips, flushed cheeks, natural radiant complexion'
+        };
+
+        // Expression prompts
+        const EXPRESSIONS = {
+            'neutral': 'neutral composed expression, closed mouth no smile, direct confident gaze at camera, completely relaxed facial muscles',
+            'subtle-smile': 'subtle hint of a smile, corners of mouth slightly raised, warm eyes, approachable',
+            'warm-smile': 'genuine warm smile showing some teeth, bright friendly expression, sparkling eyes',
+            'laugh': 'candid laughing expression, genuine joy, natural mid-laugh moment, eyes crinkled',
+            'serious': 'serious intense expression, strong focused gaze, commanding presence, no smile',
+            'fierce': 'fierce supermodel gaze, powerful confident stare, high fashion intensity, smoldering eyes, strong commanding presence',
+            'contemplative': 'thoughtful contemplative expression, gazing slightly off-camera, introspective mood'
+        };
+
+        // Clothing descriptions
+        const CLOTHING_STYLES = {
+            'white': 'wearing ONLY a plain white crew neck t-shirt, WHITE clothing only',
+            'black': 'wearing ONLY a plain black crew neck t-shirt, BLACK clothing only',
+            'neutral': 'wearing a simple crew neck t-shirt in muted earth tones (beige, olive, dusty rose, slate blue, or terracotta), NO black clothing, NO white clothing'
+        };
+
+        // Base style function - always white studio background
+        function getBaseStyle() {
+            const clothingDesc = CLOTHING_STYLES[state.clothing] || CLOTHING_STYLES['white'];
+            return `Professional color headshot portrait photography, full color photograph, even flat lighting from front, clean pure white studio background, perfect white backdrop, neutral white balance, head and shoulders framing, centered composition, ${clothingDesc}, NO hats, NO head coverings, NO headwear, NO accessories, natural hair visible, natural skin texture with minimal retouching, editorial fashion photography style, shot on medium format camera, sharp focus throughout, deep depth of field`;
+        }
+
+        // Ethnicity labels for prompt generation
+        const ETHNICITY_LABELS = {
+            'diverse': null, // will use varied ethnicities
+            'european': 'European (Northern or Southern European)',
+            'east-asian': 'East Asian (Chinese, Japanese, or Korean)',
+            'south-asian': 'South Asian (Indian, Pakistani, or Bengali)',
+            'african': 'African (West African, East African, or South African)',
+            'latin': 'Latin American (Mexican, Brazilian, or Colombian)',
+            'middle-eastern': 'Middle Eastern (Persian, Arab, or Turkish)'
+        };
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            initUploadGrid();
+            setupEventListeners();
+            updateCostDisplay();
+        });
+
+        function initUploadGrid() {
+            const grid = document.getElementById('upload-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'upload-slot';
+                slot.innerHTML = '+';
+                slot.dataset.index = i;
+                slot.addEventListener('click', (e) => {
+                    if (e.target.closest('.remove-btn')) return;
+                    document.getElementById('file-input').click();
+                });
+                grid.appendChild(slot);
+            }
+
+            // Drag and drop on grid
+            grid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                grid.classList.add('drag-over');
+            });
+            grid.addEventListener('dragleave', (e) => {
+                // Only remove if actually leaving the grid (not entering a child)
+                if (!grid.contains(e.relatedTarget)) {
+                    grid.classList.remove('drag-over');
+                }
+            });
+            grid.addEventListener('drop', (e) => {
+                e.preventDefault();
+                grid.classList.remove('drag-over');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            // Set initial state (hide analyze section)
+            renderReferenceGrid();
+        }
+
+        function setupEventListeners() {
+            // File input
+            const fileInput = document.getElementById('file-input');
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Description input
+            document.getElementById('description-input').addEventListener('input', (e) => {
+                state.description = e.target.value;
+            });
+
+            // Gender multi-select
+            document.querySelectorAll('#gender-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    state.genders = getActiveValues('gender-group');
+                });
+            });
+
+            // Age multi-select
+            document.querySelectorAll('#age-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    state.ages = getActiveValues('age-group');
+                });
+            });
+
+            // Ethnicity multi-select
+            document.querySelectorAll('#ethnicity-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value;
+                    // If clicking "diverse", deselect others
+                    if (value === 'diverse') {
+                        document.querySelectorAll('#ethnicity-group button').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    } else {
+                        // If selecting specific ethnicity, deselect "diverse"
+                        document.querySelector('#ethnicity-group button[data-value="diverse"]').classList.remove('active');
+                        btn.classList.toggle('active');
+                        // If nothing selected, default back to diverse
+                        if (getActiveValues('ethnicity-group').length === 0) {
+                            document.querySelector('#ethnicity-group button[data-value="diverse"]').classList.add('active');
+                        }
+                    }
+                    state.ethnicities = getActiveValues('ethnicity-group');
+                });
+            });
+
+            // Expression multi-select
+            document.querySelectorAll('#expression-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    state.expressions = getActiveValues('expression-group');
+                    if (state.expressions.length === 0) {
+                        btn.classList.add('active');
+                        state.expressions = [btn.dataset.value];
+                    }
+                });
+            });
+
+            // Clothing single-select
+            document.querySelectorAll('#clothing-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#clothing-group button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.clothing = btn.dataset.value;
+                });
+            });
+
+            // Facial hair multi-select
+            document.querySelectorAll('#facial-hair-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    state.facialHair = getActiveValues('facial-hair-group');
+                    if (state.facialHair.length === 0) {
+                        document.querySelector('#facial-hair-group button[data-value="none"]').classList.add('active');
+                        state.facialHair = ['none'];
+                    }
+                });
+            });
+
+            // Makeup multi-select
+            document.querySelectorAll('#makeup-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    state.makeup = getActiveValues('makeup-group');
+                    if (state.makeup.length === 0) {
+                        document.querySelector('#makeup-group button[data-value="none"]').classList.add('active');
+                        state.makeup = ['none'];
+                    }
+                });
+            });
+
+            // Edginess slider
+            document.getElementById('edginess-slider').addEventListener('input', (e) => {
+                state.edginess = parseInt(e.target.value);
+            });
+
+            // Model single-select
+            document.querySelectorAll('#model-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#model-group button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.model = btn.dataset.value;
+                    updateCostDisplay();
+                });
+            });
+
+            // Aspect ratio single-select
+            document.querySelectorAll('#aspect-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#aspect-group button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.aspectRatio = btn.dataset.value;
+                });
+            });
+
+            // Result count single-select
+            document.querySelectorAll('#count-group button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#count-group button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.resultCount = parseInt(btn.dataset.value);
+                    updateCostDisplay();
+                });
+            });
+
+            // Keyboard for lightbox
+            document.addEventListener('keydown', (e) => {
+                if (!document.getElementById('lightbox').classList.contains('visible')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+            });
+        }
+
+        function getActiveValues(groupId) {
+            return Array.from(document.querySelectorAll(`#${groupId} button.active`))
+                .map(b => b.dataset.value);
+        }
+
+        // ========== TABS ==========
+        function switchTab(tab) {
+            state.activeTab = tab;
+            document.querySelectorAll('.tabs .tab').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase() === tab);
+            });
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        // ========== FILE HANDLING ==========
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
+        }
+
+        function handleFiles(files) {
+            const remaining = 12 - state.referenceImages.length;
+            const toAdd = Array.from(files).slice(0, remaining);
+
+            toAdd.forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.referenceImages.push({
+                        file: file,
+                        dataUrl: e.target.result
+                    });
+                    renderReferenceGrid();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderReferenceGrid() {
+            const grid = document.getElementById('upload-grid');
+            const slots = grid.querySelectorAll('.upload-slot');
+
+            slots.forEach((slot, i) => {
+                const img = state.referenceImages[i];
+                if (img) {
+                    slot.className = 'upload-slot filled';
+                    slot.innerHTML = `
+                        <img src="${img.dataUrl}" alt="Reference ${i + 1}">
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeReference(${i})">&times;</button>
+                    `;
+                } else {
+                    slot.className = 'upload-slot';
+                    slot.innerHTML = '+';
+                }
+            });
+
+            // Show/hide analyze section
+            document.getElementById('analyze-section').style.display =
+                state.referenceImages.length > 0 ? 'flex' : 'none';
+        }
+
+        function removeReference(index) {
+            state.referenceImages.splice(index, 1);
+            state.analyzedCharacteristics = [];
+            state.selectedCharacteristics = [];
+            renderReferenceGrid();
+            renderSelectedCharacteristics();
+        }
+
+        function clearReferences() {
+            state.referenceImages = [];
+            state.analyzedCharacteristics = [];
+            state.selectedCharacteristics = [];
+            state.faceDescriptions = [];
+            state.customDescription = '';
+            renderReferenceGrid();
+            renderSelectedCharacteristics();
+            document.getElementById('analyze-status').textContent = '';
+        }
+
+        // ========== FACE ANALYSIS ==========
+
+        // Extract face data from text when JSON parsing fails
+        function extractFaceDataFromText(text, index) {
+            // Try to extract key phrases from the response
+            const lower = text.toLowerCase();
+
+            // Look for common descriptors
+            let structure = '';
+            let eyes = '';
+            let distinctive = '';
+
+            // Face shape patterns
+            const shapes = ['oval', 'square', 'heart', 'diamond', 'round', 'oblong', 'angular', 'soft'];
+            const jawPatterns = ['sharp jaw', 'angular jaw', 'defined jaw', 'soft jaw', 'strong jaw', 'prominent jaw'];
+            const eyePatterns = ['almond eyes', 'round eyes', 'hooded eyes', 'deep-set eyes', 'wide-set eyes', 'expressive eyes'];
+
+            shapes.forEach(s => { if (lower.includes(s)) structure = s + ' face'; });
+            jawPatterns.forEach(j => { if (lower.includes(j)) structure += structure ? ', ' + j : j; });
+            eyePatterns.forEach(e => { if (lower.includes(e)) eyes = e; });
+
+            // If we found something, use it
+            if (structure || eyes) {
+                return {
+                    index: index,
+                    structure: structure || 'distinctive bone structure',
+                    eyes: eyes || 'expressive eyes',
+                    distinctive: distinctive || '',
+                    promptFragment: `${structure || 'striking features'}${eyes ? ', ' + eyes : ''}`
+                };
+            }
+
+            // Last resort - use the first 50 chars as a prompt fragment
+            const cleaned = text.replace(/[{}"]/g, '').substring(0, 80).trim();
+            return {
+                index: index,
+                structure: 'distinctive features',
+                eyes: '',
+                distinctive: '',
+                promptFragment: cleaned || 'striking distinctive facial features'
+            };
+        }
+
+        async function analyzeReferences() {
+            if (state.referenceImages.length === 0) return;
+
+            const statusEl = document.getElementById('analyze-status');
+            const total = state.referenceImages.length;
+            state.faceDescriptions = []; // Store individual face descriptions
+
+            // Show progress section with loader
+            document.getElementById('progress-section').classList.add('visible');
+            const loader = getMugshotLoader();
+            loader.start(`Analyzing face 1 of ${total}...`);
+            document.getElementById('progress-bar').style.width = '0%';
+
+            // Analyze each face separately
+            for (let i = 0; i < total; i++) {
+                statusEl.textContent = `Analyzing ${i + 1} of ${total}...`;
+                loader.updateProgress(`Analyzing face ${i + 1} of ${total}...`);
+                document.getElementById('progress-bar').style.width = `${((i) / total) * 100}%`;
+
+                let retries = 3;
+                let success = false;
+
+                while (retries > 0 && !success) {
+                    try {
+                        const response = await fetch('/api/analyze-gemini', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                image: state.referenceImages[i].dataUrl,
+                                prompt: `Look at this face carefully. List 10 SPECIFIC features. Be precise - avoid generic terms.
+
+BAD (too generic): "almond eyes", "oval face", "full lips"
+GOOD (specific): "downturned outer eye corners", "very narrow chin", "asymmetric smile"
+
+Describe ALL of these:
+1. Eye shape (hooded? deep-set? upturned/downturned?)
+2. Eye spacing (wide-set? close-set?)
+3. Eyebrow shape and thickness
+4. Nose bridge (narrow? wide? flat?)
+5. Nose tip (bulbous? pointed? upturned?)
+6. Lip shape upper
+7. Lip shape lower
+8. Cheekbone prominence
+9. Jawline shape
+10. Any unique marks or asymmetry
+
+Return exactly 10 features, one per line, 3-6 words each:`
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (data.error) throw new Error(data.error);
+
+                        // Clean up the response
+                        let description = data.content.trim();
+
+                        // Check for refusal/failure responses
+                        const refusalPhrases = ["sorry", "can't describe", "cannot describe", "can't identify", "cannot identify", "unable to", "not able to", "i cannot", "i can't"];
+                        const lower = description.toLowerCase();
+                        const isRefusal = refusalPhrases.some(phrase => lower.includes(phrase)) && description.length < 100;
+
+                        if (isRefusal) {
+                            console.log(`Face ${i + 1}: Analysis refused`);
+                            throw new Error('Analysis refused by API');
+                        }
+
+                        // Parse into separate feature tags
+                        const skipPhrases = ['here are', 'okay', 'sure', 'specific features', 'facial features', 'the face'];
+                        const lines = description.split('\n')
+                            .map(l => l.replace(/^[\d\.\-\*\s]+/, '').trim()) // Remove bullets/numbers
+                            .filter(l => {
+                                if (l.length < 5 || l.length > 50) return false;
+                                const lower = l.toLowerCase();
+                                return !skipPhrases.some(phrase => lower.includes(phrase));
+                            });
+
+                        console.log(`Face ${i + 1}:`, lines);
+
+                        state.faceDescriptions.push({
+                            index: i,
+                            features: lines.slice(0, 10), // Max 10 features
+                            promptFragment: lines.slice(0, 10).join(', ')
+                        });
+                        success = true;
+                    } catch (error) {
+                        console.error(`Analysis failed for face ${i + 1}:`, error);
+                        retries--;
+                        if (retries > 0) {
+                            statusEl.textContent = `Retrying ${i + 1} of ${total}...`;
+                            await new Promise(r => setTimeout(r, 500));
+                        }
+                    }
+                }
+
+                if (!success) {
+                    // If still failed, add a placeholder
+                    state.faceDescriptions.push({ promptFragment: 'striking distinctive features', failed: true, index: i });
+                }
+            }
+
+            // Check if any analyses succeeded
+            const validFaces = state.faceDescriptions.filter(f => !f.failed);
+            if (validFaces.length === 0) {
+                statusEl.textContent = 'Analysis failed - try again';
+                loader.stop();
+                document.getElementById('progress-section').classList.remove('visible');
+                return;
+            }
+
+            // Generate combined characteristics from all faces
+            statusEl.textContent = 'Analysis complete';
+            loader.updateProgress('Analysis complete');
+            document.getElementById('progress-bar').style.width = '100%';
+            loader.stop();
+            document.getElementById('progress-section').classList.remove('visible');
+            await generateCombinedCharacteristics();
+        }
+
+        async function generateCombinedCharacteristics() {
+            // Extract all features from all faces
+            const validFaces = state.faceDescriptions.filter(f => f.features && f.features.length > 0);
+            if (validFaces.length === 0) {
+                state.analyzedCharacteristics = ['Analysis failed - try again'];
+                showCharacteristicsModal();
+                return;
+            }
+
+            // Collect features from all faces
+            const allFeatures = [];
+            validFaces.forEach(face => {
+                face.features.forEach(feature => {
+                    if (!allFeatures.includes(feature)) {
+                        allFeatures.push(feature);
+                    }
+                });
+            });
+
+            // Take first 10 unique features
+            state.analyzedCharacteristics = allFeatures.slice(0, 10);
+            showCharacteristicsModal();
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function showCharacteristicsModal() {
+            const container = document.getElementById('characteristics-options');
+            container.innerHTML = '<div class="characteristics-grid">' +
+                state.analyzedCharacteristics.map((char, i) => `
+                    <div class="characteristic-option" data-index="${i}">
+                        <span class="characteristic-checkbox"></span>
+                        <span class="characteristic-text">${capitalizeFirst(char)}</span>
+                    </div>
+                `).join('') + '</div>';
+
+            // Add click listeners
+            container.querySelectorAll('.characteristic-option').forEach(el => {
+                el.addEventListener('click', () => {
+                    el.classList.toggle('selected');
+                });
+            });
+
+            document.getElementById('characteristics-modal').classList.add('visible');
+        }
+
+        function closeCharacteristicsModal() {
+            document.getElementById('characteristics-modal').classList.remove('visible');
+        }
+
+        function applyCharacteristics() {
+            state.selectedCharacteristics = [];
+            document.querySelectorAll('.characteristic-option.selected').forEach(el => {
+                const index = parseInt(el.dataset.index);
+                state.selectedCharacteristics.push(state.analyzedCharacteristics[index]);
+            });
+            // Save custom description from modal
+            const customInput = document.getElementById('custom-description-input');
+            if (customInput) {
+                state.customDescription = customInput.value.trim();
+            }
+            closeCharacteristicsModal();
+            renderSelectedCharacteristics();
+        }
+
+        function renderSelectedCharacteristics() {
+            const container = document.getElementById('selected-characteristics');
+            let html = state.selectedCharacteristics.map((char, i) => `
+                <span class="characteristic-tag">
+                    ${char}
+                    <span class="remove" onclick="removeCharacteristic(${i})">&times;</span>
+                </span>
+            `).join('');
+
+            // Show custom description if set
+            if (state.customDescription) {
+                html += `
+                    <span class="characteristic-tag" style="background: #e8f4f8; border-color: #0066cc;">
+                        "${state.customDescription}"
+                        <span class="remove" onclick="clearCustomDescription()">&times;</span>
+                    </span>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function clearCustomDescription() {
+            state.customDescription = '';
+            renderSelectedCharacteristics();
+        }
+
+        function addCustomFeature() {
+            const input = document.getElementById('add-feature-input');
+            const feature = input.value.trim();
+            if (feature && !state.selectedCharacteristics.includes(feature)) {
+                state.selectedCharacteristics.push(capitalizeFirst(feature));
+                renderSelectedCharacteristics();
+                input.value = '';
+            }
+        }
+
+        // Allow Enter key to add feature
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('add-feature-input');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        addCustomFeature();
+                    }
+                });
+            }
+        });
+
+        function removeCharacteristic(index) {
+            state.selectedCharacteristics.splice(index, 1);
+            renderSelectedCharacteristics();
+        }
+
+        // ========== COST DISPLAY ==========
+        function updateCostDisplay() {
+            const cost = MODEL_COSTS[state.model] || 0.04;
+            const total = state.resultCount * cost;
+            const text = `${state.resultCount} × $${cost.toFixed(2)} = $${total.toFixed(2)}`;
+            document.getElementById('cost-display-main').textContent = text;
+        }
+
+        // ========== PROMPT GENERATION ==========
+        function getRandomExpression() {
+            const available = state.expressions.filter(e => e !== 'random');
+            if (available.length === 0) {
+                const allExpressions = Object.keys(EXPRESSIONS);
+                return allExpressions[Math.floor(Math.random() * allExpressions.length)];
+            }
+            return available[Math.floor(Math.random() * available.length)];
+        }
+
+        function getExpressionForIndex(index) {
+            // Distribute expressions evenly
+            const available = state.expressions.includes('random')
+                ? [...state.expressions.filter(e => e !== 'random'), 'random']
+                : state.expressions;
+
+            const expr = available[index % available.length];
+            return expr === 'random' ? getRandomExpression() : expr;
+        }
+
+        function getEdginessPrompt(level) {
+            if (level < 20) {
+                return 'perfectly polished commercial beauty look, immaculate grooming, flawless airbrushed skin, perfectly symmetrical features, pristine hair styling, catalog model aesthetic';
+            } else if (level < 40) {
+                return 'clean natural beauty, minimal makeup look, healthy glowing skin, soft natural hair, approachable friendly appearance';
+            } else if (level < 60) {
+                return 'natural authentic look, visible skin texture and pores, hair with natural movement, real person not a model';
+            } else if (level < 80) {
+                return 'editorial high fashion look, bedhead messy hair, striking angular features, intense gaze, runway model aesthetic, imperfect beauty';
+            } else {
+                return 'raw edgy avant-garde look, wild unkempt hair, unconventional striking features, visible skin imperfections, anti-beauty aesthetic, memorable unique face';
+            }
+        }
+
+        async function generatePrompts(count) {
+            const validFaces = state.faceDescriptions.filter(f => f.features && f.features.length > 0);
+            const customDesc = state.customDescription.trim();
+
+            // If we have analyzed faces, use them directly
+            if (validFaces.length > 0) {
+                return generatePromptsFromFaces(count, validFaces, customDesc);
+            }
+
+            // Otherwise use AI generation
+            return generatePromptsWithAI(count, customDesc);
+        }
+
+        // Diverse ethnicities to cycle through
+        const DIVERSE_ETHNICITIES = ['European', 'East Asian', 'South Asian', 'African', 'Latin American', 'Middle Eastern'];
+
+        // Hair colors
+        const HAIR_COLORS = [
+            'natural black',
+            'dark brown',
+            'chestnut brown',
+            'honey blonde',
+            'platinum blonde',
+            'natural ginger',
+            'silver gray',
+            'jet black',
+            'golden brown',
+            'ash blonde',
+            'strawberry blonde',
+            'warm brown'
+        ];
+
+        // Hairstyles by gender
+        const HAIRSTYLES = {
+            female: {
+                clean: [
+                    'long straight hair with middle part',
+                    'sleek low ponytail',
+                    'classic bob with blunt ends',
+                    'elegant French twist updo',
+                    'smooth shoulder-length with side part',
+                    'polished long layers',
+                    'neat bun at nape of neck',
+                    'straight hair with curtain bangs',
+                    'glossy waves falling past shoulders',
+                    'refined lob with subtle layers'
+                ],
+                raw: [
+                    'messy loose waves past shoulders',
+                    'bedhead textured bob',
+                    'wild voluminous curls',
+                    'choppy layered shag cut',
+                    'undone top knot with loose strands',
+                    'tousled beach waves with texture',
+                    'edgy buzzed sides with long top',
+                    'messy braids with flyaways',
+                    'natural afro texture',
+                    'windswept layers with movement'
+                ]
+            },
+            male: {
+                clean: [
+                    'short tapered sides with neat top',
+                    'classic side part pompadour',
+                    'clean buzz cut all over',
+                    'slicked back medium length',
+                    'neat textured quiff',
+                    'short Caesar cut with fringe',
+                    'tidy crew cut',
+                    'combed back with volume',
+                    'short curls close to head',
+                    'classic gentleman cut'
+                ],
+                raw: [
+                    'messy medium length falling forward',
+                    'tousled curls with volume',
+                    'grown-out buzz with texture',
+                    'disheveled longer hair past ears',
+                    'bedhead textured crop',
+                    'wild wavy hair with movement',
+                    'edgy undercut with messy top',
+                    'unkempt natural curls',
+                    'shaggy layers with texture',
+                    'rough textured fringe'
+                ]
+            }
+        };
+
+        // Check if user added any hair-related characteristics
+        function hasHairTag() {
+            const hairKeywords = ['hair', 'curly', 'straight', 'wavy', 'blonde', 'brunette', 'black hair', 'red hair', 'short hair', 'long hair', 'bald', 'buzz', 'afro', 'braids', 'bangs'];
+            return state.selectedCharacteristics.some(char =>
+                hairKeywords.some(keyword => char.toLowerCase().includes(keyword))
+            );
+        }
+
+        function getHairstyle(gender, edginess, index) {
+            // If user already added hair tags, don't add more
+            if (hasHairTag()) {
+                return null;
+            }
+
+            const genderKey = gender === 'male' ? 'male' : 'female';
+            const styleKey = edginess < 50 ? 'clean' : 'raw';
+            const styles = HAIRSTYLES[genderKey][styleKey];
+            const colors = HAIR_COLORS;
+
+            // Pick style and color based on index
+            const style = styles[index % styles.length];
+            const color = colors[index % colors.length];
+
+            return `${color} ${style}`;
+        }
+
+        // Generate prompts based on analyzed face references
+        function generatePromptsFromFaces(count, faces, customDesc) {
+            const prompts = [];
+
+            for (let i = 0; i < count; i++) {
+                // Distribute evenly across reference faces
+                const faceIndex = i % faces.length;
+                const face = faces[faceIndex];
+
+                // Pick demographics
+                const gender = state.genders[i % state.genders.length];
+                const age = state.ages[i % state.ages.length];
+                const expression = getExpressionForIndex(i);
+
+                // Build ethnicity - always include it
+                let ethnicity = '';
+                if (state.ethnicities.includes('diverse')) {
+                    ethnicity = DIVERSE_ETHNICITIES[i % DIVERSE_ETHNICITIES.length];
+                } else {
+                    const ethLabels = state.ethnicities.map(e => ETHNICITY_LABELS[e]).filter(Boolean);
+                    ethnicity = ethLabels[i % ethLabels.length]?.split(' (')[0] || '';
+                }
+
+                // Get hairstyle based on gender and edginess (returns null if user added hair tags)
+                const hairstyle = getHairstyle(gender, state.edginess, i);
+
+                // Build the prompt with face features from reference
+                let prompt = `Portrait of a ${ethnicity ? ethnicity + ' ' : ''}${gender} in their ${age}`;
+                if (hairstyle) {
+                    prompt += ` with ${hairstyle}`;
+                }
+
+                // Add face features from analysis
+                const faceFeatures = face.features || [];
+                if (faceFeatures.length > 0) {
+                    prompt += `, ${faceFeatures.join(', ')}`;
+                }
+
+                // Add selected characteristics (if different from face features)
+                if (state.selectedCharacteristics.length > 0) {
+                    const extraChars = state.selectedCharacteristics.filter(c => !faceFeatures.includes(c));
+                    if (extraChars.length > 0) {
+                        prompt += `, ${extraChars.join(', ')}`;
+                    }
+                }
+
+                // Add facial hair for males (cycle through selected)
+                if (gender === 'male' && state.facialHair.length > 0) {
+                    const fh = state.facialHair[i % state.facialHair.length];
+                    if (fh !== 'none' && FACIAL_HAIR[fh]) {
+                        prompt += `, ${FACIAL_HAIR[fh]}`;
+                    }
+                }
+                // Add makeup for females (cycle through selected)
+                if (gender === 'female' && state.makeup.length > 0) {
+                    const mk = state.makeup[i % state.makeup.length];
+                    if (mk !== 'none' && MAKEUP[mk]) {
+                        prompt += `, ${MAKEUP[mk]}`;
+                    }
+                }
+
+                // Add custom description if provided
+                if (customDesc) {
+                    prompt += `, ${customDesc}`;
+                }
+
+                prompt += `. ${EXPRESSIONS[expression]}. ${getEdginessPrompt(state.edginess)}. ${getBaseStyle()}`;
+                prompts.push(prompt);
+            }
+
+            return prompts;
+        }
+
+        // Generate prompts using AI when no face references
+        async function generatePromptsWithAI(count, customDesc) {
+            const genderText = state.genders.join(' and ');
+            const ageText = state.ages.join(', ');
+
+            // Build ethnicity text
+            let ethnicityText = '';
+            if (state.ethnicities.includes('diverse')) {
+                ethnicityText = 'Include diverse ethnicities (East Asian, South Asian, African, European, Latin American, Middle Eastern)';
+            } else {
+                const labels = state.ethnicities.map(e => ETHNICITY_LABELS[e]).filter(Boolean);
+                ethnicityText = `Ethnicities: ${labels.join(', ')}`;
+            }
+
+            // Build context from characteristics
+            let characteristicsContext = '';
+            if (state.selectedCharacteristics.length > 0) {
+                characteristicsContext = `\n\nIMPORTANT FACIAL FEATURES TO INCLUDE:\n${state.selectedCharacteristics.map(c => `- ${c}`).join('\n')}`;
+            }
+
+            if (customDesc) {
+                characteristicsContext += `\n\nADDITIONAL LOOK: ${customDesc}`;
+            }
+
+            // Get clothing instruction
+            const clothingInstruction = state.clothing === 'white'
+                ? 'white t-shirt ONLY'
+                : state.clothing === 'black'
+                    ? 'black t-shirt ONLY'
+                    : 'muted earth tone t-shirts (beige, olive, dusty rose, slate blue, terracotta), NO black, NO white';
+
+            const systemPrompt = `You create detailed prompts for AI portrait generation.
+Each prompt must describe a UNIQUE individual with specific facial bone structure.
+
+STRICT RULES:
+- Professional headshot: head and shoulders, pure white studio background
+- Soft diffused lighting, no harsh shadows
+- CLOTHING: ${clothingInstruction}
+- HEAD: NO hats, NO head coverings, NO headwear, NO caps, NO beanies. Natural hair must be visible.
+- Natural skin texture, editorial style
+- NO celebrities or named people
+- Each prompt MUST include specific bone structure details (jawline, cheekbones, eye shape, etc.)${characteristicsContext}`;
+
+            const userDescription = state.description.trim();
+            const hasDescription = userDescription.length > 10;
+
+            const userPrompt = hasDescription
+                ? `Create ${count} unique portrait prompts. All should match this description but be different individuals:
+
+"${userDescription}"
+
+- Genders: ${genderText}
+- Ages: ${ageText}
+- ${ethnicityText}
+- MUST include specific facial bone structure in each prompt
+
+Write each as ONE sentence focusing on face structure. Return ONLY a JSON array of strings.`
+                : `Create ${count} diverse portrait prompts with maximum variety:
+
+- Genders: ${genderText}
+- Ages: ${ageText}
+- ${ethnicityText}
+- MUST include specific facial bone structure in each prompt (jaw, cheekbones, eyes, nose)
+
+Write each as ONE sentence focusing on face structure. Return ONLY a JSON array of strings.`;
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        images: [],
+                        prompt: userPrompt,
+                        system: systemPrompt
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                const match = data.content.match(/\[[\s\S]*\]/);
+                if (match) {
+                    const rawPrompts = JSON.parse(match[0]);
+                    return rawPrompts.map((p, i) => {
+                        const text = typeof p === 'string' ? p : (p.prompt || p.description || JSON.stringify(p));
+                        const expression = getExpressionForIndex(i);
+                        const gender = state.genders[i % state.genders.length];
+                        const hairstyle = getHairstyle(gender, state.edginess, i);
+
+                        let prompt = text;
+                        if (hairstyle) {
+                            prompt += `, ${hairstyle}`;
+                        }
+                        // Add facial hair for males (cycle through selected)
+                        if (gender === 'male' && state.facialHair.length > 0) {
+                            const fh = state.facialHair[i % state.facialHair.length];
+                            if (fh !== 'none' && FACIAL_HAIR[fh]) {
+                                prompt += `, ${FACIAL_HAIR[fh]}`;
+                            }
+                        }
+                        // Add makeup for females (cycle through selected)
+                        if (gender === 'female' && state.makeup.length > 0) {
+                            const mk = state.makeup[i % state.makeup.length];
+                            if (mk !== 'none' && MAKEUP[mk]) {
+                                prompt += `, ${MAKEUP[mk]}`;
+                            }
+                        }
+
+                        return `${prompt}. ${EXPRESSIONS[expression]}. ${getEdginessPrompt(state.edginess)}. ${getBaseStyle()}`;
+                    });
+                }
+                throw new Error('Failed to parse prompts');
+            } catch (error) {
+                console.error('Prompt generation failed:', error);
+                return generateFallbackPrompts(count);
+            }
+        }
+
+        function generateFallbackPrompts(count) {
+            const validFaces = state.faceDescriptions.filter(f => f.features && f.features.length > 0);
+
+            // If we have face descriptions, use them
+            if (validFaces.length > 0) {
+                return generatePromptsFromFaces(count, validFaces, state.customDescription);
+            }
+
+            const prompts = [];
+
+            // Build ethnicity list based on selection
+            let ethnicityList;
+            if (state.ethnicities.includes('diverse')) {
+                ethnicityList = DIVERSE_ETHNICITIES;
+            } else {
+                ethnicityList = state.ethnicities.map(e => {
+                    const label = ETHNICITY_LABELS[e];
+                    return label ? label.split(' (')[0] : e;
+                });
+            }
+
+            for (let i = 0; i < count; i++) {
+                const gender = state.genders[i % state.genders.length];
+                const age = state.ages[i % state.ages.length];
+                const ethnicity = ethnicityList[i % ethnicityList.length];
+                const expression = getExpressionForIndex(i);
+                const hairstyle = getHairstyle(gender, state.edginess, i);
+
+                let prompt = `Portrait of a ${ethnicity} ${gender} in their ${age}`;
+                if (hairstyle) {
+                    prompt += ` with ${hairstyle}`;
+                }
+
+                if (state.selectedCharacteristics.length > 0) {
+                    const char = state.selectedCharacteristics[i % state.selectedCharacteristics.length];
+                    prompt += `, with ${char}`;
+                }
+
+                // Add facial hair for males (cycle through selected)
+                if (gender === 'male' && state.facialHair.length > 0) {
+                    const fh = state.facialHair[i % state.facialHair.length];
+                    if (fh !== 'none' && FACIAL_HAIR[fh]) {
+                        prompt += `, ${FACIAL_HAIR[fh]}`;
+                    }
+                }
+                // Add makeup for females (cycle through selected)
+                if (gender === 'female' && state.makeup.length > 0) {
+                    const mk = state.makeup[i % state.makeup.length];
+                    if (mk !== 'none' && MAKEUP[mk]) {
+                        prompt += `, ${MAKEUP[mk]}`;
+                    }
+                }
+
+                if (state.customDescription) {
+                    prompt += `, ${state.customDescription}`;
+                }
+
+                prompt += `. ${EXPRESSIONS[expression]}. ${getEdginessPrompt(state.edginess)}. ${getBaseStyle()}`;
+                prompts.push(prompt);
+            }
+            return prompts;
+        }
+
+        // ========== GENERATION ==========
+        async function generatePortraits() {
+            if (state.generating) return;
+            if (state.genders.length === 0 || state.ages.length === 0) {
+                alert('Please select at least one gender and age range');
+                return;
+            }
+
+            state.generating = true;
+            state.batchCounter++;
+            const batchId = state.batchCounter;
+            const count = state.resultCount;
+
+            // Show progress with loader
+            document.getElementById('progress-section').classList.add('visible');
+            const loader = getMugshotLoader();
+            loader.start('Creating prompts...');
+            document.getElementById('progress-bar').style.width = '0%';
+
+            try {
+                // Generate prompts
+                const prompts = await generatePrompts(count);
+                console.log(`Generated ${prompts.length} prompts`);
+                loader.updateProgress(`Generating 0 of ${count}...`);
+
+                // Prepare batch results
+                const batchResults = [];
+                for (let i = 0; i < prompts.length; i++) {
+                    batchResults.push({
+                        id: `batch${batchId}-${i}`,
+                        batchId: batchId,
+                        prompt: prompts[i],
+                        model: state.model,
+                        aspectRatio: state.aspectRatio,
+                        url: null,
+                        generating: true
+                    });
+                }
+
+                // Add to all results (newest first)
+                state.allResults = [...batchResults, ...state.allResults];
+
+                // Show results section
+                document.getElementById('results-section').style.display = 'block';
+                renderResults();
+
+                // Generate images
+                let completed = 0;
+
+                const batchSize = 10;
+                for (let i = 0; i < batchResults.length; i += batchSize) {
+                    const batch = batchResults.slice(i, i + batchSize);
+
+                    await Promise.all(batch.map(async (result) => {
+                        try {
+                            let response;
+
+                            if (state.model === 'nanobanana') {
+                                // Use Gemini Imagen 3 endpoint
+                                response = await fetch('/api/generate-gemini', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        prompt: result.prompt,
+                                        aspect_ratio: state.aspectRatio,
+                                        image_size: '1024'
+                                    })
+                                });
+                            } else {
+                                // Use FAL endpoint (Reve)
+                                const params = {
+                                    model: state.model,
+                                    prompt: result.prompt,
+                                    num_images: 1,
+                                    aspect_ratio: state.aspectRatio
+                                };
+
+                                response = await fetch('/api/generate', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(params)
+                                });
+                            }
+
+                            const data = await response.json();
+
+                            if (data.images && data.images[0]) {
+                                result.url = data.images[0].url;
+                                result.generating = false;
+                            } else {
+                                throw new Error(data.error || 'No image returned');
+                            }
+                        } catch (error) {
+                            console.error('Generation failed:', error);
+                            result.error = error.message;
+                            result.generating = false;
+                        }
+
+                        completed++;
+                        loader.updateProgress(`Generating ${completed} of ${count}...`);
+                        document.getElementById('progress-bar').style.width = `${(completed / count) * 100}%`;
+                        renderResults();
+                    }));
+                }
+
+                loader.updateProgress(`Complete - ${count} portraits generated`);
+                loader.stop();
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                loader.stop();
+                alert('Generation failed: ' + error.message);
+            } finally {
+                state.generating = false;
+            }
+        }
+
+        // ========== RESULTS RENDERING ==========
+        function renderResults() {
+            const grid = document.getElementById('results-grid');
+            let html = '';
+            let currentBatch = null;
+
+            state.allResults.forEach((result, globalIndex) => {
+                // Add batch separator
+                if (result.batchId !== currentBatch) {
+                    currentBatch = result.batchId;
+                    const isNewest = result.batchId === state.batchCounter;
+                    html += `<div class="batch-separator">Batch ${result.batchId}${isNewest ? ' (Latest)' : ''}</div>`;
+                }
+
+                if (result.generating) {
+                    html += `
+                        <div class="result-card" data-id="${result.id}">
+                            <div class="placeholder">
+                                <div class="spinner"></div>
+                                <span class="placeholder-text">Generating...</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (result.url) {
+                    html += `
+                        <div class="result-card" data-id="${result.id}">
+                            <img src="${result.url}" alt="Portrait" onclick="openLightboxById('${result.id}')">
+                            <div class="result-overlay">
+                                <div class="result-actions">
+                                    <button class="result-btn" onclick="event.stopPropagation(); downloadById('${result.id}')">Download</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="result-card" data-id="${result.id}">
+                            <div class="placeholder">
+                                <span class="placeholder-text">Failed</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // ========== LIGHTBOX ==========
+        function openLightboxById(id) {
+            const index = state.allResults.findIndex(r => r.id === id);
+            if (index === -1) return;
+            state.lightboxIndex = index;
+            updateLightboxContent();
+            document.getElementById('lightbox').classList.add('visible');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('visible');
+        }
+
+        function navigateLightbox(direction) {
+            const validResults = state.allResults.filter(r => r.url);
+            const currentResult = state.allResults[state.lightboxIndex];
+            const currentValidIndex = validResults.findIndex(r => r.id === currentResult?.id);
+            const newValidIndex = currentValidIndex + direction;
+
+            if (newValidIndex >= 0 && newValidIndex < validResults.length) {
+                const newResult = validResults[newValidIndex];
+                state.lightboxIndex = state.allResults.findIndex(r => r.id === newResult.id);
+                updateLightboxContent();
+            }
+        }
+
+        function updateLightboxContent() {
+            const result = state.allResults[state.lightboxIndex];
+            if (!result || !result.url) return;
+
+            document.getElementById('lightbox-image').src = result.url;
+            document.getElementById('lightbox-prompt').textContent = result.prompt;
+            document.getElementById('lightbox-settings').textContent =
+                `Model: ${result.model === 'reve' ? 'Reve' : 'Gemini Imagen'}\nAspect: ${result.aspectRatio}`;
+            document.getElementById('lightbox-download').onclick = () => downloadById(result.id);
+        }
+
+        // ========== DOWNLOADS ==========
+        async function downloadById(id) {
+            const result = state.allResults.find(r => r.id === id);
+            if (!result || !result.url) return;
+
+            const filename = `Alva_Portrait_${id}_${Date.now()}.png`;
+
+            try {
+                const response = await fetch(`/api/proxy-download?url=${encodeURIComponent(result.url)}`);
+                const blob = await response.blob();
+                const downloadUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                console.error('Download failed:', error);
+                window.open(result.url, '_blank');
+            }
+        }
+
+        async function downloadAll() {
+            const validResults = state.allResults.filter(r => r.url);
+            for (const result of validResults) {
+                await downloadById(result.id);
+                await new Promise(r => setTimeout(r, 300));
+            }
+        }
+    </script>
+</body>
+</html>
