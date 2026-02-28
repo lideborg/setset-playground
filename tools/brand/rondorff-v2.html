@@ -464,6 +464,67 @@
         .product-card .group-btn.g3 { background: #2ecc71; }
         .product-card .group-btn.g4 { background: #9b59b6; }
 
+        /* Group Notes Section */
+        .group-notes-section {
+            margin-top: 16px;
+            padding: 12px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: 4px;
+        }
+        .group-notes-section h4 {
+            margin: 0 0 10px 0;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--jet);
+        }
+        .group-notes-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .group-note-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .group-note-item.inactive {
+            opacity: 0.4;
+        }
+        .group-note-label {
+            font-size: var(--text-xs);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .group-note-label .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .group-note-label .dot.g1 { background: #e74c3c; }
+        .group-note-label .dot.g2 { background: #3498db; }
+        .group-note-label .dot.g3 { background: #2ecc71; }
+        .group-note-label .dot.g4 { background: #9b59b6; }
+        .group-note-input {
+            width: 100%;
+            padding: 6px 8px;
+            font-size: var(--text-xs);
+            border: 1px solid var(--gainsboro);
+            border-radius: 2px;
+            resize: none;
+            min-height: 50px;
+            font-family: inherit;
+        }
+        .group-note-input:focus {
+            outline: none;
+            border-color: var(--slate);
+        }
+        .group-note-item.inactive .group-note-input {
+            background: var(--gainsboro);
+        }
+
         /* Outfit Grid (Styling tab) */
         .outfit-grid {
             display: grid;
@@ -1345,6 +1406,56 @@
             color: var(--white);
         }
 
+        .video-upload-slot .movement-btn-plus {
+            flex: 1;
+            padding: 6px 4px;
+            font-size: 10px;
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border-radius: var(--radius-xs);
+            text-align: center;
+            margin-left: 4px;
+        }
+
+        .video-upload-slot .movement-btn-plus:hover {
+            border-color: var(--slate);
+        }
+
+        .video-upload-slot .movement-btn-plus.active {
+            background: #FF9800;
+            border-color: #FF9800;
+            color: var(--white);
+        }
+
+        .video-upload-slot .movement-btn-dynamic {
+            flex: 1;
+            padding: 6px 4px;
+            font-size: 10px;
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border-radius: var(--radius-xs);
+            text-align: center;
+            margin-left: 4px;
+        }
+
+        .video-upload-slot .movement-btn-dynamic:hover {
+            border-color: var(--slate);
+        }
+
+        .video-upload-slot .movement-btn-dynamic.active {
+            background: #E91E63;
+            border-color: #E91E63;
+            color: var(--white);
+        }
+
         .video-upload-slot.deselected .slot-image-container {
             opacity: 0.3;
             filter: grayscale(100%);
@@ -1503,6 +1614,27 @@
             letter-spacing: 0.5px;
         }
 
+        .gen-custom-prompt {
+            width: 100%;
+            min-height: 60px;
+            padding: var(--space-sm);
+            font-size: var(--text-sm);
+            font-family: inherit;
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            resize: vertical;
+            margin-top: var(--space-xs);
+        }
+
+        .gen-custom-prompt:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
+        .gen-custom-prompt::placeholder {
+            color: var(--silver);
+        }
+
         .gen-generate-row {
             margin-top: var(--space-md);
             padding-top: var(--space-md);
@@ -1566,9 +1698,42 @@
         }
 
         .gen-results-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .gen-batch {
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .gen-batch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--ghost-white);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .gen-batch-title {
+            font-weight: 600;
+            font-size: var(--text-sm);
+            color: var(--jet);
+        }
+
+        .gen-batch-info {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .gen-batch-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: var(--space-sm);
+            padding: var(--space-sm);
         }
 
         .gen-result-card {
@@ -1741,6 +1906,12 @@
                 <div class="custom-product-grid" id="custom-product-grid"></div>
             </div>
             <input type="file" id="product-file-input" accept="image/*" multiple style="display: none;">
+
+            <!-- Group Notes Section -->
+            <div class="group-notes-section" id="group-notes-section">
+                <h4>Group Notes (Gemini will enhance prompts with these)</h4>
+                <div class="group-notes-grid" id="group-notes-grid"></div>
+            </div>
         </div>
 
         <!-- Environments Section -->
@@ -1938,6 +2109,14 @@
                     </div>
                 </div>
 
+                <!-- Row 7: Custom Prompt -->
+                <div class="gen-settings-row">
+                    <div class="gen-setting-group gen-flex-1">
+                        <label class="gen-setting-label">Custom Instructions (optional)</label>
+                        <textarea class="gen-custom-prompt" id="gen-custom-prompt" placeholder="e.g., He should stand halfway in water looking into the camera, dramatic pose with arms raised..."></textarea>
+                    </div>
+                </div>
+
                 <!-- Generate Button -->
                 <div class="gen-generate-row">
                     <div class="gen-calc-display" id="gen-calc-display">Select environment type</div>
@@ -1964,12 +2143,18 @@
             <!-- Video Settings Bar -->
             <div class="video-settings-bar">
                 <div class="video-setting-group">
-                    <span class="video-setting-label">Movement:</span>
+                    <span class="video-setting-label">Camera:</span>
                     <div class="movement-mode-buttons" id="movement-mode-buttons">
                         <button class="movement-mode-btn active" data-mode="static">Static</button>
                         <button class="movement-mode-btn" data-mode="dynamic">Dynamic</button>
                         <button class="movement-mode-btn" data-mode="handheld">Handheld</button>
                         <button class="movement-mode-btn" data-mode="90s">90s</button>
+                        <button class="movement-mode-btn" data-mode="follow">Follow</button>
+                        <button class="movement-mode-btn" data-mode="push">Push</button>
+                        <button class="movement-mode-btn" data-mode="pull">Pull</button>
+                        <button class="movement-mode-btn" data-mode="arc">Arc</button>
+                        <button class="movement-mode-btn" data-mode="rise">Rise</button>
+                        <button class="movement-mode-btn" data-mode="drift">Drift</button>
                         <button class="movement-mode-btn" data-action="random">Random</button>
                         <button class="movement-mode-btn" data-action="clear">Clear</button>
                     </div>
@@ -2488,7 +2673,15 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
                 'Setset_RonDorff_ibiza_260215_2131_04.png',
                 'Setset_RonDorff_ibiza_260215_2131_07.png',
                 'Setset_RonDorff_ibiza_260215_2131_11.png',
-                'Setset_RonDorff_ibiza_260215_2131_13.png'
+                'Setset_RonDorff_ibiza_260215_2131_13.png',
+                'Setset_RonDorff_rocky-beach_260224_1940_02.png',
+                'Setset_RonDorff_rocky-beach_260224_1940_03.png',
+                'Setset_RonDorff_rocky-beach_260224_1940_08.png',
+                'Setset_RonDorff_rocky-beach_260224_1940_11.png',
+                'Setset_RonDorff_rocky-beach_260224_1943_02.png',
+                'Setset_RonDorff_rocky-beach_260224_1943_04.png',
+                'Setset_RonDorff_rocky-beach_260224_1957_09.png',
+                'Setset_RonDorff_rocky-beach_260224_1957_17.png'
             ],
             'architecture-v1': [
                 'Setset_Location_3_4_11_1769017979925 1.png',
@@ -2592,6 +2785,7 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             describeEnvOnly: false, // Don't use env image, just describe it
             additionalPrompt: '',
             sandalsPercent: 0, // 0-100% chance of sandals vs barefoot
+            groupNotes: { 1: '', 2: '', 3: '', 4: '' }, // Notes per product group for Gemini enhancement
             results: [],
             modelFalUrls: {},
             productFalUrls: {},
@@ -2619,6 +2813,8 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             outfitGrid: document.getElementById('outfit-grid'),
             productPanelUpload: document.getElementById('product-panel-upload'),
             productFileInput: document.getElementById('product-file-input'),
+            groupNotesSection: document.getElementById('group-notes-section'),
+            groupNotesGrid: document.getElementById('group-notes-grid'),
             environmentGrid: document.getElementById('environment-grid'),
             envFileInput: document.getElementById('env-file-input'),
             envTabs: document.querySelectorAll('.env-tab'),
@@ -2777,6 +2973,40 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
 
                 elements.productGrid.appendChild(card);
             });
+        }
+
+        // Render group notes based on active groups
+        function renderGroupNotes() {
+            // Get all active groups from products and custom products
+            const presetGroups = new Set(Object.values(state.selectedProducts));
+            const customGroups = new Set(state.customProducts.filter(p => p && p.group > 0).map(p => p.group));
+            const activeGroups = new Set([...presetGroups, ...customGroups]);
+
+            elements.groupNotesGrid.innerHTML = '';
+
+            for (let g = 1; g <= 4; g++) {
+                const isActive = activeGroups.has(g);
+                const item = document.createElement('div');
+                item.className = `group-note-item${isActive ? '' : ' inactive'}`;
+
+                item.innerHTML = `
+                    <div class="group-note-label">
+                        <span class="dot g${g}"></span>
+                        <span>Group ${g}</span>
+                    </div>
+                    <textarea class="group-note-input" id="group-note-${g}"
+                        placeholder="${isActive ? 'e.g., Make sure the back looks hairy...' : 'No products in this group'}"
+                        ${isActive ? '' : 'disabled'}>${state.groupNotes[g] || ''}</textarea>
+                `;
+
+                // Add input listener
+                const textarea = item.querySelector('textarea');
+                textarea.addEventListener('input', (e) => {
+                    state.groupNotes[g] = e.target.value;
+                });
+
+                elements.groupNotesGrid.appendChild(item);
+            }
         }
 
         function renderOutfits() {
@@ -3295,6 +3525,9 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
 
             elements.selectionSummary.textContent = `${modelCount} model${modelCount !== 1 ? 's' : ''}, ${productSelection} ${productLabel}${productSelection !== 1 ? 's' : ''}, ${envCount} env${envCount !== 1 ? 's' : ''} = ${totalImages} image${totalImages !== 1 ? 's' : ''}${costStr}`;
             elements.generateBtn.disabled = modelCount === 0 || (groupCount === 0 && outfitCount === 0) || envCount === 0;
+
+            // Update group notes UI when products change
+            renderGroupNotes();
         }
 
         // Additional prompt handler
@@ -3611,12 +3844,28 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             const startTime = Date.now();
 
             // Pre-build all prompts and image URLs BEFORE launching requests
-            const preparedTasks = tasks.map(task => {
-                task.useSandals = Math.random() * 100 < state.sandalsPercent;
-                const { prompt, usedCopyPose } = buildPrompt(task);
-                const imageUrls = buildImageUrls(task);
-                return { ...task, prompt, usedCopyPose, imageUrls };
-            });
+            // Check if any group notes need enhancement
+            const hasGroupNotes = Object.values(state.groupNotes).some(note => note && note.trim());
+
+            let preparedTasks;
+            if (hasGroupNotes) {
+                console.log('📝 Group notes detected, enhancing prompts with Gemini...');
+                preparedTasks = await Promise.all(tasks.map(async task => {
+                    task.useSandals = Math.random() * 100 < state.sandalsPercent;
+                    const { prompt: basePrompt, usedCopyPose } = buildPrompt(task);
+                    const imageUrls = buildImageUrls(task);
+                    // Enhance prompt with group notes if applicable
+                    const prompt = await enhancePromptWithGroupNotes(basePrompt, state.groupNotes, task.assignedGroups);
+                    return { ...task, prompt, usedCopyPose, imageUrls };
+                }));
+            } else {
+                preparedTasks = tasks.map(task => {
+                    task.useSandals = Math.random() * 100 < state.sandalsPercent;
+                    const { prompt, usedCopyPose } = buildPrompt(task);
+                    const imageUrls = buildImageUrls(task);
+                    return { ...task, prompt, usedCopyPose, imageUrls };
+                });
+            }
 
             console.log(`📋 All ${preparedTasks.length} prompts prepared, launching fetch requests NOW...`);
 
@@ -3814,6 +4063,44 @@ POSE: [specific pose suggestion]`;
                 console.error(`❌ [Env ${envIndex + 1}] Analysis error:`, err);
             }
             return 'LOCATION: a scenic outdoor location\nPOSE: standing naturally';
+        }
+
+        // Enhance prompt with group notes using Gemini
+        async function enhancePromptWithGroupNotes(basePrompt, groupNotes, assignedGroups) {
+            // Collect notes for assigned groups
+            const notesToApply = assignedGroups
+                .map(g => state.groupNotes[g])
+                .filter(note => note && note.trim());
+
+            if (notesToApply.length === 0) {
+                return basePrompt;
+            }
+
+            const combinedNotes = notesToApply.join('\n');
+
+            try {
+                const response = await fetch('/api/gemini-text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system: 'You are a prompt engineer for AI image generation. Your task is to incorporate user notes into an existing image generation prompt. Keep the enhanced prompt concise and focused. Do not add unnecessary details. Preserve the original structure and intent.',
+                        prompt: `Here is the base prompt:\n\n${basePrompt}\n\nHere are the user's additional notes/requirements that MUST be incorporated:\n\n${combinedNotes}\n\nReturn ONLY the enhanced prompt with the notes naturally incorporated. Keep it concise.`
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.content) {
+                        console.log('✅ Prompt enhanced with group notes');
+                        return data.content.trim();
+                    }
+                }
+                console.warn('⚠️ Failed to enhance prompt, using base prompt');
+                return basePrompt;
+            } catch (err) {
+                console.error('❌ Error enhancing prompt:', err);
+                return basePrompt;
+            }
         }
 
         function buildPrompt(task) {
@@ -4140,6 +4427,8 @@ POSE: [specific pose suggestion]`;
             lighting: ['midday'],
             content: 'environment',
             count: 5,
+            customPrompt: '', // Custom instructions for the prompt
+            batchNumber: 0, // Track batch number for history
             results: []
         };
 
@@ -4152,6 +4441,7 @@ POSE: [specific pose suggestion]`;
             lightingButtons: document.querySelectorAll('#gen-lighting .btn--toggle'),
             contentButtons: document.querySelectorAll('#gen-content .btn--toggle'),
             countButtons: document.querySelectorAll('#gen-count .btn--toggle'),
+            customPrompt: document.getElementById('gen-custom-prompt'),
             calcDisplay: document.getElementById('gen-calc-display'),
             costValue: document.getElementById('gen-cost-value'),
             generateBtn: document.getElementById('gen-btn'),
@@ -4413,12 +4703,33 @@ POSE: [specific pose suggestion]`;
         async function generateEnvironments() {
             // Start the animated loader (uses dedicated genLoader instance)
             genLoader.start(`Generating prompts: 0 / ${genState.count}`);
-            genElements.resultsGrid.innerHTML = '';
+
+            // Increment batch number and create batch container
+            genState.batchNumber++;
+            const batchId = `gen-batch-${genState.batchNumber}`;
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const settingsDesc = `${genState.envTypes.join(', ')} • ${genState.lighting.join(', ')} • ${genState.content === 'male' ? 'w/ Model' : 'Environment'}`;
+
+            // Create batch header and container at the TOP of results
+            const batchHtml = `
+                <div class="gen-batch" id="${batchId}">
+                    <div class="gen-batch-header">
+                        <span class="gen-batch-title">Batch ${genState.batchNumber}</span>
+                        <span class="gen-batch-info">${settingsDesc} • ${timestamp}</span>
+                    </div>
+                    <div class="gen-batch-grid" id="${batchId}-grid"></div>
+                </div>
+            `;
+            genElements.resultsGrid.insertAdjacentHTML('afterbegin', batchHtml);
+
             genState.results = [];
             // Show results section immediately so images appear as they generate
             genElements.results.classList.add('active');
 
             // Step 1: Generate prompts via Gemini
+            // Get custom instructions from textarea
+            genState.customPrompt = genElements.customPrompt.value.trim();
+
             let geminiPrompts = [];
             try {
                 const promptResponse = await fetch('/api/prompts/campaign', {
@@ -4428,7 +4739,8 @@ POSE: [specific pose suggestion]`;
                         numPrompts: genState.count,
                         environments: genState.envTypes,
                         lighting: genState.lighting,
-                        includeModel: genState.content === 'male'
+                        includeModel: genState.content === 'male',
+                        customInstructions: genState.customPrompt || null
                     })
                 });
 
@@ -4508,7 +4820,7 @@ POSE: [specific pose suggestion]`;
                             prompt: task.prompt,
                             filename: filename
                         });
-                        addGenResultCard(result.images[0].url, task.envType, task.light, task.model, task.prompt, filename);
+                        addGenResultCard(result.images[0].url, task.envType, task.light, task.model, task.prompt, filename, batchId);
                     }
                 } catch (err) {
                     console.error(`Error generating ${task.envType}/${task.light}:`, err);
@@ -4553,14 +4865,14 @@ POSE: [specific pose suggestion]`;
                 const pose = GEN_RONDORFF_POSES[Math.floor(Math.random() * GEN_RONDORFF_POSES.length)];
                 prompt = `${campaignPrefix}. Athletic male model in swimwear, suntanned healthy skin, ${pose}, ${envDesc}${cleanSuffix}, ${lightDesc}, ${styleSuffix}`;
             } else {
-                // Environment only
-                prompt = `${envDesc}${cleanSuffix}, ${lightDesc}, ${styleSuffix}`;
+                // Environment only - explicitly exclude people
+                prompt = `Empty scenic landscape, no people, no humans, no figures. ${envDesc}${cleanSuffix}, ${lightDesc}, ${styleElement}, professional landscape photography, natural light only`;
             }
 
             return prompt;
         }
 
-        function addGenResultCard(url, envType, light, model, prompt, filename) {
+        function addGenResultCard(url, envType, light, model, prompt, filename, batchId) {
             const card = document.createElement('div');
             card.className = 'gen-result-card';
 
@@ -4640,7 +4952,14 @@ POSE: [specific pose suggestion]`;
                 lightbox.setResults(lightboxItems);
                 lightbox.open(cardIndex);
             });
-            genElements.resultsGrid.appendChild(card);
+
+            // Add to batch-specific grid if provided, otherwise main grid
+            const targetGrid = batchId ? document.getElementById(`${batchId}-grid`) : genElements.resultsGrid;
+            if (targetGrid) {
+                targetGrid.appendChild(card);
+            } else {
+                genElements.resultsGrid.appendChild(card);
+            }
         }
 
         // Initialize calc
@@ -4693,6 +5012,30 @@ POSE: [specific pose suggestion]`;
             '90s': {
                 prefix: 'Shot on vintage 8mm film camera, analog warmth, 90s VHS camcorder aesthetic, sun-drenched nostalgic grain texture.',
                 description: '90s'
+            },
+            follow: {
+                prefix: 'Camera tracking shot following model movement, smooth lateral or forward track maintaining subject in frame, cinematic follow.',
+                description: 'Follow'
+            },
+            push: {
+                prefix: 'Dolly push forward toward subject, camera steadily advancing, building intensity and presence, smooth approach.',
+                description: 'Push'
+            },
+            pull: {
+                prefix: 'Camera pulling back slowly, revealing more of the environment, establishing context, smooth retreat.',
+                description: 'Pull'
+            },
+            arc: {
+                prefix: 'Camera arcing around subject in smooth circular path, dramatic three-dimensional perspective shift, orbital motion.',
+                description: 'Arc'
+            },
+            rise: {
+                prefix: 'Camera rising upward while maintaining subject in frame, crane-like movement, ascending reveal.',
+                description: 'Rise'
+            },
+            drift: {
+                prefix: 'Camera slowly drifting sideways with subtle parallax, dreamlike floating movement, gentle lateral slide.',
+                description: 'Drift'
             }
         };
 
@@ -4701,9 +5044,16 @@ POSE: [specific pose suggestion]`;
             const modePrompt = MOVEMENT_PROMPTS[mode];
             if (!modePrompt) return img.ambientDesc || '';
 
-            // Combine ambient + movement if addMovement is enabled
+            // Combine ambient + movement based on which movement mode is enabled
             let motionPart = img.ambientDesc || '';
-            if (img.addMovement && img.movementDesc) {
+            if (img.addDynamicMovement && img.dynamicMovementDesc) {
+                // +++ Move - use dynamic cinematic movement (running, spinning, jumping)
+                motionPart = `${img.ambientDesc} ${img.dynamicMovementDesc}`;
+            } else if (img.addActiveMovement && img.activeMovementDesc) {
+                // ++ Move - use active editorial movement (walking, turning, etc.)
+                motionPart = `${img.ambientDesc} ${img.activeMovementDesc}`;
+            } else if (img.addMovement && img.movementDesc) {
+                // + Move - use subtle editorial movement (head turn, weight shift)
                 motionPart = `${img.ambientDesc} ${img.movementDesc}`;
             }
 
@@ -4748,7 +5098,7 @@ POSE: [specific pose suggestion]`;
         }
 
         function setupVideoEventListeners() {
-            const availableModes = ['static', 'dynamic', 'handheld', '90s'];
+            const availableModes = ['static', 'dynamic', 'handheld', '90s', 'follow', 'push', 'pull', 'arc', 'rise', 'drift'];
 
             // Global movement mode buttons
             videoElements.movementModeButtons.forEach(btn => {
@@ -4922,9 +5272,17 @@ POSE: [specific pose suggestion]`;
                                     <button class="mode-btn ${currentMode === 'dynamic' ? 'active' : ''}" data-mode="dynamic" data-index="${i}">Dynamic</button>
                                     <button class="mode-btn ${currentMode === 'handheld' ? 'active' : ''}" data-mode="handheld" data-index="${i}">Handheld</button>
                                     <button class="mode-btn ${currentMode === '90s' ? 'active' : ''}" data-mode="90s" data-index="${i}">90s</button>
+                                    <button class="mode-btn ${currentMode === 'follow' ? 'active' : ''}" data-mode="follow" data-index="${i}">Follow</button>
+                                    <button class="mode-btn ${currentMode === 'push' ? 'active' : ''}" data-mode="push" data-index="${i}">Push</button>
+                                    <button class="mode-btn ${currentMode === 'pull' ? 'active' : ''}" data-mode="pull" data-index="${i}">Pull</button>
+                                    <button class="mode-btn ${currentMode === 'arc' ? 'active' : ''}" data-mode="arc" data-index="${i}">Arc</button>
+                                    <button class="mode-btn ${currentMode === 'rise' ? 'active' : ''}" data-mode="rise" data-index="${i}">Rise</button>
+                                    <button class="mode-btn ${currentMode === 'drift' ? 'active' : ''}" data-mode="drift" data-index="${i}">Drift</button>
                                 </div>
                                 <div class="movement-toggle">
-                                    <button class="movement-btn ${hasMovement ? 'active' : ''}" data-index="${i}">+ Movement</button>
+                                    <button class="movement-btn ${hasMovement ? 'active' : ''}" data-index="${i}">+ Move</button>
+                                    <button class="movement-btn-plus ${image.addActiveMovement ? 'active' : ''}" data-index="${i}">++ Move</button>
+                                    <button class="movement-btn-dynamic ${image.addDynamicMovement ? 'active' : ''}" data-index="${i}">+++ Move</button>
                                 </div>
                             </div>
                         </div>
@@ -4997,11 +5355,48 @@ POSE: [specific pose suggestion]`;
                     });
                 });
 
-                // Movement toggle button
+                // Movement toggle button (+ Move - subtle editorial)
                 slot.querySelector('.movement-btn')?.addEventListener('click', (e) => {
                     const idx = parseInt(e.target.dataset.index);
                     if (videoState.images[idx]) {
                         videoState.images[idx].addMovement = !videoState.images[idx].addMovement;
+                        // If enabling + Move, disable ++ Move and +++ Move
+                        if (videoState.images[idx].addMovement) {
+                            videoState.images[idx].addActiveMovement = false;
+                            videoState.images[idx].addDynamicMovement = false;
+                        }
+                        videoState.images[idx].customPrompt = null; // Clear custom prompt so it rebuilds
+                        renderVideoUploadGrid();
+                        updateVideoUI();
+                    }
+                });
+
+                // Active movement toggle button (++ Move - active editorial)
+                slot.querySelector('.movement-btn-plus')?.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    if (videoState.images[idx]) {
+                        videoState.images[idx].addActiveMovement = !videoState.images[idx].addActiveMovement;
+                        // If enabling ++ Move, disable + Move and +++ Move
+                        if (videoState.images[idx].addActiveMovement) {
+                            videoState.images[idx].addMovement = false;
+                            videoState.images[idx].addDynamicMovement = false;
+                        }
+                        videoState.images[idx].customPrompt = null; // Clear custom prompt so it rebuilds
+                        renderVideoUploadGrid();
+                        updateVideoUI();
+                    }
+                });
+
+                // Dynamic movement toggle button (+++ Move - dynamic cinematic)
+                slot.querySelector('.movement-btn-dynamic')?.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    if (videoState.images[idx]) {
+                        videoState.images[idx].addDynamicMovement = !videoState.images[idx].addDynamicMovement;
+                        // If enabling +++ Move, disable + Move and ++ Move
+                        if (videoState.images[idx].addDynamicMovement) {
+                            videoState.images[idx].addMovement = false;
+                            videoState.images[idx].addActiveMovement = false;
+                        }
                         videoState.images[idx].customPrompt = null; // Clear custom prompt so it rebuilds
                         renderVideoUploadGrid();
                         updateVideoUI();
@@ -5141,19 +5536,32 @@ POSE: [specific pose suggestion]`;
                         img.uploaded = result.url;
                     }
 
-                    // Build analysis prompt - get both ambient motion and character movement
+                    // Build analysis prompt - get ambient motion, subtle movement, active movement, and dynamic movement
                     const analysisPrompt = `Analyze this fashion photography image from a Ron Dorff "Fearless Summer" campaign.
 
 This is a premium men's swimwear/lifestyle brand - think Mediterranean summer, athletic men, minimal aesthetic, sun-drenched coastal settings.
 
-Provide TWO motion descriptions in this exact format:
+Provide FOUR motion descriptions in this exact format:
 
 AMBIENT: [Describe subtle environmental motion - wind in hair, fabric shifting, water ripples, leaves moving, light playing on skin. Keep subject mostly still. 20-30 words max.]
 
-MOVEMENT: [Describe a natural character action that fits this specific scene and pose. Consider: slowly walking forward/backward, turning head to look at something, shifting weight between feet, stepping toward or away from camera, reaching to adjust hair or waistband, standing up or sitting down if seated, walking along a path or shoreline. Make it specific to what makes sense for this scene. 20-30 words max.]
+MOVEMENT: [Describe a natural subtle character action - slowly turning head, shifting weight, slight gesture. Editorial and minimal. 15-25 words max.]
 
-Do NOT mention "breathing" - it looks unnatural when taken literally. Focus on subtle, editorial movements that feel premium.
-Return ONLY the two lines in the format above, nothing else.`;
+ACTIVE_MOVEMENT: [Describe walking/turning action - walks confidently toward camera, turns 180 degrees, steps forward and pauses, rises from position. Continuous 5-second action. 20-30 words max.]
+
+DYNAMIC_MOVEMENT: [Describe high-energy cinematic action. Choose ONE environment-agnostic movement:
+- Spins 360 degrees in place showing outfit from all angles
+- Breaks into a light jog/run toward camera
+- Takes several quick strides forward, stops suddenly, strikes a pose
+- Walks backward then spins around and continues forward
+- Does a small jump in place, lands, continues walking
+- Starts from stillness, builds momentum, breaks into a run
+- Lunges forward dramatically, transitions into walking
+- Raises arms overhead in stretch, brings down while stepping forward
+Pick one that fits the current pose. Make it athletic and cinematic. 20-30 words max.]
+
+Do NOT mention "breathing" - it looks unnatural. Focus on premium editorial movements.
+Return ONLY the four lines in the format above, nothing else.`;
 
                     const response = await fetch('/api/analyze-gemini', {
                         method: 'POST',
@@ -5168,29 +5576,41 @@ Return ONLY the two lines in the format above, nothing else.`;
                         const data = await response.json();
                         const content = data.content || '';
 
-                        // Parse AMBIENT and MOVEMENT from response
+                        // Parse AMBIENT, MOVEMENT, ACTIVE_MOVEMENT, and DYNAMIC_MOVEMENT from response
                         const ambientMatch = content.match(/AMBIENT:\s*(.+?)(?=\n|MOVEMENT:|$)/i);
-                        const movementMatch = content.match(/MOVEMENT:\s*(.+?)$/im);
+                        const movementMatch = content.match(/MOVEMENT:\s*(.+?)(?=\n|ACTIVE_MOVEMENT:|$)/im);
+                        const activeMovementMatch = content.match(/ACTIVE_MOVEMENT:\s*(.+?)(?=\n|DYNAMIC_MOVEMENT:|$)/im);
+                        const dynamicMovementMatch = content.match(/DYNAMIC_MOVEMENT:\s*(.+?)$/im);
 
                         let ambientDesc = ambientMatch ? ambientMatch[1].trim() : 'Wind gently moves through the scene, subtle light plays across the skin.';
                         let movementDesc = movementMatch ? movementMatch[1].trim() : 'Slowly turns head to gaze toward the horizon.';
+                        let activeMovementDesc = activeMovementMatch ? activeMovementMatch[1].trim() : 'Walks confidently toward camera, natural stride, steady approach.';
+                        let dynamicMovementDesc = dynamicMovementMatch ? dynamicMovementMatch[1].trim() : 'Spins 360 degrees in place, showing outfit from all angles, confident smooth rotation.';
 
                         // Clean up brackets if present
                         ambientDesc = ambientDesc.replace(/^\[|\]$/g, '').trim();
                         movementDesc = movementDesc.replace(/^\[|\]$/g, '').trim();
+                        activeMovementDesc = activeMovementDesc.replace(/^\[|\]$/g, '').trim();
+                        dynamicMovementDesc = dynamicMovementDesc.replace(/^\[|\]$/g, '').trim();
 
-                        // Store both descriptions
+                        // Store all descriptions
                         img.ambientDesc = ambientDesc;
                         img.movementDesc = movementDesc;
+                        img.activeMovementDesc = activeMovementDesc;
+                        img.dynamicMovementDesc = dynamicMovementDesc;
                         img.customPrompt = null; // Clear any custom edit
 
                         console.log(`[Analyze ${idx}] Ambient: ${ambientDesc}`);
                         console.log(`[Analyze ${idx}] Movement: ${movementDesc}`);
+                        console.log(`[Analyze ${idx}] Active Movement: ${activeMovementDesc}`);
+                        console.log(`[Analyze ${idx}] Dynamic Movement: ${dynamicMovementDesc}`);
                     }
                 } catch (err) {
                     console.error(`Error analyzing image ${idx}:`, err);
                     img.ambientDesc = 'Wind moves gently through the scene, light plays across the skin.';
                     img.movementDesc = 'Slowly turns head to look toward the horizon.';
+                    img.activeMovementDesc = 'Walks confidently toward camera, natural stride, steady approach.';
+                    img.dynamicMovementDesc = 'Spins 360 degrees in place, showing outfit from all angles, confident smooth rotation.';
                 }
 
                 completed++;
@@ -5260,7 +5680,7 @@ Return ONLY the two lines in the format above, nothing else.`;
                     // Get the actual mode (resolve 'random')
                     let actualMode = mode;
                     if (mode === 'random') {
-                        const randomModes = ['static', 'dynamic', 'handheld', '90s'];
+                        const randomModes = ['static', 'dynamic', 'handheld', '90s', 'follow', 'push', 'pull', 'arc', 'rise', 'drift'];
                         actualMode = randomModes[Math.floor(Math.random() * randomModes.length)];
                     }
 

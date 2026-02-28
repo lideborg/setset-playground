@@ -1,0 +1,3518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ron Dorff E-Commerce - Fearless Summer SS26</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😎</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <script src="/shared/js/loader.js"></script>
+    <script src="/shared/js/lightbox.js"></script>
+    <style>
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: var(--space-md);
+            border-bottom: 1px solid var(--jet);
+        }
+
+        .tab {
+            padding: 8px 16px;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--slate);
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .tab:hover {
+            color: var(--jet);
+        }
+
+        .tab.active {
+            color: var(--jet);
+            border-bottom-color: var(--jet);
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Header */
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .header-row h1 {
+            font-size: var(--text-lg);
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--off-white);
+            border: 1px solid var(--jet);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-2xs);
+        }
+
+        .stat-value {
+            font-size: var(--text-lg);
+            font-weight: 600;
+        }
+
+        .stat-label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        /* Category section - Overview */
+        .category-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .category-header {
+            font-size: var(--text-2xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-2xs);
+            border-bottom: 1px solid var(--jet);
+        }
+
+        /* Product card - Overview */
+        .product-card {
+            background: var(--white);
+            border: 1px solid var(--jet);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-xs);
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: var(--text-sm);
+            margin-bottom: 2px;
+        }
+
+        .product-sku {
+            font-size: var(--text-2xs);
+            font-family: monospace;
+            color: var(--slate);
+        }
+
+        .product-meta {
+            text-align: right;
+        }
+
+        .product-color {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .product-material {
+            font-size: var(--text-2xs);
+            color: var(--ash-grey);
+        }
+
+        /* Image grid - Overview */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 4px;
+            margin-bottom: var(--space-xs);
+        }
+
+        .image-slot {
+            position: relative;
+        }
+
+        .image-thumb {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border: 1px solid var(--jet);
+            cursor: pointer;
+            background: var(--white);
+        }
+
+        .image-thumb:hover {
+            opacity: 0.8;
+        }
+
+        .image-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: var(--ash-grey);
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        /* Requirements tags */
+        .requirements-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .req-tag {
+            font-size: 9px;
+            padding: 2px 6px;
+            background: var(--white);
+            color: var(--slate);
+            border: 1px solid var(--jet);
+        }
+
+        .req-tag.has {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #065f46;
+        }
+
+        .req-tag.needed {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #92400e;
+        }
+
+        .req-tag.video {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #1e40af;
+        }
+
+        /* ========== E-COMMERCE TAB STYLES ========== */
+
+        /* Settings compact - matching batch-remix-gemini */
+        .settings-compact {
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2xs);
+        }
+
+        .setting-item label {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .btn-group-compact {
+            display: flex;
+            gap: 2px;
+        }
+
+        .btn-group-compact button {
+            padding: 4px 8px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            color: var(--slate);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-group-compact button:first-child {
+            border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+        }
+
+        .btn-group-compact button:last-child {
+            border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+        }
+
+        .btn-group-compact button.active {
+            background: var(--jet);
+            border-color: var(--jet);
+            color: var(--white);
+        }
+
+        /* Product selector */
+        .product-selector {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 4px;
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--jet);
+            margin-bottom: var(--space-sm);
+        }
+
+        .product-thumb {
+            cursor: pointer;
+            border: 1px solid var(--gainsboro);
+            overflow: hidden;
+        }
+
+        .product-thumb:hover {
+            border-color: var(--jet);
+        }
+
+        .product-thumb.selected {
+            border: 1px solid var(--jet);
+            outline: 1px solid var(--jet);
+            outline-offset: -2px;
+        }
+
+        .product-thumb img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .product-thumb-label {
+            font-size: 7px;
+            text-align: center;
+            padding: 2px;
+            background: var(--white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Selected product header */
+        .selected-product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm);
+            background: var(--jet);
+            color: var(--white);
+            margin-bottom: var(--space-sm);
+        }
+
+        .selected-product-title {
+            font-weight: 600;
+            font-size: var(--text-sm);
+        }
+
+        .selected-product-sku {
+            font-size: var(--text-2xs);
+            opacity: 0.7;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .header-btn {
+            padding: 4px 10px;
+            font-size: var(--text-2xs);
+            background: var(--white);
+            color: var(--jet);
+            border: none;
+            cursor: pointer;
+        }
+
+        .header-btn:disabled {
+            opacity: 0.5;
+        }
+
+        .header-btn.analyzing {
+            background: var(--off-white);
+        }
+
+        /* Image selection rows - for input/guide selection */
+        .image-selection-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .image-selection-label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+        }
+
+        .image-selection-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: var(--space-xs);
+        }
+
+        .selection-image {
+            position: relative;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition-fast);
+            opacity: 0.7;
+        }
+
+        .selection-image:hover {
+            opacity: 0.9;
+        }
+
+        .selection-image.selected {
+            opacity: 1;
+            border-color: var(--jet);
+            box-shadow: 0 0 0 2px var(--jet);
+        }
+
+        .selection-image img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+        }
+
+        .selection-image-label {
+            font-size: var(--text-2xs);
+            text-align: center;
+            padding: 2px;
+            background: var(--white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .generate-section {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center;
+            padding: var(--space-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            margin-top: var(--space-md);
+        }
+
+        .generate-section .btn--primary {
+            flex-shrink: 0;
+        }
+
+        .selection-summary {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        /* Category rows - 2 per row */
+        .category-rows {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-sm);
+        }
+
+        @media (max-width: 900px) {
+            .category-rows {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .category-row {
+            background: var(--white);
+            border: 1px solid var(--jet);
+            padding: var(--space-sm);
+        }
+
+        .category-row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-xs);
+            padding-bottom: var(--space-2xs);
+            border-bottom: 1px solid var(--gainsboro);
+        }
+
+        .category-row-title {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .category-row-actions {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .select-btn {
+            padding: 2px 6px;
+            font-size: 9px;
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            cursor: pointer;
+        }
+
+        .select-btn:hover {
+            border-color: var(--jet);
+        }
+
+        .category-row-status {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+        }
+
+        /* Guide and inputs section */
+        .inputs-guides-section {
+            margin-bottom: var(--space-xs);
+        }
+
+        .section-label {
+            font-size: 9px;
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        /* Input images - 9 per row */
+        .images-row {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 6px;
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Guide images - larger, 6 per row */
+        .guides-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-bottom: var(--space-sm);
+        }
+
+        .image-option {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            cursor: pointer;
+            overflow: hidden;
+            opacity: 0.5;
+            transition: all var(--transition-fast);
+        }
+
+        .image-option:hover {
+            opacity: 0.8;
+            border-color: var(--jet);
+        }
+
+        .image-option.selected {
+            opacity: 1;
+            border-color: var(--jet);
+        }
+
+        .image-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-option .check {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: var(--jet);
+            color: var(--white);
+            font-size: 9px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-option.selected .check {
+            display: flex;
+        }
+
+        /* Guide images need background to be visible */
+        .guide-image-option {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+
+        .guide-image-option.selected {
+            background: white;
+            border-color: var(--jet);
+        }
+
+        /* Legacy guide slot styles */
+        .guide-slot {
+            flex-shrink: 0;
+            width: 60px;
+        }
+
+        .guide-slot-label {
+            font-size: 8px;
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .guide-slot-box {
+            width: 60px;
+            aspect-ratio: 3/4;
+            border: 1px dashed var(--gainsboro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: var(--ash-grey);
+            background: var(--off-white);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .guide-slot-box:hover {
+            border-color: var(--jet);
+        }
+
+        .guide-slot-box.filled {
+            border-style: solid;
+            border-color: var(--jet);
+        }
+
+        .guide-slot-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Input images */
+        .input-images {
+            flex: 1;
+        }
+
+        .input-images-label {
+            font-size: 8px;
+            color: var(--ash-grey);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .input-images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 3px;
+        }
+
+        .input-image-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            opacity: 0.4;
+        }
+
+        .input-image-slot:hover {
+            opacity: 0.7;
+        }
+
+        .input-image-slot.selected {
+            border: 1px solid var(--jet);
+            outline: 1px solid var(--jet);
+            outline-offset: -2px;
+            opacity: 1;
+        }
+
+        .input-image-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .input-image-slot .check {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            width: 12px;
+            height: 12px;
+            background: var(--jet);
+            color: var(--white);
+            font-size: 8px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-image-slot.selected .check {
+            display: flex;
+        }
+
+        .input-image-slot .model-badge {
+            position: absolute;
+            bottom: 1px;
+            left: 1px;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            color: var(--white);
+            font-size: 7px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Generate button for category */
+        .category-generate-btn {
+            width: 100%;
+            padding: 6px;
+            font-size: var(--text-2xs);
+            font-weight: 500;
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+        }
+
+        .category-generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .category-generate-btn:hover:not(:disabled) {
+            background: var(--slate);
+        }
+
+        /* Results area */
+        .category-results {
+            margin-top: var(--space-xs);
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 4px;
+        }
+
+        .category-result {
+            aspect-ratio: 3/4;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--jet);
+        }
+
+        .category-result img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Lightbox */
+        /* Lightbox styles handled by shared/js/lightbox.js */
+
+        /* No product selected state */
+        .no-product-selected {
+            text-align: center;
+            padding: var(--space-xl);
+            color: var(--slate);
+            border: 1px dashed var(--gainsboro);
+        }
+
+        /* Analysis status */
+        .analysis-status {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            padding: 4px 8px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .analysis-status.complete {
+            background: #d1fae5;
+            border-color: #065f46;
+            color: #065f46;
+        }
+
+        /* Canny Tab Styles */
+        .canny-section {
+            padding: var(--space-sm) 0;
+        }
+
+        .canny-header {
+            margin-bottom: var(--space-md);
+        }
+
+        .canny-header h3 {
+            font-size: var(--text-md);
+            margin: 0 0 var(--space-2xs);
+        }
+
+        .canny-header p {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin: 0;
+        }
+
+        .canny-upload-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-xs);
+            margin-bottom: var(--space-md);
+            min-height: 200px;
+            border: 1px dashed var(--gainsboro);
+            padding: var(--space-sm);
+        }
+
+        .canny-upload-grid.drag-over {
+            border-color: var(--jet);
+            background: var(--off-white);
+        }
+
+        .canny-slot {
+            aspect-ratio: 3/4;
+            border: 1px solid var(--gainsboro);
+            background: var(--white);
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .canny-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .canny-slot.filled {
+            border-color: var(--jet);
+        }
+
+        .canny-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .canny-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: var(--jet);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .canny-slot.filled:hover .remove-btn {
+            opacity: 1;
+        }
+
+        .canny-slot .slot-label {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            right: 4px;
+            font-size: var(--text-2xs);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 4px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .canny-slot.filled:not(.selected) {
+            opacity: 0.4;
+        }
+
+        .canny-slot.filled:not(.selected) img {
+            filter: grayscale(100%);
+        }
+
+        .canny-slot.selected {
+            border-color: var(--jet);
+            box-shadow: inset 0 0 0 2px var(--jet);
+        }
+
+        .canny-slot.processing::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .canny-slot.processing::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .canny-actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .canny-results {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .canny-result {
+            border: 1px solid var(--jet);
+            background: white;
+        }
+
+        .canny-result img {
+            width: 100%;
+            display: block;
+        }
+
+        .canny-result-info {
+            padding: var(--space-xs);
+            font-size: var(--text-2xs);
+            color: var(--slate);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .canny-result-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .canny-result-actions button {
+            padding: 2px 6px;
+            font-size: var(--text-2xs);
+        }
+
+        /* Inline Loader */
+        .inline-loader {
+            display: none;
+            text-align: center;
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .inline-loader.visible {
+            display: block;
+        }
+
+        .loader-message {
+            font-size: var(--text-md);
+            color: #3b82f6;
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+            transition: opacity 0.25s ease;
+        }
+
+        .loader-message.fade-out {
+            opacity: 0;
+        }
+
+        .loader-message.fade-in {
+            opacity: 1;
+        }
+
+        .loader-progress {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        /* Global Results Section */
+        .global-results-section {
+            margin-top: var(--space-lg);
+            padding-top: var(--space-md);
+            border-top: 2px solid var(--jet);
+            display: none;
+        }
+
+        .global-results-section.has-results {
+            display: block;
+        }
+
+        .global-results-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+
+        .global-results-title {
+            font-size: var(--text-md);
+            font-weight: 600;
+        }
+
+        .global-results-count {
+            font-size: var(--text-sm);
+            color: var(--slate);
+        }
+
+        .global-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .global-result-item {
+            border: 1px solid var(--jet);
+            background: white;
+            cursor: pointer;
+        }
+
+        .global-result-item img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+        }
+
+        .global-result-info {
+            padding: 6px 8px;
+            font-size: var(--text-2xs);
+            border-top: 1px solid var(--gainsboro);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .global-result-label {
+            font-weight: 500;
+            color: var(--jet);
+        }
+
+        .global-result-meta {
+            color: var(--slate);
+        }
+
+        .global-result-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .global-result-actions button {
+            padding: 2px 6px;
+            font-size: 9px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <div>
+                <h1>Ron Dorff E-Commerce</h1>
+                <div class="header-subtitle">Fearless Summer SS26</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="ecommerce">E-Commerce</button>
+            <button class="tab" data-tab="canny">Canny</button>
+            <button class="tab" data-tab="overview">Overview</button>
+        </div>
+
+        <!-- E-Commerce Tab -->
+        <div class="tab-panel active" id="tab-ecommerce">
+            <!-- Product Selector -->
+            <div class="product-selector" id="product-selector"></div>
+
+            <!-- Settings Bar - matching batch-remix-gemini -->
+            <div class="settings-compact">
+                <div class="setting-item">
+                    <label>Provider:</label>
+                    <div class="btn-group-compact" id="provider-buttons">
+                        <button class="active" data-value="gemini">Gemini</button>
+                        <button data-value="fal">FAL</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Ratio:</label>
+                    <div class="btn-group-compact" id="aspect-buttons">
+                        <button data-value="9:16">9:16</button>
+                        <button data-value="2:3">2:3</button>
+                        <button class="active" data-value="3:4">3:4</button>
+                        <button data-value="4:5">4:5</button>
+                        <button data-value="1:1">1:1</button>
+                        <button data-value="4:3">4:3</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Res:</label>
+                    <div class="btn-group-compact" id="resolution-buttons">
+                        <button data-value="1K">1K</button>
+                        <button class="active" data-value="2K">2K</button>
+                        <button data-value="4K">4K</button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Seeds:</label>
+                    <div class="btn-group-compact" id="seeds-buttons">
+                        <button class="active" data-value="1">1</button>
+                        <button data-value="2">2</button>
+                        <button data-value="3">3</button>
+                        <button data-value="4">4</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Product Area -->
+            <div id="selected-product-area">
+                <div class="no-product-selected">
+                    Select a product above to start generating
+                </div>
+            </div>
+        </div>
+
+        <!-- Canny Tab -->
+        <div class="tab-panel" id="tab-canny">
+            <div class="canny-section">
+                <div class="canny-header">
+                    <h3>Canny Guide Generator</h3>
+                    <p>Upload product images to generate black & white line art guides for composition</p>
+                </div>
+
+                <!-- Settings Bar -->
+                <div class="settings-compact">
+                    <div class="setting-item">
+                        <label>Ratio:</label>
+                        <div class="btn-group-compact" id="canny-aspect-buttons">
+                            <button data-value="9:16">9:16</button>
+                            <button data-value="2:3">2:3</button>
+                            <button class="active" data-value="3:4">3:4</button>
+                            <button data-value="4:5">4:5</button>
+                            <button data-value="1:1">1:1</button>
+                            <button data-value="4:3">4:3</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>Res:</label>
+                        <div class="btn-group-compact" id="canny-resolution-buttons">
+                            <button data-value="1K">1K</button>
+                            <button class="active" data-value="2K">2K</button>
+                            <button data-value="4K">4K</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>Seeds:</label>
+                        <div class="btn-group-compact" id="canny-seeds-buttons">
+                            <button class="active" data-value="1">1</button>
+                            <button data-value="2">2</button>
+                            <button data-value="3">3</button>
+                            <button data-value="4">4</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="canny-upload-area">
+                    <div class="canny-upload-grid" id="canny-upload-grid"></div>
+                    <input type="file" id="canny-file-input" multiple accept="image/*" style="display: none;">
+                </div>
+                <div class="canny-actions">
+                    <button class="btn btn--primary" id="canny-generate-btn" onclick="generateCanny()" disabled>Generate Canny Guides</button>
+                    <button class="btn" onclick="clearCannyGrid()">Clear All</button>
+                </div>
+                <div class="inline-loader" id="canny-loader">
+                    <div class="loader-message" id="canny-loader-message">Setting up the Studio...</div>
+                    <div class="loader-progress" id="canny-loader-progress">Preparing...</div>
+                </div>
+                <div class="canny-results" id="canny-results"></div>
+            </div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div class="tab-panel" id="tab-overview">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-value">13</span>
+                    <span class="stat-label">Products</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">73</span>
+                    <span class="stat-label">Images</span>
+                </div>
+            </div>
+            <div id="products-overview"></div>
+        </div>
+
+        <!-- Global Results Section (persists across tabs) -->
+        <div class="global-results-section" id="global-results-section">
+            <div class="global-results-header">
+                <span class="global-results-title">Results</span>
+                <span class="global-results-count" id="global-results-count">0 images</span>
+                <button class="btn" onclick="clearGlobalResults()" style="margin-left: auto; padding: 4px 8px; font-size: 10px;">Clear All</button>
+            </div>
+            <div class="inline-loader" id="global-loader">
+                <div class="loader-message" id="global-loader-message">Generating...</div>
+                <div class="loader-progress" id="global-loader-progress">Preparing...</div>
+            </div>
+            <div class="global-results-grid" id="global-results-grid"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox is created by shared/js/lightbox.js -->
+
+    <script>
+        // ========== DATA ==========
+        const PRODUCTS = [
+            { category: 'Shirts', sku: '21TS1505.RW', name: 'Organic Cotton Crochet Knit Shirt', color: 'Natural', material: '100% organic cotton', shotTypes: ['flat_lay', 'eyelet', 'collar', 'fabrics', 'sleeves'], video: true },
+            { category: 'Tank Tops', sku: '21TK189.RW', name: 'Organic Cotton Crochet Knit Tank Top', color: 'Natural', material: '100% organic cotton', shotTypes: ['flat_lay', 'eyelet', 'collar', 'fabrics'], video: true },
+            { category: 'T-Shirts', sku: '21TS1115DD.SO', name: 'Crew Neck T-Shirt Eyelet Edition', color: 'Sunset Orange', material: '100% gassed cotton', shotTypes: ['flat_lay', 'eyelet', 'collar', 'sleeves'], video: false },
+            { category: 'Sweatshirts', sku: '21SW2019.SO', name: 'Sleeveless Sweatshirt', color: 'Sunset Orange', material: '100% cotton', shotTypes: ['flat_lay', 'eyelet'], video: false },
+            { category: 'Sweatshirts', sku: '21TS1267.SO', name: 'Sleeveless T-Shirt "Sunset Boy"', color: 'Sunset Orange', material: '100% organic cotton', shotTypes: ['flat_lay', 'print'], video: false },
+            { category: 'Urban Shorts', sku: '21SS20.RW', name: 'Crochet Knit Shorts', color: 'Natural', material: '100% organic cotton', shotTypes: ['flat_lay', 'eyelet', 'belt', 'fabrics', 'back'], video: false },
+            { category: 'Sports Shorts', sku: '21SS21.BE', name: 'Corduroy Tennis Shorts', color: 'Beige', material: '97% cotton, 3% spandex', shotTypes: ['flat_lay', 'eyelet', 'belt', 'fabrics', 'back'], video: true },
+            { category: 'Swim Briefs', sku: '21SR20DD.SO', name: 'Slim Swim Briefs', color: 'Sunset Orange', material: '80% polyamide, 20% elasthanne', shotTypes: ['flat_lay', 'eyelet', 'back'], video: true },
+            { category: 'Swim Briefs', sku: '21SR21B.S', name: 'Swim Briefs w. Waistband', color: 'Sand', material: '80% polyamide, 20% elasthanne', shotTypes: ['flat_lay', 'eyelet', 'belt', 'back'], video: false },
+            { category: 'Swim Briefs', sku: '21UR30.W', name: 'RD Thong Swimwear', color: 'White', material: '80% polyamide, 20% elasthanne', shotTypes: ['flat_lay', 'eyelet', 'belt'], video: true },
+            { category: 'Y-Front Briefs', sku: '21UR42.W', name: 'RD Thong Underwear', color: 'White', material: '95% cotton, 5% elasthanne', shotTypes: ['flat_lay', 'eyelet', 'belt'], video: false },
+            { category: 'Accessories', sku: '21CA653DD.SO', name: 'Coach Cap "Sunset Boy"', color: 'Sunset Orange', material: '100% cotton canvas', shotTypes: ['flat_lay', 'eyelet', 'print'], video: false },
+            { category: 'Accessories', sku: '21BG97.SO', name: 'Tote Bag "Fearless"', color: 'Sunset Orange', material: '100% cotton canvas', shotTypes: ['flat_lay', 'eyelet', 'print'], video: false }
+        ];
+
+        // ========== PRODUCT-SPECIFIC PROMPT OVERRIDES ==========
+        // Structure: SKU -> shot type -> prompt
+        // If a product+shot combo exists here, it overrides the base prompt
+        // Add new overrides as you fine-tune each product
+        const PRODUCT_PROMPT_OVERRIDES = {
+            // ─────────────────────────────────────────────────────────
+            // TANK TOP - Organic Cotton Crochet Knit Tank Top (Natural)
+            // ─────────────────────────────────────────────────────────
+            '21TK189.RW': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Follow the line drawing guide for garment placement. IMPORTANT: Maintain realistic tank top proportions - sleeveless design with natural width-to-height ratio. Do NOT stretch or elongate the garment vertically.
+
+GARMENT DETAILS - MUST BE EXACT:
+- NO BUTTONS: This is a sleeveless tank top with no button placket.
+- EYELETS: Two small BLACK metal eyelets in the lower right area of the tank top (near the hem). The eyelets are BLACK/dark metal, not silver.
+- NECKLINE: Scoop neck or round neckline (not a collar), neatly shaped.
+- Ron Dorff label visible at the inside neckline.
+
+STYLING: Tank top laid perfectly flat with relaxed, natural proportions. Armholes/sleeveless sides shaped naturally. Open-weave crochet knit texture visible throughout.
+
+COLOR: Match the EXACT color from the input image - warm beige/sand tone, NOT bright white or cream. The "Natural" color is a muted, earthy beige with subtle warmth. Preserve the original color temperature.
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. No harsh shadows. Do NOT overexpose or wash out the garment color.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end fashion e-commerce aesthetic. The tank should look natural and relaxed, not stretched.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets are positioned near the lower right hem area
+- Show the crochet knit fabric texture surrounding the eyelets
+
+COMPOSITION: Close-up/macro shot. Garment laid flat. Show fabric texture and eyelet detail clearly. The hem/edge of the tank top should be visible.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'collar': `Detail shot of the neckline on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Scoop neckline or round neckline (NOT a collar - this is a tank top)
+- Ron Dorff label visible at inside neckline
+- Open-weave crochet knit texture
+- Sleeveless construction visible at shoulder area
+
+COMPOSITION: Top-down 45-degree angle showing neckline construction. Tank top partially visible below neckline.
+
+COLOR: Match the warm beige/sand "Natural" color exactly from the input image.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'fabrics': `Macro texture close-up of the fabric on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Open-weave crochet knit pattern - clearly visible texture
+- 100% organic cotton construction
+- Show the distinctive holes/gaps in the crochet weave pattern
+
+COMPOSITION: Extreme close-up showing the crochet weave pattern and material quality. Top-down or 45-degree angle. Fill frame with fabric texture detail.
+
+COLOR: Match the warm beige/sand "Natural" color exactly from the input image. Do NOT wash out to white.
+
+LIGHTING: Professional soft studio lighting with enough contrast to show the depth of the open-weave pattern.
+
+BACKGROUND: Light gray studio surface visible through the gaps in the open weave.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // SHIRT - Organic Cotton Crochet Knit Shirt (Natural)
+            // ─────────────────────────────────────────────────────────
+            '21TS1505.RW': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Follow the line drawing guide for garment placement. IMPORTANT: Maintain realistic shirt proportions - the width-to-height ratio should match a natural short-sleeve button-up shirt. Do NOT stretch or elongate the garment vertically.
+
+GARMENT DETAILS - MUST BE EXACT:
+- BUTTONS: Exactly 5 buttons down the center placket. Count them: 1, 2, 3, 4, 5. No more, no less.
+- EYELETS: Two small BLACK metal eyelets in the lower right area of the shirt (near the hem). The eyelets are BLACK/dark metal, not silver.
+- COLLAR: Camp collar / Cuban collar style, neatly shaped and open.
+- Ron Dorff label visible at the inside neckline.
+
+STYLING: Shirt laid perfectly flat with relaxed, natural proportions. Sleeves spread naturally to the sides. Open-weave crochet knit texture visible throughout.
+
+COLOR: Match the EXACT color from the input image - warm beige/sand tone, NOT bright white or cream. The "Natural" color is a muted, earthy beige with subtle warmth. Preserve the original color temperature.
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. No harsh shadows. Do NOT overexpose or wash out the garment color.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end fashion e-commerce aesthetic. The shirt should look wide and relaxed, not tall and narrow.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets are positioned near the lower right hem area
+- Show the crochet knit fabric texture surrounding the eyelets
+
+COMPOSITION: Close-up/macro shot. Garment laid flat. Show fabric texture and eyelet detail clearly. The hem/edge of the shirt should be visible.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'collar': `Detail shot of the collar/neckline on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Camp collar / Cuban collar style (relaxed, open collar)
+- Ron Dorff label visible at inside neckline
+- Top button visible (first of 5 buttons)
+- Open-weave crochet knit texture
+
+COMPOSITION: Top-down 45-degree angle showing collar construction. Shirt partially visible below collar.
+
+COLOR: Match the warm beige/sand "Natural" color exactly from the input image.
+
+BACKGROUND: Light gray studio surface.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // T-SHIRT - Crew Neck T-Shirt Eyelet Edition (Sunset Orange)
+            // ─────────────────────────────────────────────────────────
+            '21TS1115DD.SO': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Follow the line drawing guide for garment placement. IMPORTANT: Maintain realistic t-shirt proportions - the width-to-height ratio should match a natural crew neck t-shirt with short sleeves. Do NOT stretch or elongate the garment vertically.
+
+GARMENT DETAILS - MUST BE EXACT:
+- EYELETS: Two small BLACK metal eyelets at the hem (lower center area of the shirt). The eyelets are BLACK/dark metal, not silver.
+- COLLAR: Classic crew neck collar, neatly shaped and round.
+- SLEEVES: Short sleeves spread naturally to the sides.
+- Ron Dorff label visible at the inside neckline.
+
+STYLING: T-shirt laid perfectly flat with relaxed, natural proportions. Sleeves spread naturally to the sides. Smooth 100% gassed cotton texture visible throughout.
+
+COLOR: Match the EXACT Sunset Orange color from the input image - vibrant, warm orange. This is a bold, energetic orange that's true to the "Sunset Orange" name. Preserve the vivid saturation and warmth.
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. No harsh shadows. Do NOT overexpose or wash out the vibrant orange color.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end fashion e-commerce aesthetic. The t-shirt should look naturally proportioned and relaxed.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets are positioned at the lower hem area of the t-shirt
+- Show the smooth gassed cotton fabric texture surrounding the eyelets
+- The hem/edge of the shirt should be visible
+
+COMPOSITION: Close-up/macro shot. Garment laid flat. Show fabric texture and eyelet detail clearly.
+
+COLOR: Vibrant Sunset Orange - maintain the bold, warm orange color in the surrounding fabric.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets against the orange fabric.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'collar': `Detail shot of the collar/neckline on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Classic crew neck collar construction
+- Show the Ron Dorff label at the inside neckline
+- Smooth 100% gassed cotton texture visible
+- Clean, neat stitching around the collar band
+
+COMPOSITION: Top-down 45-degree angle showing collar construction. T-shirt partially visible below collar.
+
+COLOR: Match the vibrant Sunset Orange color exactly from the input image.
+
+LIGHTING: Professional soft studio lighting. Even illumination.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'sleeves': `Detail shot of the sleeve on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Short sleeve construction
+- Show the sleeve hem and how it's finished
+- Smooth 100% gassed cotton texture
+- Clean stitching visible at sleeve hem
+
+COMPOSITION: Close-up of one sleeve. Show the natural fold and construction of the short sleeve.
+
+COLOR: Vibrant Sunset Orange - maintain the bold orange color.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show fabric texture and construction details.
+
+BACKGROUND: Light gray studio surface.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // SWEATSHIRT - Sleeveless Sweatshirt (Sunset Orange)
+            // ─────────────────────────────────────────────────────────
+            '21SW2019.SO': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Follow the line drawing guide for garment placement. IMPORTANT: Maintain realistic sleeveless sweatshirt proportions - the width-to-height ratio should match a natural sweatshirt silhouette with no sleeves.
+
+GARMENT DETAILS - MUST BE EXACT:
+- SLEEVELESS: This is a sleeveless sweatshirt with clean-finished armholes (not cut-off, but designed sleeveless). No sleeves visible.
+- EYELETS: Two small BLACK metal eyelets in the lower right area of the garment (near the hem). The eyelets are BLACK/dark metal, not silver.
+- NECKLINE: Classic crew neck/round neckline, ribbed knit neckband.
+- RIBBING: Ribbed hem at bottom waistband in matching Sunset Orange.
+- Ron Dorff label visible at the inside neckline.
+
+STYLING: Sweatshirt laid perfectly flat with relaxed, natural proportions. Sleeveless armholes clearly visible on both sides. Medium-weight cotton sweatshirt fabric texture visible throughout.
+
+COLOR: EXACT Sunset Orange - vibrant, saturated orange tone matching the input image PRECISELY. This is a bold, warm orange (not red-orange, not pale peach). Maintain color accuracy across the entire garment. No color shifts or washing out.
+
+FABRIC TEXTURE: 100% cotton sweatshirt fleece material with subtle terry/looped texture. Show the characteristic sweatshirt fabric weight and appearance.
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. No harsh shadows. Do NOT overexpose or wash out the vibrant Sunset Orange color.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end fashion e-commerce aesthetic. The sweatshirt should look relaxed and natural, with clear sleeveless construction.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets are positioned near the lower right hem area
+- Show the cotton sweatshirt fleece fabric texture surrounding the eyelets
+- Fabric is vibrant Sunset Orange
+
+COMPOSITION: Close-up/macro shot. Garment laid flat. Show fabric texture and eyelet detail clearly. The ribbed hem should be visible near the eyelets.
+
+COLOR: EXACT Sunset Orange - vibrant, saturated orange. No fading or color shifts.
+
+FABRIC TEXTURE: Medium-weight cotton sweatshirt fleece with subtle terry texture.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets against the orange fabric.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'collar': `Detail shot of the neckline on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Crew neck / round neckline with ribbed knit neckband
+- Ron Dorff label visible at inside neckline
+- Sleeveless construction - show the clean armhole finish on one or both sides
+- Medium-weight cotton sweatshirt fabric
+
+COMPOSITION: Top-down 45-degree angle showing neckline construction and sleeveless armholes. Upper portion of sweatshirt visible.
+
+COLOR: EXACT Sunset Orange - vibrant, saturated orange matching the input image precisely.
+
+FABRIC TEXTURE: Cotton sweatshirt fleece material with characteristic weight and texture.
+
+BACKGROUND: Light gray studio surface.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // T-SHIRT - Sleeveless T-Shirt "Sunset Boy" (Sunset Orange)
+            // ─────────────────────────────────────────────────────────
+            '21TS1267.SO': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Follow the line drawing guide for garment placement. IMPORTANT: Maintain realistic sleeveless t-shirt proportions - the width-to-height ratio should match a natural sleeveless/tank top silhouette. Do NOT stretch or elongate the garment vertically.
+
+GARMENT DETAILS - MUST BE EXACT:
+- SLEEVELESS: This is a sleeveless t-shirt/tank top with clean-finished armholes (designed sleeveless, not cut-off). Wide armholes clearly visible on both sides.
+- EYELETS: Two small BLACK metal eyelets at the hem (lower area of the shirt). The eyelets are BLACK/dark metal, not silver.
+- COLLAR: Round neckline, ribbed or bound with clean finish.
+- PRINT/GRAPHIC: "Sunset Boy" print or graphic likely visible on the front (show if present in reference image).
+- Ron Dorff label visible at the inside neckline.
+
+STYLING: T-shirt laid perfectly flat with relaxed, natural proportions. Sleeveless armholes clearly visible on both sides. Smooth 100% organic cotton texture visible throughout.
+
+COLOR: Match the EXACT Sunset Orange color from the input image - vibrant, warm orange. This is a bold, energetic orange that's true to the "Sunset Orange" name. Preserve the vivid saturation and warmth across the entire garment.
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. No harsh shadows. Do NOT overexpose or wash out the vibrant orange color.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end fashion e-commerce aesthetic. The sleeveless t-shirt should look naturally proportioned and relaxed.`,
+
+                'print': `Detail shot of the print/graphic on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Show the "Sunset Boy" print/graphic clearly
+- Capture the print design, typography, and any graphic elements
+- Print should be crisp and well-defined against the Sunset Orange fabric
+- Show how the print integrates with the organic cotton fabric texture
+
+COMPOSITION: Close-up/detail shot of the printed area. Position to show the full graphic or key portion of the "Sunset Boy" design.
+
+COLOR: Vibrant Sunset Orange base fabric with print colors matching the reference image exactly. Maintain color accuracy for both the garment and the print.
+
+FABRIC TEXTURE: Smooth 100% organic cotton surface - show how the print sits on the fabric.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show print detail clearly without glare or reflection that might obscure the graphic.
+
+BACKGROUND: Light gray studio surface. The print should be the focal point.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // SHORTS - Crochet Knit Shorts (Natural)
+            // ─────────────────────────────────────────────────────────
+            '21SS20.RW': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Follow the line drawing guide for garment placement. Maintain natural shorts proportions - relaxed athletic fit.
+
+GARMENT DETAILS - MUST BE EXACT:
+- EYELETS: Two small BLACK metal eyelets in the lower right area (near the hem). The eyelets are BLACK/dark metal, not silver.
+- WAISTBAND: Elastic drawstring waistband with white drawstring visible.
+- POCKETS: Side seam pockets visible.
+- Ron Dorff label visible at the waistband.
+
+STYLING: Shorts laid perfectly flat. Open-weave crochet knit texture visible throughout showing the distinctive knit pattern.
+
+COLOR: Match the EXACT color from the input image - warm beige/sand/natural tone, NOT bright white or cream. The "Natural" color is a muted, earthy beige with subtle warmth. Preserve the original color temperature.
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. No harsh shadows. Do NOT overexpose or wash out the garment color.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end fashion e-commerce aesthetic. Relaxed, comfortable shorts silhouette.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets are positioned near the lower right hem area
+- Show the crochet knit fabric texture surrounding the eyelets
+- Open-weave pattern should be clearly visible
+
+COMPOSITION: Close-up/macro shot. Garment laid flat. Show fabric texture and eyelet detail clearly. The hem/edge of the shorts should be visible.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'belt': `Detail shot of the waistband/drawstring area on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Elastic waistband with white drawstring
+- Ron Dorff label visible on waistband
+- Crochet knit texture visible in fabric
+- Drawstring should be tied in a simple bow/knot
+
+COMPOSITION: Top-down 45-degree angle showing waistband construction. Focus on the drawstring and label detail.
+
+COLOR: Match the warm beige/sand "Natural" color exactly from the input image.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'fabrics': `Macro texture close-up of the open-weave crochet knit fabric on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Open-weave crochet knit pattern - the distinctive loosely knitted texture
+- Show the intricate knit structure and gaps in the weave
+- 100% organic cotton material quality visible
+
+COMPOSITION: Extreme close-up showing the unique crochet knit weave pattern. Top-down 45-degree angle.
+
+COLOR: Warm beige/sand "Natural" tone - muted earthy color.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'back': `Back view flat lay photograph of {{productDesc}}.
+
+CRITICAL DETAILS:
+- Clean back view showing overall shorts construction
+- Crochet knit texture visible throughout
+- Elastic waistband visible at top
+- Pockets visible from back
+
+COMPOSITION: Bird's eye view. Shorts laid perfectly flat showing complete back view.
+
+COLOR: Match the warm beige/sand "Natural" color exactly from the input image.
+
+BACKGROUND: Light warm gray studio surface.
+
+High-end fashion e-commerce aesthetic.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // SHORTS - Corduroy Tennis Shorts (Beige)
+            // ─────────────────────────────────────────────────────────
+            '21SS21.BE': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Follow the line drawing guide for garment placement. Maintain natural tennis shorts proportions - athletic/sporty silhouette.
+
+GARMENT DETAILS - MUST BE EXACT:
+- EYELETS: Two small BLACK metal eyelets in the lower right area (near the hem). The eyelets are BLACK/dark metal, not silver.
+- WAISTBAND: Elastic waistband with drawstring (typically white or matching beige).
+- POCKETS: Side seam pockets typical of tennis/athletic shorts.
+- Ron Dorff label visible at the waistband.
+- TEXTURE: Corduroy fabric with visible wales (ridges) running vertically.
+
+STYLING: Shorts laid perfectly flat. Corduroy texture clearly visible throughout with distinctive ribbed pattern.
+
+COLOR: Match the EXACT beige color from the input image - warm beige tone, consistent and natural.
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. Lighting should highlight the corduroy texture. No harsh shadows.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end fashion e-commerce aesthetic. Athletic, sporty tennis shorts silhouette.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets are positioned near the lower right hem area
+- Show the corduroy fabric texture surrounding the eyelets
+- Vertical corduroy wales (ridges) should be clearly visible
+
+COMPOSITION: Close-up/macro shot. Garment laid flat. Show fabric texture and eyelet detail clearly. The hem/edge of the shorts should be visible.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets and corduroy texture.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'belt': `Detail shot of the waistband/drawstring area on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Elastic waistband with drawstring
+- Ron Dorff label visible on waistband
+- Corduroy texture visible in fabric with vertical wales
+- Drawstring should be tied in a simple bow/knot
+
+COMPOSITION: Top-down 45-degree angle showing waistband construction. Focus on the drawstring and label detail.
+
+COLOR: Match the beige color exactly from the input image.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'fabrics': `Macro texture close-up of the corduroy fabric on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Corduroy texture with vertical wales (ridges) clearly visible
+- Show the distinctive ribbed corduroy pattern
+- 97% cotton, 3% spandex material quality visible
+- Slight texture variation from the wales
+
+COMPOSITION: Extreme close-up showing the corduroy weave pattern and vertical ridges. Top-down 45-degree angle.
+
+COLOR: Beige tone - warm, natural beige color.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'back': `Back view flat lay photograph of {{productDesc}}.
+
+CRITICAL DETAILS:
+- Clean back view showing overall shorts construction
+- Corduroy texture visible throughout with vertical wales
+- Elastic waistband visible at top
+- Back pockets or pocket detail visible (if applicable to design)
+
+COMPOSITION: Bird's eye view. Shorts laid perfectly flat showing complete back view.
+
+COLOR: Match the beige color exactly from the input image.
+
+BACKGROUND: Light warm gray studio surface.
+
+High-end fashion e-commerce aesthetic. Athletic tennis shorts silhouette.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // SWIM - Slim Swim Briefs (Sunset Orange)
+            // ─────────────────────────────────────────────────────────
+            '21SR20DD.SO': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Bird's eye view. Swim briefs laid perfectly flat showing full front view. Slim-fit silhouette clearly visible. Natural swimwear proportions.
+
+GARMENT DETAILS - MUST BE EXACT:
+- EYELETS: Two small BLACK metal eyelets (dark/gunmetal color, NOT silver) positioned at the lower front area
+- STYLE: Slim-fit swim brief with minimal coverage
+- Clean waistband with no external branding
+- Smooth construction, minimal seams
+
+STYLING: Briefs laid completely flat and smooth. Clean, refined presentation showing the slim athletic cut.
+
+COLOR: Match the EXACT "Sunset Orange" color from the input image - vibrant orange with slight warmth. NOT red-orange, NOT pale peach. Preserve the saturated, sun-faded orange tone.
+
+MATERIAL: Smooth swimwear fabric with subtle sheen (80% polyamide, 20% elasthanne). Show the sleek, athletic texture.
+
+LIGHTING: Professional soft studio lighting with even illumination. Highlight the smooth fabric finish.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end swimwear e-commerce aesthetic.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets positioned at lower front area of the swim briefs
+- Show the smooth swimwear fabric texture surrounding the eyelets
+
+COMPOSITION: Close-up/macro shot. Briefs laid flat. Show fabric texture and eyelet detail clearly.
+
+COLOR: Sunset Orange fabric visible in frame - match the exact vibrant orange tone.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets and the smooth fabric sheen.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'back': `Back view flat lay of {{productDesc}}.
+
+COMPOSITION: Bird's eye view showing back of swim briefs. Laid perfectly flat. Slim-fit cut clearly visible from behind.
+
+GARMENT DETAILS:
+- Clean back construction with minimal seams
+- Slim coverage showing athletic cut
+- Smooth waistband visible at top
+
+COLOR: Match the EXACT Sunset Orange color - vibrant, saturated orange tone.
+
+MATERIAL: Smooth swimwear fabric with subtle sheen visible.
+
+STYLING: Briefs laid completely flat showing the slim, athletic silhouette from the back.
+
+LIGHTING: Professional soft studio lighting with even illumination.
+
+BACKGROUND: Light warm gray studio surface.
+
+High-end swimwear e-commerce aesthetic.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // SWIM - Swim Briefs w. Waistband (Sand)
+            // ─────────────────────────────────────────────────────────
+            '21SR21B.S': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Bird's eye view. Swim briefs laid perfectly flat showing full front view. Distinctive waistband clearly visible at top.
+
+GARMENT DETAILS - MUST BE EXACT:
+- WAISTBAND: Distinctive elastic waistband at top (likely with Ron Dorff branding)
+- EYELETS: Two small BLACK metal eyelets (dark/gunmetal color, NOT silver) positioned at the lower front area
+- STYLE: Classic swim brief with waistband construction
+- Clean, athletic cut
+
+STYLING: Briefs laid completely flat and smooth. Waistband positioned naturally at top. Clean presentation showing construction details.
+
+COLOR: Match the EXACT "Sand" color from the input image - warm beige/tan tone, earthy and neutral. NOT gray, NOT cream. Natural sandy beige with warmth.
+
+MATERIAL: Smooth swimwear fabric with subtle sheen (80% polyamide, 20% elasthanne). Show the sleek texture and waistband construction.
+
+LIGHTING: Professional soft studio lighting with even illumination. Highlight the smooth fabric and waistband details.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.
+
+High-end swimwear e-commerce aesthetic.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets positioned at lower front area of the swim briefs
+- Show the smooth swimwear fabric texture surrounding the eyelets
+
+COMPOSITION: Close-up/macro shot. Briefs laid flat. Show fabric texture and eyelet detail clearly.
+
+COLOR: Sand color fabric visible in frame - match the exact warm beige/tan tone.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets and the smooth fabric.
+
+BACKGROUND: Light gray studio surface.`,
+
+                'belt': `Detail shot of the waistband/belt area on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Distinctive elastic waistband construction
+- Ron Dorff branding on waistband (if present)
+- Clean, professional finish
+- Show how waistband sits at top of briefs
+
+COMPOSITION: Top-down 45-degree angle. Focus on waistband construction and attachment to main garment. Briefs partially visible below.
+
+COLOR: Match the exact Sand color - warm beige/tan tone.
+
+MATERIAL: Show the waistband texture and elastic construction clearly.
+
+LIGHTING: Professional soft studio lighting with even illumination.
+
+BACKGROUND: Light gray studio surface.
+
+High-end swimwear detail photography.`,
+
+                'back': `Back view flat lay of {{productDesc}}.
+
+COMPOSITION: Bird's eye view showing back of swim briefs. Laid perfectly flat. Waistband visible at top.
+
+GARMENT DETAILS:
+- Waistband construction visible from back
+- Clean back construction with athletic cut
+- Smooth seam work
+
+COLOR: Match the EXACT Sand color - warm beige/tan, earthy neutral tone.
+
+MATERIAL: Smooth swimwear fabric with subtle sheen visible.
+
+STYLING: Briefs laid completely flat showing construction from the back. Waistband positioned naturally.
+
+LIGHTING: Professional soft studio lighting with even illumination.
+
+BACKGROUND: Light warm gray studio surface.
+
+High-end swimwear e-commerce aesthetic.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // SWIM - RD Thong Swimwear (White)
+            // ─────────────────────────────────────────────────────────
+            '21UR30.W': {
+                'flat_lay': `Professional e-commerce flat lay photograph of {{productDesc}}.
+
+COMPOSITION: Bird's eye view. Thong swimwear laid perfectly flat showing full front view. Distinctive thong cut and waistband clearly visible.
+
+GARMENT DETAILS - MUST BE EXACT:
+- STYLE: Thong swimwear with minimal back coverage
+- WAISTBAND: Ron Dorff branded waistband at top
+- EYELETS: Two small BLACK metal eyelets (dark/gunmetal color, NOT silver) positioned at the lower front area
+- Minimal, athletic thong construction
+- Clean front panel with smooth sides transitioning to thong back
+
+STYLING: Thong laid completely flat showing the distinctive cut. Waistband positioned naturally at top. Front panel smooth and centered.
+
+COLOR: Match the EXACT "White" color from the input image - clean, bright white. NOT cream, NOT off-white, NOT gray. Pure white swimwear fabric.
+
+MATERIAL: Smooth swimwear fabric with subtle sheen (80% polyamide, 20% elasthanne). Show the sleek, minimal construction.
+
+LIGHTING: Professional soft studio lighting with even illumination. Avoid overexposure while maintaining bright white color.
+
+BACKGROUND: Light warm gray studio surface. Clean, seamless backdrop that contrasts with white fabric.
+
+High-end swimwear e-commerce aesthetic. Show the distinctive thong silhouette clearly.`,
+
+                'eyelet': `Macro detail shot of the eyelets on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Two small BLACK metal eyelets (dark/gunmetal color, NOT silver)
+- Eyelets positioned at lower front area of the thong
+- Show the smooth white swimwear fabric texture surrounding the eyelets
+
+COMPOSITION: Close-up/macro shot. Thong laid flat. Show fabric texture and eyelet detail clearly.
+
+COLOR: White fabric visible in frame - clean, bright white tone.
+
+LIGHTING: Professional soft studio lighting. Even illumination to show the black metal finish of the eyelets against the white fabric.
+
+BACKGROUND: Light gray studio surface providing contrast.`,
+
+                'belt': `Detail shot of the waistband area on {{productDesc}}.
+
+CRITICAL DETAILS:
+- Ron Dorff branded waistband
+- Show branding/text on waistband clearly
+- Clean elastic construction
+- Show how waistband attaches to the thong front panel
+
+COMPOSITION: Top-down 45-degree angle. Focus on waistband construction, branding, and attachment. Thong front panel partially visible below.
+
+COLOR: White fabric with branded waistband (waistband may have color/text).
+
+MATERIAL: Show the waistband texture, elastic construction, and branding clearly.
+
+LIGHTING: Professional soft studio lighting with even illumination.
+
+BACKGROUND: Light gray studio surface.
+
+High-end swimwear detail photography. The branded waistband is a key design feature.`
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // UNDERWEAR - RD Thong Underwear (White)
+            // ─────────────────────────────────────────────────────────
+            '21UR42.W': {
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // ACCESSORIES - Coach Cap "Sunset Boy" (Sunset Orange)
+            // ─────────────────────────────────────────────────────────
+            '21CA653DD.SO': {
+            },
+
+            // ─────────────────────────────────────────────────────────
+            // ACCESSORIES - Tote Bag "Fearless" (Sunset Orange)
+            // ─────────────────────────────────────────────────────────
+            '21BG97.SO': {
+            }
+        };
+
+        // Helper to get override prompt if it exists
+        function getPromptOverride(sku, shotType, guideType) {
+            const productOverrides = PRODUCT_PROMPT_OVERRIDES[sku];
+            if (!productOverrides) return null;
+
+            // Check for guide-specific override first (e.g., 'flatlay_canny')
+            if (guideType) {
+                const guideKey = `${shotType}_${guideType}`;
+                if (productOverrides[guideKey]) return productOverrides[guideKey];
+            }
+
+            // Fall back to shot type override
+            return productOverrides[shotType] || null;
+        }
+
+        // Model portraits for face/3-4 shot types
+        const MODEL_PORTRAITS = [
+            { id: 'model-01', thumb: '/assets/brand/rondorff/models/thumbs/model-01.jpg', full: '/assets/brand/rondorff/models/model-01.jpg', name: 'Model 1' },
+            { id: 'model-02', thumb: '/assets/brand/rondorff/models/thumbs/model-02.jpg', full: '/assets/brand/rondorff/models/model-02.jpg', name: 'Model 2' }
+        ];
+
+        // Shot types that need model portraits
+        const SHOT_TYPES_WITH_MODELS = ['face', '3/4'];
+
+        // Canny reference images (input photos used to create guides)
+        const CANNY_INPUT_IMAGES = [
+            { file: 'Setset_Canny_FlatLay_Polo.png', type: 'flatlay', label: 'FlatLay Polo' },
+            { file: 'Setset_Canny_FlatLay_TankTop.png', type: 'flatlay', label: 'FlatLay Tank' },
+            { file: 'Setset_Canny_FlatLay_TShirt.png', type: 'flatlay', label: 'FlatLay Tee' },
+            { file: 'Setset_Canny_Collar_Polo.png', type: 'collar', label: 'Collar Polo' },
+            { file: 'Setset_Canny_Collar_TankTop.png', type: 'collar', label: 'Collar Tank' },
+            { file: 'Setset_Canny_Collar_TShirt.png', type: 'collar', label: 'Collar Tee' },
+            { file: 'Setset_Canny_Eyelet_Minimal.png', type: 'eyelet', label: 'Eyelet Minimal' },
+            { file: 'Setset_Canny_Eyelet_Knit.png', type: 'eyelet', label: 'Eyelet Knit' },
+            { file: 'Setset_Canny_Eyelet_Shorts.png', type: 'eyelet', label: 'Eyelet Shorts' },
+            { file: 'Setset_Canny_Belt_Shorts.png', type: 'belt', label: 'Belt Shorts' }
+        ];
+
+        // Canny guide images (black/white line drawings)
+        const CANNY_GUIDE_IMAGES = [
+            { file: 'Setset_Canny_FlatLay_Polo.png', type: 'flatlay', label: 'FlatLay Polo', isPhotoRef: false },
+            { file: 'Setset_Canny_FlatLay_TankTop.png', type: 'flatlay', label: 'FlatLay Tank', isPhotoRef: false },
+            { file: 'Setset_Canny_FlatLay_TShirt.png', type: 'flatlay', label: 'FlatLay Tee', isPhotoRef: false },
+            { file: 'Setset_Canny_Collar_Polo.png', type: 'collar', label: 'Collar Polo', isPhotoRef: false },
+            { file: 'Setset_Canny_Collar_TankTop.png', type: 'collar', label: 'Collar Tank', isPhotoRef: false },
+            { file: 'Setset_Canny_Collar_TShirt.png', type: 'collar', label: 'Collar Tee', isPhotoRef: false },
+            { file: 'Setset_Canny_Collar_TShirt_v2.png', type: 'collar', label: 'Collar Tee v2', isPhotoRef: false },
+            { file: 'Setset_Canny_Collar_Polo_v2.png', type: 'collar', label: 'Collar Polo v2', isPhotoRef: false },
+            { file: 'Setset_Canny_Collar_Shirt_Pocket.png', type: 'collar', label: 'Collar Shirt Pocket', isPhotoRef: false },
+            { file: 'Setset_Canny_Eyelet_Minimal.png', type: 'eyelet', label: 'Eyelet Minimal', isPhotoRef: false },
+            { file: 'Setset_Canny_Eyelet_Knit.png', type: 'eyelet', label: 'Eyelet Knit', isPhotoRef: false },
+            { file: 'Setset_Canny_Eyelet_Shorts.png', type: 'eyelet', label: 'Eyelet Shorts', isPhotoRef: false },
+            { file: 'Setset_Canny_Belt_Shorts.png', type: 'belt', label: 'Belt Shorts', isPhotoRef: false }
+        ];
+
+        // Photo reference images (actual photos to use as composition reference)
+        const PHOTO_REF_IMAGES = [
+            {
+                file: 'Setset_Canny_Eyelet_Knit.png',
+                type: 'eyelet',
+                label: 'Knit',
+                isPhotoRef: true,
+                description: 'knit garment laid flat at 45-degree angle, ribbed hem visible at bottom corner, fabric smooth and fills frame, two eyelets diagonal near hem'
+            },
+            {
+                file: 'Setset_Canny_Eyelet_Minimal.png',
+                type: 'eyelet',
+                label: 'Minimal',
+                isPhotoRef: true,
+                description: 'garment fabric layered at diagonal angle showing two eyelets, clean minimal composition with fabric filling corner of frame'
+            },
+            {
+                file: 'Setset_Canny_Eyelet_Shorts.png',
+                type: 'eyelet',
+                label: 'Shorts',
+                isPhotoRef: true,
+                description: 'shorts fabric laid flat at angle, hem edge visible at bottom, smooth fabric filling frame corner, two eyelets positioned diagonally'
+            },
+            {
+                file: 'Setset_Canny_Eyelet_Red.png',
+                type: 'eyelet',
+                label: 'Red Knit',
+                isPhotoRef: true,
+                description: 'red/burgundy crochet knit fabric laid flat at diagonal angle, hem edge visible at bottom corner, two Ron Dorff branded eyelets positioned diagonally'
+            }
+        ];
+
+        const ALL_IMAGES = [
+            '21bg97.so_2.jpg', '21bg97.so_back.jpg', '21bg97.so_eyelet.jpg', '21bg97.so_front.jpg', '21bg97.so_print.jpg',
+            '21ca653dd.so_2.jpg', '21ca653dd.so_3.jpg', '21ca653dd.so_back.jpg', '21ca653dd.so_eyelet.jpg', '21ca653dd.so_front.jpg',
+            '21sr20dd.so_2.jpg', '21sr20dd.so_3.jpg', '21sr20dd.so_back.jpg', '21sr20dd.so_belt.jpg', '21sr20dd.so_eyelet.jpg', '21sr20dd.so_front.jpg',
+            '21sr21b.s_2.jpg', '21sr21b.s_back.jpg', '21sr21b.s_belt.jpg', '21sr21b.s_eyelet.jpg', '21sr21b.s_front.jpg',
+            '21ss20.rw_back.jpg', '21ss20.rw_belt.jpg', '21ss20.rw_belt_2.jpg', '21ss20.rw_eyelet.jpg', '21ss20.rw_front.jpg',
+            '21ss21.be_2.jpg', '21ss21.be_back.jpg', '21ss21.be_belt.jpg', '21ss21.be_belt_2.jpg', '21ss21.be_eyelet.jpg', '21ss21.be_front.jpg', '21ss21.be_pocket.jpg',
+            '21sw2019.so_back.jpg', '21sw2019.so_collar.jpg', '21sw2019.so_eyelet.jpg', '21sw2019.so_fabrics.jpg', '21sw2019.so_front.jpg', '21sw2019.so_sleeves.jpg',
+            '21tk189.rw_back.jpg', '21tk189.rw_collar.jpg', '21tk189.rw_eyelet.jpg', '21tk189.rw_front.jpg', '21tk189.rw_sleeves.jpg', '21tk189.rw_sleeves_2.jpg',
+            '21ts1115dd.so_back.jpg', '21ts1115dd.so_collar.jpg', '21ts1115dd.so_fabrics.jpg', '21ts1115dd.so_front.jpg', '21ts1115dd.so_sleeves.jpg',
+            '21ts1267.so_back.jpg', '21ts1267.so_collar.jpg', '21ts1267.so_fabrics.jpg', '21ts1267.so_front.jpg', '21ts1267.so_print.jpg', '21ts1267.so_sleeves.jpg',
+            '21ts1505.rw_2.jpg', '21ts1505.rw_back.jpg', '21ts1505.rw_buttons.jpg', '21ts1505.rw_collar.jpg', '21ts1505.rw_eyelet.jpg', '21ts1505.rw_fabrics.jpg', '21ts1505.rw_front.jpg', '21ts1505.rw_sleeves.jpg', '21ts1505.rw_sleeves_2.jpg',
+            '21ur30.w_2.jpg', '21ur30.w_back.jpg', '21ur30.w_eyelet.jpg', '21ur30.w_front.jpg',
+            '21ur42.w_2.jpg', '21ur42.w_back.jpg', '21ur42.w_eyelet.jpg', '21ur42.w_front.jpg'
+        ];
+
+        // ========== STATE ==========
+        let imageAnalysis = {}; // Loaded from JSON
+        let selectedProductIndex = null;
+        let categoryState = {}; // { shotType: { guide: null, selectedImages: [], results: [] } }
+        let settings = { aspect: '3:4', resolution: '2K', seeds: 1, provider: 'gemini' };
+
+        // E-Commerce tab state for new layout
+        let selectedInputImages = []; // Array of booleans for product images
+        let selectedGuideImages = []; // Array of booleans for canny guides
+        let ecomResults = []; // Array of generated results
+
+        // Global results (persists across tabs)
+        let globalResults = [];
+        let ecomGlobalLoader = null;
+        let ecomLightbox = null; // Shared lightbox instance
+
+        // Generation queue
+        let generationQueue = [];
+        let isProcessingQueue = false;
+
+        // Canny tab state
+        let cannyImages = []; // Array of { file, url, name, analysis }
+        const CANNY_GRID_SIZE = 18; // Number of upload slots (3 rows x 6)
+        let cannySettings = { aspect: '3:4', resolution: '2K', seeds: 1 };
+
+        // ========== HELPERS ==========
+        function skuToPrefix(sku) { return sku.toLowerCase(); }
+        function getProductImages(sku) { return ALL_IMAGES.filter(img => img.startsWith(skuToPrefix(sku))); }
+        function getShotType(filename) { return filename.replace('.jpg', '').split('_').slice(1).join(' '); }
+        function getFrontImage(sku) { return ALL_IMAGES.find(img => img.startsWith(skuToPrefix(sku)) && img.includes('_front')); }
+
+        // ========== LOAD/SAVE ANALYSIS ==========
+        async function loadAnalysis() {
+            try {
+                // Load from pre-analyzed JSON file
+                const res = await fetch('/assets/brand/rondorff/ecom/image-analysis.json');
+                const data = await res.json();
+                imageAnalysis = data.images || {};
+                console.log(`Loaded ${Object.keys(imageAnalysis).length} pre-analyzed images`);
+                updateAnalyzedCount();
+            } catch (e) {
+                console.log('No existing analysis found, trying localStorage');
+                // Fallback to localStorage
+                const stored = localStorage.getItem('rondorff-image-analysis');
+                if (stored) {
+                    imageAnalysis = JSON.parse(stored);
+                    updateAnalyzedCount();
+                }
+            }
+        }
+
+        async function saveAnalysis() {
+            // Save to localStorage as backup
+            localStorage.setItem('rondorff-image-analysis', JSON.stringify(imageAnalysis));
+        }
+
+        function updateAnalyzedCount() {
+            document.getElementById('analyzed-count').textContent = Object.keys(imageAnalysis).length;
+        }
+
+        // ========== TABS ==========
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        // ========== SETTINGS BUTTONS ==========
+        function setupSettingsButtons() {
+            ['aspect', 'resolution', 'seeds', 'provider'].forEach(setting => {
+                const container = document.getElementById(`${setting}-buttons`);
+                if (!container) return;
+                container.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'BUTTON') return;
+                    container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    settings[setting] = e.target.dataset.value;
+                    // Update generate button when seeds change
+                    if (setting === 'seeds') {
+                        updateGenerateAllButton();
+                    }
+                });
+            });
+        }
+
+        // ========== OVERVIEW TAB ==========
+        function renderOverview() {
+            const container = document.getElementById('products-overview');
+            let html = '';
+            const categories = {};
+            PRODUCTS.forEach(p => { if (!categories[p.category]) categories[p.category] = []; categories[p.category].push(p); });
+
+            for (const [category, products] of Object.entries(categories)) {
+                html += `<div class="category-section"><div class="category-header">${category}</div>`;
+                products.forEach(product => {
+                    const images = getProductImages(product.sku);
+                    html += `<div class="product-card">
+                        <div class="product-header">
+                            <div class="product-info">
+                                <div class="product-name">${product.name}</div>
+                                <div class="product-sku">${product.sku}</div>
+                            </div>
+                            <div class="product-meta">
+                                <div class="product-color">${product.color}</div>
+                                <div class="product-material">${product.material}</div>
+                            </div>
+                        </div>
+                        <div class="image-grid">`;
+                    images.forEach(img => {
+                        const shot = getShotType(img);
+                        const analyzed = imageAnalysis[img] ? ' (analyzed)' : '';
+                        html += `<div class="image-slot">
+                            <img class="image-thumb" src="/assets/brand/rondorff/ecom/thumbs/${img}"
+                                 data-full="/assets/brand/rondorff/ecom/originals/${img}" data-name="${product.name}" data-shot="${shot}"
+                                 onclick="openLightbox(this)" alt="${shot}">
+                            <div class="image-label">${shot}</div>
+                        </div>`;
+                    });
+                    html += `</div><div class="requirements-row">`;
+                    product.shotTypes.forEach(req => {
+                        const shotTypes = images.map(img => getShotType(img));
+                        const hasIt = shotTypes.some(s => s === req || (s === 'front' && req === 'flat_lay') || s.includes(req.replace('_', ' ')));
+                        html += `<span class="req-tag ${hasIt ? 'has' : 'needed'}">${req.replace('_', ' ')}</span>`;
+                    });
+                    if (product.video) html += `<span class="req-tag video">VIDEO</span>`;
+                    html += `</div></div>`;
+                });
+                html += `</div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // ========== E-COMMERCE TAB ==========
+        function renderProductSelector() {
+            const container = document.getElementById('product-selector');
+            let html = '';
+            PRODUCTS.forEach((product, index) => {
+                const frontImg = getFrontImage(product.sku);
+                const selected = selectedProductIndex === index ? 'selected' : '';
+                html += `<div class="product-thumb ${selected}" onclick="selectProduct(${index})">
+                    <img src="/assets/brand/rondorff/ecom/thumbs/${frontImg}" alt="${product.name}">
+                    <div class="product-thumb-label">${product.sku.split('.')[0]}</div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function selectProduct(index) {
+            selectedProductIndex = index;
+            // Reset category state for new product
+            categoryState = {};
+            // Reset new e-commerce state
+            const product = PRODUCTS[index];
+            const productImages = getProductImages(product.sku);
+            selectedInputImages = productImages.map(() => false);
+            selectedGuideImages = CANNY_GUIDE_IMAGES.map(() => false);
+            ecomResults = [];
+            renderProductSelector();
+            renderSelectedProduct();
+        }
+
+        function renderSelectedProduct() {
+            const container = document.getElementById('selected-product-area');
+            if (selectedProductIndex === null) {
+                container.innerHTML = `<div class="no-product-selected">Select a product above to start generating</div>`;
+                return;
+            }
+
+            const product = PRODUCTS[selectedProductIndex];
+            const productImages = getProductImages(product.sku);
+            const allAnalyzed = productImages.every(img => imageAnalysis[img]);
+
+            // Initialize category state for each shot type
+            product.shotTypes.forEach(shotType => {
+                if (!categoryState[shotType]) {
+                    const relevantGuides = getRelevantGuides(shotType);
+                    categoryState[shotType] = {
+                        selectedGuides: relevantGuides.map(() => false), // Array of booleans for multi-select
+                        noneGuideSelected: false, // "None" option - generate without canny guide
+                        selectedImages: productImages.map(() => false),
+                        selectedModels: SHOT_TYPES_WITH_MODELS.includes(shotType) ? MODEL_PORTRAITS.map(() => false) : [],
+                        results: []
+                    };
+                }
+            });
+
+            let html = `
+                <div class="selected-product-header">
+                    <div>
+                        <div class="selected-product-title">${product.name}</div>
+                        <div class="selected-product-sku">${product.sku} - ${product.color}</div>
+                    </div>
+                    <button class="header-btn" id="generate-all-btn" onclick="generateAllCategories()" disabled>Generate</button>
+                </div>
+                <div class="category-rows">
+            `;
+
+            product.shotTypes.forEach(shotType => {
+                html += renderCategoryRow(shotType, product, productImages);
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+
+            // Update Generate All button state
+            updateGenerateAllButton();
+        }
+
+        function renderCategoryRow(shotType, product, productImages) {
+            const state = categoryState[shotType];
+            const hasModels = SHOT_TYPES_WITH_MODELS.includes(shotType);
+            const selectedCount = state.selectedImages.filter(Boolean).length + (hasModels ? state.selectedModels.filter(Boolean).length : 0);
+            const totalCount = productImages.length + (hasModels ? MODEL_PORTRAITS.length : 0);
+
+            // Get relevant canny guides for this shot type
+            const relevantGuides = getRelevantGuides(shotType);
+
+            // Render model portraits first for face/3-4 categories
+            const modelImagesHtml = hasModels ? MODEL_PORTRAITS.map((model, i) => `
+                <div class="image-option ${state.selectedModels[i] ? 'selected' : ''}"
+                     onclick="toggleModelImage('${shotType}', ${i})" title="${model.name}" style="position: relative;">
+                    <img src="${model.thumb}" alt="${model.name}">
+                    <span class="check">✓</span>
+                    <span class="model-badge" style="position: absolute; bottom: 2px; left: 2px; width: 14px; height: 14px; background: #3b82f6; color: white; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center;">M</span>
+                </div>
+            `).join('') : '';
+
+            // Separate canny guides from photo refs
+            const cannyGuides = relevantGuides.filter(g => !g.isPhotoRef);
+            const photoRefs = relevantGuides.filter(g => g.isPhotoRef);
+
+            // Render canny guides row with "None" as selectable option
+            const noneSelected = state.noneGuideSelected || false;
+            const cannyGuidesHtml = cannyGuides.length > 0 ? `
+                <div class="section-label">Canny Guides (line drawings for composition)</div>
+                <div class="guides-row">
+                    <div class="image-option guide-image-option ${noneSelected ? 'selected' : ''}"
+                         onclick="selectNoneGuide('${shotType}')" title="No canny guide" style="position: relative; display: flex; align-items: center; justify-content: center; background: #f5f5f5; min-width: 60px; cursor: pointer;">
+                        <span style="font-size: 11px; color: #666;">None</span>
+                        <span class="check">✓</span>
+                    </div>
+                    ${cannyGuides.map((guide, i) => {
+                        const globalIndex = relevantGuides.indexOf(guide);
+                        return `
+                        <div class="image-option guide-image-option ${state.selectedGuides[globalIndex] ? 'selected' : ''}"
+                             onclick="toggleCategoryGuide('${shotType}', ${globalIndex})" title="${guide.label}" style="position: relative;">
+                            <img src="/assets/brand/rondorff/canny/guides/${guide.file}" alt="${guide.label}">
+                            <span class="check">✓</span>
+                        </div>
+                    `}).join('')}
+                </div>
+            ` : '';
+
+            // Render photo refs row
+            const photoRefsHtml = photoRefs.length > 0 ? `
+                <div class="section-label" style="margin-top: 8px;">Photo References (match this exact composition)</div>
+                <div class="guides-row">
+                    ${photoRefs.map((guide, i) => {
+                        const globalIndex = relevantGuides.indexOf(guide);
+                        return `
+                        <div class="image-option guide-image-option ${state.selectedGuides[globalIndex] ? 'selected' : ''}"
+                             onclick="toggleCategoryGuide('${shotType}', ${globalIndex})" title="${guide.label}" style="position: relative; border-color: #3b82f6;">
+                            <img src="/assets/brand/rondorff/canny/refs/${guide.file}" alt="${guide.label}">
+                            <span class="check">✓</span>
+                        </div>
+                    `}).join('')}
+                </div>
+            ` : '';
+
+            const guidesHtml = (cannyGuidesHtml || photoRefsHtml) ? cannyGuidesHtml + photoRefsHtml : '';
+
+            return `
+                <div class="category-row" data-shot-type="${shotType}">
+                    <div class="category-row-header">
+                        <div class="category-row-title">${shotType.replace('_', ' ')}</div>
+                        <div class="category-row-actions">
+                            <button class="select-btn" onclick="selectAllImages('${shotType}', true)">All</button>
+                            <button class="select-btn" onclick="selectAllImages('${shotType}', false)">None</button>
+                            <span class="category-row-status">${selectedCount}/${totalCount}</span>
+                        </div>
+                    </div>
+                    <div class="inputs-guides-section">
+                        <div class="section-label">Input Images${hasModels ? ' (+ Models)' : ''}</div>
+                        <div class="images-row">
+                            ${modelImagesHtml}
+                            ${productImages.map((img, i) => `
+                                <div class="image-option ${state.selectedImages[i] ? 'selected' : ''}"
+                                     onclick="toggleInputImage('${shotType}', ${i})" title="${getShotType(img)}" style="position: relative;">
+                                    <img src="/assets/brand/rondorff/ecom/thumbs/${img}" alt="${getShotType(img)}">
+                                    <span class="check">✓</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${guidesHtml}
+                    </div>
+                    <button class="category-generate-btn" onclick="generateCategory('${shotType}')" ${selectedCount === 0 ? 'disabled' : ''}>
+                        Generate ${shotType.replace('_', ' ')}
+                    </button>
+                </div>
+            `;
+        }
+
+        // Get relevant canny guides for a shot type
+        function getRelevantGuides(shotType) {
+            const typeMap = {
+                'flat_lay': 'flatlay',
+                'eyelet': 'eyelet',
+                'collar': 'collar',
+                'belt': 'belt'
+            };
+            const guideType = typeMap[shotType];
+            if (!guideType) return [];
+            // Combine canny guides and photo refs for this shot type
+            const cannyGuides = CANNY_GUIDE_IMAGES.filter(g => g.type === guideType);
+            const photoRefs = PHOTO_REF_IMAGES.filter(g => g.type === guideType);
+            return [...cannyGuides, ...photoRefs];
+        }
+
+        // Select a canny guide for a category (multi-select, independent of "None")
+        function toggleCategoryGuide(shotType, guideIndex) {
+            if (!categoryState[shotType]) return;
+            categoryState[shotType].selectedGuides[guideIndex] = !categoryState[shotType].selectedGuides[guideIndex];
+            renderSelectedProduct();
+        }
+
+        // Select "None" option - can be combined with guides for parallel requests
+        function selectNoneGuide(shotType) {
+            if (!categoryState[shotType]) return;
+            categoryState[shotType].noneGuideSelected = !categoryState[shotType].noneGuideSelected;
+            renderSelectedProduct();
+        }
+
+        function toggleInputImage(shotType, index) {
+            if (!categoryState[shotType]) return;
+            categoryState[shotType].selectedImages[index] = !categoryState[shotType].selectedImages[index];
+            renderSelectedProduct();
+        }
+
+        function toggleModelImage(shotType, index) {
+            if (!categoryState[shotType] || !categoryState[shotType].selectedModels) return;
+            categoryState[shotType].selectedModels[index] = !categoryState[shotType].selectedModels[index];
+            renderSelectedProduct();
+        }
+
+        function selectAllImages(shotType, selectAll) {
+            if (!categoryState[shotType]) return;
+            const product = PRODUCTS[selectedProductIndex];
+            const productImages = getProductImages(product.sku);
+            categoryState[shotType].selectedImages = productImages.map(() => selectAll);
+            // Also select/deselect models if applicable
+            if (SHOT_TYPES_WITH_MODELS.includes(shotType)) {
+                categoryState[shotType].selectedModels = MODEL_PORTRAITS.map(() => selectAll);
+            }
+            renderSelectedProduct();
+        }
+
+        function clearGuides(shotType) {
+            // Clear all selected guides including None
+            if (categoryState[shotType]) {
+                const relevantGuides = getRelevantGuides(shotType);
+                categoryState[shotType].selectedGuides = relevantGuides.map(() => false);
+                categoryState[shotType].noneGuideSelected = false;
+                renderSelectedProduct();
+            }
+        }
+
+        // New E-Commerce selection functions
+        function toggleInputImageSelection(index) {
+            selectedInputImages[index] = !selectedInputImages[index];
+            renderSelectedProduct();
+        }
+
+        function toggleGuideImageSelection(index) {
+            selectedGuideImages[index] = !selectedGuideImages[index];
+            renderSelectedProduct();
+        }
+
+        // ========== ANALYZE ==========
+        async function analyzeAllImages() {
+            const btn = document.getElementById('analyze-all-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+
+            const unanalyzed = ALL_IMAGES.filter(img => !imageAnalysis[img]);
+            if (unanalyzed.length === 0) {
+                alert('All images already analyzed!');
+                btn.disabled = false;
+                return;
+            }
+
+            let analyzed = 0;
+            for (const img of unanalyzed) {
+                btn.textContent = `Analyzing ${analyzed + 1}/${unanalyzed.length}...`;
+
+                try {
+                    const imageUrl = window.location.origin + `/assets/brand/rondorff/ecom/originals/${img}`;
+                    const response = await fetch('/api/analyze-gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image_url: imageUrl,
+                            prompt: `Analyze this product image for e-commerce photography. Return a brief JSON:
+{
+  "shotType": "flat lay / detail / close-up / etc",
+  "part": "front / back / collar / sleeve / eyelet / etc",
+  "details": ["key visible details"],
+  "colors": ["colors visible"],
+  "description": "One sentence description for use in AI prompts"
+}`
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.content) {
+                        try {
+                            const cleaned = data.content.replace(/```json\n?|\n?```/g, '').trim();
+                            imageAnalysis[img] = JSON.parse(cleaned);
+                        } catch {
+                            imageAnalysis[img] = { description: data.content };
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to analyze ${img}:`, e);
+                }
+                analyzed++;
+                updateAnalyzedCount();
+            }
+
+            saveAnalysis();
+            btn.textContent = originalText;
+            btn.disabled = false;
+            alert(`Analyzed ${analyzed} images. Data saved to localStorage.`);
+        }
+
+        async function analyzeProductImages() {
+            const btn = document.getElementById('analyze-btn');
+            const statusEl = document.getElementById('analysis-status');
+            btn.textContent = 'Analyzing...';
+            btn.disabled = true;
+            btn.classList.add('analyzing');
+
+            const product = PRODUCTS[selectedProductIndex];
+            const productImages = getProductImages(product.sku);
+            let analyzed = 0;
+
+            for (const img of productImages) {
+                if (imageAnalysis[img]) { analyzed++; continue; }
+
+                statusEl.textContent = `Analyzing ${analyzed + 1}/${productImages.length}...`;
+
+                try {
+                    const imageUrl = window.location.origin + `/assets/brand/rondorff/ecom/originals/${img}`;
+                    const response = await fetch('/api/analyze-gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image_url: imageUrl,
+                            prompt: `Analyze this product image for e-commerce photography. Return a brief JSON:
+{
+  "shotType": "flat lay / detail / close-up / etc",
+  "part": "front / back / collar / sleeve / eyelet / etc",
+  "details": ["key visible details"],
+  "colors": ["colors visible"],
+  "description": "One sentence description for use in AI prompts"
+}`
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.content) {
+                        try {
+                            const cleaned = data.content.replace(/```json\n?|\n?```/g, '').trim();
+                            imageAnalysis[img] = JSON.parse(cleaned);
+                        } catch {
+                            imageAnalysis[img] = { description: data.content };
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to analyze ${img}:`, e);
+                }
+                analyzed++;
+            }
+
+            saveAnalysis();
+            updateAnalyzedCount();
+            btn.textContent = 'Analyze';
+            btn.classList.remove('analyzing');
+            renderSelectedProduct();
+        }
+
+        // ========== GENERATE ==========
+        function buildPrompt(shotType, product, selectedImgs, selectedModels = []) {
+            // Get consistent product color from any analyzed image
+            let productColor = product.color;
+            if (selectedImgs.length > 0) {
+                const firstAnalysis = imageAnalysis[selectedImgs[0]];
+                if (firstAnalysis?.productColor) {
+                    productColor = firstAnalysis.productColor;
+                }
+            }
+
+            // Build detailed descriptions for each selected image
+            const imageDescriptions = selectedImgs.map(img => {
+                const analysis = imageAnalysis[img];
+                const shotName = getShotType(img);
+
+                if (analysis) {
+                    const details = analysis.details?.join(', ') || '';
+                    const part = analysis.part || shotName;
+                    return `${part} shot showing ${analysis.description || shotName}${details ? ` with ${details}` : ''}`;
+                }
+                return `${shotName} reference`;
+            });
+
+            // Model descriptions for face/3-4 shots
+            const modelDescriptions = selectedModels.map(model => `Model portrait reference (${model.name})`);
+
+            const basePrompts = {
+                'flat_lay': `Professional e-commerce flat lay photograph. Bird's eye view on light warm gray studio background. Garment laid perfectly flat with clean, refined presentation. Fabric smooth and unwrinkled. Professional soft studio lighting with even, diffused illumination. High-end fashion e-commerce aesthetic.`,
+                'eyelet': `Close-up detail shot of eyelet/stitching. Macro photography. Light gray studio background. Highlighting texture and craftsmanship. Professional soft lighting.`,
+                'collar': `Detail shot of collar/neckline area. Clean composition. Light gray studio background. Professional soft lighting.`,
+                'fabrics': `Texture/fabric detail shot. Close-up showing weave and material quality. Light gray background. Professional soft lighting.`,
+                'sleeves': `Detail shot of sleeve construction. Clean composition. Light gray studio background. Professional soft lighting.`,
+                'face': `Front-facing model shot wearing the garment. Male model. Clean studio background. Professional soft studio lighting with even illumination.`,
+                '3/4': `3/4 angle model shot wearing the garment. Male model. Clean studio background. Professional soft studio lighting with even illumination.`,
+                'back': `Back view flat lay. Clean presentation. Light warm gray studio background. Professional soft lighting.`,
+                'print': `Detail shot of print/graphic. Clean composition highlighting design. Light gray background. Professional soft lighting.`,
+                'belt': `Detail shot of waistband/belt area. Clean composition. Light gray studio background. Professional soft lighting.`
+            };
+
+            const allDescriptions = [...modelDescriptions, ...imageDescriptions];
+            const totalCount = allDescriptions.length;
+
+            return `Create a ${shotType.replace('_', ' ')} shot for Ron Dorff ${product.name} (${productColor}, ${product.material}).
+
+Using ${totalCount} reference image${totalCount > 1 ? 's' : ''}:
+${allDescriptions.map((desc, i) => `${i + 1}. ${desc}`).join('\n')}
+
+${basePrompts[shotType] || 'Professional e-commerce photograph.'}
+
+High-end fashion e-commerce aesthetic. Minimal, clean, sophisticated.`;
+        }
+
+        // ========== NAMING CONVENTION ==========
+        function generateFilename(product, shotType, index) {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const xx = String(index + 1).padStart(2, '0');
+
+            const cleanSku = product.sku.replace(/\./g, '').toUpperCase();
+            const cleanShotType = shotType.replace(/[^a-zA-Z0-9]/g, '');
+
+            return `Setset_RonDorff_Ecomm_${cleanSku}_${cleanShotType}_${yy}${mm}${dd}_${hh}${min}_${xx}`;
+        }
+
+        // Add to queue and start processing
+        // Add tasks to queue for a shot type. If autoProcess=true, starts processing immediately.
+        function generateCategory(shotType, autoProcess = true) {
+            if (selectedProductIndex === null) return;
+
+            const product = PRODUCTS[selectedProductIndex];
+            const productImages = getProductImages(product.sku);
+            const state = categoryState[shotType];
+            const selectedImgs = productImages.filter((_, i) => state.selectedImages[i]);
+            const selectedModels = SHOT_TYPES_WITH_MODELS.includes(shotType)
+                ? MODEL_PORTRAITS.filter((_, i) => state.selectedModels[i])
+                : [];
+
+            if (selectedImgs.length === 0 && selectedModels.length === 0) return;
+
+            // Get selected guides
+            const relevantGuides = getRelevantGuides(shotType);
+            const selectedGuideObjects = relevantGuides.filter((_, i) => state.selectedGuides[i]);
+            const noneSelected = state.noneGuideSelected || false;
+
+            // Create tasks for "None" AND/OR selected guides (can be combined)
+            // If "None" is selected, create a task without guide
+            if (noneSelected) {
+                generationQueue.push({
+                    shotType,
+                    product: { ...product },
+                    selectedImgs: [...selectedImgs],
+                    selectedModels: [...selectedModels],
+                    guide: null,
+                    settings: { ...settings }
+                });
+            }
+            // If guides are selected, create a task for each guide
+            if (selectedGuideObjects.length > 0) {
+                selectedGuideObjects.forEach(guide => {
+                    generationQueue.push({
+                        shotType,
+                        product: { ...product },
+                        selectedImgs: [...selectedImgs],
+                        selectedModels: [...selectedModels],
+                        guide: { ...guide },
+                        settings: { ...settings }
+                    });
+                });
+            }
+            // If neither guides nor "None" selected, no task is created
+
+            // Update button to show queued
+            const btn = document.querySelector(`.category-row[data-shot-type="${shotType}"] .category-generate-btn`);
+            if (btn) btn.textContent = 'Queued...';
+
+            // Update queue display
+            updateQueueStatus();
+
+            // Start processing if requested and not already running
+            if (autoProcess && !isProcessingQueue) {
+                processQueue();
+            }
+        }
+
+        // Generate all shot types that have selections - adds ALL tasks first, then processes once
+        function generateAllCategories() {
+            if (selectedProductIndex === null) return;
+
+            const product = PRODUCTS[selectedProductIndex];
+
+            // First, add all tasks to the queue WITHOUT starting processing
+            product.shotTypes.forEach(shotType => {
+                const state = categoryState[shotType];
+                if (!state) return;
+
+                const productImages = getProductImages(product.sku);
+                const selectedImgs = productImages.filter((_, i) => state.selectedImages[i]);
+                const selectedModels = SHOT_TYPES_WITH_MODELS.includes(shotType)
+                    ? MODEL_PORTRAITS.filter((_, i) => state.selectedModels[i])
+                    : [];
+
+                // Skip if nothing selected
+                if (selectedImgs.length === 0 && selectedModels.length === 0) return;
+
+                // Add tasks for this shot type (don't auto-process yet)
+                generateCategory(shotType, false);
+            });
+
+            // Now start processing ALL tasks together
+            if (generationQueue.length > 0 && !isProcessingQueue) {
+                processQueue();
+            }
+        }
+
+        // Update Generate All button state based on selections
+        function updateGenerateAllButton() {
+            const btn = document.getElementById('generate-all-btn');
+            if (!btn) return;
+
+            if (selectedProductIndex === null) {
+                btn.disabled = true;
+                btn.textContent = 'Generate';
+                return;
+            }
+
+            const product = PRODUCTS[selectedProductIndex];
+            let taskCount = 0; // Number of generation tasks (each produces seeds images)
+
+            product.shotTypes.forEach(shotType => {
+                const state = categoryState[shotType];
+                if (!state) return;
+
+                const productImages = getProductImages(product.sku);
+                const selectedImgs = productImages.filter((_, i) => state.selectedImages[i]);
+                const selectedModels = SHOT_TYPES_WITH_MODELS.includes(shotType)
+                    ? MODEL_PORTRAITS.filter((_, i) => state.selectedModels[i])
+                    : [];
+
+                // Skip if nothing selected
+                if (selectedImgs.length === 0 && selectedModels.length === 0) return;
+
+                // Count guides selected for this shot type
+                const relevantGuides = getRelevantGuides(shotType);
+                const selectedGuideCount = relevantGuides.filter((_, i) => state.selectedGuides[i]).length;
+                const noneSelected = state.noneGuideSelected || false;
+
+                // "None" and guides can be combined - count both
+                if (noneSelected) {
+                    taskCount += 1; // One task without guide
+                }
+                if (selectedGuideCount > 0) {
+                    taskCount += selectedGuideCount; // One task per selected guide
+                }
+                // If neither guides nor "None" selected, no task for this shot type
+            });
+
+            const seedCount = parseInt(settings.seeds) || 1;
+            const totalImages = taskCount * seedCount;
+
+            if (taskCount === 0) {
+                btn.disabled = true;
+                btn.textContent = 'Generate';
+            } else {
+                btn.disabled = false;
+                const seedText = seedCount > 1 ? ` (${seedCount} seeds)` : '';
+                btn.textContent = `Generate ${totalImages} image${totalImages !== 1 ? 's' : ''}${seedText}`;
+            }
+        }
+
+        function updateQueueStatus() {
+            const count = document.getElementById('global-results-count');
+            if (generationQueue.length > 0) {
+                count.textContent = `${globalResults.length} images | ${generationQueue.length} in queue`;
+            } else {
+                count.textContent = `${globalResults.length} image${globalResults.length !== 1 ? 's' : ''}`;
+            }
+        }
+
+        async function processQueue() {
+            if (generationQueue.length === 0) {
+                isProcessingQueue = false;
+                return;
+            }
+
+            isProcessingQueue = true;
+
+            // Show results section
+            document.getElementById('global-results-section').classList.add('has-results');
+
+            // Setup loader if not already
+            if (!ecomGlobalLoader) {
+                ecomGlobalLoader = new StudioLoader({
+                    loaderElement: document.getElementById('global-loader'),
+                    messageElement: document.getElementById('global-loader-message'),
+                    progressElement: document.getElementById('global-loader-progress')
+                });
+            }
+
+            // Grab all tasks and clear queue
+            const allTasks = [...generationQueue];
+            generationQueue.length = 0;
+            updateQueueStatus();
+
+            // Count total requests for progress
+            const totalRequests = allTasks.reduce((sum, t) => sum + (parseInt(t.settings.seeds) || 1), 0);
+            ecomGlobalLoader.start(`Generating ${totalRequests} images in parallel...`);
+
+            // Process ALL tasks in parallel
+            const allPromises = allTasks.map(async (task) => {
+                const { shotType, product, selectedImgs, selectedModels, guide, settings: taskSettings } = task;
+
+                try {
+                    // Collect all base64 images and track URLs for lightbox
+                    const imageBase64s = [];
+                    const inputImageUrls = [];
+
+                    // Add model portraits first
+                    for (const model of selectedModels) {
+                        const response = await fetch(model.full);
+                        const blob = await response.blob();
+                        const base64 = await blobToBase64(blob);
+                        imageBase64s.push(base64);
+                        inputImageUrls.push(model.full);
+                    }
+
+                    // Add product images
+                    for (const img of selectedImgs) {
+                        const imgUrl = `/assets/brand/rondorff/ecom/originals/${img}`;
+                        const response = await fetch(imgUrl);
+                        const blob = await response.blob();
+                        const base64 = await blobToBase64(blob);
+                        imageBase64s.push(base64);
+                        inputImageUrls.push(imgUrl);
+                    }
+
+                    // Add guide if selected (canny or photo ref)
+                    if (guide) {
+                        const guidePath = guide.isPhotoRef ? 'refs' : 'guides';
+                        const guideUrl = `/assets/brand/rondorff/canny/${guidePath}/${guide.file}`;
+                        const guideResponse = await fetch(guideUrl);
+                        const guideBlob = await guideResponse.blob();
+                        const guideBase64 = await blobToBase64(guideBlob);
+                        imageBase64s.push(guideBase64);
+                        inputImageUrls.push(guideUrl);
+                    }
+
+                    const prompt = buildPromptWithGuide(shotType, product, selectedImgs, selectedModels, guide);
+                    const numSeeds = parseInt(taskSettings.seeds) || 1;
+                    const provider = taskSettings.provider || 'gemini';
+
+                    // Log generation details
+                    console.log(`\n🎨 [Generate] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+                    console.log(`📦 Product: ${product.name} (${product.sku})`);
+                    console.log(`📸 Shot Type: ${shotType}`);
+                    console.log(`🎯 Guide: ${guide ? guide.file : 'None'}`);
+                    console.log(`🔧 Provider: ${provider.toUpperCase()}`);
+                    console.log(`🖼️ Images: ${imageBase64s.length} input images`);
+                    console.log(`🌱 Seeds: ${numSeeds}`);
+                    console.log(`📐 Aspect: ${taskSettings.aspect} | Resolution: ${taskSettings.resolution}`);
+                    console.log(`📝 Prompt:\n${prompt}`);
+                    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+
+                    // Send all seed requests in parallel
+                    const seedPromises = [];
+                    for (let seed = 0; seed < numSeeds; seed++) {
+                        let fetchPromise;
+
+                        if (provider === 'gemini') {
+                            // Gemini uses base64 directly
+                            fetchPromise = fetch('/api/remix-gemini', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    model: 'gemini-3-pro',
+                                    prompt: prompt,
+                                    image_base64s: imageBase64s,
+                                    aspect_ratio: taskSettings.aspect,
+                                    resolution: taskSettings.resolution,
+                                    num_images: 1
+                                })
+                            }).then(res => res.json());
+                        } else {
+                            // FAL needs URLs - upload base64 images first
+                            fetchPromise = (async () => {
+                                const imageUrls = [];
+                                console.log(`[FAL Upload] Starting upload of ${imageBase64s.length} images...`);
+                                for (let i = 0; i < imageBase64s.length; i++) {
+                                    const base64 = imageBase64s[i];
+                                    try {
+                                        console.log(`[FAL Upload] Uploading image ${i + 1}/${imageBase64s.length}...`);
+                                        const uploadRes = await fetch('/api/upload-base64', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ dataUrl: base64 })
+                                        });
+                                        if (!uploadRes.ok) {
+                                            console.error(`[FAL Upload] Upload failed with status ${uploadRes.status}: ${await uploadRes.text()}`);
+                                            continue;
+                                        }
+                                        const uploadData = await uploadRes.json();
+                                        console.log(`[FAL Upload] Response:`, uploadData);
+                                        if (uploadData.url) {
+                                            imageUrls.push(uploadData.url);
+                                            console.log(`[FAL Upload] ✅ Image ${i + 1} uploaded: ${uploadData.url.slice(0, 50)}...`);
+                                        } else if (uploadData.error) {
+                                            console.error(`[FAL Upload] ❌ Error: ${uploadData.error}`);
+                                        }
+                                    } catch (uploadErr) {
+                                        console.error(`[FAL Upload] ❌ Exception uploading image ${i + 1}:`, uploadErr);
+                                    }
+                                }
+                                console.log(`[FAL Upload] Upload complete: ${imageUrls.length}/${imageBase64s.length} images`);
+
+                                const res = await fetch('/api/remix', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        model: 'nano-pro',
+                                        prompt: prompt,
+                                        image_urls: imageUrls,
+                                        aspect_ratio: taskSettings.aspect,
+                                        resolution: taskSettings.resolution,
+                                        num_images: 1,
+                                        output_format: 'png'
+                                    })
+                                });
+                                return res.json();
+                            })();
+                        }
+
+                        seedPromises.push(fetchPromise);
+                    }
+
+                    // Wait for this task's seeds
+                    const results = await Promise.all(seedPromises);
+
+                    // Collect results
+                    const taskResults = [];
+                    results.forEach((data, seed) => {
+                        if (data.images?.length > 0) {
+                            data.images.forEach((img) => {
+                                taskResults.push({
+                                    url: img.url || `data:image/png;base64,${img.base64}`,
+                                    shotType: shotType,
+                                    product: product.name,
+                                    sku: product.sku,
+                                    prompt: prompt,
+                                    inputImages: [...inputImageUrls],
+                                    _product: product
+                                });
+                            });
+                        }
+                    });
+                    return taskResults;
+
+                } catch (error) {
+                    console.error('Generation error:', error);
+                    return [];
+                }
+            });
+
+            // Wait for ALL tasks to complete
+            const allResults = await Promise.all(allPromises);
+
+            // Flatten and add to globalResults with proper filenames
+            allResults.flat().forEach((r, i) => {
+                globalResults.push({
+                    ...r,
+                    filename: generateFilename(r._product, r.shotType, globalResults.length)
+                });
+            });
+
+            renderGlobalResults();
+
+            // Reset all buttons
+            allTasks.forEach(task => {
+                const btn = document.querySelector(`.category-row[data-shot-type="${task.shotType}"] .category-generate-btn`);
+                if (btn) {
+                    btn.textContent = `Generate ${task.shotType.replace('_', ' ')}`;
+                }
+            });
+
+            ecomGlobalLoader.stop();
+            isProcessingQueue = false;
+            updateQueueStatus();
+        }
+
+        // Render global results
+        function renderGlobalResults() {
+            const section = document.getElementById('global-results-section');
+            const grid = document.getElementById('global-results-grid');
+            const count = document.getElementById('global-results-count');
+            count.textContent = `${globalResults.length} image${globalResults.length !== 1 ? 's' : ''}`;
+
+            // Show/hide section based on results
+            if (globalResults.length > 0) {
+                section.classList.add('has-results');
+            } else {
+                section.classList.remove('has-results');
+            }
+
+            // Initialize shared lightbox if not already
+            if (!ecomLightbox) {
+                ecomLightbox = new Lightbox();
+            }
+
+            grid.innerHTML = globalResults.map((r, i) => `
+                <div class="global-result-item" data-index="${i}">
+                    <img src="${r.url}" alt="${r.shotType}">
+                    <div class="global-result-info">
+                        <div>
+                            <div class="global-result-label">${r.shotType.replace('_', ' ')}</div>
+                            <div class="global-result-meta">${r.sku}</div>
+                        </div>
+                        <div class="global-result-actions">
+                            <button class="btn" onclick="event.stopPropagation(); downloadResult('${r.url}', '${r.filename}')">DL</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers for lightbox
+            grid.querySelectorAll('.global-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const index = parseInt(item.dataset.index);
+                    const lightboxResults = globalResults.map(r => ({
+                        url: r.url,
+                        prompt: r.prompt || '',
+                        modelName: 'Ron Dorff Ecom',
+                        filename: r.filename,
+                        inputImages: r.inputImages || []
+                    }));
+                    ecomLightbox.setResults(lightboxResults);
+                    ecomLightbox.open(index);
+                });
+            });
+        }
+
+        function clearGlobalResults() {
+            globalResults = [];
+            renderGlobalResults();
+        }
+
+        function downloadResult(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename + '.png';
+            a.click();
+        }
+
+        // Build eyelet detail prompt
+        function buildEyeletPrompt(product, hasGuide = false) {
+            const productDesc = `Ron Dorff ${product.name} in ${product.color}, ${product.material}`;
+
+            if (hasGuide) {
+                return `Eyelet detail shot of ${productDesc}.
+
+LINE DRAWING GUIDE (last image) shows the composition - follow it exactly.
+
+GARMENT: Laid completely flat on white surface like a flat-lay product photo. NOT folded, NOT bunched. The hem/edge of garment visible at bottom. Fabric smooth and fills most of frame.
+
+EYELETS: Copy the EXACT Ron Dorff metal eyelets from the product images. Two eyelets positioned as shown in guide.
+
+${product.color} crochet knit texture. White studio background. Macro photography.`;
+            }
+
+            return `Macro detail shot of the metal eyelets on ${productDesc}.
+
+GARMENT: Laid FLAT and SPREAD OUT on white surface, not folded. Fabric fills bottom of frame.
+
+Copy the EXACT eyelets from the reference images. Two eyelets visible. Show the ${product.color} fabric texture.
+
+Clean white studio background. Professional macro photography.`;
+        }
+
+        // Build prompt for PHOTO REFERENCE (not canny line drawing)
+        function buildPhotoRefPrompt(product, guideType, guideInfo) {
+            // Simplified product name
+            const shortName = product.name.replace('Organic Cotton ', '').replace('100% ', '');
+
+            if (guideType === 'eyelet') {
+                return `REFERENCE PHOTO (last image) shows the EXACT composition to recreate.
+
+Create the SAME shot but with ${product.color} ${shortName} instead.
+
+COPY EXACTLY from reference:
+- Camera angle and perspective
+- How the garment is positioned (flat, smooth, with hem/edge visible)
+- Eyelet placement (two eyelets diagonal)
+- How much fabric fills the frame
+- The corner/edge composition
+
+USE from product images:
+- ${product.color} crochet knit texture
+- Ron Dorff metal eyelets (copy exactly)
+
+White/grey studio background. Macro detail shot.`;
+            }
+
+            // Default photo ref prompt
+            return `Recreate the EXACT composition from the reference photo (last image).
+
+Replace the garment with ${product.color} ${shortName}.
+Copy the fabric texture and eyelets from the product images.
+
+White studio background.`;
+        }
+
+        // Build prompt with optional canny guide
+        function buildPromptWithGuide(shotType, product, selectedImgs, selectedModels, guideInfo) {
+            const productDesc = `Ron Dorff ${product.name} in ${product.color}, ${product.material}`;
+
+            // Check for product-specific override first
+            const guideType = guideInfo?.type || null;
+            const overridePrompt = getPromptOverride(product.sku, shotType, guideType);
+            if (overridePrompt) {
+                // Replace {{productDesc}} placeholder if used in override
+                return overridePrompt.replace(/\{\{productDesc\}\}/g, productDesc);
+            }
+
+            // If guide is selected, use guide-aware prompts
+            if (guideInfo) {
+                const isPhotoRef = guideInfo.isPhotoRef;
+
+                // PHOTO REFERENCE - different prompt style (pass full guideInfo for description)
+                if (isPhotoRef) {
+                    return buildPhotoRefPrompt(product, guideType, guideInfo);
+                }
+
+                // CANNY GUIDE prompts
+                if (guideType === 'flatlay') {
+                    // Add label visibility for tank tops
+                    const labelNote = product.name.toLowerCase().includes('tank')
+                        ? ' Ron Dorff label visible at neckline.'
+                        : '';
+                    // Add eyelet visibility for products with eyelets
+                    const eyeletNote = product.shotTypes?.includes('eyelet')
+                        ? ' Two metal Ron Dorff eyelets visible at bottom hem.'
+                        : '';
+
+                    return `Professional e-commerce flat lay photograph of ${productDesc}.
+
+COMPOSITION: Follow the line drawing guide (last image) for garment placement and layout.
+
+STYLING: Garment laid perfectly flat with clean, refined presentation. Fabric smooth and unwrinkled. Natural sleeve/armhole positioning. Collar neatly shaped.${labelNote}${eyeletNote}
+
+LIGHTING: Professional soft studio lighting with even, diffused illumination. No harsh shadows. Clean, consistent exposure across the garment.
+
+BACKGROUND: Light warm gray studio surface (not pure white). Seamless, clean backdrop.
+
+High-end fashion e-commerce aesthetic. Minimal and sophisticated.`;
+                } else if (guideType === 'eyelet') {
+                    return buildEyeletPrompt(product, true);
+                } else if (guideType === 'collar') {
+                    return `Detail shot of the collar/neckline area of ${productDesc}.
+
+CRITICAL: Use the last image (black and white line drawing) as the EXACT composition guide. Match the camera angle, framing, and garment positioning precisely.
+
+Top-down 45-degree angle. Show the collar construction and neckline detail. Garment folded/arranged as shown in guide. Clean white studio background. Professional macro e-commerce photography.`;
+                } else if (guideType === 'fabrics') {
+                    return `Macro texture close-up of the fabric on ${productDesc}.
+
+CRITICAL: Use the last image (black and white line drawing) as the EXACT composition guide for camera angle and framing.
+
+Extreme close-up showing the weave pattern, material texture, and fabric quality. Top-down 45-degree angle. Clean white studio background. Professional macro photography highlighting craftsmanship.`;
+                } else if (guideType === 'sleeves') {
+                    return `Detail shot of the sleeve construction on ${productDesc}.
+
+CRITICAL: Use the last image (black and white line drawing) as the EXACT composition guide. Match the angle and framing precisely.
+
+Close-up of sleeve with visible stitching and construction details. Top-down 45-degree angle. Garment arranged as shown in guide. Clean white studio background. Professional e-commerce detail photography.`;
+                } else if (guideType === 'belt') {
+                    return `Detail shot of the waistband/belt area on ${productDesc}.
+
+CRITICAL: Use the last image (black and white line drawing) as the EXACT composition guide. Match the framing precisely.
+
+Top-down 45-degree angle. Focus on waistband construction, drawstring, or elastic details. Garment arranged as shown in guide. Clean white studio background. Professional detail photography.`;
+                }
+            }
+
+            // No guide selected - use standard prompts
+            // Build flat lay prompt with product-specific details
+            const labelNote = product.name.toLowerCase().includes('tank')
+                ? ' Ron Dorff label visible at neckline.'
+                : '';
+            const eyeletNote = product.shotTypes?.includes('eyelet')
+                ? ' Two metal Ron Dorff eyelets visible at bottom hem.'
+                : '';
+            const flatLayPrompt = `Professional e-commerce flat lay photograph of ${productDesc}. Bird's eye view on light warm gray studio background. Garment laid perfectly flat with clean, refined presentation. Fabric smooth and unwrinkled.${labelNote}${eyeletNote} Professional soft studio lighting with even, diffused illumination. High-end fashion e-commerce aesthetic.`;
+
+            const basePrompts = {
+                'flat_lay': flatLayPrompt,
+                'eyelet': buildEyeletPrompt(product),
+                'collar': `Detail shot of collar/neckline area of ${productDesc}. Top-down 45-degree angle. Close-up of collar construction. Clean white studio background. Professional macro photography.`,
+                'fabrics': `Macro texture close-up of the fabric on ${productDesc}. Extreme close-up showing weave pattern and material quality. Top-down 45-degree angle. Clean white studio background.`,
+                'sleeves': `Detail shot of sleeve construction on ${productDesc}. Close-up showing stitching and construction. Top-down 45-degree angle. Clean white studio background.`,
+                'back': `Back view flat lay of ${productDesc}. Clean presentation. White studio floor.`,
+                'print': `Detail shot of print/graphic on ${productDesc}. Clean composition highlighting design. White background.`,
+                'belt': `Detail shot of waistband/belt area on ${productDesc}. Top-down 45-degree angle. Focus on construction details. Clean white studio background.`
+            };
+
+            return basePrompts[shotType] || `Professional e-commerce photograph of ${productDesc}.`;
+        }
+
+        // ========== UTILITIES ==========
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Lightbox handled by shared/js/lightbox.js
+
+        // ========== CANNY TAB ==========
+        function setupCannySettings() {
+            ['aspect', 'resolution', 'seeds'].forEach(setting => {
+                const container = document.getElementById(`canny-${setting}-buttons`);
+                if (!container) return;
+                container.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'BUTTON') return;
+                    container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    cannySettings[setting] = e.target.dataset.value;
+                });
+            });
+        }
+
+        function initCannyGrid() {
+            const grid = document.getElementById('canny-upload-grid');
+            let html = '';
+            for (let i = 0; i < CANNY_GRID_SIZE; i++) {
+                const img = cannyImages[i];
+                if (img) {
+                    const selectedClass = img.selected !== false ? 'selected' : '';
+                    html += `
+                        <div class="canny-slot filled ${selectedClass}" data-index="${i}" onclick="toggleCannySelection(${i})">
+                            <img src="${img.url}" alt="${img.name}">
+                            <button class="remove-btn" onclick="event.stopPropagation(); removeCannyImage(${i})">&times;</button>
+                            <div class="slot-label">${img.name}</div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="canny-slot" data-index="${i}" onclick="document.getElementById('canny-file-input').click()">
+                            <span style="color: var(--ash-grey); font-size: var(--text-xs);">+</span>
+                        </div>
+                    `;
+                }
+            }
+            grid.innerHTML = html;
+            updateCannyGenerateBtn();
+        }
+
+        function toggleCannySelection(index) {
+            if (cannyImages[index]) {
+                cannyImages[index].selected = cannyImages[index].selected === false ? true : false;
+                initCannyGrid();
+            }
+        }
+
+        function updateCannyGenerateBtn() {
+            const btn = document.getElementById('canny-generate-btn');
+            const selectedCount = cannyImages.filter(img => img.selected !== false).length;
+            btn.disabled = selectedCount === 0;
+        }
+
+        function removeCannyImage(index) {
+            cannyImages.splice(index, 1);
+            initCannyGrid();
+        }
+
+        function clearCannyGrid() {
+            cannyImages = [];
+            document.getElementById('canny-results').innerHTML = '';
+            initCannyGrid();
+        }
+
+        // Handle file uploads for Canny tab
+        document.getElementById('canny-file-input').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            for (const file of files) {
+                if (cannyImages.length >= CANNY_GRID_SIZE) break;
+                const url = URL.createObjectURL(file);
+                cannyImages.push({ file, url, name: file.name.replace(/\.[^/.]+$/, ''), selected: true });
+            }
+            e.target.value = ''; // Reset input
+            initCannyGrid();
+        });
+
+        // Drag and drop for Canny grid
+        const cannyGrid = document.getElementById('canny-upload-grid');
+        cannyGrid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            cannyGrid.classList.add('drag-over');
+        });
+        cannyGrid.addEventListener('dragleave', () => {
+            cannyGrid.classList.remove('drag-over');
+        });
+        cannyGrid.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            cannyGrid.classList.remove('drag-over');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            for (const file of files) {
+                if (cannyImages.length >= CANNY_GRID_SIZE) break;
+                const url = URL.createObjectURL(file);
+                cannyImages.push({ file, url, name: file.name.replace(/\.[^/.]+$/, ''), selected: true });
+            }
+            initCannyGrid();
+        });
+
+        // Clipboard paste for Canny grid
+        document.addEventListener('paste', async (e) => {
+            // Only handle paste when Canny tab is active
+            const cannyTab = document.getElementById('canny-tab');
+            if (!cannyTab || cannyTab.style.display === 'none') return;
+
+            const items = Array.from(e.clipboardData?.items || []);
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    if (file && cannyImages.length < CANNY_GRID_SIZE) {
+                        const url = URL.createObjectURL(file);
+                        const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '').slice(2);
+                        cannyImages.push({ file, url, name: `pasted_${timestamp}`, selected: true });
+                    }
+                }
+            }
+            if (items.some(i => i.type.startsWith('image/'))) {
+                initCannyGrid();
+            }
+        });
+
+        // Canny loader instance
+        let cannyLoader = null;
+
+        async function generateCanny() {
+            if (cannyImages.length === 0) return;
+
+            const btn = document.getElementById('canny-generate-btn');
+            const resultsContainer = document.getElementById('canny-results');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            // Setup loader
+            cannyLoader = new StudioLoader({
+                loaderElement: document.getElementById('canny-loader'),
+                messageElement: document.getElementById('canny-loader-message'),
+                progressElement: document.getElementById('canny-loader-progress')
+            });
+
+            const numSeeds = parseInt(cannySettings.seeds) || 1;
+            const selectedImages = cannyImages.map((img, i) => ({ ...img, originalIndex: i })).filter(img => img.selected !== false);
+            const totalTasks = selectedImages.length * numSeeds;
+            let completed = 0;
+
+            if (selectedImages.length === 0) return;
+
+            cannyLoader.start(`Analyzing images...`);
+
+            // Process all selected images in parallel
+            const tasks = [];
+            for (let i = 0; i < selectedImages.length; i++) {
+                const img = selectedImages[i];
+                const slot = document.querySelector(`.canny-slot[data-index="${img.originalIndex}"]`);
+                slot?.classList.add('processing');
+
+                for (let seed = 0; seed < numSeeds; seed++) {
+                    tasks.push((async () => {
+                        try {
+                            const base64DataUrl = await blobToBase64(img.file);
+                            const fileName = img.name.toLowerCase();
+
+                            // First, analyze the image to understand what it is and the camera angle
+                            const analyzeRes = await fetch('/api/analyze-gemini', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    image: base64DataUrl,
+                                    prompt: `Describe this image briefly in one sentence. Include: 1) What garment/detail is shown, 2) The camera angle (e.g., "top-down 45 degree angle", "straight-on front view", "angled from above"). Example: "Polo shirt collar, photographed from a 45-degree angle above."`
+                                })
+                            });
+                            const analyzeData = await analyzeRes.json();
+                            const analysis = analyzeData.description || analyzeData.text || '';
+                            console.log(`Analysis for ${img.name}:`, analysis);
+
+                            // Extract angle info from analysis
+                            const angleMatch = analysis.match(/(45.degree|top.down|from above|angled|straight.on|front view|side view|overhead)/i);
+                            const angleDesc = angleMatch ? `, from the same ${angleMatch[0].toLowerCase()} perspective` : '';
+
+                            // Combine filename hints + image analysis to build smart prompt
+                            const lowerAnalysis = analysis.toLowerCase();
+                            let cannyPrompt;
+
+                            // Check filename first for hints, then combine with analysis
+                            if (fileName.includes('collar')) {
+                                // Collar close-up
+                                const garmentType = lowerAnalysis.includes('polo') ? 'polo' :
+                                                   lowerAnalysis.includes('t-shirt') || lowerAnalysis.includes('tshirt') ? 't-shirt' :
+                                                   lowerAnalysis.includes('tank') ? 'tank top' : 'garment';
+                                cannyPrompt = `Create a minimal black and white line drawing of this ${garmentType} collar/neckline${angleDesc}. Thin black outlines only on pure white background. Trace the collar shape and seams. No logos, no text, no shading. Just clean thin black lines showing the collar edges and construction.`;
+                            } else if (fileName.includes('eyelet')) {
+                                // Eyelet detail
+                                cannyPrompt = `Create a minimal black and white line drawing${angleDesc}. Thin black outlines on pure white background. IMPORTANT: Show the eyelets/grommets as solid black filled circles. Include any visible fabric edges as thin lines. No texture, no shading.`;
+                            } else if (fileName.includes('belt')) {
+                                // Belt/waistband of shorts
+                                cannyPrompt = `Create a minimal black and white line drawing of this shorts waistband/belt area${angleDesc}. Thin black outlines only on pure white background. Show the waistband edge, any drawstring or elastic details, and seams as clean thin black lines. No texture, no shading.`;
+                            } else if (fileName.includes('flatlay') || lowerAnalysis.includes('flat lay') || lowerAnalysis.includes('full')) {
+                                // Full garment flat lay
+                                const hasEyelets = lowerAnalysis.includes('eyelet') || lowerAnalysis.includes('grommet');
+                                if (hasEyelets) {
+                                    cannyPrompt = `Create a minimal black and white line drawing${angleDesc}. Thin black outlines only on pure white background. Show the garment silhouette outline. Include any eyelets as solid black circles. No logos, no text, no patterns, no shading.`;
+                                } else {
+                                    cannyPrompt = `Create a minimal black and white line drawing${angleDesc}. Thin black outlines only on pure white background. No logos, no text, no patterns, no shading, no fills, no texture. Just the basic silhouette outline of the garment shape.`;
+                                }
+                            } else {
+                                // Default: use analysis to determine
+                                if (lowerAnalysis.includes('collar') || lowerAnalysis.includes('neckline')) {
+                                    cannyPrompt = `Create a minimal black and white line drawing of this collar/neckline${angleDesc}. Thin black outlines on pure white background. Trace the collar shape and seams. No shading, no texture.`;
+                                } else if (lowerAnalysis.includes('waist') || lowerAnalysis.includes('drawstring')) {
+                                    cannyPrompt = `Create a minimal black and white line drawing of this waistband area${angleDesc}. Thin black outlines on pure white background. Show edges and seams. No shading, no texture.`;
+                                } else {
+                                    cannyPrompt = `Create a minimal black and white line drawing${angleDesc}. Thin black outlines only on pure white background. No logos, no text, no patterns, no shading. Just clean thin black lines tracing the visible edges and shapes.`;
+                                }
+                            }
+
+                            console.log(`Prompt for ${img.name}:`, cannyPrompt);
+                            cannyLoader.updateProgress(`${completed}/${totalTasks} generating...`);
+
+                            const provider = settings.provider || 'gemini';
+                            let generateData;
+
+                            if (provider === 'gemini') {
+                                const generateRes = await fetch('/api/remix-gemini', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        model: 'gemini-3-pro',
+                                        prompt: cannyPrompt,
+                                        image_base64s: [base64DataUrl],
+                                        aspect_ratio: cannySettings.aspect,
+                                        resolution: cannySettings.resolution,
+                                        num_images: 1
+                                    })
+                                });
+                                generateData = await generateRes.json();
+                            } else {
+                                // FAL - upload first then remix
+                                const uploadRes = await fetch('/api/upload-base64', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ dataUrl: base64DataUrl })
+                                });
+                                const uploadData = await uploadRes.json();
+
+                                const generateRes = await fetch('/api/remix', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        model: 'nano-pro',
+                                        prompt: cannyPrompt,
+                                        image_urls: [uploadData.url],
+                                        aspect_ratio: cannySettings.aspect,
+                                        resolution: cannySettings.resolution,
+                                        num_images: 1,
+                                        output_format: 'png'
+                                    })
+                                });
+                                generateData = await generateRes.json();
+                            }
+                            completed++;
+                            cannyLoader.updateProgress(`${completed}/${totalTasks} images`);
+
+                            if (generateData.error) {
+                                console.error(`Generation error: ${generateData.error}`);
+                                return null;
+                            }
+                            if (generateData.images?.length > 0) {
+                                const resultImg = generateData.images[0];
+                                const resultUrl = resultImg.url || `data:image/png;base64,${resultImg.base64}`;
+                                const seedSuffix = numSeeds > 1 ? `_${String(seed + 1).padStart(2, '0')}` : '';
+                                return {
+                                    original: img.url,
+                                    canny: resultUrl,
+                                    name: `${img.name}${seedSuffix}`,
+                                    index: i,
+                                    seed: seed
+                                };
+                            }
+                        } catch (error) {
+                            console.error(`Failed to process ${img.name}:`, error);
+                            completed++;
+                            cannyLoader.updateProgress(`${completed}/${totalTasks} images`);
+                        }
+                        return null;
+                    })());
+                }
+            }
+
+            // Wait for all parallel tasks
+            const results = (await Promise.all(tasks)).filter(r => r !== null);
+
+            // Sort results by original index and seed
+            results.sort((a, b) => a.index - b.index || a.seed - b.seed);
+
+            // Clear processing states
+            selectedImages.forEach(img => {
+                const slot = document.querySelector(`.canny-slot[data-index="${img.originalIndex}"]`);
+                slot?.classList.remove('processing');
+            });
+
+            cannyLoader.stop();
+
+            // Render results
+            resultsContainer.innerHTML = results.map(r => `
+                <div class="canny-result">
+                    <img src="${r.canny}" alt="${r.name} canny" onclick="openLightbox(this)" data-full="${r.canny}" data-name="${r.name}" data-shot="Canny Guide">
+                    <div class="canny-result-info">
+                        <span>${r.name}</span>
+                        <div class="canny-result-actions">
+                            <button class="btn" onclick="downloadCannyResult('${r.canny}', '${r.name}')">Download</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            btn.textContent = 'Generate Canny Guides';
+            updateCannyGenerateBtn();
+        }
+
+        function downloadCannyResult(url, name) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}.png`;
+            a.click();
+        }
+
+        // ========== INIT ==========
+        loadAnalysis();
+        setupSettingsButtons();
+        setupCannySettings();
+        renderOverview();
+        renderProductSelector();
+        initCannyGrid();
+    </script>
+</body>
+</html>

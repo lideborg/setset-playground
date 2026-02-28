@@ -256,6 +256,123 @@ const VIDEO_MOVEMENTS = [
         ]
     },
     {
+        id: 'group-gentle-motion',
+        name: 'Gentle Motion',
+        category: 'group',
+        isGroup: true,
+        description: 'Subtle active movements - hair touches, shoulder shifts, small gestures between minimal and active',
+        movements: [
+            {
+                name: 'Hair Touch Light',
+                validFor: ['face', 'body'],
+                description: 'Hand reaches up to lightly touch or adjust hair',
+                prompt: 'The subject slowly raises one hand to lightly touch their hair - a gentle, natural gesture. Fingers briefly graze through strands then hand returns to rest. Subtle and elegant.'
+            },
+            {
+                name: 'Shoulder Roll',
+                validFor: ['body'],
+                description: 'Shoulders roll back gently',
+                prompt: 'The subject rolls their shoulders back gently - a small, relaxed movement like releasing tension. Natural and easy. The whole upper body moves together softly.'
+            },
+            {
+                name: 'Neck Roll Soft',
+                validFor: ['face', 'body'],
+                description: 'Head tilts and rolls very slightly',
+                prompt: 'The subject\'s head tilts slightly to one side, then gently rolls back to center. A soft, relaxed neck movement. Very controlled and minimal. Eyes stay forward.'
+            },
+            {
+                name: 'Arm Cross Adjust',
+                validFor: ['body'],
+                description: 'Adjusts crossed arms or arm position naturally',
+                prompt: 'The subject adjusts their arms naturally - perhaps crossing them differently, or one hand finding a pocket. A relaxed, casual repositioning like settling into a comfortable stance.'
+            },
+            {
+                name: 'Chin Hand Graze',
+                validFor: ['face'],
+                description: 'Hand moves up to briefly touch chin or jaw',
+                prompt: 'The subject slowly raises a hand toward their face, fingers briefly grazing along the chin or jawline. A thoughtful, contemplative gesture. Hand then lowers gently.'
+            },
+            {
+                name: 'Gentle Sway',
+                validFor: ['body'],
+                description: 'Very slight side-to-side sway',
+                prompt: 'The subject sways very gently from side to side, like standing in a light breeze. A barely perceptible movement - natural and relaxed. The whole body moves together as one.'
+            },
+            {
+                name: 'Hand to Hip',
+                validFor: ['body'],
+                description: 'Hand moves naturally to rest on hip',
+                prompt: 'The subject casually moves one hand to rest on their hip. A relaxed, confident gesture. The movement is smooth and natural, like finding a comfortable pose.'
+            },
+            {
+                name: 'Look and Return',
+                validFor: ['face'],
+                description: 'Head turns slightly away then returns',
+                prompt: 'The subject\'s head turns slightly to one side - just a few degrees - pauses briefly, then returns to face the camera. A small, curious movement. Subtle and engaging.'
+            },
+            {
+                name: 'Chest Rise',
+                validFor: ['body', 'face'],
+                description: 'Visible deep breath, chest rises and falls',
+                prompt: 'The subject takes a slow, visible breath - chest rises gently, holds for a moment, then falls with a soft exhale. Shoulders may lift slightly. A living, breathing moment.'
+            },
+            {
+                name: 'Stand Taller',
+                validFor: ['body'],
+                description: 'Straightens up confidently',
+                prompt: 'The subject stands a little taller - shoulders drawing back, chin lifting slightly. A confident, natural adjustment. Like taking a moment to compose themselves.'
+            },
+            {
+                name: 'Weight Shift Feet',
+                validFor: ['legs', 'body'],
+                description: 'Weight shifts from one foot to the other',
+                prompt: 'The subject shifts their weight from one foot to the other. A subtle redistribution - one leg relaxes as the other takes more weight. A natural, casual stance adjustment. Smooth and minimal.'
+            },
+            {
+                name: 'Foot Reposition',
+                validFor: ['legs'],
+                description: 'One foot adjusts position slightly',
+                prompt: 'One foot slowly repositions - sliding slightly to the side or adjusting its angle. A small, natural adjustment to stance. The other foot stays planted. Subtle movement.'
+            },
+            {
+                name: 'Slow Turn Start',
+                validFor: ['legs', 'body'],
+                description: 'Begins a slow rotation, legs turning',
+                prompt: 'The subject begins a slow turn - feet pivot slightly, legs rotate. The start of a graceful rotation. Movement is gradual and controlled. Shows the beginning of turning around.'
+            },
+            {
+                name: 'Step Shift',
+                validFor: ['legs'],
+                description: 'Takes a tiny half-step to adjust position',
+                prompt: 'The subject takes a tiny half-step - one foot lifts barely off the ground and repositions. A minimal stance adjustment. Very subtle, almost like settling into position.'
+            },
+            {
+                name: 'Relaxed Stance Shift',
+                validFor: ['legs', 'body'],
+                description: 'Shifts into a more relaxed standing pose',
+                prompt: 'The subject shifts into a slightly more relaxed stance - weight settling to one side, posture easing naturally. Like exhaling and getting comfortable. Smooth and casual.'
+            },
+            {
+                name: 'Heel Lift',
+                validFor: ['legs'],
+                description: 'One heel lifts slightly off the ground',
+                prompt: 'One heel lifts slightly off the ground while toes stay planted. A subtle shift like about to take a step, but then settles back down. Minimal anticipatory movement.'
+            },
+            {
+                name: 'Stance Widen',
+                validFor: ['legs', 'body'],
+                description: 'Feet shift slightly wider apart',
+                prompt: 'The feet slowly shift to a slightly wider stance. A subtle opening of the position - more grounded and confident. The movement is gradual and controlled.'
+            },
+            {
+                name: 'Walk Exit Hint',
+                validFor: ['legs'],
+                description: 'Subtle movement suggesting about to walk away',
+                prompt: 'The subject begins the very start of walking motion - weight shifts forward, one foot prepares to lift. The hint of walking away. Movement is just beginning, not completing.'
+            }
+        ]
+    },
+    {
         id: 'group-editorial-active',
         name: 'Editorial Active',
         category: 'group',

@@ -41,6 +41,10 @@ app.use(express.urlencoded({ limit: '100mb', extended: true }));
 // Serve static files from parent directory
 app.use(express.static(join(__dirname, '..')));
 
+// Serve Ron Dorff finals from Dropbox folder
+const RONDORFF_FINALS_DIR = '/Users/lidelaptop/Library/CloudStorage/Dropbox-Setset/Setset/01_Production/2026/260116_RonDorff/04_dailies/260221/14_Finals_PNG';
+app.use('/rondorff-finals', express.static(RONDORFF_FINALS_DIR));
+
 // API Keys from environment
 const FAL_API_KEYS = {
     personal: process.env.FAL_API_KEY_PERSONAL,
@@ -175,6 +179,89 @@ app.post('/api/generate', async (req, res) => {
 });
 
 /**
+ * POST /api/generate-gemini
+ * Generate images using Gemini 3.1 Flash Image Preview (Nano Banana 2)
+ * Optimized for speed and high-volume use cases
+ */
+app.post('/api/generate-gemini', async (req, res) => {
+    try {
+        const { prompt, aspect_ratio = '3:4', image_size = '1024' } = req.body;
+
+        console.log(`🎨 [Gemini Image] Generating image...`);
+        console.log(`🎨 [Gemini Image] Prompt: "${prompt.substring(0, 80)}..."`);
+        console.log(`🎨 [Gemini Image] Aspect: ${aspect_ratio}, Size: ${image_size}`);
+
+        // Use Gemini 3.1 Flash Image Preview (Nano Banana 2) - optimized for speed
+        const model = 'gemini-3.1-flash-image-preview';
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+        const requestBody = {
+            contents: [{
+                parts: [{ text: prompt }]
+            }],
+            generationConfig: {
+                responseModalities: ['TEXT', 'IMAGE'],
+                imageConfig: {
+                    aspectRatio: aspect_ratio,
+                    imageSize: image_size
+                }
+            }
+        };
+
+        const response = await fetch(`${endpoint}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Gemini Image] API Error:', data);
+            return res.status(response.status).json({
+                error: data.error?.message || 'Gemini image generation failed',
+                details: data
+            });
+        }
+
+        // Extract image from response
+        const candidate = data.candidates?.[0];
+        const parts = candidate?.content?.parts || [];
+
+        // Find the image part
+        const imagePart = parts.find(p => p.inlineData?.mimeType?.startsWith('image/'));
+        const textPart = parts.find(p => p.text);
+
+        if (!imagePart) {
+            console.error('❌ [Gemini Image] No image in response:', data);
+            return res.status(500).json({
+                error: 'No image generated',
+                text: textPart?.text || 'Unknown error'
+            });
+        }
+
+        // Convert base64 to data URL
+        const mimeType = imagePart.inlineData.mimeType;
+        const base64Data = imagePart.inlineData.data;
+        const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+        console.log(`✅ [Gemini Image] Success! Generated ${mimeType} image`);
+
+        // Return in same format as FAL for compatibility
+        res.json({
+            images: [{
+                url: dataUrl,
+                content_type: mimeType
+            }]
+        });
+
+    } catch (error) {
+        console.error('❌ [Gemini Image] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/remix
  * Remix/transform images using fal.ai
  */
@@ -227,7 +314,7 @@ app.post('/api/remix', async (req, res) => {
 /**
  * POST /api/remix-gemini
  * Remix/transform images using Google Gemini API directly
- * Supports gemini-2.5-flash-image and gemini-3-pro-image-preview models
+ * Supports gemini-2.5-flash-image, gemini-3-pro-image-preview, and gemini-3.1-flash-image-preview models
  */
 app.post('/api/remix-gemini', async (req, res) => {
     try {
@@ -237,12 +324,21 @@ app.post('/api/remix-gemini', async (req, res) => {
             return res.status(400).json({ error: 'Prompt is required' });
         }
 
-        const modelId = model === 'gemini-3-pro' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+        // Map model parameter to actual Gemini model IDs
+        let modelId;
+        if (model === 'gemini-3-pro') {
+            modelId = 'gemini-3-pro-image-preview';
+        } else if (model === 'gemini-3.1-flash') {
+            modelId = 'gemini-3.1-flash-image-preview';
+        } else {
+            modelId = 'gemini-2.5-flash-image';
+        }
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
 
         console.log(`🎨 [Gemini Remix] Model: ${modelId}`);
         console.log(`🎨 [Gemini Remix] Prompt: ${prompt.substring(0, 100)}...`);
         console.log(`🎨 [Gemini Remix] Images: ${image_base64s?.length || image_urls?.length || 0} (${image_base64s ? 'base64' : 'urls'})`);
+        console.log(`🎨 [Gemini Remix] Aspect: ${aspect_ratio || 'default'}, Resolution: ${resolution || 'default'}`);
         console.log(`🎨 [Gemini Remix] Web Search: ${web_search ? 'ON' : 'OFF'}`);
 
         // Build the content parts array
@@ -313,7 +409,7 @@ app.post('/api/remix-gemini', async (req, res) => {
                 requestBody.generationConfig.imageConfig.aspectRatio = aspect_ratio;
             }
             if (resolution) {
-                // Gemini uses imageSize: "1K", "2K", "4K"
+                // Pass resolution directly as-is (1K, 2K, 4K)
                 requestBody.generationConfig.imageConfig.imageSize = resolution;
             }
         }
@@ -323,6 +419,11 @@ app.post('/api/remix-gemini', async (req, res) => {
             requestBody.tools = [{
                 google_search: {}
             }];
+        }
+
+        // Debug: log imageConfig being sent
+        if (requestBody.generationConfig.imageConfig) {
+            console.log(`🎨 [Gemini Remix] imageConfig:`, JSON.stringify(requestBody.generationConfig.imageConfig));
         }
 
         const response = await fetch(endpoint, {
@@ -370,8 +471,9 @@ app.post('/api/remix-gemini', async (req, res) => {
         // Debug: Log full response structure
         console.log(`📦 [Gemini Remix] Response structure:`, JSON.stringify(data, null, 2).substring(0, 1000));
 
-        // Extract images from response
+        // Extract images and text from response
         const images = [];
+        let text = '';
         if (candidate?.content?.parts) {
             for (const part of candidate.content.parts) {
                 // Gemini returns inlineData (camelCase), not inline_data
@@ -382,18 +484,21 @@ app.post('/api/remix-gemini', async (req, res) => {
                     const dataUrl = `data:${mimeType};base64,${inlineData.data}`;
                     images.push({ url: dataUrl });
                 }
+                if (part.text) {
+                    text += part.text;
+                }
             }
         }
 
         // Log if no images but not explicitly blocked (could still be safety related)
-        if (images.length === 0 && !finishReason) {
-            console.warn(`⚠️ [Gemini Remix] No images returned, no explicit block. Response:`, JSON.stringify(data).substring(0, 500));
+        if (images.length === 0 && !finishReason && !text) {
+            console.warn(`⚠️ [Gemini Remix] No images or text returned, no explicit block. Response:`, JSON.stringify(data).substring(0, 500));
         }
 
-        console.log(`✅ [Gemini Remix] Generated ${images.length} image(s)${finishReason ? ` (finish: ${finishReason})` : ''}`);
+        console.log(`✅ [Gemini Remix] Generated ${images.length} image(s)${text ? ', has text' : ''}${finishReason ? ` (finish: ${finishReason})` : ''}`);
 
-        // Return in same format as FAL API for compatibility
-        res.json({ images });
+        // Return in same format as FAL API for compatibility, plus text if present
+        res.json({ images, text: text || undefined });
 
     } catch (error) {
         console.error('❌ [Gemini Remix] Server error:', error);
@@ -504,6 +609,64 @@ app.post('/api/analyze-gemini', async (req, res) => {
 
     } catch (error) {
         console.error('❌ [Gemini Analyze] Server error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/gemini-text
+ * Text-only Gemini generation (no images)
+ * Used for prompt enhancement, text generation, etc.
+ */
+app.post('/api/gemini-text', async (req, res) => {
+    try {
+        const { prompt, system } = req.body;
+
+        if (!prompt) {
+            return res.status(400).json({ error: 'Prompt is required' });
+        }
+
+        const modelId = 'gemini-2.0-flash';
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
+
+        const parts = [];
+        if (system) {
+            parts.push({ text: `System: ${system}\n\n` });
+        }
+        parts.push({ text: prompt });
+
+        const requestBody = {
+            contents: [{
+                parts: parts
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2000
+            }
+        };
+
+        console.log(`🔍 [Gemini Text] Processing...`);
+
+        const response = await fetch(`${endpoint}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ [Gemini Text] Error:', data);
+            return res.status(response.status).json({ error: data.error?.message || 'Gemini text generation failed' });
+        }
+
+        const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        console.log(`✅ [Gemini Text] Success: "${textContent.substring(0, 60)}..."`);
+
+        res.json({ content: textContent });
+
+    } catch (error) {
+        console.error('❌ [Gemini Text] Server error:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1068,13 +1231,17 @@ app.post('/api/prompts/campaign', async (req, res) => {
             numPrompts = 10,
             environments = ['ibiza'],
             lighting = ['midday'],
-            includeModel = true
+            includeModel = true,
+            customInstructions = null
         } = req.body;
 
         console.log(`📝 [Campaign Prompts] Generating ${numPrompts} prompts`);
         console.log(`   Environments: ${environments.join(', ')}`);
         console.log(`   Lighting: ${lighting.join(', ')}`);
         console.log(`   Include model: ${includeModel}`);
+        if (customInstructions) {
+            console.log(`   Custom instructions: ${customInstructions}`);
+        }
 
         const systemPrompt = `You are an expert at writing photorealistic image generation prompts for premium male swimwear brand campaigns. Your prompts should create campaign-ready imagery.
 
@@ -1179,9 +1346,13 @@ COMPOSITION RULES:
 - Professional fashion photography aesthetic
 
 PROMPT FORMAT:
-Each prompt should be 2-3 sentences, starting with "Photorealistic campaign image for premium male swimwear brand."
-Include: subject (if model), specific environment details, lighting quality, composition notes.
-End with: "professional fashion photography, natural light only"
+${includeModel
+    ? `Each prompt should be 2-3 sentences, starting with "Photorealistic campaign image for premium male swimwear brand."
+Include: male model, specific environment details, lighting quality, composition notes.`
+    : `Each prompt should be 2-3 sentences, starting with "Empty scenic landscape photograph, no people, no humans."
+Include: specific environment details, lighting quality, composition notes.
+CRITICAL: NO people, NO humans, NO figures whatsoever - purely landscape/environment shots.`}
+End with: "professional ${includeModel ? 'fashion' : 'landscape'} photography, natural light only"
 
 Generate ${numPrompts} unique, varied prompts. Return ONLY the prompts, one per line, no numbering.`;
 
@@ -1189,14 +1360,24 @@ Generate ${numPrompts} unique, varied prompts. Return ONLY the prompts, one per 
 - Environments: ${environments.join(', ')}
 - Lighting: ${lighting.join(', ')}
 - ${includeModel ? 'Include male model in swimwear' : 'Environment only, no people'}
+${customInstructions ? `
+CUSTOM INSTRUCTIONS - HIGHEST PRIORITY (ALL prompts MUST follow this):
+${customInstructions}
 
+IMPORTANT: The action/pose described above must be used in EVERY prompt. Do NOT vary the pose. Vary ONLY:
+- Camera angles (eye level, low angle, side profile, 3/4 view)
+- Model placement (left, center, right of frame)
+- Swimwear colors and styles
+- Specific locations within the environment type
+- Lighting nuances
+` : `
 CRITICAL: Each prompt MUST be completely different from the others:
 - Use DIFFERENT poses for each prompt (standing, seated, walking, leaning, crouching, etc.)
 - Use DIFFERENT camera angles (eye level, low angle, side profile, 3/4 view)
 - Use DIFFERENT model placements (left, center, right of frame)
 - Use DIFFERENT swimwear colors and styles
 - Use DIFFERENT specific locations within the environment type
-- NO two prompts should feel similar - maximum variety is essential`;
+- NO two prompts should feel similar - maximum variety is essential`}`;
 
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
 
@@ -1225,7 +1406,7 @@ CRITICAL: Each prompt MUST be completely different from the others:
         }
 
         const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        let prompts = content.split('\n').filter(line => line.trim() && line.includes('Photorealistic'));
+        let prompts = content.split('\n').filter(line => line.trim() && (line.includes('Photorealistic') || line.includes('Empty scenic')));
 
         // Clean up prompts
         prompts = prompts.map(p => p.trim().replace(/^\d+[\.\)]\s*/, ''));
@@ -2623,6 +2804,17 @@ app.get('/api/skin-enhance/:taskId', async (req, res) => {
                 'x-freepik-api-key': FREEPIK_API_KEY
             }
         });
+
+        // Check content type before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('❌ [Skin Enhance Status] Non-JSON response:', response.status, text.substring(0, 200));
+            return res.status(response.status).json({
+                error: `API returned non-JSON response (${response.status})`,
+                hint: 'The Freepik API may be down or returning an error page'
+            });
+        }
 
         const data = await response.json();
 

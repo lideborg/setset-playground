@@ -1,0 +1,13 @@
+{
+  "sku": "21BG97.SO",
+  "name": "Tote Bag Fearless",
+  "color": "Sunset Orange",
+  "material": "100% cotton canvas",
+  "prompts": {
+    "flatlay": "E-commerce product photograph. COPY the EXACT composition from the LAST reference image.\n\nIMAGE ORDER:\n- Images 1-2: Product photos of {{productColor}} tote bag - use for EXACT color, text, and details\n- LAST image: Composition reference - COPY THIS EXACTLY\n\nCOMPOSITION - COPY FROM REFERENCE:\n- Match EXACT bag position and angle from reference\n- Handles up, bag body flat\n- Match overall framing and crop\n\nPRODUCT - MUST MATCH INPUT IMAGES:\n- {{productColor}} cotton canvas tote bag\n- Ombre gradient: pink/coral at top fading to orange at bottom\n- \"FEARLESS SUMMER\" text - COPY EXACT font, size, placement from input\n- Two BLACK metal RON DORFF eyelets at bottom\n- Handles at top\n\nCRITICAL - BAG APPEARANCE:\n- Canvas COMPLETELY FLAT - like stretched on a frame\n- PERFECTLY STRAIGHT edges - as if pressed with an iron\n- ZERO wrinkles, ZERO creases, ZERO fold marks\n- NO sagging, NO bunching, NO soft/floppy areas\n- Structured and RIGID appearance\n- Factory-fresh, brand new product photography\n\nLIGHTING & BACKGROUND:\nLight gray studio backdrop. Bright, even e-commerce lighting.",
+
+    "eyelet": "E-commerce detail photograph. COPY the EXACT composition from the LAST reference image.\n\nIMAGE ORDER:\n- Images 1-2: Product photos - use for exact color\n- LAST image: Composition reference - COPY THIS EXACTLY\n\nCOMPOSITION - COPY FROM REFERENCE:\n- Canvas fabric at angle showing eyelets\n- Tight macro crop\n- Bottom corner of bag visible\n\nPRODUCT DETAILS - MUST INCLUDE:\n- Two BLACK metal RON DORFF eyelets\n- Eyelets have white text engraved around rim\n- {{productColor}} ombre canvas fabric\n\nCRITICAL: Canvas PERFECTLY FLAT. Eyelets sharp and legible.\n\nLIGHTING & BACKGROUND:\nLight gray background at edges. Bright macro lighting.",
+
+    "print": "E-commerce print detail photograph. COPY the EXACT composition from the LAST reference image.\n\nIMAGE ORDER:\n- Images 1-2: Product photos - use for EXACT text, font, and color\n- LAST image: Composition reference - COPY THIS EXACTLY\n\nCOMPOSITION - COPY FROM REFERENCE:\n- Focus on printed text area\n- \"FEARLESS SUMMER\" fills frame\n- Match framing from reference\n\nPRODUCT DETAILS:\n- {{productColor}} ombre canvas background\n- \"FEARLESS SUMMER\" black text - EXACT font and placement from input\n- Ron Dorff branding\n\nCRITICAL: Canvas FLAT beneath print. Text sharp and legible.\n\nLIGHTING & BACKGROUND:\nLight gray backdrop. Even lighting for accurate color."
+  }
+}

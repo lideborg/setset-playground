@@ -1806,10 +1806,11 @@ Write ONLY the prompt.`
                         image_url: imageUrl,
                         prompt: `Classify this image into ONE category. Reply with ONLY one word:
 - "face" if it shows a person's face/head (portrait, headshot, close-up with visible face)
-- "body" if it shows a person's body (full body, half body, fashion shot with person)
+- "body" if it shows a person's body with face visible (full body, half body, fashion shot)
+- "legs" if it shows only legs/waist-down (no face visible, cropped from waist or thighs down, feet/legs focus)
 - "product" if it shows a product without a person (shoes, bags, clothing on hanger/mannequin, accessories, objects)
 
-Reply with exactly one word: face, body, or product`
+Reply with exactly one word: face, body, legs, or product`
                     })
                 });
                 const data = await response.json();
@@ -1817,6 +1818,7 @@ Reply with exactly one word: face, body, or product`
 
                 // Extract the type from response
                 if (content.includes('face')) return 'face';
+                if (content.includes('legs')) return 'legs';
                 if (content.includes('body')) return 'body';
                 if (content.includes('product')) return 'product';
 

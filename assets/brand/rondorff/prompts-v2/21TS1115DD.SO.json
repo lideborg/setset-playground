@@ -1,0 +1,13 @@
+{
+  "sku": "21TS1115DD.SO",
+  "name": "Crew Neck T-Shirt Eyelet Edition",
+  "color": "Sunset Orange",
+  "material": "100% gassed cotton",
+  "prompts": {
+    "flatlay": "E-commerce flat lay photograph. COPY the EXACT composition from the LAST reference image.\n\nIMAGE ORDER:\n- Images 1-2: Product photos of {{productColor}} {{shortProductName}} - use for color and details\n- LAST image: Composition reference - COPY THIS EXACTLY\n\nCOMPOSITION - COPY FROM REFERENCE:\n- Match EXACT garment position from reference\n- T-shirt laid flat, sleeves spread\n- Match overall framing and crop\n\nPRODUCT - MUST MATCH INPUT IMAGES:\n- {{productColor}} crew neck t-shirt\n- Solid orange ombre gradient color\n- Ron Dorff label at neckline\n- Two BLACK metal RON DORFF eyelets at hem - MUST be visible\n- Short sleeves\n\nCRITICAL REQUIREMENTS:\n- Garment PRESSED and CRISP - graphical catalog quality\n- ZERO wrinkles, ZERO creases\n- Neckline clean and properly shaped\n- Sleeves laid flat and symmetrical\n\nLIGHTING & BACKGROUND:\nLight gray studio backdrop. Bright, even e-commerce lighting.",
+
+    "eyelet": "E-commerce detail photograph. COPY the EXACT composition from the LAST reference image.\n\nIMAGE ORDER:\n- Images 1-2: Product photos - use for exact color\n- LAST image: Composition reference - COPY THIS EXACTLY\n\nCOMPOSITION - COPY FROM REFERENCE:\n- Fabric runs DIAGONALLY\n- Hem edge visible at bottom of frame\n- Tight macro crop\n\nPRODUCT DETAILS - MUST INCLUDE:\n- Two BLACK metal RON DORFF eyelets\n- Eyelets have white text engraved around rim\n- {{productColor}} smooth cotton fabric\n\nCRITICAL: Fabric FLAT. Eyelets sharp and legible.\n\nLIGHTING & BACKGROUND:\nLight gray background at edges. Bright macro lighting.",
+
+    "collar": "E-commerce collar detail photograph. COPY the EXACT composition from the LAST reference image.\n\nIMAGE ORDER:\n- Images 1-2: Product photos - use for color and details\n- LAST image: Composition reference - COPY THIS EXACTLY\n\nCOMPOSITION - COPY FROM REFERENCE:\n- Neckline fills frame\n- Show collar construction\n- Ron Dorff label visible at back neck\n\nPRODUCT DETAILS:\n- {{productColor}} crew neck collar\n- Ribbed collar band\n- Ron Dorff label at neckline\n\nCRITICAL: Collar clean and crisp. Fabric flat.\n\nLIGHTING & BACKGROUND:\nLight gray backdrop. Bright, even studio lighting."
+  }
+}

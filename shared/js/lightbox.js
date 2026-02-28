@@ -34,8 +34,13 @@ class Lightbox {
             inputsSection: document.getElementById('lightbox-inputs-section'),
             inputsGrid: document.getElementById('lightbox-inputs-grid'),
             poseSection: document.getElementById('lightbox-pose-section'),
-            poseIndicator: document.getElementById('lightbox-pose-indicator')
+            poseIndicator: document.getElementById('lightbox-pose-indicator'),
+            compareSection: document.getElementById('lightbox-compare-section'),
+            compareInputBtn: document.getElementById('compare-input-btn'),
+            compareOutputBtn: document.getElementById('compare-output-btn')
         };
+
+        this.compareMode = 'output'; // 'input' or 'output'
 
         this.bindEvents();
     }
@@ -66,6 +71,13 @@ class Lightbox {
                         <div class="lightbox-section lightbox-inputs-section" id="lightbox-inputs-section" style="display: none;">
                             <h3 class="lightbox-section-title">Input Images</h3>
                             <div class="lightbox-inputs-grid" id="lightbox-inputs-grid"></div>
+                        </div>
+                        <div class="lightbox-section lightbox-compare-section" id="lightbox-compare-section" style="display: none;">
+                            <h3 class="lightbox-section-title">Compare</h3>
+                            <div class="lightbox-compare-buttons">
+                                <button class="compare-btn" id="compare-input-btn" data-compare="input">Input</button>
+                                <button class="compare-btn active" id="compare-output-btn" data-compare="output">Output</button>
+                            </div>
                         </div>
                         <div class="lightbox-section lightbox-speed-section" id="lightbox-speed-section" style="display: none;">
                             <h3 class="lightbox-section-title">Playback Speed</h3>
@@ -152,6 +164,29 @@ class Lightbox {
                     border-radius: 4px;
                     display: inline-block;
                 }
+                .lightbox-compare-buttons {
+                    display: flex;
+                    gap: 6px;
+                    margin-top: 8px;
+                }
+                .compare-btn {
+                    padding: 8px 16px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    border: 1px solid #e5e5e5;
+                    border-radius: 4px;
+                    background: #f5f5f5;
+                    cursor: pointer;
+                    transition: all 0.15s;
+                }
+                .compare-btn:hover {
+                    border-color: #333;
+                }
+                .compare-btn.active {
+                    background: #333;
+                    color: white;
+                    border-color: #333;
+                }
             </style>
         `;
         document.body.insertAdjacentHTML('beforeend', html);
@@ -190,6 +225,14 @@ class Lightbox {
                 this.setPlaybackSpeed(speed);
             });
         });
+
+        // Compare buttons
+        if (this.elements.compareInputBtn) {
+            this.elements.compareInputBtn.addEventListener('click', () => this.setCompareMode('input'));
+        }
+        if (this.elements.compareOutputBtn) {
+            this.elements.compareOutputBtn.addEventListener('click', () => this.setCompareMode('output'));
+        }
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
@@ -233,6 +276,27 @@ class Lightbox {
             this.elements.download.textContent = `Download (${speed}x)`;
         } else {
             this.elements.download.textContent = 'Download';
+        }
+    }
+
+    setCompareMode(mode) {
+        this.compareMode = mode;
+        const result = this.results[this.currentIndex];
+        if (!result) return;
+
+        // Update button states
+        if (this.elements.compareInputBtn) {
+            this.elements.compareInputBtn.classList.toggle('active', mode === 'input');
+        }
+        if (this.elements.compareOutputBtn) {
+            this.elements.compareOutputBtn.classList.toggle('active', mode === 'output');
+        }
+
+        // Switch the displayed image
+        if (mode === 'input' && result.inputImages && result.inputImages.length > 0) {
+            this.elements.image.src = result.inputImages[0];
+        } else {
+            this.elements.image.src = result.url;
         }
     }
 
@@ -336,6 +400,29 @@ class Lightbox {
             }
         }
 
+        // Show compare section if there are input images
+        if (this.elements.compareSection) {
+            if (result.inputImages && result.inputImages.length > 0) {
+                this.elements.compareSection.style.display = 'block';
+                // Reset to output mode when navigating
+                this.compareMode = 'output';
+                if (this.elements.compareInputBtn) this.elements.compareInputBtn.classList.remove('active');
+                if (this.elements.compareOutputBtn) this.elements.compareOutputBtn.classList.add('active');
+            } else {
+                this.elements.compareSection.style.display = 'none';
+            }
+        }
+
+        // Update download button text based on whether we have input images (download front+back)
+        const hasInputImages = result.inputImages && result.inputImages.length > 0;
+        const isVideoResult = result.type === 'video' ||
+                              result.url?.includes('.mp4') ||
+                              result.url?.includes('.webm') ||
+                              result.url?.includes('.mov');
+        if (!isVideoResult) {
+            this.elements.download.textContent = hasInputImages ? 'Download Front + Back' : 'Download';
+        }
+
         // Update nav visibility
         if (this.elements.prev) {
             this.elements.prev.style.display = this.currentIndex > 0 ? 'block' : 'none';
@@ -358,17 +445,34 @@ class Lightbox {
             return;
         }
 
-        // Normal download
-        try {
-            // Use proxy to bypass CORS issues (especially for videos from CDNs)
-            const proxyUrl = `/api/proxy-download?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl);
+        // Check if we have input images - if so, download both front and back
+        const hasInputImages = result?.inputImages && result.inputImages.length > 0;
 
-            if (!response.ok) {
-                throw new Error('Proxy download failed');
-            }
+        if (hasInputImages) {
+            // Build filenames with _front and _back suffixes
+            const extIndex = filename.lastIndexOf('.');
+            const baseName = extIndex > 0 ? filename.slice(0, extIndex) : filename;
+            const ext = extIndex > 0 ? filename.slice(extIndex) : '.png';
 
-            const blob = await response.blob();
+            const backFilename = `${baseName}_back${ext}`;
+            const frontFilename = `${baseName}_front${ext}`;
+
+            // Download both files
+            await Promise.all([
+                this.downloadSingleFile(url, backFilename),
+                this.downloadSingleFile(result.inputImages[0], frontFilename)
+            ]);
+        } else {
+            // Normal single file download
+            await this.downloadSingleFile(url, filename);
+        }
+    }
+
+    async downloadSingleFile(url, filename) {
+        // Data URLs (base64) should be downloaded directly - no proxy needed
+        const isDataUrl = url.startsWith('data:');
+
+        const downloadBlob = async (blob) => {
             const blobUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = blobUrl;
@@ -377,20 +481,39 @@ class Lightbox {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
+        };
+
+        if (isDataUrl) {
+            // Direct fetch for data URLs
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                await downloadBlob(blob);
+            } catch (e) {
+                console.error('Data URL download failed:', e);
+                window.open(url, '_blank');
+            }
+            return;
+        }
+
+        // For regular URLs, try proxy first
+        try {
+            const proxyUrl = `/api/proxy-download?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+
+            if (!response.ok) {
+                throw new Error('Proxy download failed');
+            }
+
+            const blob = await response.blob();
+            await downloadBlob(blob);
         } catch (error) {
             console.error('Proxy download failed, trying direct:', error);
             // Fallback: try direct fetch
             try {
                 const response = await fetch(url);
                 const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
+                await downloadBlob(blob);
             } catch (e) {
                 console.error('Direct download also failed:', e);
                 window.open(url, '_blank');
@@ -446,8 +569,9 @@ class Lightbox {
 
     async defaultDownloadDirect(url, filename) {
         try {
-            const proxyUrl = `/api/proxy-download?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl);
+            // Data URLs don't need proxy
+            const fetchUrl = url.startsWith('data:') ? url : `/api/proxy-download?url=${encodeURIComponent(url)}`;
+            const response = await fetch(fetchUrl);
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');

@@ -52,6 +52,8 @@ Access the app at: http://localhost:8000
 
 **Image Naming:** `Setset_RonDorff_Campaign_Style01_YYMMDD_HHMM_XX.png`
 
+**Image Size:** 1280 x 1536 pixels (Ron Dorff delivery spec)
+
 **Lightbox Features:**
 - Shows input images used for generation (numbered thumbnails)
 - Click thumbnail to open full-size in new tab

@@ -9,6 +9,33 @@
     <link rel="stylesheet" href="/shared/css/base.css">
     <link rel="stylesheet" href="/shared/css/components.css">
     <style>
+        /* Slot count tabs */
+        .slot-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: var(--space-sm);
+        }
+
+        .slot-tab {
+            padding: 6px 12px;
+            font-size: var(--text-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .slot-tab:hover {
+            background: var(--gainsboro);
+        }
+
+        .slot-tab.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
         /* Upload Grid - 6x2 grid */
         .upload-grid {
             display: grid;
@@ -19,6 +46,8 @@
             border-radius: var(--radius-sm);
             background: var(--white);
             margin-bottom: var(--space-md);
+            max-height: 600px;
+            overflow-y: auto;
         }
 
         .upload-grid.drag-over {
@@ -275,6 +304,13 @@
 
         <!-- Upload Grid -->
         <div class="section-label">Images</div>
+        <div class="slot-tabs" id="slot-tabs">
+            <button class="slot-tab active" data-slots="12">12</button>
+            <button class="slot-tab" data-slots="24">24</button>
+            <button class="slot-tab" data-slots="48">48</button>
+            <button class="slot-tab" data-slots="100">100</button>
+            <button class="slot-tab" data-slots="250">250</button>
+        </div>
         <div class="upload-grid" id="upload-grid"></div>
 
         <!-- Settings -->
@@ -377,10 +413,9 @@
             images: [],
             keepFilenames: false,
             results: [],
-            lightboxIndex: 0
+            lightboxIndex: 0,
+            numSlots: 12
         };
-
-        const NUM_SLOTS = 12;
 
         // DOM Elements
         const elements = {
@@ -418,7 +453,14 @@
         // Initialize upload grid
         function initUploadGrid() {
             elements.uploadGrid.innerHTML = '';
-            for (let i = 0; i < NUM_SLOTS; i++) {
+
+            // Adjust columns based on slot count
+            let cols = 6;
+            if (state.numSlots >= 100) cols = 10;
+            else if (state.numSlots >= 48) cols = 8;
+            elements.uploadGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            for (let i = 0; i < state.numSlots; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'upload-slot';
                 slot.dataset.index = i;
@@ -426,6 +468,33 @@
                 slot.addEventListener('click', (e) => handleSlotClick(i, e));
                 elements.uploadGrid.appendChild(slot);
             }
+        }
+
+        // Slot tabs handler
+        function initSlotTabs() {
+            const tabs = document.querySelectorAll('.slot-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const newSlots = parseInt(tab.dataset.slots);
+                    if (newSlots === state.numSlots) return;
+
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // Update slot count (keep existing images)
+                    state.numSlots = newSlots;
+
+                    // Trim images array if needed
+                    if (state.images.length > state.numSlots) {
+                        state.images = state.images.slice(0, state.numSlots);
+                    }
+
+                    initUploadGrid();
+                    renderUploadGrid();
+                    updateCalc();
+                });
+            });
         }
 
         function handleSlotClick(index, event) {
@@ -846,7 +915,7 @@
             const slotsToFill = [];
             for (let i = 0; i < files.length; i++) {
                 let targetIndex = -1;
-                for (let j = 0; j < NUM_SLOTS; j++) {
+                for (let j = 0; j < state.numSlots; j++) {
                     if (!state.images[j] && !slotsToFill.includes(j)) {
                         targetIndex = j;
                         break;
@@ -883,6 +952,7 @@
         });
 
         // Initialize
+        initSlotTabs();
         initUploadGrid();
         updateCalc();
     </script>
