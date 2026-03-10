@@ -47,6 +47,14 @@ const MODELS = {
         supportsResolution: true,
         description: 'High quality, supports 1K/2K/4K'
     },
+    'gemini-flash': {
+        name: 'Gemini Flash',
+        type: 'text-to-image',
+        endpoint: '/api/generate-gemini',
+        costPerImage: 0.08,
+        usesAspectRatio: true,
+        description: 'Gemini 3.1 Flash image generation (1K)'
+    },
 
     // Image to Image (Remix)
     'nanobanana-edit': {

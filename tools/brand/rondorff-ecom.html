@@ -338,6 +338,26 @@
             margin-left: 4px;
         }
 
+        /* V3 view toggle buttons */
+        .v3-view-btn {
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .v3-view-btn:hover {
+            background: #eee;
+        }
+        .v3-view-btn.active {
+            background: #333;
+            color: white;
+            border-color: #333;
+        }
+
         /* Pose view product card */
         .pose-product-card {
             background: var(--white);
@@ -692,6 +712,50 @@
             color: var(--slate);
         }
 
+        .task-count {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+        }
+
+        .generate-category-btn {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: var(--text-xs);
+            background: var(--jet);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            margin-top: var(--space-xs);
+        }
+
+        .generate-category-btn:hover {
+            background: #333;
+        }
+
+        .generate-category-btn:disabled {
+            background: var(--gainsboro);
+            color: var(--slate);
+            cursor: not-allowed;
+        }
+
+        .custom-notes-section {
+            margin: var(--space-xs) 0;
+        }
+
+        .custom-notes-input {
+            width: 100%;
+            padding: 6px 10px;
+            font-size: var(--text-xs);
+            border: 1px solid var(--gainsboro);
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .custom-notes-input:focus {
+            outline: none;
+            border-color: var(--jet);
+        }
+
         /* Guide and inputs section */
         .inputs-guides-section {
             margin-bottom: var(--space-xs);
@@ -722,12 +786,25 @@
         }
 
         .image-option {
+            position: relative;
             aspect-ratio: 3/4;
             border: 1px solid var(--gainsboro);
             cursor: pointer;
             overflow: hidden;
             opacity: 0.5;
             transition: all var(--transition-fast);
+        }
+
+        .none-label {
+            font-size: var(--text-2xs);
+            color: var(--slate);
+        }
+
+        .guide-image-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--silver);
         }
 
         .image-option:hover {
@@ -1398,6 +1475,7 @@
             display: none;
             align-items: center;
             justify-content: center;
+            z-index: 10;
         }
 
         .video-upload-slot:hover .remove-btn {
@@ -1582,6 +1660,7 @@
             height: 18px;
             cursor: pointer;
             accent-color: var(--jet);
+            z-index: 10;
         }
         .vo-pair-card {
             position: relative;
@@ -2102,16 +2181,31 @@
                     <div class="loader-progress" id="v3-loader-progress">0 / 0</div>
                 </div>
 
-                <!-- V3 Settings Bar - at top -->
-                <div class="settings-compact" id="v3-settings-bar">
-                    <div class="setting-item">
-                        <label>Provider:</label>
-                        <div class="btn-group-compact" id="v3-provider-buttons">
-                            <button class="active" data-value="nano-pro">Nano Pro</button>
-                            <button data-value="nano-pro-flash">Nano Pro Flash</button>
-                            <button data-value="fal">FAL</button>
+                <!-- V3 Settings Bar - at top (dual-model like Gemini batch tool) -->
+                <div class="settings-compact" id="v3-settings-bar" style="flex-wrap: wrap; gap: 8px 16px;">
+                    <!-- Row 1: Models with resolutions -->
+                    <div class="setting-item" style="flex: 1 1 100%; display: flex; gap: 24px; align-items: flex-start;">
+                        <!-- 3 Pro -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 13px; font-weight: 600; color: #333;">3 Pro</label>
+                            <div class="btn-group-compact multi-select" id="v3-pro-resolution-buttons">
+                                <button data-value="1K" title="$0.14">1K</button>
+                                <button class="active" data-value="2K" title="$0.14">2K</button>
+                                <button data-value="4K" title="$0.28">4K</button>
+                            </div>
+                        </div>
+                        <!-- 3.1 Flash -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 13px; font-weight: 600; color: #333;">3.1 Flash</label>
+                            <div class="btn-group-compact multi-select" id="v3-flash-resolution-buttons">
+                                <button data-value="0.5K" title="$0.045">0.5K</button>
+                                <button data-value="1K" title="$0.07">1K</button>
+                                <button data-value="2K" title="$0.10">2K</button>
+                                <button data-value="4K" title="$0.15">4K</button>
+                            </div>
                         </div>
                     </div>
+                    <!-- Row 2: Ratio and Seeds -->
                     <div class="setting-item">
                         <label>Ratio:</label>
                         <div class="btn-group-compact" id="v3-aspect-buttons">
@@ -2124,15 +2218,6 @@
                         </div>
                     </div>
                     <div class="setting-item">
-                        <label>Res:</label>
-                        <div class="btn-group-compact" id="v3-resolution-buttons">
-                            <button data-value="512">512px</button>
-                            <button data-value="1K">1K</button>
-                            <button class="active" data-value="2K">2K</button>
-                            <button data-value="4K">4K</button>
-                        </div>
-                    </div>
-                    <div class="setting-item">
                         <label>Seeds:</label>
                         <div class="btn-group-compact" id="v3-seeds-buttons">
                             <button class="active" data-value="1">1</button>
@@ -2142,8 +2227,39 @@
                         </div>
                     </div>
                 </div>
-                <div class="pose-selector" id="product-v3-selector"></div>
-                <div id="product-v3-area"></div>
+
+                <!-- V3 View Toggle (Composition / Product) -->
+                <div class="v3-view-toggle" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <button class="v3-view-btn active" data-view="composition" onclick="setV3ViewMode('composition')">Composition</button>
+                    <button class="v3-view-btn" data-view="product" onclick="setV3ViewMode('product')">Product</button>
+                </div>
+
+                <!-- Composition View (default - by shot type) -->
+                <div id="v3-composition-view">
+                    <div class="pose-selector" id="product-v3-selector"></div>
+                    <div id="product-v3-area"></div>
+                </div>
+
+                <!-- Product View (like V1 - by product) -->
+                <div id="v3-product-view" style="display: none;">
+                    <div class="product-selector" id="v3-product-selector"></div>
+                    <div id="v3-selected-product-area"></div>
+                </div>
+
+                <!-- V3 Results Area (at bottom) -->
+                <div id="v3-results-section" style="margin-top: 16px; display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f5f5f5; border: 1px solid #ddd; border-bottom: none;">
+                        <span style="font-weight: 600; font-size: 12px;">Results (<span id="v3-results-count">0</span>)</span>
+                        <button onclick="clearV3Results()" style="padding: 4px 8px; font-size: 10px;">Clear</button>
+                    </div>
+                    <div id="v3-results-grid" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; background: white; border: 1px solid #ddd; min-height: 100px;"></div>
+                </div>
+
+                <!-- V3 Bottom Loader -->
+                <div id="v3-bottom-loader" style="display: none; padding: 12px; background: #f0f0f0; border: 1px solid #ddd; margin-top: 8px; text-align: center;">
+                    <div style="font-size: 12px; font-weight: 500;" id="v3-bottom-loader-message">Generating...</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 4px;" id="v3-bottom-loader-progress">0 / 0</div>
+                </div>
             </div>
 
             <!-- Pose View (hidden by default) -->
@@ -2372,6 +2488,14 @@
                         <div class="btn-group-compact" id="vo-select-buttons">
                             <button onclick="voSelectAll()">All</button>
                             <button onclick="voDeselectAll()">None</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>Seeds:</label>
+                        <div class="btn-group-compact" id="vo-seeds-buttons">
+                            <button class="active" data-value="1">1</button>
+                            <button data-value="2">2</button>
+                            <button data-value="3">3</button>
                         </div>
                     </div>
                 </div>
@@ -2716,9 +2840,26 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
         }
 
         // Model portraits for face/3-4 shot types
+        // Each model has both face (portrait) and fullBody images - both are used together as input
         const MODEL_PORTRAITS = [
-            { id: 'model-01', thumb: '/assets/brand/rondorff/models/thumbs/model-01.jpg', full: '/assets/brand/rondorff/models/model-01.jpg', name: 'Model 1', description: 'Caucasian male model EXACTLY as shown in image 1 - medium-length wavy brown hair, green eyes, stubble, athletic build, tan skin' },
-            { id: 'model-02', thumb: '/assets/brand/rondorff/models/thumbs/model-02.jpg', full: '/assets/brand/rondorff/models/model-02.png', name: 'Model 2', description: 'Caucasian male model EXACTLY as shown in image 1 - short strawberry blonde hair, blue eyes, clean-shaven, athletic build, tan skin' }
+            {
+                id: 'model-01',
+                thumb: '/assets/brand/rondorff/models/thumbs/model-01.jpg',
+                face: '/assets/brand/rondorff/models/model-01.png',
+                fullBody: '/assets/brand/rondorff/models/full-body/model-1_full.png',
+                full: '/assets/brand/rondorff/models/model-01.png', // legacy alias
+                name: 'Model 1',
+                description: 'Caucasian male model EXACTLY as shown in image 1 - medium-length wavy brown hair, green eyes, stubble, athletic build, tan skin'
+            },
+            {
+                id: 'model-02',
+                thumb: '/assets/brand/rondorff/models/thumbs/model-02.jpg',
+                face: '/assets/brand/rondorff/models/model-02.png',
+                fullBody: '/assets/brand/rondorff/models/full-body/model-2_full.png',
+                full: '/assets/brand/rondorff/models/model-02.png', // legacy alias
+                name: 'Model 2',
+                description: 'Caucasian male model EXACTLY as shown in image 1 - short strawberry blonde hair, blue eyes, clean-shaven, athletic build, tan skin'
+            }
         ];
 
         // Shot types that need model portraits
@@ -2786,6 +2927,28 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
         // Photo reference images (actual photos to use as composition reference)
         // folder: subfolder within /assets/brand/rondorff/refs/ OR 'canny' for legacy /canny/refs/ path
         const PHOTO_REF_IMAGES = [
+            // === MODEL POSE REFERENCES (on-model shots) ===
+            // Model 1 - Front poses
+            { folder: 'poses/model-1/front', file: 'Setset_Remix_260301_1823_01 1.png', type: 'on-model', poseType: 'front', label: 'M1 Front 1', isPhotoRef: true, forModel: 'model-01', description: 'male model front pose, standing relaxed, arms at sides, white studio backdrop' },
+            { folder: 'poses/model-1/front', file: 'Setset_Remix_260301_1823_02 1.png', type: 'on-model', poseType: 'front', label: 'M1 Front 2', isPhotoRef: true, forModel: 'model-01', description: 'male model front pose, slight angle, hands relaxed, white studio backdrop' },
+            { folder: 'poses/model-1/front', file: 'Setset_Remix_260301_1823_03 1.png', type: 'on-model', poseType: 'front', label: 'M1 Front 3', isPhotoRef: true, forModel: 'model-01', description: 'male model front pose, weight on one leg, natural stance, white studio backdrop' },
+            { folder: 'poses/model-1/front', file: 'Setset_Remix_260301_1823_04 1.png', type: 'on-model', poseType: 'front', label: 'M1 Front 4', isPhotoRef: true, forModel: 'model-01', description: 'male model front pose, confident stance, white studio backdrop' },
+            // Model 1 - 3/4 poses
+            { folder: 'poses/model-1/34', file: 'image 150.png', type: 'on-model', poseType: '3/4', label: 'M1 3/4 1', isPhotoRef: true, forModel: 'model-01', description: 'male model 3/4 angle, turned slightly, full body visible, white studio backdrop' },
+            { folder: 'poses/model-1/34', file: 'Setset_Remix_260301_1832_09 1.png', type: 'on-model', poseType: '3/4', label: 'M1 3/4 2', isPhotoRef: true, forModel: 'model-01', description: 'male model 3/4 angle, casual pose, white studio backdrop' },
+            { folder: 'poses/model-1/34', file: 'Setset_Remix_260301_1832_10 1.png', type: 'on-model', poseType: '3/4', label: 'M1 3/4 3', isPhotoRef: true, forModel: 'model-01', description: 'male model 3/4 angle, dynamic stance, white studio backdrop' },
+            { folder: 'poses/model-1/34', file: 'Setset_Remix_260301_1833_14 1.png', type: 'on-model', poseType: '3/4', label: 'M1 3/4 4', isPhotoRef: true, forModel: 'model-01', description: 'male model 3/4 angle, athletic pose, white studio backdrop' },
+            // Model 2 - Front poses
+            { folder: 'poses/model-2/front', file: 'image 151.png', type: 'on-model', poseType: 'front', label: 'M2 Front 1', isPhotoRef: true, forModel: 'model-02', description: 'male model front pose, standing relaxed, arms at sides, white studio backdrop' },
+            { folder: 'poses/model-2/front', file: 'Setset_Remix_260301_1857_34 1.png', type: 'on-model', poseType: 'front', label: 'M2 Front 2', isPhotoRef: true, forModel: 'model-02', description: 'male model front pose, slight angle, hands relaxed, white studio backdrop' },
+            { folder: 'poses/model-2/front', file: 'Setset_Remix_260301_1857_35 1.png', type: 'on-model', poseType: 'front', label: 'M2 Front 3', isPhotoRef: true, forModel: 'model-02', description: 'male model front pose, weight on one leg, natural stance, white studio backdrop' },
+            { folder: 'poses/model-2/front', file: 'Setset_Remix_260301_1857_37 1.png', type: 'on-model', poseType: 'front', label: 'M2 Front 4', isPhotoRef: true, forModel: 'model-02', description: 'male model front pose, confident stance, white studio backdrop' },
+            // Model 2 - 3/4 poses
+            { folder: 'poses/model-2/34', file: 'Setset_Remix_260301_1846_24 1.png', type: 'on-model', poseType: '3/4', label: 'M2 3/4 1', isPhotoRef: true, forModel: 'model-02', description: 'male model 3/4 angle, turned slightly, full body visible, white studio backdrop' },
+            { folder: 'poses/model-2/34', file: 'Setset_Remix_260301_1846_24 2.png', type: 'on-model', poseType: '3/4', label: 'M2 3/4 2', isPhotoRef: true, forModel: 'model-02', description: 'male model 3/4 angle, casual pose, white studio backdrop' },
+            { folder: 'poses/model-2/34', file: 'Setset_Remix_260301_1846_25 1.png', type: 'on-model', poseType: '3/4', label: 'M2 3/4 3', isPhotoRef: true, forModel: 'model-02', description: 'male model 3/4 angle, dynamic stance, white studio backdrop' },
+            { folder: 'poses/model-2/34', file: 'Setset_Remix_260301_1846_25 2.png', type: 'on-model', poseType: '3/4', label: 'M2 3/4 4', isPhotoRef: true, forModel: 'model-02', description: 'male model 3/4 angle, athletic pose, white studio backdrop' },
+
             // === EYELET DETAIL SHOTS (Original refs) ===
             { folder: 'canny', file: 'Setset_Canny_Eyelet_Knit.png', type: 'eyelet', label: 'Knit', isPhotoRef: true, description: 'knit garment laid flat at 45-degree angle, ribbed hem visible at bottom corner, fabric smooth and fills frame, two eyelets diagonal near hem' },
             { folder: 'canny', file: 'Setset_Canny_Eyelet_Minimal.png', type: 'eyelet', label: 'Minimal', isPhotoRef: true, description: 'garment fabric layered at diagonal angle showing two eyelets, clean minimal composition with fabric filling corner of frame' },
@@ -2852,6 +3015,9 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
             { folder: 'shorts-flatlay', file: 'Shorts_Flatlay_Orange.webp', type: 'flatlay', label: 'Swim Orange', isPhotoRef: true, description: 'orange swim shorts laid flat, branded RON DORFF PARIS STOCKHOLM drawstrings in loop at top, elastic waistband, two black eyelets on lower right, side pockets, professional e-commerce flat lay' },
             { folder: 'shorts-flatlay', file: 'Shorts_Flatlay_Brown.webp', type: 'flatlay', label: 'Swim Brown', isPhotoRef: true, description: 'dark brown/burgundy swim shorts laid flat, branded RON DORFF PARIS STOCKHOLM drawstrings in loop at top, elastic waistband, two black eyelets on lower right, side pockets, professional e-commerce flat lay' },
             { folder: 'shorts-flatlay', file: 'Shorts_Flatlay_Striped.webp', type: 'flatlay', label: 'Swim Striped', isPhotoRef: true, description: 'red/white/navy vertical striped swim shorts laid flat, branded RON DORFF PARIS STOCKHOLM drawstrings in loop at top, elastic waistband, two black eyelets on lower right, professional e-commerce flat lay' },
+
+            // === TAILORED SHORTS FLAT LAY REFS ===
+            { folder: 'flatlay-shorts', file: 'Shorts_Flatlay_Black_01.webp', type: 'flatlay', label: 'Black Tailored', isPhotoRef: true, description: 'black tailored shorts laid flat, button waistband, diagonal pockets, two black Ron Dorff eyelets on lower right hem, professional e-commerce flat lay' },
 
             // === SWIM SHORTS EYELET REFS ===
             { folder: 'shorts-flatlay', file: 'Shorts_Eyelet_Brown.jpg', type: 'eyelet', label: 'Swim Eyelet Brown', isPhotoRef: true, description: 'dark brown swim shorts corner detail, TIGHT MACRO close-up, two BLACK RON DORFF PARIS STOCKHOLM eyelets, diagonal angle showing hem and stitching, fabric fills 80% of frame' },
@@ -2958,18 +3124,18 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
         ];
 
         const ALL_IMAGES = [
-            '21bg97.so_2.jpg', '21bg97.so_back.jpg', '21bg97.so_clean.jpg', '21bg97.so_eyelet.jpg', '21bg97.so_front.jpg', '21bg97.so_print.jpg',
+            '21bg97.so_2.jpg', '21bg97.so_back.jpg', '21bg97.so_clean.jpg', '21bg97.so_eyelet.jpg', '21bg97.so_flatlay.jpg', '21bg97.so_front.jpg', '21bg97.so_print.jpg', '21bg97.so_ref1.jpg', '21bg97.so_ref2.jpg',
             '21ca653dd.so_2.jpg', '21ca653dd.so_3.jpg', '21ca653dd.so_back.jpg', '21ca653dd.so_eyelet.jpg', '21ca653dd.so_front.jpg',
             '21sr20dd.so_2.jpg', '21sr20dd.so_3.jpg', '21sr20dd.so_back.jpg', '21sr20dd.so_belt.jpg', '21sr20dd.so_eyelet.jpg', '21sr20dd.so_front.jpg',
             '21sr21b.s_2.jpg', '21sr21b.s_back.jpg', '21sr21b.s_belt.jpg', '21sr21b.s_eyelet.jpg', '21sr21b.s_front.jpg',
             '21sr23dd.so_back.jpg', '21sr23dd.so_belt.jpg', '21sr23dd.so_eyelet.jpg', '21sr23dd.so_front.jpg',
-            '21ss20.rw_back.jpg', '21ss20.rw_belt.jpg', '21ss20.rw_belt_2.jpg', '21ss20.rw_eyelet.jpg', '21ss20.rw_front.jpg',
-            '21ss21.be_2.jpg', '21ss21.be_back.jpg', '21ss21.be_belt.jpg', '21ss21.be_belt_2.jpg', '21ss21.be_eyelet.jpg', '21ss21.be_front.jpg', '21ss21.be_pocket.jpg',
-            '21sw2019.so_back.jpg', '21sw2019.so_collar.jpg', '21sw2019.so_eyelet.jpg', '21sw2019.so_fabrics.jpg', '21sw2019.so_front.jpg', '21sw2019.so_sleeves.jpg',
-            '21tk189.rw_back.jpg', '21tk189.rw_collar.jpg', '21tk189.rw_eyelet.jpg', '21tk189.rw_front.jpg', '21tk189.rw_sleeves.jpg', '21tk189.rw_sleeves_2.jpg',
+            '21ss20.rw_back.jpg', '21ss20.rw_back2.jpg', '21ss20.rw_belt.jpg', '21ss20.rw_belt_2.jpg', '21ss20.rw_eyelet.jpg', '21ss20.rw_front.jpg', '21ss20.rw_front2.jpg', '21ss20.rw_side.jpg',
+            '21ss21.be_2.jpg', '21ss21.be_back.jpg', '21ss21.be_belt.jpg', '21ss21.be_belt_2.jpg', '21ss21.be_eyelet.jpg', '21ss21.be_front.jpg', '21ss21.be_pocket.jpg', '21ss21.be_ref.jpg',
+            '21sw2019.so_back.jpg', '21sw2019.so_collar.jpg', '21sw2019.so_eyelet.jpg', '21sw2019.so_fabrics.jpg', '21sw2019.so_flatlay_new.jpg', '21sw2019.so_front.jpg', '21sw2019.so_sleeves.jpg',
+            '21tk189.rw_back.jpg', '21tk189.rw_collar.jpg', '21tk189.rw_eyelet.jpg', '21tk189.rw_front.jpg', '21tk189.rw_sleeves.jpg', '21tk189.rw_sleeves_2.jpg', '21tk189.rw_worn.jpg',
             '21ts1115dd.so_back.jpg', '21ts1115dd.so_collar.jpg', '21ts1115dd.so_fabrics.jpg', '21ts1115dd.so_front.jpg', '21ts1115dd.so_sleeves.jpg',
             '21ts1267.so_back.jpg', '21ts1267.so_collar.jpg', '21ts1267.so_fabrics.jpg', '21ts1267.so_front.jpg', '21ts1267.so_print.jpg', '21ts1267.so_sleeves.jpg',
-            '21ts1505.rw_2.jpg', '21ts1505.rw_back.jpg', '21ts1505.rw_buttons.jpg', '21ts1505.rw_collar.jpg', '21ts1505.rw_eyelet.jpg', '21ts1505.rw_fabrics.jpg', '21ts1505.rw_front.jpg', '21ts1505.rw_sleeves.jpg', '21ts1505.rw_sleeves_2.jpg',
+            '21ts1505.rw_2.jpg', '21ts1505.rw_back.jpg', '21ts1505.rw_buttons.jpg', '21ts1505.rw_collar.jpg', '21ts1505.rw_eyelet.jpg', '21ts1505.rw_fabrics.jpg', '21ts1505.rw_flatlay2.jpg', '21ts1505.rw_front.jpg', '21ts1505.rw_sleeves.jpg', '21ts1505.rw_sleeves_2.jpg', '21ts1505.rw_sleeves_ribbed.jpg',
             '21ur30.w_2.jpg', '21ur30.w_back.jpg', '21ur30.w_eyelet.jpg', '21ur30.w_front.jpg',
             '21ur42.w_2.jpg', '21ur42.w_back.jpg', '21ur42.w_eyelet.jpg', '21ur42.w_front.jpg'
         ];
@@ -2990,10 +3156,207 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
         const V2_SHOT_TYPES = ['flatlay', 'eyelet', 'collar', 'fabrics', 'belt', 'print']; // Shot types for V2
 
         // Products V3 state (similar to V2 but with new settings)
+        let v3ViewMode = 'composition'; // 'composition' or 'product'
         let selectedV3ShotType = null;
+        let selectedV3ProductIndex = null; // For product view mode
         let productV3State = {}; // { `${productIndex}_${shotType}`: { expanded, selectedImages, selectedGuides, noneGuideSelected } }
         const V3_SHOT_TYPES = ['flatlay', 'eyelet', 'collar', 'fabrics', 'belt', 'print', 'on-model']; // Shot types for V3
-        let settingsV3 = { aspect: '3:4', resolution: '2K', seeds: 1, provider: 'nano-pro' };
+        // Dual-model settings like Gemini batch tool
+        let settingsV3 = {
+            aspect: '3:4',
+            seeds: 1,
+            // Pro model (Gemini 3 Pro) - multi-select resolutions
+            proResolutions: ['2K'], // Array of selected resolutions
+            // Flash model (Gemini 3.1 Flash) - multi-select resolutions
+            flashResolutions: [], // Empty = disabled
+            // Legacy single provider mode (for backwards compatibility)
+            provider: 'gemini-3-pro',
+            resolution: '2K'
+        };
+
+        // Model pricing
+        const V3_MODEL_COSTS = {
+            'gemini-3-pro': { '1K': 0.14, '2K': 0.14, '4K': 0.28 },
+            'gemini-3-flash': { '0.5K': 0.045, '1K': 0.07, '2K': 0.10, '4K': 0.15 }
+        };
+
+        // V3 Results storage and lightbox (batch-based like V2)
+        let v3Results = [];
+        let v3Lightbox = null;
+        let v3BatchCounter = 0;
+        let v3CurrentBatch = 0;
+        let v3CurrentBatchProduct = '';
+        let v3CurrentBatchCount = 0;
+        let v3BatchInfo = {}; // Store batch info for parallel lookups: { batchNum: { product, count } }
+
+        // Initialize V3 lightbox
+        function initV3Lightbox() {
+            if (v3Lightbox) return;
+            v3Lightbox = new Lightbox({
+                onDownload: async (url, filename) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        canvas.toBlob((blob) => {
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            const pngFilename = filename.replace(/\.(webp|jpg|jpeg)$/i, '.png');
+                            a.download = pngFilename.endsWith('.png') ? pngFilename : pngFilename + '.png';
+                            a.click();
+                            URL.revokeObjectURL(a.href);
+                        }, 'image/png');
+                    };
+                    img.onerror = () => window.open(url, '_blank');
+                    img.src = url;
+                }
+            });
+        }
+
+        // Start a new V3 batch
+        function startV3Batch(productName, totalCount) {
+            v3BatchCounter++;
+            v3CurrentBatch = v3BatchCounter;
+            v3CurrentBatchProduct = productName;
+            v3CurrentBatchCount = totalCount;
+            // Store batch info for parallel lookups
+            v3BatchInfo[v3BatchCounter] = { product: productName, count: totalCount };
+        }
+
+        // Open V3 result in lightbox
+        function openV3Lightbox(index) {
+            initV3Lightbox();
+            v3Lightbox.setResults(v3Results.map(r => ({
+                url: r.url,
+                filename: r.filename,
+                model: r.model,
+                prompt: r.prompt,
+                inputImages: r.inputImages || []
+            })));
+            v3Lightbox.open(index);
+        }
+
+        // Add V3 result to display
+        function addV3Result(result, taskBatchNum = null) {
+            // Use task's batch number if provided (for parallel multi-product generation)
+            // Otherwise use the current batch
+            if (taskBatchNum !== null && v3BatchInfo[taskBatchNum]) {
+                result.batch = taskBatchNum;
+                result.batchProduct = v3BatchInfo[taskBatchNum].product;
+                result.batchTotal = v3BatchInfo[taskBatchNum].count;
+            } else {
+                result.batch = v3CurrentBatch;
+                result.batchProduct = v3CurrentBatchProduct;
+                result.batchTotal = v3CurrentBatchCount;
+            }
+            v3Results.push(result);
+            renderV3Results();
+        }
+
+        // Render V3 results with batch headers (like V2)
+        function renderV3Results() {
+            const grid = document.getElementById('v3-results-grid');
+            const section = document.getElementById('v3-results-section');
+
+            if (v3Results.length === 0) {
+                section.style.display = 'none';
+                grid.innerHTML = '';
+                document.getElementById('v3-results-count').textContent = '0';
+                return;
+            }
+
+            section.style.display = 'block';
+            document.getElementById('v3-results-count').textContent = v3Results.length;
+
+            let html = '';
+            let currentBatchNum = null;
+
+            v3Results.forEach((r, i) => {
+                // Add batch header if new batch
+                if (r.batch !== currentBatchNum) {
+                    currentBatchNum = r.batch;
+                    const batchResults = v3Results.filter(res => res.batch === r.batch);
+                    html += `<div class="v3-batch-header" style="width: 100%; padding: 12px 0 8px 0; border-top: ${r.batch > 1 ? '1px solid #e5e5e5' : 'none'}; margin-top: ${r.batch > 1 ? '12px' : '0'};">
+                        <span style="font-weight: 600; font-size: 13px;">Batch ${r.batch}</span>
+                        <span style="color: #666; font-size: 12px; margin-left: 8px;">${batchResults.length} images - ${r.batchProduct}</span>
+                    </div>`;
+                }
+
+                const modelBadge = r.model.includes('Flash') ? '3.1F' : '3P';
+                const badgeColor = r.model.includes('Flash') ? '#8b5cf6' : '#3b82f6';
+
+                html += `
+                    <div class="v3-result-item" data-index="${i}" style="position: relative; cursor: pointer;">
+                        <img src="${r.url}" style="width: 150px; height: auto; border-radius: 4px; border: 1px solid #ddd;">
+                        <div style="position: absolute; top: 4px; right: 4px; background: ${badgeColor}; color: white; padding: 2px 4px; font-size: 8px; border-radius: 2px;">${modelBadge} ${r.resolution}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                            <div style="font-size: 9px; color: #666;">${r.sku} - ${r.shotType}</div>
+                            <button onclick="event.stopPropagation(); downloadV3ResultByIndex(${i})" style="padding: 2px 6px; font-size: 9px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 2px; cursor: pointer;">DL</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+
+            // Add click handlers for lightbox
+            grid.querySelectorAll('.v3-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const index = parseInt(item.dataset.index);
+                    openV3Lightbox(index);
+                });
+            });
+        }
+
+        // Download V3 result by index (avoids huge inline URLs)
+        function downloadV3ResultByIndex(index) {
+            const r = v3Results[index];
+            if (r) downloadV3Result(r.url, r.filename);
+        }
+
+        // Download V3 result
+        function downloadV3Result(url, filename) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((blob) => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = filename.endsWith('.png') ? filename : filename + '.png';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                }, 'image/png');
+            };
+            img.src = url;
+        }
+
+        // Clear V3 results
+        function clearV3Results() {
+            v3Results = [];
+            v3BatchCounter = 0;
+            v3BatchInfo = {};
+            renderV3Results();
+        }
+
+        // Generate V3 filename
+        function generateV3Filename(product, shotType, resolution, model) {
+            const now = new Date();
+            const dateStr = now.toISOString().slice(2, 10).replace(/-/g, '');
+            const timeStr = now.toTimeString().slice(0, 5).replace(':', '');
+            const skuClean = product.sku.replace(/\./g, '');
+            const modelSuffix = model.includes('flash') ? 'F' : 'P';
+            const counter = String(v3Results.length + 1).padStart(2, '0');
+            return `Setset_RonDorff_Ecomm_${skuClean}_${shotType}_${resolution}_${modelSuffix}_${dateStr}_${timeStr}_${counter}.png`;
+        }
 
         // V3 Prompts loaded from JSON files
         let LOADED_PROMPTS_V3 = {};
@@ -3032,6 +3395,8 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
                     if (v3Prompts[guideKey]) return v3Prompts[guideKey];
                 }
                 if (v3Prompts[shotType]) return v3Prompts[shotType];
+                // Map "on-model" to "front" if not found directly
+                if (shotType === 'on-model' && v3Prompts['front']) return v3Prompts['front'];
             }
 
             // Fall back to V2
@@ -3039,7 +3404,7 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
         }
 
         // Build V3 prompt with template variable replacement (same as V2)
-        function buildPromptV3(shotType, product, selectedImages, guideInfo = null) {
+        function buildPromptV3(shotType, product, selectedImages, guideInfo = null, garmentOptions = {}) {
             const sku = product.sku;
             const guideType = guideInfo?.isPhotoRef ? 'photo' : (guideInfo ? 'canny' : null);
 
@@ -3063,6 +3428,56 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
             // Add guide description if present
             if (guideInfo?.description) {
                 prompt = prompt.replace(/\{\{guideDescription\}\}/g, guideInfo.description);
+            }
+
+            // Add garment descriptions
+            const { modelInfo, selectedBottoms, selectedFootwear, selectedTops, poseMode, customNotes } = garmentOptions;
+
+            // Model description
+            if (modelInfo?.description) {
+                prompt = prompt.replace(/\{\{modelDesc\}\}/g, modelInfo.description);
+            } else {
+                prompt = prompt.replace(/\{\{modelDesc\}\}/g, 'athletic male model');
+            }
+
+            // Add pose mode instructions for on-model shots
+            if (poseMode) {
+                if (poseMode === 'copy') {
+                    // Copy mode: exact pose replication
+                    prompt += '\n\nPOSE MODE: COPY - Replicate the pose from the reference image EXACTLY. Same body position, same arm placement, same leg stance, same head angle. Mirror the reference pose precisely.';
+                } else if (poseMode === 'dynamic') {
+                    // Dynamic mode: variation with more flair
+                    prompt += '\n\nPOSE MODE: DYNAMIC - Use the reference pose as inspiration but create a MORE EXPRESSIVE variation. Add flair and energy: confident gaze directly at camera, subtle smile or knowing expression, more dynamic body angle, relaxed but engaging posture. The model should look charismatic and alive, not stiff or static. Make it editorial and captivating.';
+                }
+            }
+
+            // Add custom notes if provided
+            if (customNotes && customNotes.trim()) {
+                prompt += `\n\nADDITIONAL INSTRUCTIONS: ${customNotes.trim()}`;
+            }
+
+            // Bottoms description
+            if (selectedBottoms && selectedBottoms.length > 0) {
+                const bottomsDesc = selectedBottoms.map(b => b.description).join(', ');
+                prompt = prompt.replace(/\{\{bottomsDesc\}\}/g, bottomsDesc);
+            } else {
+                prompt = prompt.replace(/\{\{bottomsDesc\}\}/g, 'tailored shorts');
+            }
+
+            // Footwear description
+            if (selectedFootwear && selectedFootwear.length > 0) {
+                const footwearDesc = selectedFootwear.map(f => f.description).join(', ');
+                prompt = prompt.replace(/\{\{footwearDesc\}\}/g, footwearDesc);
+            } else {
+                prompt = prompt.replace(/\{\{footwearDesc\}\}/g, 'barefoot');
+            }
+
+            // Tops description (for accessories)
+            if (selectedTops && selectedTops.length > 0) {
+                const topsDesc = selectedTops.map(t => t.description).join(', ');
+                prompt = prompt.replace(/\{\{topsDesc\}\}/g, topsDesc);
+            } else {
+                prompt = prompt.replace(/\{\{topsDesc\}\}/g, 'plain white t-shirt');
             }
 
             return prompt;
@@ -3177,9 +3592,9 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
                     const canUseBottoms = shotType === 'on-model' && CATEGORIES_WITH_BOTTOMS.includes(product.category);
                     const canUseTops = shotType === 'on-model' && CATEGORIES_WITH_TOPS.includes(product.category);
                     poseState[stateKey] = {
-                        expanded: true, // Start expanded
-                        selectedImages: productImages.map((_, i) => i < 2), // Auto-select first 2
-                        selectedModels: needsModel ? MODEL_PORTRAITS.map((_, i) => i === 0) : [],
+                        expanded: false, // Start collapsed
+                        selectedImages: productImages.map(() => false), // Nothing selected
+                        selectedModels: needsModel ? MODEL_PORTRAITS.map(() => false) : [],
                         selectedFootwear: canUseFootwear ? FOOTWEAR.map(() => false) : [],
                         selectedBottoms: canUseBottoms ? BOTTOMS.map(() => false) : [],
                         selectedTops: canUseTops ? TOPS.map(() => false) : [],
@@ -6387,6 +6802,443 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
             renderProductV3Products();
         }
 
+        // ========== V3 VIEW MODE (Composition / Product) ==========
+
+        // Set V3 view mode (composition or product)
+        function setV3ViewMode(mode) {
+            v3ViewMode = mode;
+            // Update toggle buttons
+            document.querySelectorAll('.v3-view-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === mode);
+            });
+            // Toggle views
+            document.getElementById('v3-composition-view').style.display = mode === 'composition' ? 'block' : 'none';
+            document.getElementById('v3-product-view').style.display = mode === 'product' ? 'block' : 'none';
+            // Render the appropriate view
+            if (mode === 'product') {
+                renderV3ProductSelector();
+                renderV3SelectedProduct();
+            }
+        }
+
+        // Render product selector for V3 product view (thumbnails of all products)
+        function renderV3ProductSelector() {
+            const container = document.getElementById('v3-product-selector');
+            let html = '';
+            PRODUCTS.forEach((product, index) => {
+                const frontImg = getFrontImage(product.sku);
+                const selected = selectedV3ProductIndex === index ? 'selected' : '';
+                html += `<div class="product-thumb ${selected}" onclick="selectV3Product(${index})">
+                    <img src="/assets/brand/rondorff/ecom/thumbs/${frontImg}" alt="${product.name}">
+                    <div class="product-thumb-label">${product.sku.split('.')[0]}</div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // Select a product for V3 product view
+        function selectV3Product(index) {
+            selectedV3ProductIndex = index;
+            renderV3ProductSelector();
+            renderV3SelectedProduct();
+        }
+
+        // Render the selected product with all shot types (V3 product view)
+        function renderV3SelectedProduct() {
+            const container = document.getElementById('v3-selected-product-area');
+            if (selectedV3ProductIndex === null) {
+                container.innerHTML = '<div class="no-product-selected">Select a product above to start generating</div>';
+                return;
+            }
+
+            const product = PRODUCTS[selectedV3ProductIndex];
+            const productImages = getProductImages(product.sku);
+            const modelCombinations = getV3ModelCombinations();
+            const modelResCount = modelCombinations.length || 1;
+            const seeds = settingsV3.seeds;
+
+            // Initialize state for each shot type
+            product.shotTypes.forEach(shotType => {
+                const stateKey = `${selectedV3ProductIndex}_${shotType}_v3`;
+                const isOnModel = shotType === 'on-model';
+                const canUseFootwear = isOnModel && CATEGORIES_WITH_FOOTWEAR.includes(product.category);
+                const canUseBottoms = isOnModel && CATEGORIES_WITH_BOTTOMS.includes(product.category);
+                const canUseTops = isOnModel && CATEGORIES_WITH_TOPS.includes(product.category);
+
+                if (!productV3State[stateKey]) {
+                    productV3State[stateKey] = {
+                        expanded: false, // Start collapsed
+                        selectedImages: productImages.map(() => false), // Nothing selected
+                        selectedGuides: [],
+                        noneGuideSelected: false, // Nothing selected
+                        selectedModels: isOnModel ? MODEL_PORTRAITS.map(() => false) : [],
+                        selectedFootwear: canUseFootwear ? FOOTWEAR.map(() => false) : [],
+                        selectedBottoms: canUseBottoms ? BOTTOMS.map(() => false) : [],
+                        selectedTops: canUseTops ? TOPS.map(() => false) : [],
+                        poseModes: isOnModel ? { copy: true, dynamic: false } : null
+                    };
+                }
+                // Ensure arrays exist for existing states
+                if (isOnModel && !productV3State[stateKey].selectedModels) {
+                    productV3State[stateKey].selectedModels = MODEL_PORTRAITS.map((_, i) => i === 0);
+                }
+                if (canUseFootwear && !productV3State[stateKey].selectedFootwear) {
+                    productV3State[stateKey].selectedFootwear = FOOTWEAR.map(() => false);
+                }
+                if (canUseBottoms && !productV3State[stateKey].selectedBottoms) {
+                    productV3State[stateKey].selectedBottoms = BOTTOMS.map(() => false);
+                }
+                if (canUseTops && !productV3State[stateKey].selectedTops) {
+                    productV3State[stateKey].selectedTops = TOPS.map(() => false);
+                }
+                if (isOnModel && !productV3State[stateKey].poseModes) {
+                    productV3State[stateKey].poseModes = { copy: true, dynamic: false };
+                }
+            });
+
+            // Count total tasks
+            let totalImages = 0;
+            let totalCost = 0;
+            product.shotTypes.forEach(shotType => {
+                const stateKey = `${selectedV3ProductIndex}_${shotType}_v3`;
+                const state = productV3State[stateKey];
+                if (!state?.selectedImages?.some(Boolean)) return;
+
+                const relevantGuides = getV2Guides(shotType, product);
+                const selectedGuideCount = state.selectedGuides?.filter(Boolean).length || 0;
+                const guideMultiplier = (state.noneGuideSelected ? 1 : 0) + selectedGuideCount;
+                const effectiveGuideMultiplier = Math.max(1, guideMultiplier);
+                const isOnModel = shotType === 'on-model';
+                const selectedModelCount = isOnModel ? Math.max(1, (state.selectedModels?.filter(Boolean).length || 0)) : 1;
+                // Count selected pose modes (copy and/or dynamic)
+                const poseModeCount = isOnModel && state.poseModes
+                    ? Math.max(1, (state.poseModes.copy ? 1 : 0) + (state.poseModes.dynamic ? 1 : 0))
+                    : 1;
+
+                const productTasks = effectiveGuideMultiplier * seeds * selectedModelCount * modelResCount * poseModeCount;
+                totalImages += productTasks;
+
+                modelCombinations.forEach(combo => {
+                    totalCost += combo.cost * effectiveGuideMultiplier * seeds * selectedModelCount * poseModeCount;
+                });
+            });
+
+            const modelSummary = modelCombinations.map(c => {
+                const modelName = c.model.includes('flash') ? '3.1 Flash' : '3 Pro';
+                return `${modelName} ${c.resolution}`;
+            }).join(', ') || 'No model selected';
+
+            let html = `
+                <div class="selected-product-header">
+                    <div>
+                        <div class="selected-product-title">${product.name}</div>
+                        <div class="selected-product-sku">${product.sku} - ${product.color}</div>
+                    </div>
+                    <button class="header-btn" onclick="generateV3ProductAllShotTypes()" ${totalImages === 0 ? 'disabled' : ''}>
+                        Generate ${totalImages} images (~$${totalCost.toFixed(2)})
+                    </button>
+                </div>
+                <div class="category-rows">
+            `;
+
+            // Render each shot type in a 2-column grid (like V1)
+            product.shotTypes.forEach(shotType => {
+                html += renderV3ProductShotTypeRow(shotType, product, productImages);
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // Render a single shot type row for V3 product view (similar to V1 layout)
+        function renderV3ProductShotTypeRow(shotType, product, productImages) {
+            const stateKey = `${selectedV3ProductIndex}_${shotType}_v3`;
+            const state = productV3State[stateKey];
+            const isOnModel = shotType === 'on-model';
+            const relevantGuides = getV2Guides(shotType, product);
+
+            // Check what additional garments are available for this product
+            const canUseFootwear = isOnModel && CATEGORIES_WITH_FOOTWEAR.includes(product.category);
+            const canUseBottoms = isOnModel && CATEGORIES_WITH_BOTTOMS.includes(product.category);
+            const canUseTops = isOnModel && CATEGORIES_WITH_TOPS.includes(product.category);
+
+            // Count selected images
+            const selectedImageCount = state.selectedImages.filter(Boolean).length;
+            const selectedModelCount = isOnModel ? state.selectedModels.filter(Boolean).length : 0;
+            const selectedGuideCount = state.selectedGuides?.filter(Boolean).length || 0;
+
+            // Get model combinations for task counting
+            const modelCombinations = getV3ModelCombinations();
+            const modelResCount = modelCombinations.length || 1;
+            const seeds = settingsV3.seeds;
+            const guideMultiplier = (state.noneGuideSelected ? 1 : 0) + selectedGuideCount;
+            const effectiveGuideMultiplier = Math.max(1, guideMultiplier);
+            const modelMultiplier = isOnModel ? Math.max(1, selectedModelCount) : 1;
+            // Count selected pose modes (copy and/or dynamic) - default to 1 if none selected
+            const poseModeMultiplier = isOnModel && state.poseModes
+                ? Math.max(1, (state.poseModes.copy ? 1 : 0) + (state.poseModes.dynamic ? 1 : 0))
+                : 1;
+            const taskCount = state.selectedImages.some(Boolean) ? effectiveGuideMultiplier * seeds * modelMultiplier * modelResCount * poseModeMultiplier : 0;
+
+            // Render model portraits for on-model shots
+            const modelImagesHtml = isOnModel ? MODEL_PORTRAITS.map((model, i) => `
+                <div class="image-option ${state.selectedModels[i] ? 'selected' : ''}"
+                     onclick="toggleV3ProductImage('${stateKey}', 'models', ${i})"
+                     style="position: relative;">
+                    <img src="${model.thumb}" alt="${model.name}">
+                    <span class="check">✓</span>
+                    <span style="position: absolute; bottom: 2px; left: 2px; width: 14px; height: 14px; background: #3b82f6; color: white; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 2px;">M</span>
+                </div>
+            `).join('') : '';
+
+            // Render product images
+            const productImagesHtml = productImages.map((img, i) => `
+                <div class="image-option ${state.selectedImages[i] ? 'selected' : ''}"
+                     onclick="toggleV3ProductImage('${stateKey}', 'images', ${i})">
+                    <img src="/assets/brand/rondorff/ecom/thumbs/${img}" alt="">
+                    <span class="check">✓</span>
+                </div>
+            `).join('');
+
+            // Render bottoms (for tops)
+            const bottomsHtml = canUseBottoms ? BOTTOMS.map((bottom, i) => `
+                <div class="image-option ${state.selectedBottoms?.[i] ? 'selected' : ''}"
+                     onclick="toggleV3ProductImage('${stateKey}', 'bottoms', ${i})"
+                     title="${bottom.name}" style="position: relative;">
+                    <img src="${bottom.thumb}" alt="${bottom.name}">
+                    <span class="check">✓</span>
+                    <span style="position: absolute; bottom: 2px; left: 2px; width: 14px; height: 14px; background: #22c55e; color: white; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 2px;">B</span>
+                </div>
+            `).join('') : '';
+
+            // Render footwear (for bottoms)
+            const footwearHtml = canUseFootwear ? FOOTWEAR.map((shoe, i) => `
+                <div class="image-option ${state.selectedFootwear?.[i] ? 'selected' : ''}"
+                     onclick="toggleV3ProductImage('${stateKey}', 'footwear', ${i})"
+                     title="${shoe.name}" style="position: relative;">
+                    <img src="${shoe.thumb}" alt="${shoe.name}">
+                    <span class="check">✓</span>
+                    <span style="position: absolute; bottom: 2px; left: 2px; width: 14px; height: 14px; background: #8b5cf6; color: white; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 2px;">F</span>
+                </div>
+            `).join('') : '';
+
+            // Render tops (for accessories)
+            const topsHtml = canUseTops ? TOPS.map((top, i) => `
+                <div class="image-option ${state.selectedTops?.[i] ? 'selected' : ''}"
+                     onclick="toggleV3ProductImage('${stateKey}', 'tops', ${i})"
+                     title="${top.name}" style="position: relative;">
+                    <img src="${top.thumb}" alt="${top.name}">
+                    <span class="check">✓</span>
+                    <span style="position: absolute; bottom: 2px; left: 2px; width: 14px; height: 14px; background: #f59e0b; color: white; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 2px;">T</span>
+                </div>
+            `).join('') : '';
+
+            // Separate canny guides from photo refs (like V1)
+            const cannyGuides = relevantGuides.filter(g => !g.isPhotoRef);
+            const photoRefs = relevantGuides.filter(g => g.isPhotoRef);
+
+            // Render canny guides section with image thumbnails (like V1)
+            const hasCannyGuides = cannyGuides.length > 0;
+            const cannyGuidesHtml = `
+                <div class="section-label">${hasCannyGuides ? 'Canny Guides (line drawings for composition)' : 'Generation Mode'}</div>
+                <div class="guides-row">
+                    <div class="image-option guide-image-option ${state.noneGuideSelected ? 'selected' : ''}"
+                         onclick="toggleV3ProductGuide('${stateKey}', 'none')">
+                        <span class="none-label">${hasCannyGuides ? 'None' : 'Generate'}</span>
+                        <span class="check">✓</span>
+                    </div>
+                    ${cannyGuides.map((guide, i) => {
+                        const globalIndex = relevantGuides.indexOf(guide);
+                        return `
+                        <div class="image-option guide-image-option ${state.selectedGuides?.[globalIndex] ? 'selected' : ''}"
+                             onclick="toggleV3ProductGuide('${stateKey}', ${globalIndex})" title="${guide.label}">
+                            <img src="/assets/brand/rondorff/canny/guides/${guide.file}" alt="${guide.label}">
+                            <span class="check">✓</span>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+
+            // Render photo refs section with image thumbnails (like V1)
+            const photoRefsHtml = photoRefs.length > 0 ? `
+                <div class="section-label">Photo References (match this exact composition)</div>
+                <div class="guides-row">
+                    ${photoRefs.map((guide, i) => {
+                        const globalIndex = relevantGuides.indexOf(guide);
+                        const photoRefPath = guide.folder === 'canny'
+                            ? `/assets/brand/rondorff/canny/refs/${guide.file}`
+                            : `/assets/brand/rondorff/refs/${guide.folder}/${guide.file}`;
+                        return `
+                        <div class="image-option guide-image-option ${state.selectedGuides?.[globalIndex] ? 'selected' : ''}"
+                             onclick="toggleV3ProductGuide('${stateKey}', ${globalIndex})" title="${guide.label}">
+                            <img src="${photoRefPath}" alt="${guide.label}">
+                            <span class="check">✓</span>
+                        </div>
+                    `}).join('')}
+                </div>
+            ` : '';
+
+            // Pose mode for on-model shots (like V1)
+            const poseModeHtml = isOnModel && state.poseModes ? `
+                <div class="pose-mode-toggle">
+                    <button class="pose-mode-btn ${state.poseModes.copy ? 'active' : ''}" onclick="toggleV3ProductPoseMode('${stateKey}', 'copy')">Copy</button>
+                    <button class="pose-mode-btn ${state.poseModes.dynamic ? 'active' : ''}" onclick="toggleV3ProductPoseMode('${stateKey}', 'dynamic')">Dynamic</button>
+                </div>
+            ` : '';
+
+            return `
+                <div class="category-row" data-shot-type="${shotType}">
+                    <div class="category-row-header">
+                        <div class="category-row-title">${shotType.replace(/-/g, ' ')}</div>
+                        <div class="category-row-actions">
+                            <button class="select-btn" onclick="selectAllV3ProductImages('${stateKey}', true)">All</button>
+                            <button class="select-btn" onclick="selectAllV3ProductImages('${stateKey}', false)">None</button>
+                            <span class="task-count">${taskCount > 0 ? taskCount + '/' + taskCount : '0/' + taskCount}</span>
+                        </div>
+                    </div>
+
+                    ${isOnModel ? `
+                        <div class="section-label">Models</div>
+                        <div class="images-row">${modelImagesHtml}</div>
+                        ${poseModeHtml}
+                        <div class="custom-notes-section">
+                            <input type="text"
+                                   id="custom-notes-${stateKey}"
+                                   placeholder="Custom notes: e.g. lean back slightly, hands in pockets..."
+                                   value="${state.customNotes || ''}"
+                                   onchange="updateV3ProductCustomNotes('${stateKey}', this.value)"
+                                   class="custom-notes-input">
+                        </div>
+                    ` : ''}
+
+                    <div class="section-label">Input Images</div>
+                    <div class="images-row">
+                        ${productImagesHtml}
+                        ${canUseBottoms && bottomsHtml ? bottomsHtml : ''}
+                        ${canUseFootwear && footwearHtml ? footwearHtml : ''}
+                        ${canUseTops && topsHtml ? topsHtml : ''}
+                    </div>
+
+                    ${cannyGuidesHtml}
+                    ${photoRefsHtml}
+
+                    <button class="generate-category-btn" onclick="generateV3ProductShotType('${shotType}')" ${taskCount === 0 ? 'disabled' : ''}>
+                        Generate ${shotType.replace(/-/g, ' ')}
+                    </button>
+                </div>
+            `;
+        }
+
+        // Update custom notes for V3 product
+        function updateV3ProductCustomNotes(stateKey, value) {
+            const state = productV3State[stateKey];
+            if (!state) return;
+            state.customNotes = value;
+        }
+
+        // Select all/none images for a V3 product shot type
+        function selectAllV3ProductImages(stateKey, selectAll) {
+            const state = productV3State[stateKey];
+            if (!state) return;
+            state.selectedImages = state.selectedImages.map(() => selectAll);
+            renderV3SelectedProduct();
+        }
+
+        // Toggle pose mode in V3 product view
+        function toggleV3ProductPoseMode(stateKey, mode) {
+            const state = productV3State[stateKey];
+            if (!state || !state.poseModes) return;
+            state.poseModes[mode] = !state.poseModes[mode];
+            renderV3SelectedProduct();
+        }
+
+        // Toggle image selection in V3 product view
+        function toggleV3ProductImage(stateKey, type, index) {
+            const state = productV3State[stateKey];
+            if (type === 'models') {
+                state.selectedModels[index] = !state.selectedModels[index];
+            } else if (type === 'bottoms') {
+                if (!state.selectedBottoms) state.selectedBottoms = BOTTOMS.map(() => false);
+                state.selectedBottoms[index] = !state.selectedBottoms[index];
+            } else if (type === 'footwear') {
+                if (!state.selectedFootwear) state.selectedFootwear = FOOTWEAR.map(() => false);
+                state.selectedFootwear[index] = !state.selectedFootwear[index];
+            } else if (type === 'tops') {
+                if (!state.selectedTops) state.selectedTops = TOPS.map(() => false);
+                state.selectedTops[index] = !state.selectedTops[index];
+            } else {
+                state.selectedImages[index] = !state.selectedImages[index];
+            }
+            renderV3SelectedProduct();
+        }
+
+        // Toggle guide selection in V3 product view
+        function toggleV3ProductGuide(stateKey, indexOrNone) {
+            const state = productV3State[stateKey];
+            if (indexOrNone === 'none') {
+                state.noneGuideSelected = !state.noneGuideSelected;
+            } else {
+                if (!state.selectedGuides) state.selectedGuides = [];
+                state.selectedGuides[indexOrNone] = !state.selectedGuides[indexOrNone];
+            }
+            renderV3SelectedProduct();
+        }
+
+        // Generate all shot types for selected V3 product
+        async function generateV3ProductAllShotTypes() {
+            if (selectedV3ProductIndex === null) return;
+
+            const product = PRODUCTS[selectedV3ProductIndex];
+            const allTasks = [];
+
+            for (const shotType of product.shotTypes) {
+                const stateKey = `${selectedV3ProductIndex}_${shotType}_v3`;
+                const state = productV3State[stateKey];
+                if (!state?.selectedImages?.some(Boolean)) continue;
+
+                // Temporarily set selectedV3ShotType for prepareV3ProductTasks
+                const originalShotType = selectedV3ShotType;
+                selectedV3ShotType = shotType;
+                const tasks = await prepareV3ProductTasks(selectedV3ProductIndex);
+                selectedV3ShotType = originalShotType;
+
+                if (tasks.length > 0) {
+                    startV3Batch(`${product.name} - ${shotType}`, tasks.length);
+                    tasks.forEach(t => t.batchNum = v3CurrentBatch);
+                    allTasks.push(...tasks);
+                }
+            }
+
+            if (allTasks.length === 0) {
+                alert('Please select at least one image for at least one shot type');
+                return;
+            }
+
+            console.log(`Firing ${allTasks.length} API requests for ${product.name}`);
+            showV3Loader(allTasks.length);
+            await Promise.all(allTasks.map(task => executeV3Task(task)));
+            hideV3Loader();
+        }
+
+        // Generate a specific shot type for selected V3 product
+        async function generateV3ProductShotType(shotType) {
+            if (selectedV3ProductIndex === null) return;
+
+            // Temporarily set selectedV3ShotType for prepareV3ProductTasks
+            const originalShotType = selectedV3ShotType;
+            selectedV3ShotType = shotType;
+            const tasks = await prepareV3ProductTasks(selectedV3ProductIndex);
+            selectedV3ShotType = originalShotType;
+
+            if (tasks.length === 0) return;
+
+            const product = PRODUCTS[selectedV3ProductIndex];
+            startV3Batch(`${product.name} - ${shotType}`, tasks.length);
+            showV3Loader(tasks.length);
+            await Promise.all(tasks.map(task => executeV3Task(task)));
+            hideV3Loader();
+        }
+
         // Render products for selected V3 shot type (similar to V2 but uses V3 state and settings)
         function renderProductV3Products() {
             const container = document.getElementById('product-v3-area');
@@ -6397,24 +7249,59 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
 
             const products = getProductsForV3ShotType(selectedV3ShotType);
             const shotType = selectedV3ShotType;
+            const isOnModel = shotType === 'on-model';
 
             // Initialize state for each product
             products.forEach(product => {
                 const stateKey = `${product.index}_${shotType}_v3`;
+                const canUseFootwear = isOnModel && CATEGORIES_WITH_FOOTWEAR.includes(product.category);
+                const canUseBottoms = isOnModel && CATEGORIES_WITH_BOTTOMS.includes(product.category);
+                const canUseTops = isOnModel && CATEGORIES_WITH_TOPS.includes(product.category);
+
                 if (!productV3State[stateKey]) {
                     const productImages = getProductImages(product.sku);
                     productV3State[stateKey] = {
-                        expanded: true,
-                        selectedImages: productImages.map((_, i) => i < 2),
+                        expanded: false, // Start collapsed
+                        selectedImages: productImages.map(() => false), // Nothing selected
                         selectedGuides: [],
-                        noneGuideSelected: true
+                        noneGuideSelected: false, // Nothing selected
+                        // Model selection for on-model shots (nothing selected)
+                        selectedModels: isOnModel ? MODEL_PORTRAITS.map(() => false) : [],
+                        selectedFootwear: canUseFootwear ? FOOTWEAR.map(() => false) : [],
+                        selectedBottoms: canUseBottoms ? BOTTOMS.map(() => false) : [],
+                        selectedTops: canUseTops ? TOPS.map(() => false) : [],
+                        // Pose mode for on-model shots (copy = exact, dynamic = variation)
+                        poseModes: isOnModel ? { copy: true, dynamic: false } : null,
+                        // Track if Ron Dorff References section is expanded
+                        ronDorffRefsOpen: false
                     };
                 }
+                // Ensure arrays exist for existing states
+                if (isOnModel && !productV3State[stateKey].selectedModels) {
+                    productV3State[stateKey].selectedModels = MODEL_PORTRAITS.map((_, i) => i === 0);
+                }
+                if (canUseFootwear && !productV3State[stateKey].selectedFootwear) {
+                    productV3State[stateKey].selectedFootwear = FOOTWEAR.map(() => false);
+                }
+                if (canUseBottoms && !productV3State[stateKey].selectedBottoms) {
+                    productV3State[stateKey].selectedBottoms = BOTTOMS.map(() => false);
+                }
+                if (canUseTops && !productV3State[stateKey].selectedTops) {
+                    productV3State[stateKey].selectedTops = TOPS.map(() => false);
+                }
+                if (isOnModel && !productV3State[stateKey].poseModes) {
+                    productV3State[stateKey].poseModes = { copy: true, dynamic: false };
+                }
             });
+
+            // Get model combinations for counting
+            const modelCombinations = getV3ModelCombinations();
+            const modelResCount = modelCombinations.length || 1;
 
             // Count total tasks using V3 settings
             const seeds = settingsV3.seeds;
             let totalImages = 0;
+            let totalCost = 0;
 
             products.forEach(p => {
                 const stateKey = `${p.index}_${shotType}_v3`;
@@ -6426,7 +7313,23 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                 const guideMultiplier = (state.noneGuideSelected ? 1 : 0) + selectedGuideCount;
                 const effectiveGuideMultiplier = Math.max(1, guideMultiplier);
 
-                totalImages += effectiveGuideMultiplier * seeds;
+                // For on-model: multiply by selected models count
+                const selectedModelCount = isOnModel
+                    ? Math.max(1, (state.selectedModels?.filter(Boolean).length || 0))
+                    : 1;
+
+                // For on-model: multiply by selected pose modes (copy and/or dynamic)
+                const poseModeCount = isOnModel && state.poseModes
+                    ? Math.max(1, (state.poseModes.copy ? 1 : 0) + (state.poseModes.dynamic ? 1 : 0))
+                    : 1;
+
+                const productTasks = effectiveGuideMultiplier * seeds * selectedModelCount * modelResCount * poseModeCount;
+                totalImages += productTasks;
+
+                // Calculate cost
+                modelCombinations.forEach(combo => {
+                    totalCost += combo.cost * effectiveGuideMultiplier * seeds * selectedModelCount * poseModeCount;
+                });
             });
 
             const selectedCount = products.filter(p => {
@@ -6434,13 +7337,20 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                 return productV3State[stateKey]?.selectedImages?.some(Boolean);
             }).length;
 
+            // Build model/resolution summary for header
+            const modelSummary = modelCombinations.map(c => {
+                const modelName = c.model.includes('flash') ? '3.1 Flash' : '3 Pro';
+                return `${modelName} ${c.resolution}`;
+            }).join(', ') || 'No model selected';
+
             let html = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); padding: var(--space-sm); background: var(--white); border: 1px solid var(--jet);">
                     <div>
                         <strong>${shotType.toUpperCase()}</strong> - ${selectedCount}/${products.length} products ready
-                        <span style="margin-left: 8px; font-size: 10px; color: #666;">[${settingsV3.provider} | ${settingsV3.resolution} | ${settingsV3.aspect}]</span>
+                        <span style="margin-left: 8px; font-size: 10px; color: #666;">[${modelSummary} | ${settingsV3.aspect}]</span>
                     </div>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span style="font-size: 11px; color: #666;">~$${totalCost.toFixed(2)}</span>
                         <button onclick="deselectAllV3Products()" style="padding: 4px 12px; font-size: 11px;">Deselect All</button>
                         <button onclick="expandAllV3Products(true)" style="padding: 4px 12px; font-size: 11px;">Expand All</button>
                         <button onclick="expandAllV3Products(false)" style="padding: 4px 12px; font-size: 11px;">Collapse All</button>
@@ -6466,36 +7376,203 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
 
                 const noneSelected = state.noneGuideSelected || false;
                 let guidesHtml = '';
+
+                // Helper to render a single guide
+                const renderGuide = (guide, i) => {
+                    let guidePath;
+                    if (!guide.isPhotoRef) {
+                        guidePath = '/assets/brand/rondorff/canny/guides/' + guide.file;
+                    } else if (guide.folder === 'canny') {
+                        guidePath = '/assets/brand/rondorff/canny/refs/' + guide.file;
+                    } else {
+                        guidePath = '/assets/brand/rondorff/refs/' + guide.folder + '/' + guide.file;
+                    }
+                    const badgeColor = guide.isPhotoRef ? '#f59e0b' : '#3b82f6';
+                    const badgeText = guide.isPhotoRef ? 'R' : 'C';
+                    return `
+                        <div class="pose-image-option ${state.selectedGuides[i] ? 'selected' : ''}"
+                             onclick="toggleV3Guide(${product.index}, '${shotType}', ${i})" title="${guide.label}">
+                            <img src="${guidePath}" alt="${guide.label}">
+                            <span class="check">✓</span>
+                            <span style="position: absolute; top: 2px; left: 2px; background: ${badgeColor}; color: white; padding: 1px 4px; font-size: 8px; border-radius: 2px;">${badgeText}</span>
+                        </div>
+                    `;
+                };
+
                 if (relevantGuides.length > 0) {
-                    guidesHtml = `
-                        <div style="margin-top: 8px;">
-                            <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Guides & References:</div>
-                            <div class="pose-product-images-row">
-                                <div class="pose-image-option ${noneSelected ? 'selected' : ''}"
-                                     onclick="toggleV3NoneGuide(${product.index}, '${shotType}')" title="Generate without guide" style="display: flex; align-items: center; justify-content: center; background: #f5f5f5; min-width: 48px; min-height: 48px;">
-                                    <span style="font-size: 10px; font-weight: 600; color: #666;">None</span>
-                                    <span class="check">✓</span>
+                    if (isOnModel) {
+                        // For on-model: group by Model 1, Model 2, Ron Dorff (collapsed)
+                        const model1Guides = [];
+                        const model2Guides = [];
+                        const ronDorffGuides = [];
+
+                        relevantGuides.forEach((guide, i) => {
+                            if (guide.forModel === 'model-01') {
+                                model1Guides.push({ guide, index: i });
+                            } else if (guide.forModel === 'model-02') {
+                                model2Guides.push({ guide, index: i });
+                            } else {
+                                ronDorffGuides.push({ guide, index: i });
+                            }
+                        });
+
+                        const model1Selected = model1Guides.filter(g => state.selectedGuides[g.index]).length;
+                        const model2Selected = model2Guides.filter(g => state.selectedGuides[g.index]).length;
+                        const ronDorffSelected = ronDorffGuides.filter(g => state.selectedGuides[g.index]).length;
+
+                        guidesHtml = `
+                            <div style="margin-top: 8px;">
+                                <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Pose References:</div>
+
+                                <!-- None option -->
+                                <div class="pose-product-images-row" style="margin-bottom: 8px;">
+                                    <div class="pose-image-option ${noneSelected ? 'selected' : ''}"
+                                         onclick="toggleV3NoneGuide(${product.index}, '${shotType}')" title="Generate without guide" style="display: flex; align-items: center; justify-content: center; background: #f5f5f5; min-width: 48px; min-height: 48px;">
+                                        <span style="font-size: 10px; font-weight: 600; color: #666;">None</span>
+                                        <span class="check">✓</span>
+                                    </div>
                                 </div>
-                                ${relevantGuides.map((guide, i) => {
-                                    let guidePath;
-                                    if (!guide.isPhotoRef) {
-                                        guidePath = '/assets/brand/rondorff/canny/guides/' + guide.file;
-                                    } else if (guide.folder === 'canny') {
-                                        guidePath = '/assets/brand/rondorff/canny/refs/' + guide.file;
-                                    } else {
-                                        guidePath = '/assets/brand/rondorff/refs/' + guide.folder + '/' + guide.file;
-                                    }
-                                    const badgeColor = guide.isPhotoRef ? '#f59e0b' : '#3b82f6';
-                                    const badgeText = guide.isPhotoRef ? 'R' : 'C';
-                                    return `
-                                        <div class="pose-image-option ${state.selectedGuides[i] ? 'selected' : ''}"
-                                             onclick="toggleV3Guide(${product.index}, '${shotType}', ${i})" title="${guide.label}">
-                                            <img src="${guidePath}" alt="${guide.label}">
-                                            <span class="check">✓</span>
-                                            <span style="position: absolute; top: 2px; left: 2px; background: ${badgeColor}; color: white; padding: 1px 4px; font-size: 8px; border-radius: 2px;">${badgeText}</span>
-                                        </div>
-                                    `;
-                                }).join('')}
+
+                                ${model1Guides.length > 0 ? `
+                                <!-- Model 1 Poses -->
+                                <div style="margin-bottom: 8px;">
+                                    <div style="font-size: 10px; color: #3b82f6; margin-bottom: 4px; font-weight: 600;">Model 1 Poses ${model1Selected > 0 ? `(${model1Selected} selected)` : ''}</div>
+                                    <div class="pose-product-images-row">
+                                        ${model1Guides.map(g => renderGuide(g.guide, g.index)).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+
+                                ${model2Guides.length > 0 ? `
+                                <!-- Model 2 Poses -->
+                                <div style="margin-bottom: 8px;">
+                                    <div style="font-size: 10px; color: #8b5cf6; margin-bottom: 4px; font-weight: 600;">Model 2 Poses ${model2Selected > 0 ? `(${model2Selected} selected)` : ''}</div>
+                                    <div class="pose-product-images-row">
+                                        ${model2Guides.map(g => renderGuide(g.guide, g.index)).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+
+                                ${ronDorffGuides.length > 0 ? `
+                                <!-- Ron Dorff References (collapsible) -->
+                                <details style="margin-top: 4px;" ${state.ronDorffRefsOpen ? 'open' : ''} ontoggle="toggleV3RonDorffRefs(${product.index}, '${shotType}', this.open)">
+                                    <summary style="font-size: 10px; color: #666; cursor: pointer; user-select: none; padding: 4px 0;">
+                                        <span style="font-weight: 600;">Ron Dorff References</span>
+                                        <span style="color: #999; margin-left: 4px;">(${ronDorffGuides.length} refs${ronDorffSelected > 0 ? `, ${ronDorffSelected} selected` : ''})</span>
+                                    </summary>
+                                    <div class="pose-product-images-row" style="margin-top: 4px;">
+                                        ${ronDorffGuides.map(g => renderGuide(g.guide, g.index)).join('')}
+                                    </div>
+                                </details>
+                                ` : ''}
+                            </div>
+                        `;
+                    } else {
+                        // Non on-model: original flat layout
+                        guidesHtml = `
+                            <div style="margin-top: 8px;">
+                                <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Guides & References:</div>
+                                <div class="pose-product-images-row">
+                                    <div class="pose-image-option ${noneSelected ? 'selected' : ''}"
+                                         onclick="toggleV3NoneGuide(${product.index}, '${shotType}')" title="Generate without guide" style="display: flex; align-items: center; justify-content: center; background: #f5f5f5; min-width: 48px; min-height: 48px;">
+                                        <span style="font-size: 10px; font-weight: 600; color: #666;">None</span>
+                                        <span class="check">✓</span>
+                                    </div>
+                                    ${relevantGuides.map((guide, i) => renderGuide(guide, i)).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Model selection UI for on-model shots
+                let modelSelectionHtml = '';
+                if (isOnModel) {
+                    modelSelectionHtml = `
+                        <div style="margin-top: 8px;">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Models (face + full body):</div>
+                            <div class="pose-product-images-row">
+                                ${MODEL_PORTRAITS.map((model, i) => `
+                                    <div class="pose-image-option ${state.selectedModels[i] ? 'selected' : ''}"
+                                         onclick="toggleV3Model(${product.index}, '${shotType}', ${i})" title="${model.name}" style="position: relative;">
+                                        <img src="${model.thumb}" alt="${model.name}">
+                                        <span class="check">✓</span>
+                                        <span style="position: absolute; bottom: 2px; left: 2px; width: 14px; height: 14px; background: #3b82f6; color: white; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 2px;">M</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Pose mode UI for on-model shots (copy vs dynamic)
+                let poseModeHtml = '';
+                if (isOnModel && state.poseModes) {
+                    poseModeHtml = `
+                        <div style="margin-top: 8px;">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Pose Mode:</div>
+                            <div style="display: flex; gap: 4px;">
+                                <button class="pose-mode-btn ${state.poseModes.copy ? 'active' : ''}"
+                                        onclick="toggleV3PoseMode(${product.index}, '${shotType}', 'copy')"
+                                        style="padding: 4px 10px; font-size: 10px; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; ${state.poseModes.copy ? 'background: var(--jet); color: white;' : 'background: #f5f5f5;'}">Copy</button>
+                                <button class="pose-mode-btn ${state.poseModes.dynamic ? 'active' : ''}"
+                                        onclick="toggleV3PoseMode(${product.index}, '${shotType}', 'dynamic')"
+                                        style="padding: 4px 10px; font-size: 10px; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; ${state.poseModes.dynamic ? 'background: var(--jet); color: white;' : 'background: #f5f5f5;'}">Dynamic</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Additional garments UI for on-model shots
+                const canUseFootwear = isOnModel && CATEGORIES_WITH_FOOTWEAR.includes(product.category);
+                const canUseBottoms = isOnModel && CATEGORIES_WITH_BOTTOMS.includes(product.category);
+                const canUseTops = isOnModel && CATEGORIES_WITH_TOPS.includes(product.category);
+
+                let garmentsHtml = '';
+                if (canUseBottoms) {
+                    garmentsHtml += `
+                        <div style="margin-top: 8px;">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Bottoms (shorts/pants):</div>
+                            <div class="pose-product-images-row">
+                                ${BOTTOMS.map((bottom, i) => `
+                                    <div class="pose-image-option ${state.selectedBottoms?.[i] ? 'selected' : ''}"
+                                         onclick="toggleV3Garment(${product.index}, '${shotType}', 'bottoms', ${i})" title="${bottom.name}" style="position: relative;">
+                                        <img src="${bottom.thumb}" alt="${bottom.name}">
+                                        <span class="check">✓</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                if (canUseFootwear) {
+                    garmentsHtml += `
+                        <div style="margin-top: 8px;">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Footwear:</div>
+                            <div class="pose-product-images-row">
+                                ${FOOTWEAR.map((shoe, i) => `
+                                    <div class="pose-image-option ${state.selectedFootwear?.[i] ? 'selected' : ''}"
+                                         onclick="toggleV3Garment(${product.index}, '${shotType}', 'footwear', ${i})" title="${shoe.name}" style="position: relative;">
+                                        <img src="${shoe.thumb}" alt="${shoe.name}">
+                                        <span class="check">✓</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                if (canUseTops) {
+                    garmentsHtml += `
+                        <div style="margin-top: 8px;">
+                            <div style="font-size: 10px; color: #666; margin-bottom: 4px;">Tops (for accessory shots):</div>
+                            <div class="pose-product-images-row">
+                                ${TOPS.map((top, i) => `
+                                    <div class="pose-image-option ${state.selectedTops?.[i] ? 'selected' : ''}"
+                                         onclick="toggleV3Garment(${product.index}, '${shotType}', 'tops', ${i})" title="${top.name}" style="position: relative;">
+                                        <img src="${top.thumb}" alt="${top.name}">
+                                        <span class="check">✓</span>
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
                     `;
@@ -6516,14 +7593,20 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                             </div>
                         </div>
                         <div class="pose-product-images">
-                            <div class="pose-product-images-row">
-                                ${productImages.map((img, i) => `
-                                    <div class="pose-image-option ${state.selectedImages[i] ? 'selected' : ''}"
-                                         onclick="toggleV3ProductImage(${product.index}, '${shotType}', ${i})" title="${getShotType(img)}">
-                                        <img src="/assets/brand/rondorff/ecom/thumbs/${img}" alt="${getShotType(img)}">
-                                        <span class="check">✓</span>
-                                    </div>
-                                `).join('')}
+                            ${modelSelectionHtml}
+                            ${poseModeHtml}
+                            ${garmentsHtml}
+                            <div style="${isOnModel ? 'margin-top: 8px;' : ''}">
+                                <div style="font-size: 10px; color: #666; margin-bottom: 4px;">${isOnModel ? 'Product Images:' : ''}</div>
+                                <div class="pose-product-images-row">
+                                    ${productImages.map((img, i) => `
+                                        <div class="pose-image-option ${state.selectedImages[i] ? 'selected' : ''}"
+                                             onclick="toggleV3ProductListImage(${product.index}, '${shotType}', ${i})" title="${getShotType(img)}">
+                                            <img src="/assets/brand/rondorff/ecom/thumbs/${img}" alt="${getShotType(img)}">
+                                            <span class="check">✓</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
                             </div>
                             ${guidesHtml}
                         </div>
@@ -6543,8 +7626,8 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
             }
         }
 
-        // Toggle V3 product image selection
-        function toggleV3ProductImage(productIndex, shotType, imageIndex) {
+        // Toggle V3 product image selection (list view)
+        function toggleV3ProductListImage(productIndex, shotType, imageIndex) {
             const stateKey = `${productIndex}_${shotType}_v3`;
             if (productV3State[stateKey]) {
                 productV3State[stateKey].selectedImages[imageIndex] = !productV3State[stateKey].selectedImages[imageIndex];
@@ -6561,6 +7644,14 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
             }
         }
 
+        // Track Ron Dorff References details open/close state (no re-render)
+        function toggleV3RonDorffRefs(productIndex, shotType, isOpen) {
+            const stateKey = `${productIndex}_${shotType}_v3`;
+            if (productV3State[stateKey]) {
+                productV3State[stateKey].ronDorffRefsOpen = isOpen;
+            }
+        }
+
         // Toggle V3 "None" guide option
         function toggleV3NoneGuide(productIndex, shotType) {
             const stateKey = `${productIndex}_${shotType}_v3`;
@@ -6568,6 +7659,44 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                 productV3State[stateKey].noneGuideSelected = !productV3State[stateKey].noneGuideSelected;
                 renderProductV3Products();
             }
+        }
+
+        // Toggle V3 model selection (for on-model shots)
+        function toggleV3Model(productIndex, shotType, modelIndex) {
+            const stateKey = `${productIndex}_${shotType}_v3`;
+            if (productV3State[stateKey] && productV3State[stateKey].selectedModels) {
+                productV3State[stateKey].selectedModels[modelIndex] = !productV3State[stateKey].selectedModels[modelIndex];
+                renderProductV3Products();
+            }
+        }
+
+        // Toggle V3 garment selection (bottoms, footwear, tops)
+        function toggleV3Garment(productIndex, shotType, garmentType, index) {
+            const stateKey = `${productIndex}_${shotType}_v3`;
+            const state = productV3State[stateKey];
+            if (!state) return;
+
+            if (garmentType === 'bottoms') {
+                if (!state.selectedBottoms) state.selectedBottoms = BOTTOMS.map(() => false);
+                state.selectedBottoms[index] = !state.selectedBottoms[index];
+            } else if (garmentType === 'footwear') {
+                if (!state.selectedFootwear) state.selectedFootwear = FOOTWEAR.map(() => false);
+                state.selectedFootwear[index] = !state.selectedFootwear[index];
+            } else if (garmentType === 'tops') {
+                if (!state.selectedTops) state.selectedTops = TOPS.map(() => false);
+                state.selectedTops[index] = !state.selectedTops[index];
+            }
+            renderProductV3Products();
+        }
+
+        // Toggle V3 pose mode (copy/dynamic)
+        function toggleV3PoseMode(productIndex, shotType, mode) {
+            const stateKey = `${productIndex}_${shotType}_v3`;
+            const state = productV3State[stateKey];
+            if (!state || !state.poseModes) return;
+
+            state.poseModes[mode] = !state.poseModes[mode];
+            renderProductV3Products();
         }
 
         // Expand/collapse all V3 products
@@ -6611,29 +7740,55 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
         function showV3Loader(total) {
             v3CompletedCount = 0;
             v3TotalCount = total;
+            // Top inline loader
             const loader = document.getElementById('v3-loader');
             const message = document.getElementById('v3-loader-message');
             const progress = document.getElementById('v3-loader-progress');
             loader.classList.add('visible');
             message.textContent = 'Generating...';
             progress.textContent = `0 / ${total}`;
+            // Bottom loader
+            const bottomLoader = document.getElementById('v3-bottom-loader');
+            const bottomMessage = document.getElementById('v3-bottom-loader-message');
+            const bottomProgress = document.getElementById('v3-bottom-loader-progress');
+            bottomLoader.style.display = 'block';
+            bottomMessage.textContent = 'Generating...';
+            bottomProgress.textContent = `0 / ${total}`;
         }
 
         function updateV3Progress() {
             v3CompletedCount++;
             const progress = document.getElementById('v3-loader-progress');
             progress.textContent = `${v3CompletedCount} / ${v3TotalCount}`;
+            const bottomProgress = document.getElementById('v3-bottom-loader-progress');
+            bottomProgress.textContent = `${v3CompletedCount} / ${v3TotalCount}`;
+        }
+
+        // Update bottom loader (called from executeV3Task)
+        function updateV3BottomLoader() {
+            v3CompletedCount++;
+            const progress = document.getElementById('v3-loader-progress');
+            progress.textContent = `${v3CompletedCount} / ${v3TotalCount}`;
+            const bottomProgress = document.getElementById('v3-bottom-loader-progress');
+            bottomProgress.textContent = `${v3CompletedCount} / ${v3TotalCount}`;
+            if (v3CompletedCount >= v3TotalCount) {
+                hideV3Loader();
+            }
         }
 
         function hideV3Loader() {
             const loader = document.getElementById('v3-loader');
             loader.classList.remove('visible');
+            const bottomLoader = document.getElementById('v3-bottom-loader');
+            bottomLoader.style.display = 'none';
         }
 
         async function generateSingleV3Product(productIndex) {
             const tasks = await prepareV3ProductTasks(productIndex);
             if (tasks.length === 0) return;
 
+            const product = PRODUCTS[productIndex];
+            startV3Batch(product.name, tasks.length);
             showV3Loader(tasks.length);
             await Promise.all(tasks.map(task => executeV3Task(task)));
             hideV3Loader();
@@ -6654,16 +7809,21 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                 return;
             }
 
-            console.log(`🚀 V3 Starting ${productsToGenerate.length} products in PARALLEL`);
+            console.log(`Starting ${productsToGenerate.length} products in PARALLEL`);
 
-            // Collect ALL task promises from all products
+            // Collect ALL task promises from all products, creating batches per product
             const allTasks = [];
             for (const product of productsToGenerate) {
                 const tasks = await prepareV3ProductTasks(product.index);
-                allTasks.push(...tasks);
+                if (tasks.length > 0) {
+                    startV3Batch(product.name, tasks.length);
+                    // Tag each task with its batch number
+                    tasks.forEach(t => t.batchNum = v3CurrentBatch);
+                    allTasks.push(...tasks);
+                }
             }
 
-            console.log(`🚀 V3 Firing ${allTasks.length} API requests in PARALLEL`);
+            console.log(`Firing ${allTasks.length} API requests in PARALLEL`);
 
             // Show loader
             showV3Loader(allTasks.length);
@@ -6673,7 +7833,7 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
 
             // Hide loader
             hideV3Loader();
-            console.log(`✅ V3 All tasks complete`);
+            console.log(`All V3 tasks complete`);
         }
 
         // Prepare V3 product tasks (returns array of task configs, doesn't execute)
@@ -6688,6 +7848,7 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
             const productImages = getProductImages(product.sku);
             const selectedProductImages = productImages.filter((_, i) => state.selectedImages[i]);
             const relevantGuides = getV2Guides(shotType, product);
+            const isOnModel = shotType === 'on-model';
 
             // Collect guide configurations to generate
             const guideConfigs = [];
@@ -6709,37 +7870,135 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                 guideConfigs.push(null);
             }
 
-            // Map provider names to API models
-            let apiModel = 'gemini-3-pro';  // Default: Nano Pro
-            if (settingsV3.provider === 'nano-pro-flash') {
-                apiModel = 'gemini-3.1-flash';
-            } else if (settingsV3.provider === 'fal') {
-                apiModel = 'fal';
+            // Get model/resolution combinations from dual-model settings
+            const modelCombinations = getV3ModelCombinations();
+
+            // If no models selected, fall back to legacy single provider
+            if (modelCombinations.length === 0) {
+                let apiModel = 'gemini-3-pro';
+                if (settingsV3.provider === 'nano-pro-flash' || settingsV3.provider === 'gemini-3-flash') {
+                    apiModel = 'gemini-3-flash';
+                }
+                modelCombinations.push({ model: apiModel, resolution: settingsV3.resolution || '2K', cost: 0.14 });
             }
 
-            const taskSettings = {
-                provider: settingsV3.provider,
-                aspect: settingsV3.aspect,
-                resolution: settingsV3.resolution,
-                seeds: settingsV3.seeds,
-                apiModel: apiModel
-            };
+            // Get selected models for on-model shots
+            const selectedModels = [];
+            if (isOnModel && state.selectedModels) {
+                state.selectedModels.forEach((selected, i) => {
+                    if (selected) selectedModels.push(MODEL_PORTRAITS[i]);
+                });
+                // Default to first model if none selected
+                if (selectedModels.length === 0) selectedModels.push(MODEL_PORTRAITS[0]);
+            }
+
+            // Get selected garments for on-model shots
+            const selectedBottomsList = [];
+            const selectedFootwearList = [];
+            const selectedTopsList = [];
+            if (isOnModel) {
+                if (state.selectedBottoms) {
+                    state.selectedBottoms.forEach((selected, i) => {
+                        if (selected) selectedBottomsList.push(BOTTOMS[i]);
+                    });
+                }
+                if (state.selectedFootwear) {
+                    state.selectedFootwear.forEach((selected, i) => {
+                        if (selected) selectedFootwearList.push(FOOTWEAR[i]);
+                    });
+                }
+                if (state.selectedTops) {
+                    state.selectedTops.forEach((selected, i) => {
+                        if (selected) selectedTopsList.push(TOPS[i]);
+                    });
+                }
+            }
 
             // Pre-load product images once (shared across all tasks for this product)
             const imageBase64s = await loadImagesAsBase64(selectedProductImages.map(img => `/assets/brand/rondorff/ecom/originals/${img}`));
 
-            // Create task configs for each guide and seed
+            // Pre-load garment images
+            let garmentImageBase64s = [];
+            if (isOnModel) {
+                const garmentPaths = [
+                    ...selectedBottomsList.map(b => b.full),
+                    ...selectedFootwearList.map(f => f.full),
+                    ...selectedTopsList.map(t => t.full)
+                ];
+                if (garmentPaths.length > 0) {
+                    garmentImageBase64s = await loadImagesAsBase64(garmentPaths);
+                }
+            }
+
+            // Pre-load model images if on-model shot (both face and full body)
+            const modelImageSets = {};
+            if (isOnModel) {
+                for (const model of selectedModels) {
+                    const modelImages = await loadImagesAsBase64([model.face, model.fullBody]);
+                    modelImageSets[model.id] = modelImages;
+                }
+            }
+
+            // Get selected pose modes for on-model shots
+            const selectedPoseModes = [];
+            if (isOnModel && state.poseModes) {
+                if (state.poseModes.copy) selectedPoseModes.push('copy');
+                if (state.poseModes.dynamic) selectedPoseModes.push('dynamic');
+            }
+            // Default to copy if none selected
+            if (isOnModel && selectedPoseModes.length === 0) selectedPoseModes.push('copy');
+
+            // Create task configs for each model × guide × poseMode × modelCombination × seed
             const tasks = [];
-            for (const guideInfo of guideConfigs) {
-                for (let seed = 0; seed < taskSettings.seeds; seed++) {
-                    tasks.push({
-                        product,
-                        shotType,
-                        guideInfo,
-                        taskSettings,
-                        imageBase64s: [...imageBase64s], // Copy base images
-                        seed
-                    });
+            for (const { model: apiModel, resolution, cost } of modelCombinations) {
+                const taskSettings = {
+                    provider: apiModel.includes('flash') ? 'gemini-3-flash' : 'gemini-3-pro',
+                    aspect: settingsV3.aspect,
+                    resolution: resolution,
+                    seeds: settingsV3.seeds,
+                    apiModel: apiModel,
+                    cost: cost
+                };
+
+                for (const guideInfo of guideConfigs) {
+                    if (isOnModel && selectedModels.length > 0) {
+                        // On-model: create task for each selected model × poseMode
+                        for (const model of selectedModels) {
+                            for (const poseMode of selectedPoseModes) {
+                                for (let seed = 0; seed < taskSettings.seeds; seed++) {
+                                    // Combine model images (face + fullBody) + product images + garment images
+                                    const modelImages = modelImageSets[model.id] || [];
+                                    tasks.push({
+                                        product,
+                                        shotType,
+                                        guideInfo,
+                                        taskSettings: { ...taskSettings },
+                                        imageBase64s: [...modelImages, ...imageBase64s, ...garmentImageBase64s], // Model images first, then product, then garments
+                                        seed,
+                                        modelInfo: model,
+                                        poseMode: poseMode, // 'copy' or 'dynamic'
+                                        // Store garment info for prompt building
+                                        selectedBottoms: selectedBottomsList,
+                                        selectedFootwear: selectedFootwearList,
+                                        selectedTops: selectedTopsList,
+                                        customNotes: state.customNotes || '' // User's custom instructions
+                                    });
+                                }
+                            }
+                        }
+                    } else {
+                        // Non-model shots: original behavior
+                        for (let seed = 0; seed < taskSettings.seeds; seed++) {
+                            tasks.push({
+                                product,
+                                shotType,
+                                guideInfo,
+                                taskSettings: { ...taskSettings },
+                                imageBase64s: [...imageBase64s],
+                                seed
+                            });
+                        }
+                    }
                 }
             }
 
@@ -6774,11 +8033,18 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
 
         // Execute a single V3 task (receives pre-prepared task object)
         async function executeV3Task(task) {
-            const { product, shotType, guideInfo, taskSettings, imageBase64s, seed } = task;
+            const { product, shotType, guideInfo, taskSettings, imageBase64s, seed, modelInfo, selectedBottoms, selectedFootwear, selectedTops, poseMode, customNotes } = task;
 
             try {
-                // Build prompt
-                const prompt = buildPromptV3(shotType, product, [], guideInfo);
+                // Build prompt with garment options and pose mode
+                const prompt = buildPromptV3(shotType, product, [], guideInfo, {
+                    modelInfo,
+                    selectedBottoms,
+                    selectedFootwear,
+                    selectedTops,
+                    poseMode,
+                    customNotes
+                });
 
                 // Add guide image if present
                 const finalImages = [...imageBase64s];
@@ -6826,42 +8092,88 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
 
                 if (data.images && data.images.length > 0) {
                     const imageUrl = data.images[0].url;
-                    console.log(`✅ V3 Generated image for ${product.sku} ${shotType}`);
+                    const modelName = taskSettings.apiModel.includes('flash') ? 'Gemini 3.1 Flash' : 'Gemini 3 Pro';
+                    const filename = generateV3Filename(product, shotType, taskSettings.resolution, taskSettings.apiModel);
 
-                    // Add to results display
-                    const resultsContainer = document.getElementById('product-v3-area');
-                    const resultHtml = `
-                        <div style="display: inline-block; margin: 4px; position: relative;">
-                            <img src="${imageUrl}" style="max-width: 200px; border-radius: 4px;" onclick="openLightbox(this.src)">
-                            <div style="font-size: 9px; text-align: center; margin-top: 2px;">${product.sku} - ${shotType}</div>
-                        </div>
-                    `;
-                    resultsContainer.insertAdjacentHTML('beforeend', resultHtml);
+                    console.log(`✅ V3 Generated image for ${product.sku} ${shotType} [${modelName} ${taskSettings.resolution}]`);
+
+                    // Add to results with full info for lightbox
+                    addV3Result({
+                        url: imageUrl,
+                        filename: filename,
+                        sku: product.sku,
+                        shotType: shotType,
+                        model: modelName,
+                        resolution: taskSettings.resolution,
+                        prompt: prompt,
+                        guideInfo: guideInfo,
+                        batchProduct: product.name,
+                        batchTotal: 0
+                    }, task.batchNum);
                 } else {
                     console.error('No image in response:', data);
                 }
 
                 // Update progress
-                updateV3Progress();
+                updateV3BottomLoader();
             } catch (err) {
                 console.error(`Failed to generate ${product.sku} ${shotType}:`, err);
-                updateV3Progress(); // Still update progress on error
+                updateV3BottomLoader(); // Still update progress on error
             }
         }
 
         // Initialize V3 settings button handlers
         function initV3SettingsHandlers() {
-            // Provider buttons
-            document.querySelectorAll('#v3-provider-buttons button').forEach(btn => {
+            // Pro resolution buttons (multi-select, toggleable)
+            document.querySelectorAll('#v3-pro-resolution-buttons button').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('#v3-provider-buttons button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    settingsV3.provider = btn.dataset.value;
+                    const value = btn.dataset.value;
+                    const index = settingsV3.proResolutions.indexOf(value);
+                    if (index >= 0) {
+                        // Remove if already selected (toggle off)
+                        settingsV3.proResolutions.splice(index, 1);
+                        btn.classList.remove('active');
+                    } else {
+                        // Add if not selected (toggle on)
+                        settingsV3.proResolutions.push(value);
+                        btn.classList.add('active');
+                    }
+                    // Update legacy provider field for compatibility
+                    if (settingsV3.proResolutions.length > 0) {
+                        settingsV3.provider = 'gemini-3-pro';
+                        settingsV3.resolution = settingsV3.proResolutions[0];
+                    } else if (settingsV3.flashResolutions.length > 0) {
+                        settingsV3.provider = 'gemini-3-flash';
+                        settingsV3.resolution = settingsV3.flashResolutions[0];
+                    }
                     renderProductV3Products();
                 });
             });
 
-            // Aspect ratio buttons
+            // Flash resolution buttons (multi-select, toggleable)
+            document.querySelectorAll('#v3-flash-resolution-buttons button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value;
+                    const index = settingsV3.flashResolutions.indexOf(value);
+                    if (index >= 0) {
+                        // Remove if already selected (toggle off)
+                        settingsV3.flashResolutions.splice(index, 1);
+                        btn.classList.remove('active');
+                    } else {
+                        // Add if not selected (toggle on)
+                        settingsV3.flashResolutions.push(value);
+                        btn.classList.add('active');
+                    }
+                    // Update legacy provider field for compatibility
+                    if (settingsV3.flashResolutions.length > 0 && settingsV3.proResolutions.length === 0) {
+                        settingsV3.provider = 'gemini-3-flash';
+                        settingsV3.resolution = settingsV3.flashResolutions[0];
+                    }
+                    renderProductV3Products();
+                });
+            });
+
+            // Aspect ratio buttons (single select)
             document.querySelectorAll('#v3-aspect-buttons button').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('#v3-aspect-buttons button').forEach(b => b.classList.remove('active'));
@@ -6871,17 +8183,7 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                 });
             });
 
-            // Resolution buttons
-            document.querySelectorAll('#v3-resolution-buttons button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('#v3-resolution-buttons button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    settingsV3.resolution = btn.dataset.value;
-                    renderProductV3Products();
-                });
-            });
-
-            // Seeds buttons
+            // Seeds buttons (single select)
             document.querySelectorAll('#v3-seeds-buttons button').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('#v3-seeds-buttons button').forEach(b => b.classList.remove('active'));
@@ -6890,6 +8192,20 @@ Top-down 45-degree angle. Focus on waistband construction, drawstring, or elasti
                     renderProductV3Products();
                 });
             });
+        }
+
+        // Get total model combinations for V3 (Pro resolutions + Flash resolutions)
+        function getV3ModelCombinations() {
+            const combinations = [];
+            // Add Pro combinations
+            settingsV3.proResolutions.forEach(res => {
+                combinations.push({ model: 'gemini-3-pro', resolution: res, cost: V3_MODEL_COSTS['gemini-3-pro'][res] || 0.14 });
+            });
+            // Add Flash combinations
+            settingsV3.flashResolutions.forEach(res => {
+                combinations.push({ model: 'gemini-3-flash', resolution: res, cost: V3_MODEL_COSTS['gemini-3-flash'][res] || 0.10 });
+            });
+            return combinations;
         }
 
         // ========== COPY TAB ==========
@@ -8272,7 +9588,8 @@ PHOTOREALISTIC E-COMMERCE CATALOG PHOTOGRAPHY. Must match the quality and style 
         let voSettings = {
             quality: 'pro',
             aspect: 'as-is',
-            duration: '6'
+            duration: '6',
+            seeds: 1
         };
         let voPairs = []; // Array of { baseName, frontUrl, backUrl, frontFile, backFile, prompt, status }
         let voResults = [];
@@ -8309,6 +9626,16 @@ PHOTOREALISTIC E-COMMERCE CATALOG PHOTOGRAPHY. Must match the quality and style 
                     updateVoCostDisplay();
                 });
             }
+
+            // Seeds buttons
+            document.querySelectorAll('#vo-seeds-buttons button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#vo-seeds-buttons button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    voSettings.seeds = parseInt(btn.dataset.value);
+                    updateVoCostDisplay();
+                });
+            });
         }
 
         // Handle folder drag over
@@ -8603,10 +9930,12 @@ PHOTOREALISTIC E-COMMERCE CATALOG PHOTOGRAPHY. Must match the quality and style 
             }
 
             const costPerVideo = calculateVoCost();
-            const totalCost = (costPerVideo * videoCount).toFixed(2);
+            const totalVideoCount = videoCount * voSettings.seeds;
+            const totalCost = (costPerVideo * totalVideoCount).toFixed(2);
             const qualityLabel = voSettings.quality === 'pro' ? 'Pro' : 'Std';
+            const seedsText = voSettings.seeds > 1 ? ` × ${voSettings.seeds} seeds` : '';
 
-            costInfo.textContent = `${videoCount} video${videoCount > 1 ? 's' : ''} × ${voSettings.duration}s ${qualityLabel} = $${totalCost}`;
+            costInfo.textContent = `${videoCount} pair${videoCount > 1 ? 's' : ''}${seedsText} × ${voSettings.duration}s ${qualityLabel} = $${totalCost}`;
         }
 
         function updateVideoOutputButtons() {
@@ -8812,85 +10141,100 @@ Output ONLY the motion prompt, nothing else.`,
                 voLoader = new StudioLoader('vo-loader', 'vo-loader-message', 'vo-loader-progress');
             }
 
-            voLoader.start('Generating rotation videos...');
+            const numSeeds = voSettings.seeds;
+            const totalVideos = pairsToGenerate.length * numSeeds;
+            voLoader.start(`Generating ${totalVideos} rotation video${totalVideos > 1 ? 's' : ''}...`);
             voResults = [];
 
             const totalStart = performance.now();
             let completed = 0;
 
-            console.log(`🎬 Starting ${pairsToGenerate.length} video generations in parallel...`);
+            console.log(`🎬 Starting ${pairsToGenerate.length} pairs × ${numSeeds} seeds = ${totalVideos} video generations...`);
 
             try {
-                // Generate only selected videos in parallel
-                await Promise.all(voPairs.map(async (pair, i) => {
-                    if (!pair.selected || !pair.prompt) return;
+                // Generate only selected videos in parallel (all pairs × all seeds)
+                await Promise.all(voPairs.flatMap((pair, i) => {
+                    if (!pair.selected || !pair.prompt) return [];
 
-                    const videoStart = performance.now();
-                    pair.status = 'generating';
-                    updatePairStatus(i, 'generating');
+                    // Create tasks for each seed
+                    return Array.from({ length: numSeeds }, (_, seedIndex) => (async () => {
+                        const videoStart = performance.now();
+                        pair.status = 'generating';
+                        updatePairStatus(i, 'generating');
 
-                    try {
-                        // Upload images first (Kling needs URLs)
-                        const uploadStart = performance.now();
-                        const [frontUrl, backUrl] = await Promise.all([
-                            uploadToFal(pair.frontFile),
-                            uploadToFal(pair.backFile)
-                        ]);
-                        console.log(`📤 Video ${i + 1} uploads: ${((performance.now() - uploadStart) / 1000).toFixed(1)}s`);
+                        try {
+                            // Upload images first (Kling needs URLs) - only once per pair
+                            let frontUrl, backUrl;
+                            if (!pair._uploadedUrls) {
+                                const uploadStart = performance.now();
+                                [frontUrl, backUrl] = await Promise.all([
+                                    uploadToFal(pair.frontFile),
+                                    uploadToFal(pair.backFile)
+                                ]);
+                                pair._uploadedUrls = { frontUrl, backUrl };
+                                console.log(`📤 Video ${i + 1} uploads: ${((performance.now() - uploadStart) / 1000).toFixed(1)}s`);
+                            } else {
+                                ({ frontUrl, backUrl } = pair._uploadedUrls);
+                            }
 
-                        // Call Kling V3 first/last frame API
-                        const klingStart = performance.now();
-                        const response = await fetch('/api/video', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                model: voSettings.quality === 'pro' ? 'v3-pro' : 'v3-standard',
-                                prompt: pair.prompt,
-                                image_url: frontUrl,  // First frame
-                                tail_image_url: backUrl,  // Last frame (becomes end_image_url for V3)
-                                duration: voSettings.duration,
-                                aspect_ratio: voSettings.aspect === 'as-is' ? '9:16' : voSettings.aspect,
-                                generate_audio: false  // Always disable audio generation
-                            })
-                        });
-
-                        const data = await response.json();
-                        const klingTime = ((performance.now() - klingStart) / 1000).toFixed(1);
-
-                        if (data.video?.url) {
-                            voResults.push({
-                                url: data.video.url,
-                                baseName: pair.baseName,
-                                prompt: pair.prompt,
-                                frontUrl: pair.frontUrl,
-                                backUrl: pair.backUrl
+                            // Call Kling V3 first/last frame API
+                            const klingStart = performance.now();
+                            const response = await fetch('/api/video', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    model: voSettings.quality === 'pro' ? 'v3-pro' : 'v3-standard',
+                                    prompt: pair.prompt,
+                                    image_url: frontUrl,  // First frame
+                                    tail_image_url: backUrl,  // Last frame (becomes end_image_url for V3)
+                                    duration: voSettings.duration,
+                                    aspect_ratio: voSettings.aspect === 'as-is' ? '9:16' : voSettings.aspect,
+                                    generate_audio: false  // Always disable audio generation
+                                })
                             });
-                            pair.status = 'done';
-                            updatePairStatus(i, 'done');
-                            renderVideoOutputResults();
-                            console.log(`✅ Video ${i + 1} done: Kling ${klingTime}s, Total ${((performance.now() - videoStart) / 1000).toFixed(1)}s`);
-                        } else {
-                            console.error(`❌ Video ${i + 1} no URL (${klingTime}s):`, data);
+
+                            const data = await response.json();
+                            const klingTime = ((performance.now() - klingStart) / 1000).toFixed(1);
+
+                            if (data.video?.url) {
+                                const seedSuffix = numSeeds > 1 ? `_seed${seedIndex + 1}` : '';
+                                voResults.push({
+                                    url: data.video.url,
+                                    baseName: pair.baseName + seedSuffix,
+                                    prompt: pair.prompt,
+                                    frontUrl: pair.frontUrl,
+                                    backUrl: pair.backUrl,
+                                    seed: seedIndex
+                                });
+                                pair.status = 'done';
+                                updatePairStatus(i, 'done');
+                                renderVideoOutputResults();
+                                console.log(`✅ Video ${i + 1} seed ${seedIndex + 1} done: Kling ${klingTime}s, Total ${((performance.now() - videoStart) / 1000).toFixed(1)}s`);
+                            } else {
+                                console.error(`❌ Video ${i + 1} seed ${seedIndex + 1} no URL (${klingTime}s):`, data);
+                                pair.status = 'failed';
+                                updatePairStatus(i, 'failed');
+                            }
+                        } catch (err) {
+                            console.error(`❌ Video ${i + 1} seed ${seedIndex + 1} error:`, err);
                             pair.status = 'failed';
                             updatePairStatus(i, 'failed');
                         }
-                    } catch (err) {
-                        console.error(`❌ Video ${i + 1} error:`, err);
-                        pair.status = 'failed';
-                        updatePairStatus(i, 'failed');
-                    }
 
-                    completed++;
-                    voLoader.updateProgress(`Generated ${completed} of ${pairsToGenerate.length} videos...`);
+                        completed++;
+                        voLoader.updateProgress(`Generated ${completed} of ${totalVideos} videos...`);
+                    })());
                 }));
 
                 const totalTime = ((performance.now() - totalStart) / 1000).toFixed(1);
-                console.log(`🎬 All ${pairsToGenerate.length} videos completed in ${totalTime}s`);
+                console.log(`🎬 All ${totalVideos} videos completed in ${totalTime}s`);
                 voLoader.updateProgress('Done!');
             } catch (err) {
                 console.error('Video generation error:', err);
                 voLoader.updateProgress('Error: ' + err.message);
             } finally {
+                // Clean up cached upload URLs
+                voPairs.forEach(p => delete p._uploadedUrls);
                 voLoader.stop();
             }
         }

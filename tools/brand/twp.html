@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TWP</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👗</text></svg>">
+    <link rel="stylesheet" href="/shared/css/tokens.css">
+    <link rel="stylesheet" href="/shared/css/base.css">
+    <link rel="stylesheet" href="/shared/css/components.css">
+    <style>
+        /* Settings row with tabs */
+        .settings-bar {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            margin-bottom: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        /* Aspect ratio tabs */
+        .aspect-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .aspect-tab {
+            padding: 6px 12px;
+            font-size: var(--text-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .aspect-tab:hover {
+            background: var(--gainsboro);
+        }
+
+        .aspect-tab.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Background preview tabs */
+        .bg-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .bg-tab {
+            padding: 6px 12px;
+            font-size: var(--text-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .bg-tab:hover {
+            background: var(--gainsboro);
+        }
+
+        .bg-tab.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Slot count tabs */
+        .slot-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .slot-tab {
+            padding: 6px 12px;
+            font-size: var(--text-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .slot-tab:hover {
+            background: var(--gainsboro);
+        }
+
+        .slot-tab.active {
+            background: var(--jet);
+            color: var(--white);
+            border-color: var(--jet);
+        }
+
+        /* Upload Grid - 4 per row, bigger slots */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 12px;
+            border: 2px dashed var(--gainsboro);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            margin-bottom: var(--space-md);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .upload-grid.drag-over {
+            border-color: var(--jet);
+        }
+
+        /* Slot wrapper includes image + slider */
+        .slot-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .upload-slot {
+            aspect-ratio: 4/5;
+            border: 1px solid #D0D0D0;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--ash-grey);
+            transition: background-color 0.2s ease;
+        }
+
+        .upload-slot:hover {
+            border-color: var(--jet);
+        }
+
+        .upload-slot.filled {
+            border-color: #D0D0D0;
+        }
+
+        .upload-slot.bg-gray {
+            background: #EBEBEB;
+        }
+
+        .upload-slot.bg-white {
+            background: #FFFFFF;
+        }
+
+        /* Image container for scaling */
+        .upload-slot .image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-slot img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .upload-slot .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .upload-slot.filled:hover .remove-btn {
+            display: flex;
+        }
+
+        .upload-slot.paste-ready {
+            border-color: #2563eb;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        .upload-slot.loading {
+            background: var(--off-white);
+        }
+
+        .upload-slot.loading::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--gainsboro);
+            border-top-color: var(--jet);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Per-image scale slider */
+        .image-scale-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 4px;
+        }
+
+        .image-scale-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: var(--gainsboro);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .image-scale-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .image-scale-value {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* Global scale slider */
+        .global-scale-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) 0;
+            margin-bottom: var(--space-sm);
+        }
+
+        .global-scale-row label {
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--jet);
+            min-width: 70px;
+        }
+
+        .global-scale-slider {
+            flex: 1;
+            max-width: 200px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--gainsboro);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .global-scale-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--jet);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .global-scale-value {
+            min-width: 40px;
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+        }
+
+        /* Draggable image */
+        .upload-slot .image-container {
+            cursor: grab;
+            user-select: none;
+        }
+
+        .upload-slot .image-container:active {
+            cursor: grabbing;
+        }
+
+        .upload-slot .image-container img {
+            pointer-events: none;
+        }
+
+        /* Results Grid - 4 per row */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .result-card {
+            background: #EBEBEB;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .result-card img {
+            width: 100%;
+            display: block;
+        }
+
+        .result-card .result-info {
+            padding: var(--space-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+        .result-card .result-meta {
+            font-size: var(--text-xs);
+            color: var(--slate);
+        }
+
+        .result-card .download-btn {
+            padding: var(--space-2xs) var(--space-sm);
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            cursor: pointer;
+        }
+
+        .result-card .download-btn:hover {
+            background: var(--gainsboro);
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .download-buttons .download-btn {
+            padding: var(--space-2xs) var(--space-xs);
+            font-size: 10px;
+        }
+
+        /* Lightbox download buttons */
+        .lightbox-download-buttons {
+            display: flex;
+            gap: var(--space-xs);
+            flex-direction: column;
+        }
+
+        .lightbox-download-buttons .lightbox-download {
+            margin: 0;
+        }
+
+        .lightbox-download.secondary {
+            background: var(--off-white);
+            color: var(--jet);
+            border: 1px solid var(--gainsboro);
+        }
+
+        .lightbox-download.secondary:hover {
+            background: var(--gainsboro);
+        }
+
+        /* Settings row */
+        .settings-row {
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Generate section */
+        .generate-section {
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--gainsboro);
+            margin-top: var(--space-sm);
+        }
+
+        .calc-display {
+            font-size: var(--text-sm);
+            color: var(--slate);
+            margin-bottom: var(--space-xs);
+            text-align: center;
+        }
+
+        /* Result group headers */
+        .result-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .result-group-header {
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--jet);
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-xs);
+            border-bottom: 1px solid var(--gainsboro);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .batch-download-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .batch-download-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .batch-download-btn:hover {
+            background: var(--gainsboro);
+        }
+
+        /* Lightbox with gray background preview */
+        .lightbox-image-container {
+            background: #EBEBEB;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .lightbox-image-container img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        /* Output size indicator */
+        .output-size-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--off-white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            color: var(--slate);
+            margin-left: var(--space-sm);
+        }
+
+            </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <a href="/" style="text-decoration: none; color: inherit;"><h1>TWP</h1></a>
+            <p class="hero-subtitle">Remove backgrounds & export with gray/white backgrounds <span class="output-size-badge">1440 x 1800</span></p>
+        </div>
+
+        <!-- Upload Grid -->
+        <div class="section-label">Images</div>
+        <div class="settings-bar">
+            <div class="aspect-tabs" id="aspect-tabs">
+                <button class="aspect-tab active" data-width="1440" data-height="1800">1440 x 1800</button>
+                <button class="aspect-tab" data-width="1400" data-height="2200">1400 x 2200</button>
+            </div>
+            <div class="bg-tabs" id="bg-tabs">
+                <button class="bg-tab active" data-bg="white">White</button>
+                <button class="bg-tab" data-bg="gray">Gray</button>
+            </div>
+            <div class="slot-tabs" id="slot-tabs">
+                <button class="slot-tab active" data-slots="8">8</button>
+                <button class="slot-tab" data-slots="12">12</button>
+                <button class="slot-tab" data-slots="24">24</button>
+            </div>
+        </div>
+        <div class="upload-grid" id="upload-grid"></div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <div class="global-scale-row">
+                <label>Scale All</label>
+                <input type="range" class="global-scale-slider" id="global-scale-slider" min="50" max="100" value="100">
+                <span class="global-scale-value" id="global-scale-value">100%</span>
+            </div>
+            <div class="generate-section">
+                <div class="calc-display" id="calc-display">0 images selected</div>
+                <button class="btn btn--primary btn--lg btn--block" id="remove-btn" disabled>
+                    Remove Backgrounds
+                </button>
+            </div>
+        </div>
+
+        <!-- Inline Loader -->
+        <div class="inline-loader" id="inline-loader">
+            <div class="loader-message" id="loader-message">Processing...</div>
+            <div class="loader-progress" id="loader-progress">Preparing...</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section" id="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Processing</span>
+                <span class="progress-count" id="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <h2>Results</h2>
+                <p class="results-subtitle">Click to view full size</p>
+            </div>
+            <div id="results-container"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightbox-close">&times;</button>
+            <div class="lightbox-left">
+                <div class="lightbox-image-container">
+                    <img src="" alt="Result" id="lightbox-image">
+                </div>
+            </div>
+            <div class="lightbox-right">
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Original</h3>
+                    <img src="" alt="" id="lightbox-original" style="max-width: 200px; border-radius: 8px;">
+                </div>
+                <div class="lightbox-section">
+                    <h3 class="lightbox-section-title">Output Size</h3>
+                    <p id="lightbox-dimensions" style="font-size: 14px; color: #666;">1440 x 1800</p>
+                </div>
+                <div class="lightbox-download-buttons">
+                    <button class="lightbox-download" id="lightbox-download-gray">
+                        Download Gray (#EBEBEB)
+                    </button>
+                    <button class="lightbox-download secondary" id="lightbox-download-white">
+                        Download White (#FFFFFF)
+                    </button>
+                    <button class="lightbox-download secondary" id="lightbox-download-both">
+                        Download Both
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shared/js/utils.js"></script>
+    <script src="/shared/js/loader.js"></script>
+
+    <script>
+        // Output dimensions (can change with aspect ratio buttons)
+        let OUTPUT_WIDTH = 1440;
+        let OUTPUT_HEIGHT = 1800;
+        const GRAY_COLOR = '#EBEBEB';
+        const WHITE_COLOR = '#FFFFFF';
+
+        // Custom messages for BG removal
+        const BG_MESSAGES = [
+            "Detecting edges...",
+            "Analyzing subjects...",
+            "Separating layers...",
+            "Removing background...",
+            "Refining masks...",
+            "Processing transparency...",
+            "Almost done..."
+        ];
+
+        const bgLoader = new StudioLoader({ messages: BG_MESSAGES });
+
+        // State
+        let pasteTargetIndex = null;
+        let batchCounter = 0;
+
+        const state = {
+            images: [], // Each image: { dataUrl, file, originalName, scale: 100, offsetX: 0, offsetY: 0 }
+            results: [],
+            lightboxIndex: 0,
+            numSlots: 8,
+            globalScale: 100,
+            previewBg: 'white' // 'white' or 'gray'
+        };
+
+        // DOM Elements
+        const elements = {
+            uploadGrid: document.getElementById('upload-grid'),
+            calcDisplay: document.getElementById('calc-display'),
+            removeBtn: document.getElementById('remove-btn'),
+            inlineLoader: document.getElementById('inline-loader'),
+            progressSection: document.getElementById('progress-section'),
+            progressCount: document.getElementById('progress-count'),
+            progressBar: document.getElementById('progress-bar'),
+            resultsSection: document.getElementById('results-section'),
+            resultsContainer: document.getElementById('results-container'),
+            lightbox: document.getElementById('lightbox'),
+            lightboxImage: document.getElementById('lightbox-image'),
+            lightboxOriginal: document.getElementById('lightbox-original'),
+            lightboxDimensions: document.getElementById('lightbox-dimensions'),
+            lightboxClose: document.getElementById('lightbox-close'),
+            lightboxDownloadGray: document.getElementById('lightbox-download-gray'),
+            lightboxDownloadWhite: document.getElementById('lightbox-download-white'),
+            lightboxDownloadBoth: document.getElementById('lightbox-download-both')
+        };
+
+        function startLoadingAnimation(text) {
+            bgLoader.start(text);
+        }
+
+        function updateLoadingProgress(text) {
+            bgLoader.updateProgress(text);
+        }
+
+        function stopLoadingAnimation() {
+            bgLoader.stop();
+        }
+
+        // Initialize upload grid
+        function initUploadGrid() {
+            elements.uploadGrid.innerHTML = '';
+
+            // Adjust columns based on slot count
+            let cols = 4;
+            if (state.numSlots >= 24) cols = 6;
+            elements.uploadGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            // Set aspect ratio based on output dimensions
+            const aspectRatio = OUTPUT_WIDTH / OUTPUT_HEIGHT;
+
+            for (let i = 0; i < state.numSlots; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'slot-wrapper';
+                wrapper.dataset.index = i;
+
+                const slot = document.createElement('div');
+                slot.className = `upload-slot bg-${state.previewBg}`;
+                slot.dataset.index = i;
+                slot.style.aspectRatio = `${OUTPUT_WIDTH}/${OUTPUT_HEIGHT}`;
+                slot.innerHTML = `+`;
+                slot.addEventListener('click', (e) => handleSlotClick(i, e));
+
+                wrapper.appendChild(slot);
+                elements.uploadGrid.appendChild(wrapper);
+            }
+        }
+
+        // Slot tabs handler
+        function initSlotTabs() {
+            const tabs = document.querySelectorAll('.slot-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const newSlots = parseInt(tab.dataset.slots);
+                    if (newSlots === state.numSlots) return;
+
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // Update slot count (keep existing images)
+                    state.numSlots = newSlots;
+
+                    // Trim images array if needed
+                    if (state.images.length > state.numSlots) {
+                        state.images = state.images.slice(0, state.numSlots);
+                    }
+
+                    // Adjust columns
+                    let cols = 4;
+                    if (state.numSlots >= 24) cols = 6;
+                    elements.uploadGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+                    initUploadGrid();
+                    renderUploadGrid();
+                    updateCalc();
+                });
+            });
+        }
+
+        function handleSlotClick(index, event) {
+            if (state.images[index] && event?.detail === 2) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => handleFileSelect(e, index);
+                input.click();
+                return;
+            }
+
+            if (!state.images[index]) {
+                if (pasteTargetIndex === index) {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => handleFileSelect(e, index);
+                    input.click();
+                    return;
+                }
+
+                clearPasteTarget();
+                pasteTargetIndex = index;
+                const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+                slots[index].classList.add('paste-ready');
+            }
+        }
+
+        function clearPasteTarget() {
+            document.querySelectorAll('.upload-slot.paste-ready').forEach(el => el.classList.remove('paste-ready'));
+            pasteTargetIndex = null;
+        }
+
+        function handleFileSelect(e, index) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show loading state immediately
+            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+            slots[index].className = 'upload-slot loading';
+            slots[index].innerHTML = '';
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const originalName = file.name.replace(/\.[^/.]+$/, '');
+                state.images[index] = {
+                    dataUrl: event.target.result,
+                    file: file,
+                    originalName: originalName,
+                    scale: state.globalScale,
+                    offsetX: 0,
+                    offsetY: 0
+                };
+                clearPasteTarget();
+                renderUploadGrid();
+                updateCalc();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(index) {
+            state.images.splice(index, 1);
+            renderUploadGrid();
+            updateCalc();
+        }
+
+        function renderUploadGrid() {
+            const wrappers = elements.uploadGrid.querySelectorAll('.slot-wrapper');
+            wrappers.forEach((wrapper, i) => {
+                const slot = wrapper.querySelector('.upload-slot');
+                const img = state.images[i];
+
+                // Remove existing slider if any
+                const existingSlider = wrapper.querySelector('.image-scale-row');
+                if (existingSlider) existingSlider.remove();
+
+                if (img) {
+                    const scale = img.scale || 100;
+                    const offsetX = img.offsetX || 0;
+                    const offsetY = img.offsetY || 0;
+                    slot.className = `upload-slot filled bg-${state.previewBg}`;
+                    slot.innerHTML = `
+                        <div class="image-container" data-index="${i}" style="transform: scale(${scale / 100}) translate(${offsetX}px, ${offsetY}px)">
+                            <img src="${img.dataUrl}" alt="Image ${i + 1}">
+                        </div>
+                        <button class="remove-btn" onclick="event.stopPropagation(); removeImage(${i})">&times;</button>
+                    `;
+
+                    // Add scale slider
+                    const sliderRow = document.createElement('div');
+                    sliderRow.className = 'image-scale-row';
+                    sliderRow.innerHTML = `
+                        <input type="range" class="image-scale-slider" min="50" max="100" value="${scale}" data-index="${i}">
+                        <span class="image-scale-value">${scale}%</span>
+                    `;
+                    wrapper.appendChild(sliderRow);
+
+                    // Add slider event
+                    const slider = sliderRow.querySelector('.image-scale-slider');
+                    const valueSpan = sliderRow.querySelector('.image-scale-value');
+                    slider.addEventListener('input', (e) => {
+                        const newScale = parseInt(e.target.value);
+                        state.images[i].scale = newScale;
+                        valueSpan.textContent = `${newScale}%`;
+                        updateImageTransform(i);
+                    });
+
+                    // Add drag functionality
+                    const container = slot.querySelector('.image-container');
+                    makeDraggable(container, i);
+                } else {
+                    slot.className = `upload-slot bg-${state.previewBg}`;
+                    slot.innerHTML = `+`;
+                }
+            });
+        }
+
+        function updateCalc() {
+            const imageCount = state.images.filter(img => img).length;
+            elements.calcDisplay.textContent = `${imageCount} image${imageCount !== 1 ? 's' : ''} selected`;
+            elements.removeBtn.disabled = imageCount === 0;
+        }
+
+        elements.removeBtn.addEventListener('click', handleProcess);
+
+        async function handleProcess() {
+            const imagesToProcess = state.images.filter(img => img);
+            if (imagesToProcess.length === 0) return;
+
+            batchCounter++;
+            const currentBatchId = batchCounter;
+            const total = imagesToProcess.length;
+            let completed = 0;
+
+            elements.progressSection.classList.add('visible');
+            elements.progressCount.textContent = `0 / ${total}`;
+            elements.progressBar.style.width = '0%';
+            elements.removeBtn.disabled = true;
+
+            startLoadingAnimation(`Starting batch ${currentBatchId}...`);
+
+            const MAX_CONCURRENT = 6;
+
+            const processTask = async (img, imgIndex) => {
+                try {
+                    updateLoadingProgress(`Processing ${completed + 1}/${total}...`);
+
+                    // Pre-scale image if needed (use per-image scale and offset)
+                    const imageToProcess = await preScaleImage(
+                        img.dataUrl,
+                        img.scale || 100,
+                        img.offsetX || 0,
+                        img.offsetY || 0
+                    );
+
+                    const response = await fetch('/api/remove-bg', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image: imageToProcess
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to remove background');
+                    }
+
+                    state.results.push({
+                        url: data.result_url,
+                        originalUrl: img.dataUrl,
+                        originalName: img.originalName,
+                        width: data.width,
+                        height: data.height,
+                        batchId: currentBatchId
+                    });
+
+                    renderResults();
+
+                } catch (error) {
+                    console.error(`Error processing image ${imgIndex + 1}:`, error.message);
+                }
+
+                completed++;
+                elements.progressCount.textContent = `${completed} / ${total}`;
+                elements.progressBar.style.width = `${(completed / total) * 100}%`;
+                updateLoadingProgress(`${completed}/${total} complete`);
+            };
+
+            // Process with concurrency limit
+            const runWithConcurrency = async (items, maxConcurrent) => {
+                const executing = new Set();
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const promise = processTask(item, i).then(() => {
+                        executing.delete(promise);
+                    });
+                    executing.add(promise);
+
+                    if (executing.size >= maxConcurrent) {
+                        await Promise.race(executing);
+                    }
+                }
+
+                return Promise.all(executing);
+            };
+
+            await runWithConcurrency(imagesToProcess, MAX_CONCURRENT);
+
+            stopLoadingAnimation();
+            elements.progressSection.classList.remove('visible');
+            elements.removeBtn.disabled = false;
+        }
+
+        function renderResults() {
+            if (state.results.length === 0) {
+                elements.resultsSection.classList.remove('visible');
+                return;
+            }
+
+            elements.resultsSection.classList.add('visible');
+
+            // Group by batch
+            const batches = {};
+            state.results.forEach((result, idx) => {
+                const batchKey = result.batchId || 1;
+                if (!batches[batchKey]) {
+                    batches[batchKey] = [];
+                }
+                batches[batchKey].push({ ...result, globalIndex: idx });
+            });
+
+            // Sort batches newest first
+            const sortedBatchIds = Object.keys(batches).map(Number).sort((a, b) => b - a);
+
+            elements.resultsContainer.innerHTML = sortedBatchIds.map(batchId => {
+                const batchResults = batches[batchId];
+
+                const cardsHtml = batchResults.map(result => `
+                    <div class="result-card" onclick="openLightbox(${result.globalIndex})">
+                        <img src="${result.url}" alt="Result">
+                        <div class="result-info">
+                            <span class="result-meta">${result.originalName}</span>
+                            <div class="download-buttons">
+                                <button class="download-btn" onclick="event.stopPropagation(); downloadGray(${result.globalIndex})">Gray</button>
+                                <button class="download-btn" onclick="event.stopPropagation(); downloadWhite(${result.globalIndex})">White</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="result-group">
+                        <div class="result-group-header">
+                            <span>Batch ${batchId}</span>
+                            <div class="batch-download-buttons">
+                                <button class="batch-download-btn" onclick="downloadBatchGray(${batchId})">Save Gray</button>
+                                <button class="batch-download-btn" onclick="downloadBatchWhite(${batchId})">Save White</button>
+                                <button class="batch-download-btn" onclick="downloadBatchAll(${batchId})">Save All</button>
+                            </div>
+                        </div>
+                        <div class="results-grid">${cardsHtml}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Lightbox
+        window.openLightbox = function(index) {
+            state.lightboxIndex = index;
+            const result = state.results[index];
+
+            elements.lightboxImage.src = result.url;
+            elements.lightboxOriginal.src = result.originalUrl;
+            elements.lightboxDimensions.textContent = `${OUTPUT_WIDTH} x ${OUTPUT_HEIGHT}`;
+
+            elements.lightbox.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        };
+
+        elements.lightboxClose.addEventListener('click', closeLightbox);
+        elements.lightbox.addEventListener('click', (e) => {
+            if (e.target === elements.lightbox) closeLightbox();
+        });
+
+        function closeLightbox() {
+            elements.lightbox.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+
+        elements.lightboxDownloadGray.addEventListener('click', () => {
+            downloadGray(state.lightboxIndex);
+        });
+
+        elements.lightboxDownloadWhite.addEventListener('click', () => {
+            downloadWhite(state.lightboxIndex);
+        });
+
+        elements.lightboxDownloadBoth.addEventListener('click', async () => {
+            await downloadGray(state.lightboxIndex);
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await downloadWhite(state.lightboxIndex);
+        });
+
+        // Create resized image with background color
+        async function createResizedImage(result, bgColor, suffix) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = OUTPUT_WIDTH;
+                    canvas.height = OUTPUT_HEIGHT;
+                    const ctx = canvas.getContext('2d');
+
+                    // Fill with background color
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Calculate scaling to fit image in canvas (contain)
+                    const scale = Math.min(
+                        OUTPUT_WIDTH / img.width,
+                        OUTPUT_HEIGHT / img.height
+                    );
+                    const scaledWidth = img.width * scale;
+                    const scaledHeight = img.height * scale;
+                    const x = (OUTPUT_WIDTH - scaledWidth) / 2;
+                    const y = (OUTPUT_HEIGHT - scaledHeight) / 2;
+
+                    // Draw image centered
+                    ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+                    // Generate filename: TWP_{size}_{product}_{color}.jpg
+                    // Remove TWP_ prefix from originalName if present
+                    let productName = result.originalName;
+                    if (productName.startsWith('TWP_')) {
+                        productName = productName.substring(4);
+                    }
+                    const capitalizedSuffix = suffix.charAt(0).toUpperCase() + suffix.slice(1);
+                    const filename = `TWP_${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}_${productName}_${capitalizedSuffix}.jpg`;
+
+                    // Convert to JPEG at 90% quality
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    }, 'image/jpeg', 0.90);
+                };
+                img.src = result.url;
+            });
+        }
+
+        window.downloadGray = async function(index) {
+            const result = state.results[index];
+            await createResizedImage(result, GRAY_COLOR, 'gray');
+        };
+
+        window.downloadWhite = async function(index) {
+            const result = state.results[index];
+            await createResizedImage(result, WHITE_COLOR, 'white');
+        };
+
+        // Batch download functions
+        window.downloadBatchGray = async function(batchId) {
+            const batchResults = state.results.filter(r => r.batchId === batchId);
+            for (let i = 0; i < batchResults.length; i++) {
+                const globalIndex = state.results.indexOf(batchResults[i]);
+                await downloadGray(globalIndex);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        };
+
+        window.downloadBatchWhite = async function(batchId) {
+            const batchResults = state.results.filter(r => r.batchId === batchId);
+            for (let i = 0; i < batchResults.length; i++) {
+                const globalIndex = state.results.indexOf(batchResults[i]);
+                await downloadWhite(globalIndex);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        };
+
+        window.downloadBatchAll = async function(batchId) {
+            const batchResults = state.results.filter(r => r.batchId === batchId);
+            for (let i = 0; i < batchResults.length; i++) {
+                const globalIndex = state.results.indexOf(batchResults[i]);
+                await downloadGray(globalIndex);
+                await new Promise(resolve => setTimeout(resolve, 200));
+                await downloadWhite(globalIndex);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        };
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Paste handler
+        document.addEventListener('paste', async (e) => {
+            if (pasteTargetIndex === null) return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    const reader = new FileReader();
+                    const targetIndex = pasteTargetIndex;
+                    reader.onload = (event) => {
+                        state.images[targetIndex] = {
+                            dataUrl: event.target.result,
+                            file: file,
+                            originalName: `pasted_${Date.now()}`,
+                            scale: state.globalScale,
+                            offsetX: 0,
+                            offsetY: 0
+                        };
+                        clearPasteTarget();
+                        renderUploadGrid();
+                        updateCalc();
+
+                        const nextEmpty = state.images.findIndex((img, i) => i > targetIndex && !img);
+                        if (nextEmpty !== -1) {
+                            pasteTargetIndex = nextEmpty;
+                            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+                            slots[nextEmpty].classList.add('paste-ready');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    break;
+                }
+            }
+        });
+
+        // Click outside clears paste target
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.upload-slot') && !e.target.closest('.upload-grid')) {
+                clearPasteTarget();
+            }
+        });
+
+        // Drag and drop
+        elements.uploadGrid.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.uploadGrid.classList.add('drag-over');
+        });
+
+        elements.uploadGrid.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            elements.uploadGrid.classList.remove('drag-over');
+        });
+
+        elements.uploadGrid.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.uploadGrid.classList.remove('drag-over');
+
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+
+            const slotsToFill = [];
+            for (let i = 0; i < files.length; i++) {
+                let targetIndex = -1;
+                for (let j = 0; j < state.numSlots; j++) {
+                    if (!state.images[j] && !slotsToFill.includes(j)) {
+                        targetIndex = j;
+                        break;
+                    }
+                }
+                if (targetIndex === -1) break;
+                slotsToFill.push(targetIndex);
+            }
+
+            // Show loading state for all slots being filled
+            const slots = elements.uploadGrid.querySelectorAll('.upload-slot');
+            slotsToFill.forEach(idx => {
+                slots[idx].className = 'upload-slot loading';
+                slots[idx].innerHTML = '';
+            });
+
+            files.forEach((file, i) => {
+                if (i >= slotsToFill.length) return;
+                const targetIndex = slotsToFill[i];
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const originalName = file.name.replace(/\.[^/.]+$/, '');
+                    state.images[targetIndex] = {
+                        dataUrl: event.target.result,
+                        file: file,
+                        originalName: originalName,
+                        scale: state.globalScale,
+                        offsetX: 0,
+                        offsetY: 0
+                    };
+                    renderUploadGrid();
+                    updateCalc();
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Update image transform (scale + offset)
+        function updateImageTransform(index) {
+            const img = state.images[index];
+            if (!img) return;
+            const container = document.querySelector(`.image-container[data-index="${index}"]`);
+            if (container) {
+                const scale = img.scale || 100;
+                const offsetX = img.offsetX || 0;
+                const offsetY = img.offsetY || 0;
+                container.style.transform = `scale(${scale / 100}) translate(${offsetX}px, ${offsetY}px)`;
+            }
+        }
+
+        // Make image draggable
+        function makeDraggable(element, index) {
+            let isDragging = false;
+            let startX, startY, startOffsetX, startOffsetY;
+
+            element.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.remove-btn')) return;
+                isDragging = true;
+                const img = state.images[index];
+                startX = e.clientX;
+                startY = e.clientY;
+                startOffsetX = img.offsetX || 0;
+                startOffsetY = img.offsetY || 0;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const img = state.images[index];
+                if (!img) return;
+
+                const scale = img.scale || 100;
+                // Adjust movement by scale factor
+                const dx = (e.clientX - startX) / (scale / 100);
+                const dy = (e.clientY - startY) / (scale / 100);
+
+                img.offsetX = startOffsetX + dx;
+                img.offsetY = startOffsetY + dy;
+                updateImageTransform(index);
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        // Global scale slider
+        function initGlobalScale() {
+            const slider = document.getElementById('global-scale-slider');
+            const valueSpan = document.getElementById('global-scale-value');
+
+            slider.addEventListener('input', (e) => {
+                const newScale = parseInt(e.target.value);
+                state.globalScale = newScale;
+                valueSpan.textContent = `${newScale}%`;
+
+                // Apply to all images
+                state.images.forEach((img, i) => {
+                    if (img) {
+                        img.scale = newScale;
+                        updateImageTransform(i);
+                        // Update individual slider
+                        const individualSlider = document.querySelector(`.image-scale-slider[data-index="${i}"]`);
+                        if (individualSlider) {
+                            individualSlider.value = newScale;
+                            const valueLabel = individualSlider.parentElement.querySelector('.image-scale-value');
+                            if (valueLabel) valueLabel.textContent = `${newScale}%`;
+                        }
+                    }
+                });
+            });
+        }
+
+        // Aspect ratio tabs
+        function initAspectTabs() {
+            const tabs = document.querySelectorAll('.aspect-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const newWidth = parseInt(tab.dataset.width);
+                    const newHeight = parseInt(tab.dataset.height);
+
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // Update output dimensions
+                    OUTPUT_WIDTH = newWidth;
+                    OUTPUT_HEIGHT = newHeight;
+
+                    // Update all slot aspect ratios
+                    const slots = document.querySelectorAll('.upload-slot');
+                    slots.forEach(slot => {
+                        slot.style.aspectRatio = `${OUTPUT_WIDTH}/${OUTPUT_HEIGHT}`;
+                    });
+
+                    // Update badge
+                    document.querySelector('.output-size-badge').textContent = `${OUTPUT_WIDTH} x ${OUTPUT_HEIGHT}`;
+                });
+            });
+        }
+
+        // Background preview tabs
+        function initBgTabs() {
+            const tabs = document.querySelectorAll('.bg-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const newBg = tab.dataset.bg;
+                    if (newBg === state.previewBg) return;
+
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // Update state
+                    state.previewBg = newBg;
+
+                    // Update all slot backgrounds
+                    const slots = document.querySelectorAll('.upload-slot');
+                    slots.forEach(slot => {
+                        slot.classList.remove('bg-white', 'bg-gray');
+                        slot.classList.add(`bg-${newBg}`);
+                    });
+                });
+            });
+        }
+
+        // Pre-scale image before sending for BG removal
+        function preScaleImage(dataUrl, scale, offsetX = 0, offsetY = 0) {
+            return new Promise((resolve) => {
+                if (scale >= 100 && offsetX === 0 && offsetY === 0) {
+                    resolve(dataUrl);
+                    return;
+                }
+
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+
+                    // Fill with white background
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Scale down and apply offset
+                    const scaleFactor = scale / 100;
+                    const scaledWidth = img.width * scaleFactor;
+                    const scaledHeight = img.height * scaleFactor;
+                    // Center position + offset (scaled)
+                    const x = (canvas.width - scaledWidth) / 2 + (offsetX * scaleFactor);
+                    const y = (canvas.height - scaledHeight) / 2 + (offsetY * scaleFactor);
+
+                    ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        // Initialize
+        initAspectTabs();
+        initBgTabs();
+        initSlotTabs();
+        initGlobalScale();
+        initUploadGrid();
+        updateCalc();
+    </script>
+</body>
+</html>

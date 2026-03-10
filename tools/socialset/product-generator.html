@@ -361,6 +361,7 @@
                 <div class="model-toggle">
                     <button class="btn btn--toggle active" data-model="reve">Reve</button>
                     <button class="btn btn--toggle" data-model="zimage">Z Image</button>
+                    <button class="btn btn--toggle" data-model="gemini-flash">Gemini Flash</button>
                 </div>
             </div>
 
@@ -1114,9 +1115,25 @@ Format:
                                 output_format: 'png'
                             };
 
-                            // Model-specific params
-                            if (state.model === 'reve') {
+                            // Model-specific params and API call
+                            let data;
+                            if (state.model === 'gemini-flash') {
+                                // Gemini Flash uses different API endpoint
+                                const geminiResponse = await fetch('/api/generate-gemini', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        prompt: finalPrompt,
+                                        aspect_ratio: state.aspectRatio
+                                    })
+                                });
+                                data = await geminiResponse.json();
+                                if (!geminiResponse.ok) {
+                                    throw new Error(data.error || 'Gemini generation failed');
+                                }
+                            } else if (state.model === 'reve') {
                                 params.aspect_ratio = state.aspectRatio;
+                                data = await api.generateImage(state.model, params);
                             } else {
                                 const sizes = {
                                     '1:1': { width: 1024, height: 1024 },
@@ -1127,9 +1144,8 @@ Format:
                                 params.image_size = sizes[state.aspectRatio] || sizes['3:4'];
                                 params.num_inference_steps = 8;
                                 params.enable_safety_checker = false;
+                                data = await api.generateImage(state.model, params);
                             }
-
-                            const data = await api.generateImage(state.model, params);
                             const imgElapsed = ((performance.now() - imgStart) / 1000).toFixed(2);
 
                             if (data.images && data.images.length > 0) {

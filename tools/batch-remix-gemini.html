@@ -306,6 +306,35 @@
             color: var(--white);
         }
 
+        /* Model settings row */
+        .model-settings-row {
+            display: flex;
+            gap: var(--space-md);
+            padding: var(--space-sm);
+            background: var(--white);
+            border: 1px solid var(--gainsboro);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            align-items: center;
+        }
+
+        .model-setting {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .model-setting label {
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--jet);
+            min-width: 60px;
+        }
+
+        .model-setting .btn-group-compact button {
+            font-size: var(--text-xs);
+        }
+
         /* Generate section */
         .generate-section {
             display: flex;
@@ -332,8 +361,15 @@
         /* Inline loader styles are in /shared/css/components.css */
 
         /* Results */
+        .result-card {
+            overflow: hidden;
+            border-radius: var(--radius-sm);
+        }
         .result-image {
-            aspect-ratio: 3/4;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .lightbox-source-images {
@@ -409,6 +445,22 @@
             min-height: 180px;
             color: var(--french-gray);
             font-size: var(--text-xs);
+        }
+
+        .result-card.failed {
+            background: #fff0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            gap: 8px;
+        }
+
+        .result-card.failed .failed-text {
+            color: #c00;
+            font-size: var(--text-sm);
+            font-weight: 500;
         }
 
         input[type="file"] {
@@ -1509,14 +1561,35 @@
             </div>
         </div>
 
-        <!-- Global Settings -->
-        <div class="settings-compact">
-            <div class="setting-item">
-                <label>Model:</label>
-                <div class="btn-group-compact" id="model-buttons">
-                    <button class="active" data-model="gemini-3-pro">Gemini 3 Pro</button>
+        <!-- Model Settings Row -->
+        <div class="model-settings-row">
+            <div class="model-setting">
+                <label>3 Pro:</label>
+                <div class="btn-group-compact toggle-group" id="pro-resolution-buttons">
+                    <button data-value="1K">1K</button>
+                    <button class="active" data-value="2K">2K</button>
+                    <button data-value="4K">4K</button>
                 </div>
             </div>
+            <div class="model-setting">
+                <label>3.1 Flash:</label>
+                <div class="btn-group-compact toggle-group" id="flash-resolution-buttons">
+                    <button data-value="0.5K">0.5K</button>
+                    <button data-value="1K">1K</button>
+                    <button class="active" data-value="2K">2K</button>
+                    <button data-value="4K">4K</button>
+                </div>
+            </div>
+            <div class="model-setting">
+                <label>Flux 2 Pro:</label>
+                <div class="btn-group-compact" id="flux2pro-buttons">
+                    <button id="flux2pro-toggle" onclick="toggleFlux2Pro()">Off</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="settings-compact">
             <div class="setting-item">
                 <label>Ratio:</label>
                 <div class="btn-group-compact" id="aspect-buttons">
@@ -1530,14 +1603,6 @@
                     <button data-value="3:2">3:2</button>
                     <button data-value="16:9">16:9</button>
                     <button data-value="21:9">21:9</button>
-                </div>
-            </div>
-            <div class="setting-item" id="resolution-item">
-                <label>Res:</label>
-                <div class="btn-group-compact" id="resolution-buttons">
-                    <button data-value="1K">1K</button>
-                    <button class="active" data-value="2K">2K</button>
-                    <button data-value="4K">4K</button>
                 </div>
             </div>
             <div class="setting-item">
@@ -1986,10 +2051,23 @@
         // Gemini-specific models (not using shared REMIX_MODELS)
         const GEMINI_MODELS = {
             'gemini-3-pro': {
-                name: 'Gemini 3 Pro',
+                name: '3 Pro',
                 endpoint: 'gemini-3-pro-image-preview',
-                costPerImage: 0.14,
-                hasResolution: true
+                hasResolution: true,
+                costByResolution: { '1K': 0.14, '2K': 0.14, '4K': 0.28 }
+            },
+            'gemini-3-flash': {
+                name: '3.1 Flash',
+                endpoint: 'gemini-3.1-flash-image-preview',
+                hasResolution: true,
+                costByResolution: { '0.5K': 0.045, '1K': 0.07, '2K': 0.10, '4K': 0.15 }
+            },
+            'flux2-pro': {
+                name: 'Flux 2 Pro',
+                endpoint: 'flux2-pro',
+                hasResolution: false,
+                isFal: true, // Uses /api/generate instead of /api/remix-gemini
+                cost: 0.05
             }
         };
 
@@ -2000,9 +2078,10 @@
         let batchCounter = 0; // Track batch numbers
         let state = {
             numSets: 1,
-            selectedModel: 'gemini-3-pro',
+            proResolutions: ['2K'],      // Array of selected resolutions
+            flashResolutions: ['2K'],    // Array of selected resolutions
+            flux2ProEnabled: false,      // Flux 2 Pro toggle
             aspectRatio: '3:4',
-            resolution: '2K',
             seeds: 1,
             inputs: 6,
             promptMode: 'all',  // 'all' = all×all, 'sequential' = 1:1 mapping
@@ -2038,10 +2117,9 @@
             setsSlider: document.getElementById('sets-slider'),
             setsValue: document.getElementById('sets-value'),
             seedsButtons: document.getElementById('seeds-buttons'),
-            modelButtons: document.getElementById('model-buttons'),
+            proResolutionButtons: document.getElementById('pro-resolution-buttons'),
+            flashResolutionButtons: document.getElementById('flash-resolution-buttons'),
             aspectButtons: document.getElementById('aspect-buttons'),
-            resolutionButtons: document.getElementById('resolution-buttons'),
-            resolutionItem: document.getElementById('resolution-item'),
             inputsButtons: document.getElementById('inputs-buttons'),
             generateBtn: document.getElementById('generate-btn'),
             cancelBtn: document.getElementById('cancel-btn'),
@@ -2538,16 +2616,55 @@ Return ONLY the prompt, nothing else.`;
             }
         });
 
-        // Model buttons
-        elements.modelButtons.addEventListener('click', (e) => {
+        // Pro resolution buttons (multi-select - toggle each individually)
+        elements.proResolutionButtons.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') {
-                elements.modelButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                state.selectedModel = e.target.dataset.model;
-                elements.resolutionItem.style.display = GEMINI_MODELS[state.selectedModel].hasResolution ? 'flex' : 'none';
+                const res = e.target.dataset.value;
+                const isActive = e.target.classList.contains('active');
+                if (isActive) {
+                    // Remove from array
+                    state.proResolutions = state.proResolutions.filter(r => r !== res);
+                    e.target.classList.remove('active');
+                } else {
+                    // Add to array
+                    state.proResolutions.push(res);
+                    e.target.classList.add('active');
+                }
                 updateCalculator();
             }
         });
+
+        // Flash resolution buttons (multi-select - toggle each individually)
+        elements.flashResolutionButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const res = e.target.dataset.value;
+                const isActive = e.target.classList.contains('active');
+                if (isActive) {
+                    // Remove from array
+                    state.flashResolutions = state.flashResolutions.filter(r => r !== res);
+                    e.target.classList.remove('active');
+                } else {
+                    // Add to array
+                    state.flashResolutions.push(res);
+                    e.target.classList.add('active');
+                }
+                updateCalculator();
+            }
+        });
+
+        // Flux 2 Pro toggle function
+        window.toggleFlux2Pro = function() {
+            state.flux2ProEnabled = !state.flux2ProEnabled;
+            const btn = document.getElementById('flux2pro-toggle');
+            if (state.flux2ProEnabled) {
+                btn.textContent = 'On';
+                btn.classList.add('active');
+            } else {
+                btn.textContent = 'Off';
+                btn.classList.remove('active');
+            }
+            updateCalculator();
+        };
 
         // Aspect ratio buttons
         elements.aspectButtons.addEventListener('click', (e) => {
@@ -2555,16 +2672,6 @@ Return ONLY the prompt, nothing else.`;
                 elements.aspectButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 state.aspectRatio = e.target.dataset.value;
-            }
-        });
-
-        // Resolution buttons
-        elements.resolutionButtons.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                elements.resolutionButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                state.resolution = e.target.dataset.value;
-                updateCalculator();
             }
         });
 
@@ -2647,17 +2754,51 @@ Return ONLY the prompt, nothing else.`;
             // Multiply by seeds
             totalImages *= state.seeds;
 
-            const model = GEMINI_MODELS[state.selectedModel];
-            // 4K resolution doubles the cost
-            const costPerImage = state.resolution === '4K' ? model.costPerImage * 2 : model.costPerImage;
-            const cost = totalImages * costPerImage;
+            // Count images and costs per model (multiple resolutions each)
+            const proModel = GEMINI_MODELS['gemini-3-pro'];
+            const flashModel = GEMINI_MODELS['gemini-3-flash'];
+            const flux2ProModel = GEMINI_MODELS['flux2-pro'];
+            const proCount = state.proResolutions.length;
+            const flashCount = state.flashResolutions.length;
+            const flux2ProCount = state.flux2ProEnabled ? 1 : 0;
+
+            const proImages = totalImages * proCount;
+            const flashImages = totalImages * flashCount;
+            const flux2ProImages = totalImages * flux2ProCount;
+            const totalImagesAll = proImages + flashImages + flux2ProImages;
+
+            // Calculate cost for each resolution
+            let proCost = 0;
+            for (const res of state.proResolutions) {
+                proCost += totalImages * proModel.costByResolution[res];
+            }
+            let flashCost = 0;
+            for (const res of state.flashResolutions) {
+                flashCost += totalImages * flashModel.costByResolution[res];
+            }
+            const flux2ProCost = flux2ProImages * flux2ProModel.cost;
+            const cost = proCost + flashCost + flux2ProCost;
 
             const seedsText = state.seeds > 1 ? ` × ${state.seeds} seeds` : '';
             const modeText = state.promptMode === 'sequential' ? ' (sequential)' : '';
             const templateText = hasTemplate ? ` [${state.template}]` : '';
-            elements.calcDisplay.textContent = `${totalImages} images from ${state.numSets} set${state.numSets > 1 ? 's' : ''}${seedsText}${modeText}${templateText}`;
+
+            // Build model breakdown text
+            let modelParts = [];
+            if (proCount > 0) modelParts.push(`${proImages} 3 Pro [${state.proResolutions.join('+')}]`);
+            if (flashCount > 0) modelParts.push(`${flashImages} 3.1 Flash [${state.flashResolutions.join('+')}]`);
+            if (flux2ProCount > 0) modelParts.push(`${flux2ProImages} Flux 2 Pro`);
+
+            let modelText = '';
+            if (modelParts.length > 0) {
+                modelText = ` (${modelParts.join(' + ')})`;
+            } else {
+                modelText = ' (no model selected)';
+            }
+
+            elements.calcDisplay.textContent = `${totalImagesAll} images${modelText} from ${state.numSets} set${state.numSets > 1 ? 's' : ''}${seedsText}${modeText}${templateText}`;
             elements.costValue.textContent = formatCost(cost);
-            elements.generateBtn.disabled = !hasValidSet;
+            elements.generateBtn.disabled = !hasValidSet || (proCount === 0 && flashCount === 0 && flux2ProCount === 0);
         }
 
         // Generate
@@ -2768,7 +2909,36 @@ Return ONLY the prompt, nothing else.`;
                 }
             }
 
-            const total = tasksWithSeeds.length;
+            // Duplicate tasks for each model + resolution combination
+            const tasksWithModels = [];
+            for (const task of tasksWithSeeds) {
+                // Pro versions (one per selected resolution)
+                for (const res of state.proResolutions) {
+                    tasksWithModels.push({
+                        ...task,
+                        modelKey: 'gemini-3-pro',
+                        resolution: res
+                    });
+                }
+                // Flash versions (one per selected resolution)
+                for (const res of state.flashResolutions) {
+                    tasksWithModels.push({
+                        ...task,
+                        modelKey: 'gemini-3-flash',
+                        resolution: res
+                    });
+                }
+                // Flux 2 Pro version (no resolution options)
+                if (state.flux2ProEnabled) {
+                    tasksWithModels.push({
+                        ...task,
+                        modelKey: 'flux2-pro',
+                        resolution: null
+                    });
+                }
+            }
+
+            const total = tasksWithModels.length;
 
             // Create placeholder loaders for all tasks
             // Convert aspect ratio string to CSS value
@@ -2823,11 +2993,11 @@ Return ONLY the prompt, nothing else.`;
                 elements.progressBar.style.width = `${(completed / total) * 100}%`;
             }
 
-            console.log(`🚀 [Batch ${currentBatchId}] Starting ${total} tasks in parallel`);
+            console.log(`🚀 [Batch ${currentBatchId}] Starting ${total} tasks in parallel (Pro + Flash)`);
 
             // Process all tasks in parallel (don't await - let it run in background)
             const batchPromise = (async () => {
-                const promises = tasksWithSeeds.map(async (task, taskIndex) => {
+                const promises = tasksWithModels.map(async (task, taskIndex) => {
                     const taskId = taskIndex + 1;
                     const startTime = performance.now();
                     const placeholderId = `loader-batch${currentBatchId}-${taskIndex}`;
@@ -2882,28 +3052,43 @@ Return ONLY the prompt, nothing else.`;
                         if (placeholder2) placeholder2.textContent = 'Generating';
                         console.log(`[Batch ${currentBatchId}][${taskId}/${total}] → Generating...`);
 
-                        // Build params for Gemini API - send base64 directly (no fal.ai upload needed)
-                        const params = {
-                            model: state.selectedModel,
-                            prompt: actualPrompt,
-                            image_base64s: imageBase64s,
-                            aspect_ratio: state.aspectRatio,
-                            num_images: 1,
-                            web_search: state.webSearch
-                        };
+                        const model = GEMINI_MODELS[task.modelKey];
+                        let response, data;
 
-                        // Add resolution (both Gemini models support 1K, 2K, 4K)
-                        params.resolution = state.resolution;
-
-                        const model = GEMINI_MODELS[state.selectedModel];
-                        // Call Gemini remix endpoint
-                        const response = await fetch('/api/remix-gemini', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(params)
-                        });
-                        const data = await response.json();
-                        if (!response.ok) throw new Error(data.error || 'Gemini remix failed');
+                        if (model.isFal) {
+                            // Flux 2 Pro uses /api/generate (text-to-image, no reference images)
+                            const params = {
+                                model: task.modelKey,
+                                prompt: actualPrompt,
+                                aspect_ratio: state.aspectRatio,
+                                num_images: 1
+                            };
+                            response = await fetch('/api/generate', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(params)
+                            });
+                            data = await response.json();
+                            if (!response.ok) throw new Error(data.error || 'Flux 2 Pro generation failed');
+                        } else {
+                            // Gemini models use /api/remix-gemini with reference images
+                            const params = {
+                                model: task.modelKey,
+                                prompt: actualPrompt,
+                                image_base64s: imageBase64s,
+                                aspect_ratio: state.aspectRatio,
+                                num_images: 1,
+                                web_search: state.webSearch,
+                                resolution: task.resolution
+                            };
+                            response = await fetch('/api/remix-gemini', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(params)
+                            });
+                            data = await response.json();
+                            if (!response.ok) throw new Error(data.error || 'Gemini remix failed');
+                        }
 
                         generating--;
                         const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
@@ -2928,7 +3113,7 @@ Return ONLY the prompt, nothing else.`;
                                 placeholder.innerHTML = `
                                     <img src="${data.images[0].url}" alt="Result ${resultIndex + 1}" class="result-image">
                                     <span class="set-tag">Set ${task.setIndex + 1}</span>
-                                    <span class="model-tag">${model.name}</span>
+                                    <span class="model-tag">${model.name}${task.resolution ? ' ' + task.resolution : ''}</span>
                                 `;
                             }
                         }
@@ -2936,11 +3121,12 @@ Return ONLY the prompt, nothing else.`;
                         uploading = Math.max(0, uploading - 1);
                         generating = Math.max(0, generating - 1);
                         console.error(`[Batch ${currentBatchId}][${taskId}/${total}] ✗ Failed:`, error.message);
-                        // Mark placeholder as failed
+                        // Mark placeholder as failed (keep visible)
                         const placeholder = document.getElementById(placeholderId);
                         if (placeholder) {
-                            placeholder.className = 'result-card cancelled';
-                            placeholder.innerHTML = 'Failed';
+                            placeholder.id = '';  // Clear ID so it doesn't get auto-removed
+                            placeholder.className = 'result-card failed';
+                            placeholder.innerHTML = `<span class="failed-text">Failed</span><span class="model-tag">${model.name} ${task.resolution}</span>`;
                         }
                     }
 
@@ -4231,7 +4417,7 @@ Return ONLY the prompt, nothing else.`;
 
             const seedCount = state.seeds;
             const aspectRatio = state.aspectRatio;
-            const resolution = state.resolution;
+            const resolution = state.proResolutions[0] || '2K';  // Use first Pro resolution for Edit mode
 
             // Calculate batch number
             batchCounter++;
@@ -5011,7 +5197,7 @@ Return ONLY the prompt, nothing else.`;
                                 prompt: task.prompt,
                                 image_urls: imageUrls,
                                 aspect_ratio: state.aspectRatio,
-                                resolution: state.resolution,
+                                resolution: state.proResolutions[0] || '2K',  // Use first Pro resolution for Tombolo mode
                                 web_search: state.webSearch
                             })
                         });

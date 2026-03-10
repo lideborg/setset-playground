@@ -103,6 +103,7 @@ const MODEL_ENDPOINTS = {
     'reve': 'https://fal.run/fal-ai/reve/text-to-image',
     'zimage': 'https://fal.run/fal-ai/z-image/turbo',
     'flux2': 'https://fal.run/fal-ai/flux-2-flex',
+    'flux2-pro': 'https://fal.run/fal-ai/flux-2-pro',
     'krea': 'https://fal.run/fal-ai/flux/krea',
     'nanobanana': 'https://fal.run/fal-ai/nano-banana-pro',
 
@@ -138,9 +139,9 @@ app.post('/api/generate', async (req, res) => {
             enable_safety_checker: false
         };
 
-        // Z Image uses image_size instead of aspect_ratio
-        // Convert aspect_ratio to image_size format for Z Image
-        if (model === 'zimage' && requestParams.aspect_ratio) {
+        // Z Image and Flux 2 Pro use image_size instead of aspect_ratio
+        // Convert aspect_ratio to image_size format
+        if ((model === 'zimage' || model === 'flux2-pro') && requestParams.aspect_ratio) {
             const aspectToSize = {
                 '16:9': 'landscape_16_9',
                 '9:16': 'portrait_16_9',
@@ -148,9 +149,12 @@ app.post('/api/generate', async (req, res) => {
                 '3:4': 'portrait_4_3',
                 '1:1': 'square_hd',
                 '3:2': 'landscape_4_3', // closest match
-                '2:3': 'portrait_4_3'   // closest match
+                '2:3': 'portrait_4_3',  // closest match
+                '4:5': 'portrait_4_3',  // closest match
+                '5:4': 'landscape_4_3', // closest match
+                '21:9': 'landscape_16_9' // closest match
             };
-            requestParams.image_size = aspectToSize[requestParams.aspect_ratio] || 'landscape_16_9';
+            requestParams.image_size = aspectToSize[requestParams.aspect_ratio] || 'landscape_4_3';
             delete requestParams.aspect_ratio;
         }
 
@@ -185,7 +189,7 @@ app.post('/api/generate', async (req, res) => {
  */
 app.post('/api/generate-gemini', async (req, res) => {
     try {
-        const { prompt, aspect_ratio = '3:4', image_size = '1024' } = req.body;
+        const { prompt, aspect_ratio = '3:4', image_size = '1K' } = req.body;
 
         console.log(`🎨 [Gemini Image] Generating image...`);
         console.log(`🎨 [Gemini Image] Prompt: "${prompt.substring(0, 80)}..."`);
@@ -328,17 +332,26 @@ app.post('/api/remix-gemini', async (req, res) => {
         let modelId;
         if (model === 'gemini-3-pro') {
             modelId = 'gemini-3-pro-image-preview';
-        } else if (model === 'gemini-3.1-flash') {
+        } else if (model === 'gemini-3-flash' || model === 'gemini-3.1-flash') {
             modelId = 'gemini-3.1-flash-image-preview';
         } else {
             modelId = 'gemini-2.5-flash-image';
         }
+
+        // Map resolution to API format (0.5K needs special handling as "512px")
+        const resolutionMap = {
+            '0.5K': '512px',
+            '1K': '1K',
+            '2K': '2K',
+            '4K': '4K'
+        };
+        const imageSize = resolution ? resolutionMap[resolution] : null;
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
 
         console.log(`🎨 [Gemini Remix] Model: ${modelId}`);
         console.log(`🎨 [Gemini Remix] Prompt: ${prompt.substring(0, 100)}...`);
         console.log(`🎨 [Gemini Remix] Images: ${image_base64s?.length || image_urls?.length || 0} (${image_base64s ? 'base64' : 'urls'})`);
-        console.log(`🎨 [Gemini Remix] Aspect: ${aspect_ratio || 'default'}, Resolution: ${resolution || 'default'}`);
+        console.log(`🎨 [Gemini Remix] Aspect: ${aspect_ratio || 'default'}, Resolution: ${resolution || 'default'} → ${imageSize || 'default'}px`);
         console.log(`🎨 [Gemini Remix] Web Search: ${web_search ? 'ON' : 'OFF'}`);
 
         // Build the content parts array
@@ -403,14 +416,14 @@ app.post('/api/remix-gemini', async (req, res) => {
         };
 
         // Add imageConfig for aspect ratio and resolution (nested inside generationConfig)
-        if (aspect_ratio || resolution) {
+        if (aspect_ratio || imageSize) {
             requestBody.generationConfig.imageConfig = {};
             if (aspect_ratio) {
                 requestBody.generationConfig.imageConfig.aspectRatio = aspect_ratio;
             }
-            if (resolution) {
-                // Pass resolution directly as-is (1K, 2K, 4K)
-                requestBody.generationConfig.imageConfig.imageSize = resolution;
+            if (imageSize) {
+                // Use string format: "512px", "1K", "2K", "4K"
+                requestBody.generationConfig.imageConfig.image_size = imageSize;
             }
         }
 

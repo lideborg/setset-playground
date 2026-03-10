@@ -1,0 +1,13 @@
+{
+  "sku": "21CA653DD.SO",
+  "name": "Coach Cap \"Sunset Boy\"",
+  "color": "Sunset Orange",
+  "material": "100% cotton canvas",
+  "prompts": {
+    "flatlay": "PHOTO REFERENCE - Match this exact composition.\n\nThe LAST image shows a cap product photo. COPY this EXACT composition and angle.\n\nTAKE the cap from the reference photo and REPLACE it with the Sunset Orange Coach Cap from the input images.\n\nCAP TO SHOW (from input images):\n- Sunset Orange cotton canvas coach cap\n- \"SUNSET BOY\" embroidered in BLACK text on the front panel\n- Orange fabric eyelets (ventilation holes) on crown\n- Curved brim with stitching details\n- Copy the EXACT orange color from input images\n\nCOMPOSITION: Match the reference - 3/4 angle view, cap positioned naturally, showing front and side.\n\nLIGHTING: BRIGHT, CLEAN, EVEN studio lighting. Well-lit. NO dark shadows.\n\nBACKGROUND: Light warm gray studio surface. Clean, seamless backdrop.",
+
+    "eyelet": "CREATE a professional eyelet detail photograph.\n\nClose-up macro shot of the RON DORFF signature eyelets on the cap - copy the EXACT eyelets from the input image.\n\nCREATE THIS NEW IMAGE:\n- Close-up showing the two BLACK metal eyelets on the cap\n- Eyelets have \"RON DORFF PARIS STOCKHOLM\" engraved in WHITE text around the rim\n- Orange cotton canvas fabric visible around the eyelets\n- Stitching details visible on the cap\n- Clean professional studio detail shot\n\nPRODUCT TO SHOW (from input images):\n- Copy the EXACT RON DORFF branded eyelets from the input image\n- BLACK metal eyelets with white engraved text\n- Sunset Orange cotton canvas - copy EXACT color from input\n\nLIGHTING: BRIGHT, CLEAN, EVEN studio lighting. Well-lit. NO dark shadows.\n\nBACKGROUND: Light warm gray studio surface.",
+
+    "print": "PHOTO REFERENCE - Match this exact composition.\n\nThe LAST image shows a close-up of embroidered text on a cap. COPY this EXACT composition.\n\nCREATE a super close-up of the \"SUNSET BOY\" embroidery from the input images.\n\nPRINT TO SHOW (from input images):\n- \"SUNSET BOY\" text embroidered in BLACK thread\n- Show the raised 3D embroidery texture and stitching detail\n- Orange cotton canvas background - copy EXACT color from input\n- Fill the frame with the embroidery detail\n\nCOMPOSITION: Extreme close-up filling the frame with the embroidered text. Show the texture and depth of the embroidery.\n\nLIGHTING: BRIGHT, CLEAN, EVEN studio lighting. Well-lit to show embroidery texture. NO dark shadows.\n\nBACKGROUND: The cap fabric itself - no separate background visible."
+  }
+}

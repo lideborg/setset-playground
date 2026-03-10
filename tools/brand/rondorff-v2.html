@@ -2201,11 +2201,11 @@
             <div class="video-upload-section">
                 <div class="video-upload-header">
                     <span class="video-upload-title">Upload Images</span>
-                    <span class="video-upload-subtitle" id="video-upload-count">0 / 12 images</span>
+                    <span class="video-upload-subtitle" id="video-upload-count">0 / 32 images</span>
                     <button class="btn btn--sm" id="video-clear-all-btn" style="display: none;">Clear All</button>
                 </div>
                 <div class="video-upload-grid" id="video-upload-grid">
-                    <!-- 12 slots, 3 columns x 4 rows -->
+                    <!-- 32 slots, 4 columns x 8 rows -->
                 </div>
                 <input type="file" id="video-file-input" accept="image/*" multiple style="display: none;">
             </div>
@@ -2285,7 +2285,7 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             {
                 id: 'model-01',
                 name: 'Model 1',
-                image: '/assets/brand/rondorff/models/model-01.jpg',
+                image: '/assets/brand/rondorff/models/model-01.png',
                 thumb: '/assets/brand/rondorff/models/thumbs/model-01.jpg',
                 description: 'Male model with medium-length brown hair, light stubble beard, striking defined features, warm tanned skin, intense gaze, athletic build with defined abs and toned muscular physique, classic masculine proportions'
             },
@@ -4992,7 +4992,7 @@ POSE: [specific pose suggestion]`;
             results: []
         };
 
-        const VIDEO_SLOTS = 12;
+        const VIDEO_SLOTS = 32;
 
         // Movement mode prompts for Ron Dorff campaign aesthetic
         // These get prepended to the motion description
@@ -5537,9 +5537,9 @@ POSE: [specific pose suggestion]`;
                     }
 
                     // Build analysis prompt - get ambient motion, subtle movement, active movement, and dynamic movement
-                    const analysisPrompt = `Analyze this fashion photography image from a Ron Dorff "Fearless Summer" campaign.
+                    const analysisPrompt = `Analyze this fashion photography image.
 
-This is a premium men's swimwear/lifestyle brand - think Mediterranean summer, athletic men, minimal aesthetic, sun-drenched coastal settings.
+Look at the image and identify who is in it (man, woman, etc). Use appropriate pronouns based on what you see. This is premium fashion/lifestyle - think Mediterranean summer, minimal aesthetic, sun-drenched coastal settings.
 
 Provide FOUR motion descriptions in this exact format:
 
@@ -5547,18 +5547,33 @@ AMBIENT: [Describe subtle environmental motion - wind in hair, fabric shifting, 
 
 MOVEMENT: [Describe a natural subtle character action - slowly turning head, shifting weight, slight gesture. Editorial and minimal. 15-25 words max.]
 
-ACTIVE_MOVEMENT: [Describe walking/turning action - walks confidently toward camera, turns 180 degrees, steps forward and pauses, rises from position. Continuous 5-second action. 20-30 words max.]
+ACTIVE_MOVEMENT: [Editorial fashion movement - think runway, fashion film, or high-end campaign. Confident, graceful, intentional. Examples for inspiration (create your own variation):
+- Walks confidently toward camera with model swagger
+- Turns slowly to show outfit from different angle
+- Steps into frame and strikes a pose
+- Rises elegantly from seated position
+- Walks along a path with effortless stride
+- Pivots gracefully, pausing mid-turn
+- Strides forward then stops with weight shift
+- Moves through space like a runway walk
+- Transitions smoothly between two poses
+- Steps backward then forward with purpose
+Generate a unique editorial movement that fits this specific image. 20-30 words max.]
 
-DYNAMIC_MOVEMENT: [Describe high-energy cinematic action. Choose ONE environment-agnostic movement:
-- Spins 360 degrees in place showing outfit from all angles
-- Breaks into a light jog/run toward camera
-- Takes several quick strides forward, stops suddenly, strikes a pose
-- Walks backward then spins around and continues forward
-- Does a small jump in place, lands, continues walking
-- Starts from stillness, builds momentum, breaks into a run
-- Lunges forward dramatically, transitions into walking
-- Raises arms overhead in stretch, brings down while stepping forward
-Pick one that fits the current pose. Make it athletic and cinematic. 20-30 words max.]
+DYNAMIC_MOVEMENT: [High-energy athletic/cinematic action - think sports campaign, action commercial, or dynamic fashion film. Powerful, explosive, captivating. Examples for inspiration (create your own variation):
+- Spins 360 degrees showing outfit from all angles
+- Breaks into a confident run toward camera
+- Sprints through the scene with athletic power
+- Jumps up and lands in a strong stance
+- Does a quick spin then continues moving
+- Runs then slides to a dramatic stop
+- Leaps over something with athletic grace
+- Bursts into motion from complete stillness
+- Kicks up water/sand while running
+- Dashes forward then spins around
+- Jogs in place then breaks into full sprint
+- Quick lateral movements like an athlete
+Generate a unique high-energy movement that fits this specific image. Make it athletic and cinematic. 20-30 words max.]
 
 Do NOT mention "breathing" - it looks unnatural. Focus on premium editorial movements.
 Return ONLY the four lines in the format above, nothing else.`;
@@ -5696,6 +5711,15 @@ Return ONLY the four lines in the format above, nothing else.`;
 
                     console.log(`[Video Task] Mode: ${actualMode}, Prompt: ${fullPrompt}`);
 
+                    // Get original filename without extension
+                    const originalName = img.file.name.replace(/\.[^/.]+$/, '');
+
+                    // Get movement level: +, ++, or +++ (or empty)
+                    let moveLevel = '';
+                    if (img.addDynamicMovement) moveLevel = '+++';
+                    else if (img.addActiveMovement) moveLevel = '++';
+                    else if (img.addMovement) moveLevel = '+';
+
                     if (videoState.useKling) {
                         tasks.push({
                             imageUrl: img.uploaded,
@@ -5703,7 +5727,9 @@ Return ONLY the four lines in the format above, nothing else.`;
                             model: 'kling',
                             quality: videoState.klingQuality,
                             mode: actualMode,
-                            imgIdx
+                            imgIdx,
+                            originalName,
+                            moveLevel
                         });
                     }
 
@@ -5713,7 +5739,9 @@ Return ONLY the four lines in the format above, nothing else.`;
                             prompt: fullPrompt,
                             model: 'seedance',
                             mode: actualMode,
-                            imgIdx
+                            imgIdx,
+                            originalName,
+                            moveLevel
                         });
                     }
                 });
@@ -5779,8 +5807,10 @@ Return ONLY the four lines in the format above, nothing else.`;
                         const downloadBtn = card.querySelector('.btn');
                         downloadBtn.disabled = false;
                         downloadBtn.onclick = () => {
-                            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-                            downloadVideoFile(videoUrl, `RonDorff_Video_${task.mode}_${task.model}_${timestamp}.mp4`);
+                            // Build filename: originalname_cameramode_move+.mp4
+                            const camMode = task.mode; // static, dynamic, follow, push, arc, 90s, handheld
+                            const moveSuffix = task.moveLevel ? `_move${task.moveLevel}` : '';
+                            downloadVideoFile(videoUrl, `${task.originalName}_${camMode}${moveSuffix}.mp4`);
                         };
 
                         videoState.results.push({ url: videoUrl, task });
