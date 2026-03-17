@@ -113,6 +113,7 @@ const MODEL_ENDPOINTS = {
     'flux2-redux': 'https://fal.run/fal-ai/flux-2-flex/edit',
     'nano': 'https://fal.run/fal-ai/nano-banana/edit',
     'nano-pro': 'https://fal.run/fal-ai/nano-banana-pro/edit',
+    'nano-flash': 'https://fal.run/fal-ai/nano-banana-2/edit',
 
     // Background Replace
     'bria-bg-replace': 'https://fal.run/fal-ai/bria/background/replace'

@@ -1809,6 +1809,14 @@
         <!-- Settings Bar -->
         <div class="settings-bar">
             <div class="setting-item">
+                <label>API:</label>
+                <div class="btn-group-compact" id="api-buttons">
+                    <button class="active" data-value="gemini">Gemini</button>
+                    <button data-value="fal-pro">fal Pro</button>
+                    <button data-value="fal-flash">fal Flash</button>
+                </div>
+            </div>
+            <div class="setting-item">
                 <label>Ratio:</label>
                 <div class="btn-group-compact" id="ratio-buttons">
                     <button data-value="1:1">1:1</button>
@@ -2292,7 +2300,7 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             {
                 id: 'model-02',
                 name: 'Model 2',
-                image: '/assets/brand/rondorff/models/model-02.jpg',
+                image: '/assets/brand/rondorff/models/model-02.png',
                 thumb: '/assets/brand/rondorff/models/thumbs/model-02.jpg',
                 description: 'Male model with short strawberry blonde wavy hair, striking blue eyes, clean-shaven, strong angular jawline, fair skin with light freckles, intense masculine gaze, athletic build with defined abs and toned muscular physique, classic masculine proportions'
             }
@@ -2777,6 +2785,7 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             envTab: 'rocky-beach', // Default to rocky beach
             ratio: '16:9',
             seeds: 1,
+            apiModel: 'gemini', // 'gemini' or 'nano-pro'
             duoPercent: 0,
             interactionLevel: 1, // 0=Low, 1=Medium, 2=High, 3=Random
             dynamicLevel: 1, // 0=Low, 1=Medium, 2=High, 3=Random
@@ -2824,6 +2833,7 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             beachGrid: document.getElementById('beach-grid'),
             architectureGrid: document.getElementById('architecture-grid'),
             additionalPrompt: document.getElementById('additional-prompt'),
+            apiButtons: document.getElementById('api-buttons'),
             ratioButtons: document.getElementById('ratio-buttons'),
             seedsButtons: document.getElementById('seeds-buttons'),
             duoSlider: document.getElementById('duo-slider'),
@@ -3446,6 +3456,15 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
         };
 
         // Settings handlers
+        elements.apiButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                elements.apiButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.apiModel = e.target.dataset.value;
+                console.log(`🔧 API switched to: ${state.apiModel}`);
+            }
+        });
+
         elements.ratioButtons.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') {
                 elements.ratioButtons.querySelectorAll('button').forEach(b => b.classList.remove('active'));
@@ -3578,7 +3597,7 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             console.log('╔════════════════════════════════════════╗');
             console.log('║     RON DORFF - FEARLESS SUMMER        ║');
             console.log('╚════════════════════════════════════════╝');
-            console.log(`⚙️ Settings: Seeds=${state.seeds}, Duo=${state.duoPercent}%, Interaction=${state.interactionLevel}%, Cinematic=${state.cinematicMode}`);
+            console.log(`⚙️ Settings: API=${state.apiModel}, Seeds=${state.seeds}, Duo=${state.duoPercent}%, Interaction=${state.interactionLevel}%`);
             console.log(`👤 Models: ${state.selectedModels.join(', ')}`);
             console.log(`👕 Products: ${Object.keys(state.selectedProducts).length} items in ${new Set(Object.values(state.selectedProducts)).size} groups`);
             console.log(`📍 Environments: ${allEnvs.length} (${uploadedEnvs.length} uploaded, ${state.selectedPresetEnvs.length} preset)`);
@@ -3872,19 +3891,39 @@ Change his hair to a natural sandy blonde, warm and sun-kissed like a profession
             await Promise.all(preparedTasks.map(async (task) => {
                 const taskId = `Env${task.envIdx + 1}-Seed${task.seed + 1}`;
                 try {
-                    console.log(`🌐 [${taskId}] Sending request...`);
+                    console.log(`🌐 [${taskId}] Sending request via ${state.apiModel}...`);
 
-                    const response = await fetch('/api/remix-gemini', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: 'gemini-3-pro',
-                            prompt: task.prompt,
-                            image_urls: task.imageUrls,
-                            aspect_ratio: state.ratio,
-                            resolution: '2K'
-                        })
-                    });
+                    // Switch between Gemini and fal.ai APIs
+                    let response;
+                    if (state.apiModel === 'fal-pro' || state.apiModel === 'fal-flash') {
+                        const falModel = state.apiModel === 'fal-pro' ? 'nano-pro' : 'nano-flash';
+                        response = await fetch('/api/remix', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: falModel,
+                                prompt: task.prompt,
+                                image_urls: task.imageUrls,
+                                aspect_ratio: state.ratio,
+                                resolution: '2K',
+                                num_images: 1,
+                                output_format: 'png',
+                                safety_tolerance: 6  // 1-6, higher = more permissive
+                            })
+                        });
+                    } else {
+                        response = await fetch('/api/remix-gemini', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'gemini-3-pro',
+                                prompt: task.prompt,
+                                image_urls: task.imageUrls,
+                                aspect_ratio: state.ratio,
+                                resolution: '2K'
+                            })
+                        });
+                    }
 
                     if (response.ok) {
                         const data = await response.json();
@@ -5543,37 +5582,82 @@ Look at the image and identify who is in it (man, woman, etc). Use appropriate p
 
 Provide FOUR motion descriptions in this exact format:
 
-AMBIENT: [Describe subtle environmental motion - wind in hair, fabric shifting, water ripples, leaves moving, light playing on skin. Keep subject mostly still. 20-30 words max.]
+AMBIENT: [Subtle environmental motion only - model stays mostly still, environment moves around them. Examples:
+- Gentle breeze catches hair, fabric shifts slightly
+- Sunlight plays across skin, shadows shift softly
+- Soft wind ripples through clothing
+- Light flickers as clouds pass overhead
+- Hair moves gently in the wind
+- Warm light shifts across the face
+- Fabric sways gently in a light breeze
+- Waves lap softly in background, light reflects
+- Leaves or plants move gently nearby
+- Golden hour light slowly warms the skin
+- Ocean breeze lifts edges of clothing
+- Soft shadows dance as light changes
+- Hair catches the wind, strands floating
+- Clothing fabric breathes with subtle wind
+- Ambient light shifts creating soft glow
+20-30 words max.]
 
-MOVEMENT: [Describe a natural subtle character action - slowly turning head, shifting weight, slight gesture. Editorial and minimal. 15-25 words max.]
+MOVEMENT: [Subtle gesture - barely moving, minimal and elegant. Think fashion photography coming to life for just a moment. Examples:
+- Slowly turns head to look toward the horizon
+- Shifts weight gently from one leg to the other
+- Tilts chin up slightly, eyes gazing into distance
+- Lowers gaze thoughtfully, slight head tilt
+- Brings hand up slowly to touch collar or hair
+- Turns head to glance over shoulder
+- Relaxes shoulders and settles into pose
+- Eyes move to follow something off-frame
+- Slight smile forms, expression softens
+- Adjusts stance subtly, settling weight
+- Head turns slowly from one side to the other
+- Fingers brush lightly against fabric
+- Closes eyes briefly then opens them
+- Inhales deeply, chest rises slightly
+- Turns face toward the light
+- Looks down then slowly looks up
+- Hand moves to rest on hip
+- Crosses arms slowly in front of body
+- Tilts head gently to one side
+- Gaze shifts from camera to horizon
+Generate a unique SUBTLE gesture based on what you see. Minimal, almost imperceptible. 15-25 words max.]
 
-ACTIVE_MOVEMENT: [Editorial fashion movement - think runway, fashion film, or high-end campaign. Confident, graceful, intentional. Examples for inspiration (create your own variation):
-- Walks confidently toward camera with model swagger
-- Turns slowly to show outfit from different angle
-- Steps into frame and strikes a pose
-- Rises elegantly from seated position
-- Walks along a path with effortless stride
-- Pivots gracefully, pausing mid-turn
-- Strides forward then stops with weight shift
-- Moves through space like a runway walk
-- Transitions smoothly between two poses
-- Steps backward then forward with purpose
-Generate a unique editorial movement that fits this specific image. 20-30 words max.]
+ACTIVE_MOVEMENT: [Editorial fashion movement - like a fashion film or premium campaign. Slow, intentional, deliberate. Examples:
+- Takes one slow deliberate step forward
+- Turns body slowly to show outfit from another angle
+- Walks a few unhurried steps toward camera
+- Rises gracefully from seated or leaning position
+- Pivots slowly in place with intention
+- Steps forward and settles into a new pose
+- Turns around slowly, pausing mid-turn
+- Walks slowly into frame and finds position
+- Shifts weight and repositions with elegance
+- Takes a step back then forward again
+- Rotates shoulders slowly, showing silhouette
+- Moves from profile to facing camera
+- Steps to the side revealing the outfit
+- Stands from crouching position slowly
+- Leans against surface then pushes off gently
+- Adjusts clothing item slowly and deliberately
+- Walks slowly along a surface or edge
+- Turns head and body in sequence, slowly
+IMPORTANT: Only suggest movements that match what you see in the image. Think high-end fashion film - slow, deliberate, every movement intentional. 20-30 words max.]
 
-DYNAMIC_MOVEMENT: [High-energy athletic/cinematic action - think sports campaign, action commercial, or dynamic fashion film. Powerful, explosive, captivating. Examples for inspiration (create your own variation):
-- Spins 360 degrees showing outfit from all angles
-- Breaks into a confident run toward camera
-- Sprints through the scene with athletic power
-- Jumps up and lands in a strong stance
-- Does a quick spin then continues moving
-- Runs then slides to a dramatic stop
-- Leaps over something with athletic grace
-- Bursts into motion from complete stillness
-- Kicks up water/sand while running
-- Dashes forward then spins around
-- Jogs in place then breaks into full sprint
-- Quick lateral movements like an athlete
-Generate a unique high-energy movement that fits this specific image. Make it athletic and cinematic. 20-30 words max.]
+DYNAMIC_MOVEMENT: [More movement but still controlled and elegant - walking sequences, camera following. Examples for inspiration (create your own based on the image):
+- Walks forward with camera following, natural confident pace
+- Walks away from camera, camera tracking behind
+- Walks parallel to camera, side profile visible
+- Turns 180 degrees slowly to show back of outfit
+- Walks toward camera then past it, camera follows
+- Strolls casually through the scene, relaxed stride
+- Walks along the beach/path with easy confidence
+- Moves from one spot to another across the frame
+- Walks in a gentle arc, camera tracking
+- Takes several steps forward then turns to face camera
+- Walks while looking around at the environment
+- Moves through the space exploring, camera following
+IMPORTANT: Base your suggestion on what you actually see in the image. If there's water, they can walk through it. If there's a jacket, they can adjust it. If they're seated, they can rise and walk. Keep it SMOOTH and UNHURRIED - elegant fashion film, not athletic. 25-35 words max.]
 
 Do NOT mention "breathing" - it looks unnatural. Focus on premium editorial movements.
 Return ONLY the four lines in the format above, nothing else.`;
@@ -5600,7 +5684,7 @@ Return ONLY the four lines in the format above, nothing else.`;
                         let ambientDesc = ambientMatch ? ambientMatch[1].trim() : 'Wind gently moves through the scene, subtle light plays across the skin.';
                         let movementDesc = movementMatch ? movementMatch[1].trim() : 'Slowly turns head to gaze toward the horizon.';
                         let activeMovementDesc = activeMovementMatch ? activeMovementMatch[1].trim() : 'Walks confidently toward camera, natural stride, steady approach.';
-                        let dynamicMovementDesc = dynamicMovementMatch ? dynamicMovementMatch[1].trim() : 'Spins 360 degrees in place, showing outfit from all angles, confident smooth rotation.';
+                        let dynamicMovementDesc = dynamicMovementMatch ? dynamicMovementMatch[1].trim() : 'Walks confidently toward camera with slow deliberate steps, natural swagger, editorial presence.';
 
                         // Clean up brackets if present
                         ambientDesc = ambientDesc.replace(/^\[|\]$/g, '').trim();
@@ -5625,7 +5709,7 @@ Return ONLY the four lines in the format above, nothing else.`;
                     img.ambientDesc = 'Wind moves gently through the scene, light plays across the skin.';
                     img.movementDesc = 'Slowly turns head to look toward the horizon.';
                     img.activeMovementDesc = 'Walks confidently toward camera, natural stride, steady approach.';
-                    img.dynamicMovementDesc = 'Spins 360 degrees in place, showing outfit from all angles, confident smooth rotation.';
+                    img.dynamicMovementDesc = 'Walks confidently toward camera with slow deliberate steps, natural swagger, editorial presence.';
                 }
 
                 completed++;

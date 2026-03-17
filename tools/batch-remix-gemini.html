@@ -1554,10 +1554,16 @@
         <!-- Compact Header -->
         <div class="header-row">
             <h1>Batch Remix (Gemini)</h1>
-            <div class="sets-control">
-                <label>Sets:</label>
-                <input type="range" class="slider sets-slider" id="sets-slider" min="1" max="5" value="1">
-                <span class="sets-value" id="sets-value">1</span>
+            <div style="display: flex; align-items: center; gap: var(--space-md);">
+                <div class="sets-control">
+                    <label>Sets:</label>
+                    <input type="range" class="slider sets-slider" id="sets-slider" min="1" max="5" value="1">
+                    <span class="sets-value" id="sets-value">1</span>
+                </div>
+                <div class="mode-toggle-mini" id="api-toggle">
+                    <button class="active" data-value="gemini">Gemini</button>
+                    <button data-value="fal">Fal</button>
+                </div>
             </div>
         </div>
 
@@ -2089,6 +2095,7 @@
             keepFilenames: false,
             template: 'none',  // 'none' or 'flatlay'
             mode: 'remix',  // 'remix' or 'edit'
+            apiMode: 'gemini',  // 'gemini' or 'fal'
             results: [],
             lightboxIndex: 0
         };
@@ -2605,6 +2612,16 @@ Return ONLY the prompt, nothing else.`;
             renderSets();
         });
 
+        // API toggle (Gemini / fal)
+        document.getElementById('api-toggle').addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                document.getElementById('api-toggle').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.apiMode = e.target.dataset.value;
+                console.log(`🔧 API switched to: ${state.apiMode}`);
+            }
+        });
+
         // Seeds buttons
         elements.seedsButtons.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') {
@@ -3070,6 +3087,36 @@ Return ONLY the prompt, nothing else.`;
                             });
                             data = await response.json();
                             if (!response.ok) throw new Error(data.error || 'Flux 2 Pro generation failed');
+                        } else if (state.apiMode === 'fal') {
+                            // fal.ai API with nano-pro model - upload images first
+                            const uploadedUrls = await Promise.all(imageBase64s.map(async (dataUrl) => {
+                                const uploadResp = await fetch('/api/upload-base64', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ dataUrl })
+                                });
+                                const uploadData = await uploadResp.json();
+                                if (!uploadResp.ok) throw new Error(uploadData.error || 'Upload failed');
+                                return uploadData.url;
+                            }));
+
+                            const params = {
+                                model: 'nano-pro',
+                                prompt: actualPrompt,
+                                image_urls: uploadedUrls,
+                                aspect_ratio: state.aspectRatio,
+                                resolution: task.resolution || '2K',
+                                num_images: 1,
+                                output_format: 'png',
+                                safety_tolerance: 6  // 1-6, higher = more permissive
+                            };
+                            response = await fetch('/api/remix', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(params)
+                            });
+                            data = await response.json();
+                            if (!response.ok) throw new Error(data.error || 'fal.ai remix failed');
                         } else {
                             // Gemini models use /api/remix-gemini with reference images
                             const params = {
@@ -3126,7 +3173,7 @@ Return ONLY the prompt, nothing else.`;
                         if (placeholder) {
                             placeholder.id = '';  // Clear ID so it doesn't get auto-removed
                             placeholder.className = 'result-card failed';
-                            placeholder.innerHTML = `<span class="failed-text">Failed</span><span class="model-tag">${model.name} ${task.resolution}</span>`;
+                            placeholder.innerHTML = `<span class="failed-text">Failed</span><span class="model-tag">${GEMINI_MODELS[task.modelKey]?.name || task.modelKey} ${task.resolution || ''}</span>`;
                         }
                     }
 
@@ -3719,23 +3766,55 @@ Return ONLY the prompt, nothing else.`;
                     const placeholder = document.getElementById(`edit-loader-${editBatchNum}-${i}`);
                     if (placeholder) placeholder.textContent = 'Generating';
 
-                    console.log(`[Lightbox Edit ${editBatchNum}][${seedNum}/${seedCount}] → Generating...`);
+                    console.log(`[Lightbox Edit ${editBatchNum}][${seedNum}/${seedCount}] → Generating via ${state.apiMode}...`);
 
-                    // Call Gemini API
-                    const response = await fetch('/api/remix-gemini', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: 'gemini-3-pro',
-                            prompt: prompt,
-                            image_urls: imageUrls,
-                            aspect_ratio: aspectRatio,
-                            resolution: resolution,
-                            web_search: state.webSearch
-                        })
-                    });
+                    // Call API based on apiMode
+                    let response, data;
+                    if (state.apiMode === 'fal') {
+                        // Upload any data URLs first for fal.ai
+                        const uploadedUrls = await Promise.all(imageUrls.map(async (url) => {
+                            if (url.startsWith('data:')) {
+                                const uploadResp = await fetch('/api/upload-base64', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ dataUrl: url })
+                                });
+                                const uploadData = await uploadResp.json();
+                                if (!uploadResp.ok) throw new Error(uploadData.error || 'Upload failed');
+                                return uploadData.url;
+                            }
+                            return url;
+                        }));
+                        response = await fetch('/api/remix', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'nano-pro',
+                                prompt: prompt,
+                                image_urls: uploadedUrls,
+                                aspect_ratio: aspectRatio,
+                                resolution: resolution || '2K',
+                                num_images: 1,
+                                output_format: 'png',
+                                safety_tolerance: 6
+                            })
+                        });
+                    } else {
+                        response = await fetch('/api/remix-gemini', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'gemini-3-pro',
+                                prompt: prompt,
+                                image_urls: imageUrls,
+                                aspect_ratio: aspectRatio,
+                                resolution: resolution,
+                                web_search: state.webSearch
+                            })
+                        });
+                    }
 
-                    const data = await response.json();
+                    data = await response.json();
                     if (!response.ok) throw new Error(data.error || 'Edit failed');
 
                     const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
@@ -4499,20 +4578,52 @@ Return ONLY the prompt, nothing else.`;
                         const placeholder = document.getElementById(placeholderId);
                         if (placeholder) placeholder.textContent = 'Generating...';
 
-                        console.log(`[Edit Batch ${editBatchNum}][${seedNum}/${seedCount}] → Generating...`);
+                        console.log(`[Edit Batch ${editBatchNum}][${seedNum}/${seedCount}] → Generating via ${state.apiMode}...`);
 
-                        const response = await fetch('/api/remix-gemini', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                model: 'gemini-3-pro',
-                                prompt: prompt,
-                                image_urls: imageUrls,
-                                aspect_ratio: aspectRatio,
-                                resolution: resolution,
-                                web_search: state.webSearch
-                            })
-                        });
+                        let response;
+                        if (state.apiMode === 'fal') {
+                            // Upload any data URLs first for fal.ai
+                            const uploadedUrls = await Promise.all(imageUrls.map(async (url) => {
+                                if (url.startsWith('data:')) {
+                                    const uploadResp = await fetch('/api/upload-base64', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ dataUrl: url })
+                                    });
+                                    const uploadData = await uploadResp.json();
+                                    if (!uploadResp.ok) throw new Error(uploadData.error || 'Upload failed');
+                                    return uploadData.url;
+                                }
+                                return url;
+                            }));
+                            response = await fetch('/api/remix', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    model: 'nano-pro',
+                                    prompt: prompt,
+                                    image_urls: uploadedUrls,
+                                    aspect_ratio: aspectRatio,
+                                    resolution: resolution || '2K',
+                                    num_images: 1,
+                                    output_format: 'png',
+                                    safety_tolerance: 6
+                                })
+                            });
+                        } else {
+                            response = await fetch('/api/remix-gemini', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    model: 'gemini-3-pro',
+                                    prompt: prompt,
+                                    image_urls: imageUrls,
+                                    aspect_ratio: aspectRatio,
+                                    resolution: resolution,
+                                    web_search: state.webSearch
+                                })
+                            });
+                        }
 
                         const data = await response.json();
                         if (!response.ok) throw new Error(data.error || 'Edit failed');
@@ -5185,22 +5296,40 @@ Return ONLY the prompt, nothing else.`;
                             imageUrls.push(cannyGuide.falUrl);
                         }
 
-                        console.log(`[Tombolo] Generating ${task.category} with ${imageUrls.length} image(s)${cannyGuide ? ' (incl. guide)' : ''}`);
+                        console.log(`[Tombolo] Generating ${task.category} via ${state.apiMode} with ${imageUrls.length} image(s)${cannyGuide ? ' (incl. guide)' : ''}`);
                         tomboloLoader.updateProgress(`Generating ${task.category}...`);
 
-                        // Generate using Gemini remix endpoint
-                        const result = await fetch('/api/remix-gemini', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                model: 'gemini-3-pro',
-                                prompt: task.prompt,
-                                image_urls: imageUrls,
-                                aspect_ratio: state.aspectRatio,
-                                resolution: state.proResolutions[0] || '2K',  // Use first Pro resolution for Tombolo mode
-                                web_search: state.webSearch
-                            })
-                        });
+                        // Generate using selected API
+                        let result;
+                        if (state.apiMode === 'fal') {
+                            result = await fetch('/api/remix', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    model: 'nano-pro',
+                                    prompt: task.prompt,
+                                    image_urls: imageUrls,
+                                    aspect_ratio: state.aspectRatio,
+                                    resolution: state.proResolutions[0] || '2K',
+                                    num_images: 1,
+                                    output_format: 'png',
+                                    safety_tolerance: 6
+                                })
+                            });
+                        } else {
+                            result = await fetch('/api/remix-gemini', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    model: 'gemini-3-pro',
+                                    prompt: task.prompt,
+                                    image_urls: imageUrls,
+                                    aspect_ratio: state.aspectRatio,
+                                    resolution: state.proResolutions[0] || '2K',
+                                    web_search: state.webSearch
+                                })
+                            });
+                        }
 
                         if (!result.ok) throw new Error('Generation failed');
 
@@ -5217,7 +5346,7 @@ Return ONLY the prompt, nothing else.`;
                                 const card = createResultCard({
                                     url: img.url,
                                     prompt: task.prompt,
-                                    model: 'Gemini 3 Pro',
+                                    model: state.apiMode === 'fal' ? 'fal nano-pro' : 'Gemini 3 Pro',
                                     sourceImages: allSourceImages,
                                     category: task.category + (task.isGroupTask ? ' (Group)' : '')
                                 });

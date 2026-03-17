@@ -2689,14 +2689,14 @@ Take this exact model and adjust naturally: slightly larger eyes with honey-gold
         // Shot requirements from PDF: Setset for Fearless Summer - E-Commerce Shoot.pdf
         const PRODUCTS = [
             { category: 'Shirts', sku: '21TS1505.RW', name: 'Organic Cotton Crochet Knit Shirt', color: 'Natural', material: '100% organic cotton', shotTypes: ['flatlay', 'eyelet', 'collar', 'fabrics', 'sleeves', 'on-model'], video: true },
-            { category: 'Urban Shorts', sku: '21SS20.RW', name: 'Crochet Knit Shorts', color: 'Natural', material: '100% organic cotton', shotTypes: ['flatlay', 'eyelet', 'belt', 'fabrics', 'on-model', 'back'], video: false },
+            { category: 'Urban Shorts', sku: '21SS20.RW', name: 'Crochet Knit Shorts', color: 'Natural', material: '100% organic cotton', shotTypes: ['flatlay', 'eyelet', 'belt', 'fabrics', 'on-model', 'back'], video: true },
             { category: 'Tank Tops', sku: '21TK189.RW', name: 'Organic Cotton Crochet Knit Tank Top', color: 'Natural', material: '100% organic cotton', shotTypes: ['flatlay', 'eyelet', 'collar', 'fabrics', 'on-model'], video: true },
             { category: 'T-Shirts', sku: '21TS1115DD.SO', name: 'Crew Neck T-Shirt Eyelet Edition', color: 'Sunset Orange', material: '100% gassed cotton', shotTypes: ['flatlay', 'eyelet', 'collar', 'on-model'], video: false },
             { category: 'Sweatshirts', sku: '21SW2019.SO', name: 'Light Organic Cotton Sleeveless Sweatshirt', color: 'Sunset Orange', material: '100% cotton', shotTypes: ['flatlay', 'eyelet', 'on-model'], video: false },
             { category: 'Sweatshirts', sku: '21TS1267.SO', name: 'Sleeveless T-Shirt "Sunset Boy"', color: 'Sunset Orange', material: '100% organic cotton', shotTypes: ['flatlay', 'print', 'on-model'], video: false },
             { category: 'Swim Briefs', sku: '21SR20DD.SO', name: 'Slim Swim Briefs', color: 'Sunset Orange', material: '80% polyamide, 20% elasthanne', shotTypes: ['flatlay', 'eyelet', 'on-model', 'back'], video: true },
-            { category: 'Swim Briefs', sku: '21SR21B.S', name: 'Swim Briefs w. Waistband', color: 'Sand', material: '80% polyamide, 20% elasthanne', shotTypes: ['flatlay', 'eyelet', 'belt', 'on-model', 'back'], video: false },
-            { category: 'Swim Shorts', sku: '21SR23DD.SO', name: 'Swim Shorts', color: 'Sunset Orange', material: '100% recycled polyester', shotTypes: ['flatlay', 'eyelet', 'on-model', 'back'], video: false },
+            { category: 'Swim Briefs', sku: '21SR21B.S', name: 'Swim Briefs w. Waistband', color: 'Sand', material: '80% polyamide, 20% elasthanne', shotTypes: ['flatlay', 'eyelet', 'belt', 'on-model', 'back'], video: true },
+            { category: 'Swim Shorts', sku: '21SR23DD.SO', name: 'Swim Shorts', color: 'Sunset Orange', material: '100% recycled polyester', shotTypes: ['flatlay', 'eyelet', 'on-model', 'back'], video: true },
             { category: 'Sports Shorts', sku: '21SS21.BE', name: 'Corduroy Tennis Shorts', color: 'Beige', material: '97% cotton, 3% spandex', shotTypes: ['flatlay', 'eyelet', 'belt', 'fabrics', 'on-model', 'back'], video: true },
             { category: 'Accessories', sku: '21CA653DD.SO', name: 'Coach Cap "Sunset Boy"', color: 'Sunset Orange', material: '100% cotton canvas', shotTypes: ['flatlay', 'eyelet', 'print', 'on-model'], video: false },
             { category: 'Accessories', sku: '21BG97.SO', name: 'Tote Bag "Fearless"', color: 'Sunset Orange', material: '100% cotton canvas', shotTypes: ['flatlay', 'eyelet', 'print', 'on-model'], video: false },
@@ -8884,7 +8884,10 @@ Be precise and technical.`;
             '21TK189.RW': { front: 'Setset_RonDorff_Ecomm_21TK189RW_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21TK189RW_34.png' },
             '21SR20DD.SO': { front: 'Setset_RonDorff_Ecomm_21SR20DDSO_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21SR20DDSO_34.png' },
             '21SS21.BE': { front: 'Setset_RonDorff_Ecomm_21SS21BE_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21SS21BE_34.png', shoes: '/assets/brand/rondorff/accessories/rondorff_sneakers_white.png' },
-            '21UR30.W': { front: 'Setset_RonDorff_Ecomm_21UR30W_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21UR30W_34.png' }
+            '21UR30.W': { front: 'Setset_RonDorff_Ecomm_21UR30W_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21UR30W_34.png' },
+            '21SS20.RW': { front: 'Setset_RonDorff_Ecomm_21SS20RW_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21SS20RW_34.png', shoes: '/assets/brand/rondorff/accessories/rondorff_sneakers_white.png' },
+            '21SR21B.S': { front: 'Setset_RonDorff_Ecomm_21SR21BS_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21SR21BS_34.png' },
+            '21SR23DD.SO': { front: 'Setset_RonDorff_Ecomm_21SR23DDSO_front.png', threeQuarter: 'Setset_RonDorff_Ecomm_21SR23DDSO_34.png' }
         };
 
         function initVideoProductState() {
